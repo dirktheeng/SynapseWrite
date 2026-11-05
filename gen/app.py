@@ -1007,7 +1007,7 @@ def nid(x):
 wvl_data=[wlog,wln,wvl,w1,w2,w3,w4,fw,fw2,wo,imw,wl_i,xw,wplg]
 for p in wvl_data: net.aligned.append([nid(b.w) for b in p.d])
 for b in (dat_s,dat_l): net.aligned.append([nid(w_) for w_ in b])
-net.keep=[nid(q) for q in (halt.w,timer.w,clipout.w,saveout.w,pdfout.w,picout.w,openout.w,wantp.w,ev_kind,ev_a,ev_b,ev_c)]
+net.keep=[nid(q) for q in (halt.w,timer.w,clipout.w,saveout.w,outbase.w,pdfout.w,picout.w,openout.w,wantp.w,ev_kind,ev_a,ev_b,ev_c,ev_t)]
 for p in net.ports:
     for q in p.rec(None)[1:]:
         if isinstance(q,X): net.keep.append(nid(q))
