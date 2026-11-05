@@ -111,7 +111,7 @@ qsty=R()
 on('PD_R',(None,'PD_9',{qsty:99999}))
 e=S('PD_9'); on('PD_9',(net.ge(qo,qe,e),'PD_Z',None),(None,'PD_A',{r1:qb+qo,r2:qb+1024+qo}))
 e=S('PD_A')
-on('PD_A',(net.step(net.step(R2-qsty)+net.step(qsty-R2)),'PD_F',{qsty:R2,ins_ch:R1,ins_st:R2}),(None,'PD_T',{ins_ch:R1}))
+on('PD_A',(net.ge(R1,1000,e),'PD_9',{qo:qo+1}),(net.step(net.step(R2-qsty)+net.step(qsty-R2)),'PD_F',{qsty:R2,ins_ch:R1,ins_st:R2}),(None,'PD_T',{ins_ch:R1}))
 for st_ in ('PD_F',): sv_en.lin(S(st_)); sv_in.add(S(st_),ins_st)
 e=S('PD_F'); zh=net.decode(SV['size'],11,e); pts=X()
 for i_,h_ in enumerate(zh): pts=pts+h_*rom.PTS[i_]

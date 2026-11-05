@@ -1,4 +1,5 @@
 # helpers shared by the Tier 3 writers
+off_=off;hlen_=hlen
 T3_RETS=[];T3_WPORTS=[]
 import t3_btn
 def t3ret(n):

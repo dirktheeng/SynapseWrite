@@ -1,1 +1,2 @@
-const d=require('./drive');(async()=>{const {b,p,check}=await d();await p.mouse.click(135,47);console.log(await check('tab'));await p.mouse.click(116,76);console.log(await check('tbl'));await p.screenshot({path:'build/dbg.png'});await p.keyboard.type('a');console.log(await check('a'));await b.close();})();
+const d=require('./drive');(async()=>{const {b,p,check}=await d();const K=k=>p.keyboard.press(k);await p.keyboard.type('Body');
+await p.mouse.click(262,47);await p.mouse.click(190,76);console.log(await check('fn'));await p.keyboard.type('ab');console.log(await check('ty'));await K('Enter');console.log(await check('en'));await p.screenshot({path:'build/dbg.png'});await b.close();})();

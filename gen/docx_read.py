@@ -6,12 +6,14 @@ lln=R();bfinal=R();nlen=R();ndist=R();ncode=R();idx=R();prev=R();rept=R();rval=R
 code=R();first=R();index=R();hlen=R();cnt=R();hb=R();sym=R();ln=R();lb=R();lc_=R();sb=R();dist=R();copyn=R()
 LN=TBL+1200; CLH=TBL+800; LH=TBL; DH=TBL+400; OFFS=TBL+1000
 exec(open('t3_px.py').read())
-gcount=R();tcidx=R();gx=R();incell=R()
+rtoc=R();rdig=R();tpgv=R();fnc=R();rdsec=R();gcount=R();tcidx=R();gx=R();incell=R()
 def T3_PX_RULES(e):
     return [(tag('<w:tbl',' >'),'PX',{gcount:0,tcidx:0,gx:0,pfirst:0,oi:oi+6}),(pat('<w:gridC',e),'T3_GC',{oi:oi+8}),(tag('<w:tc',' >'),'T3_TC0',{oi:oi+5}),(pat('</w:tc>',e),'PX',{incell:0,tcidx:tcidx+1,oi:oi+7}),(pat('</w:tr>',e),'PX',{tcidx:0,gx:0,oi:oi+7}),(pat('<w:shd ',e),'T3_SHD',{oi:oi+7})]+T3_PX_MORE(e)
 # open: reset the document, then walk zip members
-on('OP0',(None,'T3_OP',{cursec:0,nsec:1,wln:(nextb+SAVE,112,16,1,0,0,0),w1:(as_x(PT),nextb),w2:(nextb+DIRTY,1),w3:(nextb+LEN,0),cp:0,cb:nextb,co:0,clen:0,ap:0,ao:0,npar:1,nextb:nextb+STRIDE,usp:UB,urp:UB,scroll:0,nolog:1,zp:0,pfirst:1,cs:0,ty:0,dfrom:0,lc:1,bgp:0}))
-on('T3_OP',(None,'OP1',None))
+on('OP0',(None,'T3_OP',{cursec:0,nsec:1,imgp:0,fnc:0,rdsec:0,rdp:0,hftp:0,hfl[0]:0,hfl[1]:0,hfl[2]:0,hfl[3]:0,wln:(nextb+SAVE,112,16,1,0,0,0),w1:(as_x(PT),nextb),w2:(nextb+DIRTY,1),w3:(nextb+LEN,0),cp:0,cb:nextb,co:0,clen:0,ap:0,ao:0,npar:1,nextb:nextb+STRIDE,usp:UB,urp:UB,scroll:0,nolog:1,zp:0,pfirst:1,cs:0,ty:0,dfrom:0,lc:1,bgp:0}))
+on('T3_OP',(None,'T3_OP2',None))
+for i_,v_ in enumerate((1,816,PH,PX,TX,TW,96,864)):
+    on('T3_OP2' if i_==0 else f'T3_OP2{i_}',(None,f'T3_OP2{i_+1}' if i_<7 else 'OP1',{w1:(as_x(SECB)+i_,v_)}))
 FA=as_x(FILE)
 W=rl.out
 def pat(st,e,offs=0):
@@ -185,15 +187,16 @@ e=S('JC0'); j1=net.eq(W[0],99,e);j2=net.or_(net.eq(W[0],114,e),net.eq(W[0],101,e
 on('JC0',(None,'PX',{w1:(cb+ALIGN,j1*1+j2*2+j3*3),oi:oi+13}))
 e=S('PN1')
 on('PN1',(incell,'PX',None),(pfirst,'PX',{pfirst:0}),(None,'SPLIT',{oret.r:oret.id('T3_PN2')}))
-on('T3_PN2',(None,'PX',{w1:(cb+ALIGN,0)}))
+on('T3_PN2',(None,'PX',{w1:(cb+ALIGN,0),w2:(cb+SECN,rdp),rdp:0,rtoc:0,rdig:0}))
 # text inside a run
 e=S('TX0')
 on('TX0',(None,'TX1',{rl:OA+oi}))
 e=S('TX1'); on('TX1',(net.eq(W[0],62,e),'TX2',{oi:oi+1}),(None,'TX0',{oi:oi+1}))
 on('TX2',(None,'TX3',{rl:OA+oi}))
+
 e=S('TX3')
 amp_=net.eq(W[0],38,e);ltx=net.eq(W[0],60,e)
-on('TX3',(ltx,'PX',None),
+on('TX3',(ltx,'PX',None),(rdig,'T3_DG',None),
  (net.and_(amp_,net.eq(W[1],97,e)),'INS',{ins_ch:38,ins_st:cs,oi:oi+5,oret.r:oret.id('TX2')}),
  (net.and_(amp_,net.eq(W[1],108,e)),'INS',{ins_ch:60,ins_st:cs,oi:oi+4,oret.r:oret.id('TX2')}),
  (net.and_(amp_,net.eq(W[1],103,e)),'INS',{ins_ch:62,ins_st:cs,oi:oi+4,oret.r:oret.id('TX2')}),
