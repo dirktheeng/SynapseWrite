@@ -8,8 +8,10 @@ e=S('T4_SQ')
 on('T4_SQ',(net.ge(sx,sp_xe,e),'T4_SQ1',None),(None,'T4_SQ',{gly:(128,9,sx,sy+lasc+1,4,0),sx:sx+adv}))
 on('T4_SQ1',(sp_r,'CE',{sp_r:0}),(None,'C0',None))
 # status bar flag
-on('T4_ST',(trk,'T4_ST1',None),(None,'FB0',None))
-text_chain('T4_ST1',['     Track Changes: On'],'FB0')
+on('T4_ST',(trk,'T4_ST1',None),(None,'T4_ST2',None))
+text_chain('T4_ST1',['     Track Changes: On'],'T4_ST2')
+on('T4_ST2',(sp_on,'FB0',None),(None,'T4_ST3',None))
+text_chain('T4_ST3',['     Spelling: Off'],'FB0')
 # ---- tracked deletion ----
 e=S('T4_BK')
 on('T4_BK',(net.step(co),'T4_BK1',{r2:cb+1024+co-1}),(net.step(cp),'MVJ',{jp:cp-1,jo:2047,jret.r:jret.id('AFTER_ED')}),(None,'AFTER_ED',None))
@@ -211,7 +213,7 @@ on('T4_Z0a',(net.ge(zhi,4096,e),'T4_ZH',None),(None,'T4_Z0a',{w1:(as_x(HT)+zhi,0
 on('T4_ZH',(None,'T4_ZP',{zc:3,zk:3,zret.r:zret.id('T4_Z1')}))
 e=S('T4_ZP'); zlow=net.bits(zc,14,e)[0]; full7=net.eq(zn,7,e)
 newcur=zcur+G_(zw,zlow)
-zw8.drive(net.and_(net.step(zk),full7),(as_x(FILE)+zo,newcur))
+zw8.drive(net.and_(net.step(zk),full7),(as_x(SAVEB)+zo,newcur))
 on('T4_ZP',(net.eq(zk,0,e),'T4_ZR',None),
  (full7,'T4_ZP',{zo:zo+1,zcur:0,zw:1,zn:0,zc:(zc-zlow)*0.5,zk:zk-1}),
  (None,'T4_ZP',{zcur:newcur,zw:zw*2,zn:zn+1,zc:(zc-zlow)*0.5,zk:zk-1}))
@@ -260,9 +262,9 @@ on('T4_ZI',(net.ge(zj,zm,e),'T4_Z1',{zi:zi+zm}),(None,'T4_ZI2',{rl:RA+zi+zj}))
 e=S('T4_ZI2')
 on('T4_ZI2',(None,'T4_ZI',{w1:(as_x(HT)+hash3(e),zi+zj+1),zj:zj+1}))
 on('T4_ZE',(None,'T4_ZP',{zc:0,zk:7,zret.r:zret.id('T4_ZF')}))
-e=S('T4_ZF'); zw8.drive(net.and_(e,net.step(zn)),(as_x(FILE)+zo,zcur))
+e=S('T4_ZF'); zw8.drive(net.and_(e,net.step(zn)),(as_x(SAVEB)+zo,zcur))
 on('T4_ZF',(net.step(zn),'T4_ZG',{zo:zo+1}),(None,'T4_ZG',None))
-on('T4_ZG',(None,'SVF1',{fp:zo,embase:FILE,dsize:zo-docstart,cdst:zo}))
+on('T4_ZG',(None,'SVF1',{fp:zo,embase:SAVEB,dsize:zo-docstart,cdst:zo}))
 # ---- .docx reader: tracked marks, fields, style table from word/styles.xml ----
 net.group('docx reader tier 4')
 rvo=R()

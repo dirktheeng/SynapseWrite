@@ -4,7 +4,7 @@ from nn import *
 import rom
 net=Net(); fsm=FSM(net); on=fsm.on; ONE=net.ONE; G_=net.gate
 # ---- memory map (one passive tensor store) ----
-PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; BANK=32000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000
+PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; BANK=36000000; SAVEB=32000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000
 LEN,DIRTY,ALIGN,LIST,NLINES,WORDS,ENDY,PBRK=2048,2049,2050,2051,2052,2053,2054,2055; SAVE=2056; LINES=2064; IMF=3670; CMTL=3699; CMT=3700; FNS=3690; FNL=3692; FNT=3900
 # ---- screen geometry ----
 DOCY,DOCB=174,776; VH=DOCB-DOCY; PX=223; TX=319; TW=624; PH=1056; PST=1072; YB=4096
@@ -795,7 +795,7 @@ on('SB',(net.lt(evb,thumb,S('SB')),'RD0',{scroll:net.relu(scroll-500),autos:0}),
 net.group('docx writer')
 import docx_tpl,zlib
 FILE=1000000
-fw=WPort(1); fw2=WPort(1); fp=R(); embase=R(FILE); em_en=Bus(net); em_b=Bus(net); savel=R(); crci=Bus(net)
+fw=WPort(1); fw2=WPort(1); fp=R(); embase=R(SAVEB); em_en=Bus(net); em_b=Bus(net); savel=R(); crci=Bus(net)
 fw.drive(em_en.w,(embase+fp,em_b.w))
 fsm.set(fp,em_en.w,fp+1)
 # CRC32 is linear over GF(2): each next bit is the parity of a fixed subset of bits.
@@ -828,14 +828,14 @@ def lit(name,data,nxt):
     net.rec(S(nxt),seq[-1])
 STATIC,HOLE_AT,HEAD=docx_tpl.static_part()
 XMLH,XMLT=docx_tpl.xml_parts()
-on('SAVE',(None,'SV0',{fp:0,embase:FILE}))
+on('SAVE',(None,'SV0',{fp:0,embase:SAVEB}))
 fsm.set(fp,S('SVB'),0); fsm.set(embase,S('SVB'),OUTB)
 lit('SV0',STATIC,'SVB')
 docstart=len(STATIC)
 crci.lin(S('SVB'))
 lit('SVB',XMLH,'SVP')
 fsm.set(pi,S('SAVE'),0)
-e=S('SVP'); on('SVP',(net.ge(pi,npar,e),'SVT',None),(None,'SVa',{r1:as_x(PT)+pi}))
+e=S('SVP'); on('SVP',(net.ge(pi,npar,e),'SVT',None),(net.ge(fp,3900000,e),'SVT',None),(None,'SVa',{r1:as_x(PT)+pi}))
 on('SVa',(None,'SVm',{pbs:R1,rl:R1+LEN}))
 on('SVm',(None,'SVj',{plen_:rl.out[0],al:rl.out[2],off:0,lsf:999999}))
 lit('SVj',docx_tpl.P_OPEN,'SVa2')
@@ -904,7 +904,7 @@ def le_bytes(val,en,n=4):
     return [sum((bt[8*k+i]*(1<<i) for i in range(8)),X()) for k in range(n)]
 def crc_b(ix,en):
     return le_bytes(cfL if ix<2 else cfH,en,2)[ix%2]
-on('SVF1',(None,'SVF2',{fw2:(as_x(FILE+HOLE_AT),crc_b(0,S('SVF1')))}))
+on('SVF1',(None,'SVF2',{fw2:(as_x(SAVEB+HOLE_AT),crc_b(0,S('SVF1')))}))
 seq_=['SVF2','SVF3','SVF4','SVF5','SVF6','SVF7','SVF8','SVF9']
 vals=[]
 for i in range(1,4): vals.append((HOLE_AT+i,'c',i))
@@ -914,7 +914,7 @@ cur_='SVF2'
 for n_,(ad,kd,ix) in enumerate(vals):
     ee2=S(cur_); bv_=crc_b(ix,ee2) if kd=='c' else le_bytes(dsize if kd=='s' else usize,ee2)[ix]
     nx=f'SVG{n_}'
-    on(cur_,(None,nx,{fw2:(as_x(FILE+ad),bv_)})); cur_=nx
+    on(cur_,(None,nx,{fw2:(as_x(SAVEB+ad),bv_)})); cur_=nx
 # central directory
 cdirs=docx_tpl.central(docstart)
 on(cur_,(None,'CD0',None))

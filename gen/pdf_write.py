@@ -76,7 +76,7 @@ e=S('PD_LR'); on('PD_LR',(net.ge(qp,npar,e),'PD_E',None),(None,'PD_O',None))
 pg_open('PD_O','PD_L5')
 pg_open('PD_0','PD_1')
 # walk paragraphs using the saved layout
-e=S('PD_1'); on('PD_1',(net.ge(qp,npar,e),'PD_C',None),(None,'PD_2',{r1:as_x(PT)+qp}))
+e=S('PD_1'); on('PD_1',(net.ge(qp,npar,e),'PD_C',None),(net.ge(fp,3800000,e),'PD_C',{qp:npar}),(None,'PD_2',{r1:as_x(PT)+qp}))
 on('PD_2',(None,'PD_3',{qb:R1,rl:R1+SAVE,rc:R1+2062,rim:R1+IMF,r2:R1+LIST}))
 e=S('PD_3')
 first_p=net.eq(qtop,0,e)
@@ -171,7 +171,7 @@ number('T4P_I5',qx+qind+qxc,'T4P_I6'); lit('T4P_I6',b' ','T4P_I7'); number('T4P_
 number('T4P_I9',qpw,'T4P_Ia'); lit('T4P_Ia',b' /H ','T4P_Ib'); number('T4P_Ib',qph,'T4P_Ic'); lit('T4P_Ic',b' /CS /RGB /BPC 8 /F /AHx ID\n','T4P_Id')
 on('T4P_Id',(None,'T4P_P0',{qri:0,qrc:0,qpa:as_x(IMG0)+qpo}))
 e=S('T4P_P0')
-on('T4P_P0',(net.ge(qrc,qph,e),'T4P_PE',None),(net.ge(qri,qpw,e),'T4P_P0',{qri:0,qrc:qrc+1}),(None,'T4P_P1',{r1:qpa}))
+on('T4P_P0',(net.or_(net.ge(qrc,qph,e),net.ge(fp,3980000,e)),'T4P_PE',None),(net.ge(qri,qpw,e),'T4P_P0',{qri:0,qrc:qrc+1}),(None,'T4P_P1',{r1:qpa}))
 on('T4P_P1',(None,'T4P_H0',{qpv:R1,qpa:qpa+1,qri:qri+1}))
 for i_ in range(6):
     st=f'T4P_H{i_}'; e=S(st); bt=net.bits(qpv,24,e); sh=20-4*i_

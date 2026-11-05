@@ -44,14 +44,21 @@ Test evidence: `test/e2e.js` (see `build/e2e.json`; `build/e2e.json`), `test/t4.
 ## Tier 4
 | Feature | Status | Evidence or gap |
 |---|---|---|
-| .docx save | Partial | Zip, CRC32, and XML written by the network; passes a zip CRC check and opens in LibreOffice (`test/roundtrip.js`). Not verified in real Word. Tables flatten to paragraphs; lists and headers are not saved; members are stored uncompressed. |
-| .docx open | Partial | Network walks the zip central directory, inflates deflate (fixed and dynamic Huffman, LZ77), and matches XML tags. Reads text, bold, italic, underline, size, palette colors, Caladea, alignment, paragraphs. Save, open, and open after a LibreOffice re-save are pixel identical in the document area. Not tested on files written by real Word. Tables flatten; images, lists, styles, and non-ASCII text are dropped; 400 KB file limit. |
-| Track changes, mail merge, equations, fields, spell check, print to PDF | Missing | Not implemented. Not shown to be infeasible. |
+| .docx save | Partial | Zip, CRC32, and XML written by the network; passes a zip CRC check and opens in LibreOffice (`test/roundtrip.js`). Not verified in real Word. Tables flatten to paragraphs; lists and headers are not saved; members are deflated. |
+| .docx open | Partial | Network walks the zip central directory, inflates deflate (fixed and dynamic Huffman, LZ77), and matches XML tags. Reads text, bold, italic, underline, size, palette colors, Caladea, alignment, paragraphs, styles.xml, tracked marks, fields. Save, open, and open after a LibreOffice re-save are pixel identical in the document area. Not tested on files written by real Word. Tables flatten; images, lists, and non-ASCII text are dropped; 400 KB file limit. |
+| Spell check | Passed | 79,339 word list (SCOWL via npm wordlist-english, license in `gen/words_en.COPYRIGHT`) written into weights as a minimized letter automaton, 28,403 nodes and 66,940 edges. Red squiggles while painting; contractions and possessives; capitals, digits and math not flagged; toggle on Review. No suggestions or custom dictionary. `test/e2e.js`. |
+| Fields | Passed | Page number, word count, and date from a time vector the glue encodes, shaded, Update All, saved as `w:fldSimple`. Values refresh on Update All, not live. Date valid 1970 to 2099, format M/D/YYYY only. `test/e2e.js`, `test/t4_docx.js`. |
+| Track changes | Passed | Insert and delete marks, accept and reject for a selection or all, undo, saved and reopened as `w:ins`, `w:del`, `w:delText`, reject after reopen works. Paragraph marks are not tracked, one fixed author, no date, no per-author colors. LibreOffice reads the file; real Word not tested. `test/t4_docx.js`. |
+| Mail merge | Passed | Pasted CSV with quotes, header row, `{Name}` placeholders, one copy of the document per row with page breaks, up to 500 rows and 32 columns. Replaces the document and clears undo. Not Word MERGEFIELD. `test/e2e.js`. |
+| Equations | Partial | Linear form with `^`, `_`, and `{}` grouping: italic letters, Caladea, shifted small script, undoable. Saved as run formatting with `w:vertAlign` and `w:noProof`, not as OMML. No fractions, roots, or Greek because the glyph set is Latin ASCII. `test/e2e.js`. |
+| Print to PDF | Partial | Embedded subset TrueType Carlito and Caladea, positions from the screen layout in pixels, underline, strike, colors, lists, two columns, inline pictures, header and footer number. Page ink within 2 pixels of the screen for over 90 percent, tested against poppler at 96 dpi. Letter spacing inside a word is the font's own, not the screen's rounded one. Table borders, footnotes, and comments are not drawn. `pdfinfo`, `pdffonts`, `qpdf --check`, `pdftotext` in `test/t4_pdf.js`. |
+| .docx deflate | Passed | Greedy LZ77 with a hash head table and fixed Huffman codes. 87,469 bytes to about 2.3 KB on a repetitive document. Zip CRC checks and own inflate rereads it. No dynamic Huffman blocks. |
+| styles.xml | Passed | Second zip pass reads docDefaults, `w:style`, `basedOn`, `pStyle`, `rStyle`, `jc`; `w:b w:val="0"` handled. Matches direct formatting pixel for pixel (`test/t4_docx.js`). Character styles replace rather than overlay the paragraph style. Other parts (numbering, theme) are not read. |
 
 ## Deployment targets
 | Target | Result |
 |---|---|
-| Static page | Self-contained HTML, 2.7 MB, about 134,000 neurons, about 1.5 million weights |
+| Static page | Self-contained HTML, 4.6 MB, about 308,000 neurons, about 2.1 million weights |
 | Browsers | Tested in headless Chromium only. Edge and Firefox not tested. |
 | Typing, 126 pages | 4 ms at document end, 10 ms at top. CPU in this container, no GPU. |
 | Enter, undo near the top, 126 pages | 39 ms each. Page totals finish in the background. |

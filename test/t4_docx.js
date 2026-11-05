@@ -32,6 +32,11 @@ const py=c=>execSync(`python3 -c "${c}"`).toString();
  execSync('rm -rf build/lo4; timeout 120 soffice --headless --convert-to txt:Text --outdir build/lo4 build/t4.docx >/dev/null 2>&1');
  const lo=fs.readFileSync('build/lo4/t4.txt','utf8');ok('LibreOffice reads the file (stand-in, not Word)',/Keep this text/.test(lo)&&/added words/.test(lo),JSON.stringify(lo.slice(0,160)));
  await b.close();
+ // date fields from a fixed time vector, including leap day boundaries
+ for(const [iso,want] of [['2026-11-05T12:00:00Z','11/5/2026'],['2024-02-29T12:00:00Z','2/29/2024'],['2024-12-31T12:00:00Z','12/31/2024'],['2025-01-01T12:00:00Z','1/1/2025'],['2023-03-01T12:00:00Z','3/1/2023']]){
+  const {b,p}=await d();await p.evaluate(t=>{const v=new Date(t).getTime()+new Date().getTimezoneOffset()*0;Date.now=()=>v;},iso);await p.mouse.click(135,47);await p.mouse.click(493,76);await p.waitForTimeout(50);
+  const [dl]=await Promise.all([p.waitForEvent('download'),p.keyboard.press('Control+s')]);await dl.saveAs('build/dt.docx');const x=py("import zipfile;print(zipfile.ZipFile('build/dt.docx').read('word/document.xml').decode())");
+  const m=x.match(/instr=" DATE ">.*?preserve">([^<]*)</);ok('date field '+iso.slice(0,10),m&&m[1]===want,m&&m[1]);await b.close();}
  // deflate on a large document
  {const {b,p}=await d();await p.evaluate(()=>{window.annMax=60000000;let s='';for(let i=0;i<400;i++)s+='This paragraph number '+i+' makes the file big enough to measure compression on the document part.\n';annPaste(s);});await p.waitForTimeout(500);
   const t0=Date.now();const [dl]=await Promise.all([p.waitForEvent('download'),p.keyboard.press('Control+s')]);await dl.saveAs('build/big.docx');const ms=await p.evaluate('annStats.ms');
