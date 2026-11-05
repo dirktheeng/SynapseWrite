@@ -15,3 +15,6 @@ Run log:
 - Explained the wheel shortfall: the network's gated registers clamp negative values to 0, so wheel up is capped at 1000 px per event (pre-existing, harmless for real wheels). Same clamp was a real bug in my margins: a negative line x0 became 0. Line x0 is now stored with +48 and painting and PDF subtract 48.
 - Polish: find bar uses the ribbon background so text fields stand out; dropdown chevrons no longer overlap labels. PARITY.md updated.
 - t4 under this machine's load (load average about 5, other jobs running) is noisy: same op with identical ticks ranged from 48 to 199 ms. Tick and edge counts are the stable measure: about 7 percent more edges than baseline on the walks.
+- Long document check (1900 paragraphs): hover change 16 ms, hover inside document 2 ms. Count text overflowed its clear box at four digit counts, so the box is wider and the replace field moved right. Count slice reduced to 1500 steps because 4000 took 118 ms under load.
+- Count shows an index only when a selection exists; with only a caret it shows N found.
+- Final: e2e, roundtrip, audit, t4 rerun on last build.
