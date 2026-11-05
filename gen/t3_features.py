@@ -225,3 +225,162 @@ on('T3_SB6',(None,'SPLIT',{**base_,oret.r:oret.id('T3_SB7')}))
 on('T3_SB7',(None,'T3_SW',{swret.r:swret.id('T3_SB8')}))
 on('T3_SB8',(None,'T3_SB9',{nsec:nsec+1}))
 set_chain('T3_SB9',[(SECN,nsec)],'AFTER_ED')
+
+# ---- number without leading zeros, shared by every XML writer ----
+nret2=t3ret('T3_NR'); nv2=R()
+cur_n='T3_NZ'
+for pw_ in (10000000,1000000,100000,10000,1000,100,10,1):
+    nx_=f'T3_NZ{pw_}' if pw_>1 else 'T3_NR'
+    e=S(cur_n); val=net.gate(nv2,e)
+    for big in (10000000,1000000,100000,10000,1000,100,10):
+        if big>pw_:
+            dd=X()
+            for t in range(1,10): dd=dd+net.step(val-big*t+0.5)
+            val=val-dd*big
+    dg=X()
+    for t in range(1,10): dg=dg+net.step(val-pw_*t+0.5)
+    show=e if pw_==1 else net.step(net.gate(nv2,e)-pw_+0.5)
+    em_en.lin(show); em_b.add(show,48+dg)
+    on(cur_n,(None,nx_,None)); cur_n=nx_
+def numz(st,val,nx): on(st,(None,'T3_NZ',{nv2:val,nret2.r:nret2.id(nx)}))
+# ---- zip container: every member carries its name, CRC and size in a table ----
+znum=R();zo=R();znl=R();zds=R();zret=t3ret('T3_ZRT');cdoff=R();zk2=R();zL=R();zH=R();zs=R()
+def lh_(name): return struct.pack('<IHHHHHIIIHH',0x04034b50,20,0,0,0,0x21,0,0,0,len(name),0)+name
+def zbegin(st,name,nxt):
+    on(st,(None,st+'a',{zo:fp,znl:len(name)}))
+    lit(st+'a',lh_(name),st+'b')
+    crci.lin(S(st+'b'))
+    on(st+'b',(None,nxt,{zds:fp}))
+def zend(st,nxt): on(st,(None,'T3_ZE',{zret.r:zret.id(nxt)}))
+e=S('T3_ZE')
+on('T3_ZE',(None,'T3_ZF',{zL:as_x(65535)-crcL,zH:as_x(65535)-crcH,zs:fp-zds}))
+cur_='T3_ZF'
+for i_ in range(12):
+    nx_=f'T3_ZF{i_}'; e=S(cur_)
+    v_={0:zL,1:zL,2:zH,3:zH}.get(i_,zs)
+    bv_=le_bytes(v_,e,2)[i_%2] if i_<4 else le_bytes(zs,e)[(i_-4)%4]
+    on(cur_,(None,nx_,{fw2:(zo+14+i_,bv_)})) if False else on(cur_,(None,nx_,{fw2:(as_x(FILE)+zo+14+i_,bv_)})); cur_=nx_
+on(cur_,(None,cur_+'t',{w1:(as_x(ZT)+znum*6,zo),w2:(as_x(ZT)+znum*6+1,znl),w3:(as_x(ZT)+znum*6+2,zL),w4:(as_x(ZT)+znum*6+3,zH)}))
+on(cur_+'t',(None,'T3_ZRT',{w1:(as_x(ZT)+znum*6+4,zs),znum:znum+1}))
+XHEAD=b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+WNS=b'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"'
+CTYPES=XHEAD+b'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'+b''.join(b'<Override PartName="/word/%s.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.%s+xml"/>'%(a_,b_) for a_,b_ in ((b'footnotes',b'footnotes'),(b'comments',b'comments'),(b'header1',b'header'),(b'header2',b'header'),(b'footer1',b'footer'),(b'footer2',b'footer')))+b'</Types>'
+RTYPE=b'http://schemas.openxmlformats.org/officeDocument/2006/relationships/'
+RELS=XHEAD+b'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="'+RTYPE+b'officeDocument" Target="word/document.xml"/></Relationships>'
+DRELS0=XHEAD+b'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+b''.join(b'<Relationship Id="%s" Type="%s%s" Target="%s.xml"/>'%(i_,RTYPE,t_,f_) for i_,t_,f_ in ((b'rIdF',b'footnotes',b'footnotes'),(b'rIdC',b'comments',b'comments'),(b'rIdH1',b'header',b'header1'),(b'rIdH2',b'header',b'header2'),(b'rIdR1',b'footer',b'footer1'),(b'rIdR2',b'footer',b'footer2')))
+on('SAVE',(None,'SV0',{fp:0,znum:0}))
+zbegin('SV0',b'[Content_Types].xml','T3_Z1'); lit('T3_Z1',CTYPES,'T3_Z1e'); zend('T3_Z1e','T3_Z2')
+zbegin('T3_Z2',b'_rels/.rels','T3_Z3'); lit('T3_Z3',RELS,'T3_Z3e'); zend('T3_Z3e','T3_Z4')
+zbegin('T3_Z4',b'word/document.xml','SVB')
+lit('SVB',XHEAD+b'<w:document '+WNS+b'><w:body>','T3_SVB2')
+on('T3_SVB2',(None,'SVP',{spc:0}))
+# table structure around each cell paragraph
+TB=b'<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders>'+b''.join(b'<w:%s w:val="single" w:sz="4" w:space="0" w:color="auto"/>'%k_ for k_ in (b'top',b'left',b'bottom',b'right',b'insideH',b'insideV'))+b'</w:tblBorders></w:tblPr><w:tblGrid>'
+e=S('T3_SV0'); newt=net.and_(e,net.step(spc),net.step(net.step(spc-scols-0.5)+net.step(scols-spc-0.5)))
+on('T3_SV0',(newt,'T3_SV1',None),(None,'T3_SV2',None))
+lit('T3_SV1',b'</w:tbl>','T3_SV1b'); on('T3_SV1b',(None,'T3_SV2',{spc:0}))
+e=S('T3_SV2')
+on('T3_SV2',(net.eq(scols,0,e),'SVj',None),(net.step(spc),'T3_SV6',None),(None,'T3_SV3',None))
+lit('T3_SV3',TB,'T3_SV4'); fsm.set(ti,S('T3_SV3'),0)
+e=S('T3_SV4')
+on('T3_SV4',(net.ge(ti,scols,e),'T3_SV5',None),(None,'T3_SV4a',{r1:as_x(PT)+pi+ti}))
+on('T3_SV4a',(None,'T3_SV4b',{r2:R1+CWO}))
+on('T3_SV4b',(None,'T3_SV4c',{tcw:R2}))
+lit('T3_SV4c',b'<w:gridCol w:w="','T3_SV4d'); numz('T3_SV4d',tcw*15,'T3_SV4e'); lit('T3_SV4e',b'"/>','T3_SV4f')
+on('T3_SV4f',(None,'T3_SV4',{ti:ti+1}))
+lit('T3_SV5',b'</w:tblGrid>','T3_SV6')
+e=S('T3_SV6')
+on('T3_SV6',(net.eq(sci,0,e),'T3_SV6r',None),(None,'T3_SV7',None))
+lit('T3_SV6r',b'<w:tr>','T3_SV7')
+lit('T3_SV7',b'<w:tc><w:tcPr><w:tcW w:w="','T3_SV7a'); numz('T3_SV7a',scw*15,'T3_SV7b')
+lit('T3_SV7b',b'" w:type="dxa"/>','T3_SV8')
+e=S('T3_SV8')
+on('T3_SV8',(net.step(ssh),'T3_SV8a',None),(None,'T3_SV9',None))
+lit('T3_SV8a',b'<w:shd w:val="clear" w:color="auto" w:fill="','T3_SV8b')
+e=S('T3_SV8b'); hsh_=net.decode(ssh,len(PAL_B),e)
+on('T3_SV8b',*[(hsh_[i_],f'T3_SVh{i_}',None) for i_ in range(len(PAL_B))],(None,'T3_SV8c',None))
+for i_,c_ in enumerate(PAL_B): lit(f'T3_SVh{i_}',('%02X%02X%02X'%c_).encode(),'T3_SV8c')
+lit('T3_SV8c',b'"/>','T3_SV9')
+lit('T3_SV9',b'</w:tcPr>','SVj')
+e=S('T3_SVN')
+on('T3_SVN',(net.step(scols),'T3_SVc',None),(None,'SVP',{pi:pi+1,spc:0}))
+lit('T3_SVc',b'</w:tc>','T3_SVd')
+e=S('T3_SVd')
+on('T3_SVd',(net.ge(sci+1,scols,e),'T3_SVr',None),(None,'SVP',{pi:pi+1,spc:scols}))
+lit('T3_SVr',b'</w:tr>','T3_SVs'); on('T3_SVs',(None,'SVP',{pi:pi+1,spc:scols}))
+e=S('T3_SVE')
+on('T3_SVE',(net.step(spc),'T3_SVEa',None),(None,'SVT',None))
+lit('T3_SVEa',b'</w:tbl>','SVT')
+lit('SVT',b'<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr></w:body></w:document>','T3_Z4e')
+zend('T3_Z4e','T3_Z5')
+zbegin('T3_Z5',b'word/_rels/document.xml.rels','T3_Z6'); lit('T3_Z6',DRELS0+b'</Relationships>','T3_Z6e'); zend('T3_Z6e','T3_CD0')
+# central directory from the member table, then the end record
+on('T3_CD0',(None,'T3_CD1',{cdoff:fp,zk2:0}))
+e=S('T3_CD1')
+on('T3_CD1',(net.ge(zk2,znum,e),'T3_EO0',None),(None,'T3_CD2',{rl:as_x(ZT)+zk2*6}))
+on('T3_CD2',(None,'T3_CD3',{zo:RL[0],znl:RL[1],zL:RL[2],zH:RL[3],zs:RL[4]}))
+lit('T3_CD3',struct.pack('<IHHHHHH',0x02014b50,20,20,0,0,0,0x21),'T3_CDb0')
+cur_='T3_CDb0'
+for i_ in range(4):
+    nx_=f'T3_CDb{i_+1}'; e=S(cur_); em_en.lin(e); em_b.add(e,le_bytes(zL if i_<2 else zH,e,2)[i_%2]); on(cur_,(None,nx_,None)); cur_=nx_
+for i_ in range(8):
+    nx_=f'T3_CDs{i_}'; e=S(cur_); em_en.lin(e); em_b.add(e,le_bytes(zs,e)[i_%4]); on(cur_,(None,nx_,None)); cur_=nx_
+for i_ in range(2):
+    nx_=f'T3_CDn{i_}'; e=S(cur_); em_en.lin(e); em_b.add(e,le_bytes(znl,e,2)[i_]); on(cur_,(None,nx_,None)); cur_=nx_
+lit(cur_,b'\0'*12,'T3_CDo0')
+cur_='T3_CDo0'
+for i_ in range(4):
+    nx_=f'T3_CDo{i_+1}'; e=S(cur_); em_en.lin(e); em_b.add(e,le_bytes(zo,e)[i_]); on(cur_,(None,nx_,None)); cur_=nx_
+on(cur_,(None,'T3_CDm',{tq:0}))
+e=S('T3_CDm')
+on('T3_CDm',(net.ge(tq,znl,e),'T3_CD1',{zk2:zk2+1}),(None,'T3_CDm2',{r1:as_x(FILE)+zo+30+tq}))
+e=S('T3_CDm2'); em_en.lin(e); em_b.add(e,R1); on('T3_CDm2',(None,'T3_CDm',{tq:tq+1}))
+on('T3_EO0',(None,'T3_EO1',{zs:fp-cdoff}))
+lit('T3_EO1',struct.pack('<IHH',0x06054b50,0,0),'T3_EOc0')
+cur_='T3_EOc0'
+for i_ in range(4):
+    nx_=f'T3_EOc{i_+1}'; e=S(cur_); em_en.lin(e); em_b.add(e,le_bytes(znum,e,2)[i_%2]); on(cur_,(None,nx_,None)); cur_=nx_
+for i_ in range(8):
+    nx_=f'T3_EOd{i_}'; e=S(cur_); em_en.lin(e); em_b.add(e,le_bytes(zs if i_<4 else cdoff,e)[i_%4]); on(cur_,(None,nx_,None)); cur_=nx_
+lit(cur_,b'\0\0','T3_EOe')
+on('T3_EOe',(None,'HALT',{savel:fp}))
+# ---- .docx reader additions ----
+aval=R();nmret=t3ret('T3_NMR')
+on('T3_NA',(None,'T3_NA1',{rl:OA+oi}))
+e=S('T3_NA1')
+on('T3_NA1',(net.eq(W[0],34,e),'T3_NB',{oi:oi+1,aval:0}),(None,'T3_NA',{oi:oi+1}))
+on('T3_NB',(None,'T3_NB1',{rl:OA+oi}))
+e=S('T3_NB1')
+isd=net.and_(net.ge(W[0],48,e),net.lt(W[0],58,e))
+on('T3_NB1',(isd,'T3_NB',{aval:aval*10+W[0]-48,oi:oi+1}),(None,'T3_NMR',None))
+on('T3_GC',(None,'T3_NA',{nmret.r:nmret.id('T3_GC2')}))
+e=S('T3_GC2')
+on('T3_GC2',(None,'PX',{w1:(as_x(TGW)+gcount,floorv(aval*(1.0/15)+0.5,e)),gcount:gcount+1}))
+on('T3_TC0',(None,'SPLIT',{oret.r:oret.id('T3_TC1')}))
+on('T3_TC1',(None,'T3_TC2',{r1:as_x(TGW)+tcidx}))
+on('T3_TC2',(None,'T3_TC3',{w1:(cb+2062,gcount),w2:(cb+2063,tcidx),w3:(cb+CWO,R1),w4:(cb+CXO,gx),gx:gx+R1,incell:1}))
+on('T3_TC3',(None,'PX',{w1:(cb+ALIGN,0)}))
+e=S('T3_SHD')
+on('T3_SHD',(None,'T3_SHD1',{rl:OA+oi}))
+e=S('T3_SHD1')
+fillm=pat('w:fill="',e)
+on('T3_SHD1',(fillm,'T3_SHD2',{rl:OA+oi+8}),(net.eq(W[0],62,e),'PX',None),(None,'T3_SHD',{oi:oi+1}))
+e=S('T3_SHD2')
+hx_m=[]; 
+for i_,c_ in enumerate(PAL_B):
+    if i_ in (0,1,3,4): continue
+    hx_m.append((pat('%02X%02X%02X'%c_,e),i_))
+sv_=X()
+for c_,i_ in hx_m: sv_=sv_+c_*i_
+anyp=net.or_(*[c_ for c_,_ in hx_m]); isa=pat('auto',e); isw=pat('FFFFFF',e)
+on('T3_SHD2',(net.or_(isa,isw),'PX',None),(anyp,'PX',{w1:(cb+CSH,sv_)}),(None,'PX',{w1:(cb+CSH,5)}))
+# member walk: 1 relationships, 2 footnotes, 3 comments, 4 document
+on('T3_Z0',(None,'X_C0',{zp:zp0,ztarget:4,obase:OUTB}))
+on('T3_ZN',(None,'OPEND',None))
+on('T3_ZX',(None,'PX',{oi:0}))
+on('T3_ZC',(None,'X_C0',{zp:zp+46+nm+ext+cmt}))
+# picture hooks are filled in below
+on('T3_PF',(pgdoc,'PX',None),(None,'HALT',None))
+on('T3_PQ',(None,'PX',None))
+set_chain('T3_PG0',[(IMF,dw),(IMF+1,dh),(IMF+2,imgp),(3684,dw),(3685,dh),(3686,imgp)],'T3_PG1')
+on('T3_PG1',(None,'SPLIT',{imgp:dst,oret.r:oret.id('AFTER_ED')}))

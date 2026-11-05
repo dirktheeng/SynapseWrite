@@ -4,9 +4,9 @@ from nn import *
 import rom
 net=Net(); fsm=FSM(net); on=fsm.on; ONE=net.ONE; G_=net.gate
 # ---- memory map (one passive tensor store) ----
-PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; BANK=32000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000
+PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; BANK=50000000; OUTP=32000000; PNGB=38000000; RELB=22900000; AUXB=23000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000
 LEN,DIRTY,ALIGN,LIST,NLINES,WORDS,ENDY,PBRK=2048,2049,2050,2051,2052,2053,2054,2055; SAVE=2056; LINES=2064; IMF=3670; CMTL=3699; CMT=3700; FNS=3690; FNL=3692; FNT=3900
-META=3673; CWO,CXO,CSH,SECN,TOCF,TSRC,TPG,SSI=[META+i_ for i_ in range(8)]; HIT=22000; TGW=23300; SECB=23400
+META=3673; CWO,CXO,CSH,SECN,TOCF,TSRC,TPG,SSI=[META+i_ for i_ in range(8)]; RBOT=3681; ZT=23800; HIT=22000; TGW=23300; SECB=23400
 # ---- screen geometry ----
 DOCY,DOCB=174,776; VH=DOCB-DOCY; PX=223; TX=319; TW=624; PH=1056; PST=1072; YB=4096
 PAL_F=[(0,0,0),(89,89,89),(255,255,255),(43,87,154),(192,0,0),(0,128,60),(230,120,0),(112,48,160)]
@@ -160,7 +160,7 @@ R=net.reg
 s_px=R(PX);s_pw=R(816);s_ph=R(PH);s_tx=R(TX);s_tw=R(TW);s_mt=R(96);s_th=R(864);s_ps=R(PST);hitn=R();pbg=R();bc0=R(255);bc1=R(255);bc2=R(255);tdk=R();cursec=R();bsec=R();nsec=R(1);cxl=R(PX);cxr=R(PX+816)
 cp=R();cb=R(SLOT0);co=R();clen=R();ap=R();ao=R();scroll=R();npar=R(1);nextb=R(SLOT0+STRIDE);ty=R();tab=R()
 drag=R();usp=R(UB);urp=R(UB);grp=R(1);nolog=R();blink=R();autos=R();mode=R();qlen=R();rlen=R();field=R()
-tsop=R();evk=R();eva=R();evb=R();evc=R();shiftk=R()
+tsop=R();scols=R();sci=R();scw=R();ssh=R();spc=R();evk=R();eva=R();evb=R();evc=R();shiftk=R()
 hx_=R();hy_=R();fm=R();alv=R();jp=R();jo=R();hdir=R();hact=R();btn=R();hcol=R();vi=R();clipr=R()
 clipl=R();wpaste=R();full=R(1);fastok=R();oldcp=R();wassel=R();bgp=R();bgm=R();bcnt=R();dfrom=R();bpi=R();byy=R();bptop=R();bpg=R(1);bws=R();bln=R();tcols=R();tci=R();rw=R(624);rx0=R();rleft=R(223);rright=R(1039);rowtop=R();rowmax=R();tiv=R();tin=R();tic=R();tip=R();tir=R();sx=R();ncol=R();xcol=R();bxc=R();hlen=R();hdi=R();di_=R();ti_=R();tk_=R();tbase=R();tl_=R();tpg=R();tdig=R();tivx=R();fnn=R();fnp=R();bfn=R();bfp=R();pfn=R();fni=R();pim=R();pih=R();pio=R();irow=R();iaddr=R();wpic=R();imgp=R();ci_=R();cl_=R();wopen=R();lc=R(1);vm=R();pagesT=R(1);wtot=R();ytot=R(112);oend=R();sidx=R()
 pi=R();pbs=R();yy=R();ptop=R();pages=R();wsum=R();vln=R();listn=R();lj=R();nl=R();al=R();lsf=R();plen_=R();wdp=R()
@@ -775,7 +775,7 @@ on('SB',(net.lt(evb,thumb,S('SB')),'RD0',{scroll:net.relu(scroll-500),autos:0}),
 # ---- .docx writer: zip container, CRC32 and XML are all produced here ----
 net.group('docx writer')
 import docx_tpl,zlib
-FILE=1000000
+FILE=42000000
 fw=WPort(1); fw2=WPort(1); fp=R(); em_en=Bus(net); em_b=Bus(net); savel=R(); crci=Bus(net)
 fw.drive(em_en.w,(as_x(FILE)+fp,em_b.w))
 fsm.set(fp,em_en.w,fp+1)
@@ -807,17 +807,10 @@ def lit(name,data,nxt):
     for i,b_ in enumerate(data):
         em_en.lin(seq[i]); em_b.lin(seq[i]*b_); net.rec(seq[i+1],seq[i])
     net.rec(S(nxt),seq[-1])
-STATIC,HOLE_AT,HEAD=docx_tpl.static_part()
-XMLH,XMLT=docx_tpl.xml_parts()
-on('SAVE',(None,'SV0',{fp:0}))
-lit('SV0',STATIC,'SVB')
-docstart=len(STATIC)
-crci.lin(S('SVB'))
-lit('SVB',XMLH,'SVP')
 fsm.set(pi,S('SAVE'),0)
-e=S('SVP'); on('SVP',(net.ge(pi,npar,e),'SVT',None),(None,'SVa',{r1:as_x(PT)+pi}))
-on('SVa',(None,'SVm',{pbs:R1,rl:R1+LEN}))
-on('SVm',(None,'SVj',{plen_:rl.out[0],al:rl.out[2],off:0,lsf:99999}))
+e=S('SVP'); on('SVP',(net.ge(pi,npar,e),'T3_SVE',None),(None,'SVa',{r1:as_x(PT)+pi}))
+on('SVa',(None,'SVm',{pbs:R1,rl:R1+LEN,rc:R1+2062,rmeta:R1+META,rim:R1+IMF,rf:R1+FNS}))
+on('SVm',(None,'T3_SV0',{plen_:rl.out[0],al:rl.out[2],off:0,lsf:99999,scols:rc.out[0],sci:rc.out[1],scw:MT[0],ssh:MT[2],pim:rim.out[0],pih:rim.out[1],pio:rim.out[2]}))
 lit('SVj',docx_tpl.P_OPEN,'SVa2')
 e=S('SVa2'); h_=net.decode(al,4,e)
 on('SVa2',(h_[1],'SVc1',None),(h_[2],'SVc2',None),(h_[3],'SVc3',None),(None,'SVc0',None))
@@ -868,55 +861,14 @@ on('SVch',(amp,'SVa_',{off:off+1}),(ltc,'SVl_',{off:off+1}),(gtc,'SVg_',{off:off
 lit('SVa_',b'&amp;','SVC');lit('SVl_',b'&lt;','SVC');lit('SVg_',b'&gt;','SVC')
 e=S('SVe'); on('SVe',(net.eq(lsf,99999,e),'SVe2',None),(None,'SVe1',None))
 lit('SVe1',docx_tpl.R_CLOSE,'SVe2')
-lit('SVe2',b'</w:p>','SVn')
-on('SVn',(None,'SVP',{pi:pi+1}))
-lit('SVT',XMLT,'SVF')
-# freeze the CRC and size, patch the local header, write the central directory
-frozen=[R() for _ in crcr]; dsize=R(); cdst=R()
+lit('SVe2',b'</w:p>','T3_SVN')
+def le_bytes(val,en,n=4):
+    bt=net.bits(val,8*n,en)
+    return [sum((bt[8*k+i]*(1<<i) for i in range(8)),X()) for k in range(n)]
 crcL=X();crcH=X()
 for j,c_ in enumerate(crcr):
     if j<16: crcL=crcL+c_*(1<<j)
     else: crcH=crcH+c_*(1<<(j-16))
-cfL=R();cfH=R()
-e=S('SVF')
-fsm.set(cfL,e,as_x(65535)-crcL);fsm.set(cfH,e,as_x(65535)-crcH); fsm.set(dsize,e,fp-docstart); fsm.set(cdst,e,fp)
-on('SVF',(None,'SVF1',None))
-def le_bytes(val,en,n=4):
-    bt=net.bits(val,8*n,en)
-    return [sum((bt[8*k+i]*(1<<i) for i in range(8)),X()) for k in range(n)]
-def crc_b(ix,en):
-    return le_bytes(cfL if ix<2 else cfH,en,2)[ix%2]
-on('SVF1',(None,'SVF2',{fw2:(as_x(FILE+HOLE_AT),crc_b(0,S('SVF1')))}))
-seq_=['SVF2','SVF3','SVF4','SVF5','SVF6','SVF7','SVF8','SVF9']
-vals=[]
-for i in range(1,4): vals.append((HOLE_AT+i,'c',i))
-for i in range(4): vals.append((HOLE_AT+4+i,'s',i))
-for i in range(4): vals.append((HOLE_AT+8+i,'s',i))
-cur_='SVF2'
-for n_,(ad,kd,ix) in enumerate(vals):
-    ee2=S(cur_); bv_=crc_b(ix,ee2) if kd=='c' else le_bytes(dsize,ee2)[ix]
-    nx=f'SVG{n_}'
-    on(cur_,(None,nx,{fw2:(as_x(FILE+ad),bv_)})); cur_=nx
-# central directory
-cdirs=docx_tpl.central(docstart)
-on(cur_,(None,'CD0',None))
-prev='CD0'; cdl=R()
-for n_,part in enumerate(cdirs):
-    nx=f'CDp{n_}'
-    if not isinstance(part,bytes) and part==('end',0):
-        fsm.set(cdl,S(prev),fp-cdst-12); on(prev,(None,prev+'w',None)); prev=prev+'w'
-    if isinstance(part,bytes):
-        lit(prev,part,nx)
-    else:
-        kd,ix=part; ee3=S(prev)
-        if kd=='end':
-            bv=le_bytes(cdl,ee3)
-        else:
-            bv=None
-        vb=bv[ix] if kd=='end' else (crc_b(ix,ee3) if kd=='c' else le_bytes({'s':dsize,'o':cdst}[kd],ee3)[ix])
-        em_en.lin(ee3); em_b.add(ee3,vb); on(prev,(None,nx,None))
-    prev=nx
-on(prev,(None,'HALT',{savel:fp}))
 saveout=Bus(net); saveout.add(S('HALT'),savel); fsm.set(savel,S('HALT'),0)
 exec(open('pdf_write.py').read())
 # ---- .docx reader: zip walk, inflate (canonical Huffman), LZ77 and XML matching ----
@@ -961,7 +913,7 @@ ist=np.zeros(n+1,dtype=np.int32);isr=[];iww=[]
 for i in range(n):
     ist[i+1]=ist[i]+len(c['lazy'][i])
     for j_,w_ in c['lazy'][i]: isr.append(j_);iww.append(w_)
-hdr=dict(pdfout=new[nid(pdfout.w)],ni=len(isr),wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,e=len(dst),L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
+hdr=dict(fmax=BANK-FILE,pdfout=new[nid(pdfout.w)],ni=len(isr),wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,e=len(dst),L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
  ev=[new[nid(q)] for q in (ev_kind,ev_a,ev_b,ev_c)],cb=CB,cb2=CB2,init=[[new[i],v] for i,v in net.init.items()],
  bank_init=[*[[SECB+i_,v_] for i_,v_ in enumerate((1,816,PH,PX,TX,TW,96,864))],[LEN+SLOT0,0],[DIRTY+SLOT0,1],[PT,SLOT0],[SLOT0+SAVE,112],[SLOT0+SAVE+1,16],[SLOT0+SAVE+2,1]])
 import os
