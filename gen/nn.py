@@ -115,7 +115,9 @@ class Net:
                 while idx<len(ins):
                     j=ins[idx][0]; idx+=1
                     if state[j]==0: stack.append((i,idx)); stack.append((j,0)); adv=True; break
-                    if state[j]==1: raise Exception('combinational loop at neuron %d'%i)
+                    if state[j]==1:
+                        cyc=[x for x,_ in stack]+[j]; gn={k:g for g,v in s.groups.items() for k in v}
+                        raise Exception('combinational loop at neuron %d: %s'%(i,[(c_,gn.get(c_),s.kind[c_],len(s.inp[c_])) for c_ in cyc[-25:]]))
                 if adv: continue
                 layer[i]=1+max([layer[j] for j,_ in ins],default=0); state[i]=2
         L=max(layer)+1

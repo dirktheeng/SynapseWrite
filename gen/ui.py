@@ -1,5 +1,6 @@
 """Ribbon display list. Each draw item becomes outgoing weights of one token neuron."""
 import rom
+import t3_btn
 from nn import X
 TW=rom
 BLUE=(43,87,154);LG=(243,243,243);BD=(208,208,208);WHT=(255,255,255);TAB=(255,255,255)
@@ -92,6 +93,10 @@ def build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S):
     for k in range(6):
         u=L(); u.i=list(u0.i); tabbar(u,names,k)
         home(u) if k==0 else (insert(u) if k==1 else layout(u) if k==2 else refs(u) if k==3 else review(u) if k==4 else stub(u,STUBS[k]))
+        for bt in t3_btn.BTNS:
+            if bt[0]==k: (u.btn(bt[1],bt[2],bt[3],bt[4],bt[5],54) if bt[7] is None else (u.r(bt[1],bt[2],bt[3],bt[4],LG,254),u.r(bt[1]+2,bt[2]+2,bt[3]-4,bt[4]-4,bt[7],254)))
+        for gl in t3_btn.GROUPS:
+            if gl[0]==k: group_label(u,gl[1],gl[2],gl[3])
         tok=fsm.S(f'UI_{k}')
         fsm.states[f'UI_{k}'][1].append((tok,None))
         seq=[net.reg() for _ in range(len(u.i)+1)]

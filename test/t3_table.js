@@ -1,0 +1,20 @@
+// Tier 3 tables: event driven, judged on output images. Each step saves a screenshot.
+const d=require('./drive');const fs=require('fs');const crypto=require('crypto');const H=b=>crypto.createHash('md5').update(b).digest('hex');
+let CK=null;const shot=async(p,n)=>{await p.mouse.move(1270,5);if(CK)await CK(n);const b=await p.screenshot({clip:{x:0,y:0,width:1280,height:800}});if(n)fs.writeFileSync('build/'+n+'.png',b);return H(b);};
+const X0=410;const R={ra:[X0+30,76],rb:[X0+90,76],cl:[X0+150,76],cr:[X0+210,76],dr:[X0+30,102],dc:[X0+90,102],s:i=>[X0+132+i*20+9,102]};
+const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);};
+(async()=>{const {b,p,check}=await d();CK=check;const K=k=>p.keyboard.press(k),T=t=>p.keyboard.type(t);const C=async(x,y)=>{await p.mouse.click(x,y);};
+ const ins=()=>C(135,47),home=()=>C(80,47);
+ await ins();await C(116,76);await T('a1');await K('Tab');await T('b1');await K('Tab');await T('c1');await K('Tab');await T('a2');await K('Tab');await T('b2');await K('Tab');await T('c2');
+ const h0=await shot(p,'tb0');
+ await ins();await C(...R.rb);await T('new');const h1=await shot(p,'tb1');ok('row below changes image',h1!==h0);
+ await K('Control+z');await K('Control+z');const hz=await shot(p);
+ await K('Control+y');const hy=await shot(p,'tb1b');
+ await C(...R.dr);const h2=await shot(p,'tb2');
+ await C(...R.cr);await T('X');const h3=await shot(p,'tb3');ok('col right changes image',h3!==h2);
+ await C(...R.dc);const h4=await shot(p,'tb4');
+ await C(...R.s(1));const h5=await shot(p,'tb5');ok('shading changes image',h5!==h4);
+ await K('Control+z');const h5u=await shot(p);ok('shading undo restores',h5u===h4);
+ await K('Control+y');const h5r=await shot(p);ok('shading redo',h5r===h5);
+ await p.waitForTimeout(100);
+ console.log(JSON.stringify(res));await b.close();})();
