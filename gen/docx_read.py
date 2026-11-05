@@ -39,25 +39,26 @@ OA=as_x(OUTB)
 e=S('ZS'); on('ZS',(net.ge(oi,csz,e),'PX',{oi:0}),(None,'ZS1',{r1:FA+ip+oi}))
 wo=WPort(1)
 on('ZS1',(None,'ZS',{wo:(OA+oi,R1),oi:oi+1,ob:oi+1}))
-# bit reader
-e=S('BT')
-on('BT',(net.eq(nb,0,e),'BTa',{r1:FA+ip,ip:ip+1}),(None,'BTb',None))
-on('BTa',(None,'BTb',{cur:R1,nb:8}))
-e=S('BTb'); hb_=net.bits(cur,8,e)[0]
-on('BTb',(None,'BR',{bitv:hb_,cur:(cur-hb_)*0.5,nb:nb-1}))
+# bit reader: the current byte is kept bit reversed, so the next bit is one threshold and
+# a field or Huffman code takes one tick per bit
+def nextbit(e_): return net.step(cur-127.5+e_*M-M)
+def reversed_(e_):
+    b_=net.bits(R1,8,e_); return sum((b_[k_]*(2**(7-k_)) for k_ in range(8)),X())
 # n bit field
 def getn(st,n,ret):
     on(st,(None,'GBL',{gbn:n,gbv:0,gbw:1,gbi:0,gret.r:gret.id(ret)}))
-e=S('GBL')
-on('GBL',(net.ge(gbi,gbn,e),'GR',None),(None,'BT',{bret.r:bret.id('GB2')}))
-e=S('GB2')
-on('GB2',(None,'GBL',{gbv:gbv+G_(gbw,bitv),gbw:gbw*2,gbi:gbi+1}))
+e=S('GBL'); hbit=nextbit(e)
+on('GBL',(net.ge(gbi,gbn,e),'GR',None),(net.eq(nb,0,e),'GBR',{r1:FA+ip,ip:ip+1}),(None,'GBL',{gbv:gbv+G_(gbw,hbit),gbw:gbw*2,gbi:gbi+1,cur:(cur-hbit*128)*2,nb:nb-1}))
+on('GBR',(None,'GBL',{cur:reversed_(S('GBR')),nb:8}))
 # Huffman decode, after puff: count[] at hb, symbols at hb+16
-on('DEC',(None,'X_D1',{code:0,first:0,index:0,hlen:1}))
-on('X_D1',(None,'BT',{bret.r:bret.id('X_D2')}))
-on('X_D2',(None,'X_D3',{code:code+bitv,r1:hb+hlen}))
-e=S('X_D3')
-on('X_D3',(net.lt(code,first+R1,e),'D4',{r2:hb+16+index+code-first}),(net.ge(hlen,15,e),'OPEND',None),(None,'X_D1',{index:index+R1,first:(first+R1)*2,code:code*2,hlen:hlen+1}))
+on('DEC',(None,'X_Dl',{code:0,first:0,index:0,hlen:1}))
+e=S('X_Dl'); hbit=nextbit(e)
+on('X_Dl',(net.eq(nb,0,e),'XDR',{r1:FA+ip,ip:ip+1}),(None,'X_D3',{code:code+hbit,cur:(cur-hbit*128)*2,nb:nb-1,r1:hb+hlen}))
+on('XDR',(None,'X_Dl',{cur:reversed_(S('XDR')),nb:8}))
+e=S('X_D3'); hbit=nextbit(e)
+on('X_D3',(net.lt(code,first+R1,e),'D4',{r2:hb+16+index+code-first}),(net.ge(hlen,15,e),'OPEND',None),
+ (net.eq(nb,0,e),'X_Dl',{index:index+R1,first:(first+R1)*2,code:code*2,hlen:hlen+1}),
+ (None,'X_D3',{index:index+R1,first:(first+R1)*2,code:code*2+hbit,cur:(cur-hbit*128)*2,nb:nb-1,hlen:hlen+1,r1:hb+hlen+1}))
 on('D4',(None,'HR',{sym:R2}))
 # build table from lengths LN[lb..lb+ln)
 bi=R();bo=R()
@@ -143,8 +144,10 @@ on('CD_',(None,'CD1',{lb:db_,gbn:dx_,gbv:0,gbw:1,gbi:0,gret.r:gret.id('CD2')}))
 on('CD1',(None,'GBL',None))
 on('CD2',(None,'CC',{dist:lb+gbv}))
 e=S('CC')
-on('CC',(net.step(copyn),'CC1',{r1:OA+ob-dist}),(None,'CODES',None))
-on('CC1',(None,'CC',{wo:(OA+ob,R1),ob:ob+1,copyn:copyn-1}))
+# match copy: a block up to the distance at a time, overlapping copies repeat
+ncp=R(); nc_=net.min_(copyn,dist)
+on('CC',(net.step(copyn),'CC1',{rb:(OA+ob-dist,nc_),ncp:nc_}),(None,'CODES',None))
+on('CC1',(None,'CC',{wb:(OA+ob,ncp),ob:ob+ncp,copyn:copyn-ncp}))
 on('BEND',(bfinal,'IR',{oi:0}),(None,'BH',None))
 # XML scan: an eight-cell window is compared against literal tags in one tick
 e=S('PX')
@@ -213,8 +216,8 @@ on('PG_D',(ihdr,'PG_H',{rl:FA+ip+8}),(idat,'PG_I',{cl2:lenv,ip:ip+8}),(iend,'PG_
 on('PG_H',(None,'PG_H2',{pw:W[2]*256+W[3],ph:W[6]*256+W[7],rl:FA+ip+16}))
 e=S('PG_H2'); ok=net.and_(net.eq(W[0],8,e),net.eq(W[4],0,e),net.or_(net.eq(W[1],0,e),net.eq(W[1],2,e),net.eq(W[1],6,e)))
 on('PG_H2',(ok,'PG_C',{pct:W[1],pbp:net.eq(W[1],0,e)+net.eq(W[1],2,e)*3+net.eq(W[1],6,e)*4,ip:ip+25}),(None,'HALT',None))
-e=S('PG_I'); on('PG_I',(net.step(cl2),'PG_J',{r1:FA+ip}),(None,'PG_C',{ip:ip+4}))
-on('PG_J',(None,'PG_I',{wo:(FA+dst,R1),dst:dst+1,ip:ip+1,cl2:cl2-1}))
+e=S('PG_I'); nc2=cl2-net.relu(cl2-1100); on('PG_I',(net.step(cl2),'PG_J',{rb:(FA+ip,nc2),ncp:nc2}),(None,'PG_C',{ip:ip+4}))
+on('PG_J',(None,'PG_I',{wb:(FA+dst,ncp),dst:dst+ncp,ip:ip+ncp,cl2:cl2-ncp}))
 # inflate the concatenated stream after its two byte header
 on('PG_Z',(None,'PG_Y',{ip:2,ob:0,nb:0,cur:0,iret.r:iret.id('PG_U')}))
 on('PG_Y',(None,'BH',None))
@@ -239,7 +242,9 @@ ca=net.and_(e,net.ge(pb,pa,e),net.ge(pc,pa,e));cb_p=net.and_(e,ONE-ca,net.ge(pc,
 paeth=G_(a_,ca)+G_(b_,cb_p)+G_(c_,cc)
 pred=G_(a_,ft[1])+G_(b_,ft[2])+G_(avg,ft[3])+G_(paeth,ft[4])
 tot=xv+pred; ov=net.ge(tot,256,e)
-on('PG_P',(None,'PG_X',{wo:(OAp+pos,tot-ov*256),pos:pos+1,ix:ix+1}))
+hasL2=net.ge(ix+1,pbp,e);hasU2=net.step(pcy)
+on('PG_P',(net.ge(ix+1,pst-1,e),'PG_R',{wo:(OAp+pos,tot-ov*256),pos:pos+1,ix:ix+1,pcy:pcy+1}),
+ (None,'PG_P',{wo:(OAp+pos,tot-ov*256),pos:pos+1,ix:ix+1,r1:OAp+pos+1,r2:G_(OAp+pos+1-pbp,hasL2),rU:G_(OAp+pos+1-pst,hasU2),rV:G_(OAp+pos+1-pst-pbp,net.and_(hasL2,hasU2))}))
 # smallest integer factor that fits 624 by 800
 e=S('PG_K'); on('PG_K',(net.ge(psz,pw,e),'PG_L',{dcnt:ck*800}),(None,'PG_K',{ck:ck+1,psz:psz+624}))
 e=S('PG_L'); on('PG_L',(net.ge(dcnt,ph,e),'PG_M',{pos:0,pcy:0,dh:0,ky:0,dst:imgp,dcnt:0}),(None,'PG_L',{ck:ck+1,dcnt:dcnt+800}))
