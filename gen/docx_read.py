@@ -3,10 +3,11 @@ openout=Bus(net); openout.add(S('HALT'),wopen); fsm.set(wopen,S('HALT'),0)
 iret=Ret('IR');bret=Ret('BR');gret=Ret('GR');hret=Ret('HR');cret=Ret('CR')
 ip=R();cur=R();nb=R();bitv=R();gbn=R();gbv=R();gbw=R();gbi=R();ob=R();oi=R();zp=R();pfirst=R();cs=R();ntxt=R()
 lln=R();bfinal=R();nlen=R();ndist=R();ncode=R();idx=R();prev=R();rept=R();rval=R();cval=R()
-code=R();first=R();index=R();hlen=R();cnt=R();hb=R();sym=R();ln=R();lb=R();lc_=R();sb=R();dist=R();copyn=R()
+csd=None;code=R();first=R();index=R();hlen=R();cnt=R();hb=R();sym=R();ln=R();lb=R();lc_=R();sb=R();dist=R();copyn=R()
+zpass=R();sty=R();pdef=R();ddef=R();pdefjc=R();nsty=R();pcs=R();rins=R();rdel=R();rfk=R();rvb=R();lva=R();sjc=R();csen=Bus(net);t4lr=Ret('T4_LR');STY=44200;rhi=rins*2048+rdel*4096+rfk*8192
 LN=TBL+1200; CLH=TBL+800; LH=TBL; DH=TBL+400; OFFS=TBL+1000
 # open: reset the document, then walk zip members
-on('OP0',(None,'OP1',{wln:(nextb+SAVE,112,16,1,0,0,0),w1:(as_x(PT),nextb),w2:(nextb+DIRTY,1),w3:(nextb+LEN,0),cp:0,cb:nextb,co:0,clen:0,ap:0,ao:0,npar:1,nextb:nextb+STRIDE,usp:UB,urp:UB,scroll:0,nolog:1,zp:0,pfirst:1,cs:0,ty:0,dfrom:0,lc:1,bgp:0}))
+on('OP0',(None,'OP1',{zpass:0,sty:0,pdef:0,ddef:0,pdefjc:0,nsty:0,pcs:0,rins:0,rdel:0,rfk:0,wln:(nextb+SAVE,112,16,1,0,0,0),w1:(as_x(PT),nextb),w2:(nextb+DIRTY,1),w3:(nextb+LEN,0),cp:0,cb:nextb,co:0,clen:0,ap:0,ao:0,npar:1,nextb:nextb+STRIDE,usp:UB,urp:UB,scroll:0,nolog:1,zp:0,pfirst:1,cs:0,ty:0,dfrom:0,lc:1,bgp:0}))
 FA=as_x(FILE)
 W=rl.out
 def pat(st,e,offs=0):
@@ -30,7 +31,7 @@ on('C4',(None,'C5',{nm:W[0]+W[1]*256,ext:W[2]+W[3]*256,cmt:W[4]+W[5]*256,rl:FA+z
 on('C5',(None,'C6',{loff:W[0]+W[1]*256+W[2]*65536,rl:FA+zp+46+nm-8}) if False else (None,'C5b',{loff:W[0]+W[1]*256+W[2]*65536}))
 on('C5b',(None,'C6',{rl:FA+zp+46+nm-8}))
 e=S('C6')
-on('C6',(net.and_(pat('ment.xml',e),net.eq(nm,17,e)),'C7',{rl:FA+loff+26}),(None,'X_C0',{zp:zp+46+nm+ext+cmt}))
+on('C6',(net.and_(zpass,pat('ment.xml',e),net.eq(nm,17,e)),'C7',{rl:FA+loff+26}),(net.and_(ONE-zpass,pat('yles.xml',e),net.eq(nm,15,e)),'C7',{rl:FA+loff+26,sty:1}),(None,'X_C0',{zp:zp+46+nm+ext+cmt}))
 on('C7',(None,'Z7',{ip:loff+30+W[0]+W[1]*256+W[2]+W[3]*256,ob:0,nb:0,cur:0}))
 e=S('Z7')
 on('Z7',(net.eq(mth,8,e),'BH',{iret.r:iret.id('PX')}),(None,'ZS',{oi:0}))
@@ -147,6 +148,7 @@ on('CC',(net.step(copyn),'CC1',{r1:OA+ob-dist}),(None,'CODES',None))
 on('CC1',(None,'CC',{wo:(OA+ob,R1),ob:ob+1,copyn:copyn-1}))
 on('BEND',(bfinal,'IR',{oi:0}),(None,'BH',None))
 # XML scan: an eight-cell window is compared against literal tags in one tick
+csd=style_decode(cs,csen.w)
 e=S('PX')
 on('PX',(net.ge(oi,ob,e),'OPEND',None),(None,'PX1',{rl:OA+oi}))
 e=S('PX1')
@@ -155,12 +157,30 @@ on('PX1',(lt_,'PX2',{rl:OA+oi}),(None,'PX',{oi:oi+1}))
 e=S('PX2')
 def tag(n,end):
     return net.and_(pat(n,e),net.or_(*[net.eq(W[len(n)],ord(q),e) for q in end]))
+for st_ in ('PX2','SZ0','CO0','RF9','T4_RV2','T4_RA2'): csen.lin(S(st_))
 on('PX2',(tag('<w:p',' >'),'PN1',{oi:oi+4}),
  (tag('<w:t',' >'),'TX0',{oi:oi+4}),
- (tag('<w:r',' >'),'PX',{cs:0,oi:oi+4}),
- (pat('<w:b/>',e),'PX',{cs:cs+16,oi:oi+6}),
- (pat('<w:i/>',e),'PX',{cs:cs+32,oi:oi+6}),
- (pat('<w:u ',e),'PX',{cs:cs+64,oi:oi+5}),
+ (tag('<w:r',' >'),'PX',{cs:pcs,oi:oi+4}),
+ (pat('<w:b/>',e),'PX',{cs:cs+(ONE-csd['bold'])*16,oi:oi+6}),
+ (pat('<w:i/>',e),'PX',{cs:cs+(ONE-csd['ital'])*32,oi:oi+6}),
+ (pat('<w:b ',e),'T4_RV',{rvb:0,rl:OA+oi+12}),
+ (pat('<w:i ',e),'T4_RV',{rvb:1,rl:OA+oi+12}),
+ (pat('<w:u ',e),'T4_RV',{rvb:2,rl:OA+oi+12}),
+ (pat('<w:noPro',e),'PX',{cs:cs+(ONE-csd['nop'])*131072,oi:oi+8}),
+ (pat('<w:vertA',e),'T4_RA',{rl:OA+oi+20}),
+ (pat('<w:delTe',e),'TX0',{oi:oi+4}),
+ (pat('<w:ins ',e),'T4_TS',{rvb:3,oi:oi+6}),
+ (pat('<w:del ',e),'T4_TS',{rvb:4,oi:oi+6}),
+ (pat('</w:ins>',e),'PX',{rins:0,oi:oi+8}),
+ (pat('</w:del>',e),'PX',{rdel:0,oi:oi+8}),
+ (pat('<w:fldSi',e),'T4_FL',{rl:OA+oi+22}),
+ (pat('</w:fldS',e),'PX',{rfk:0,oi:oi+8}),
+ (pat('<w:pStyl',e),'T4_LK',{lva:oi+17,oi:oi+17,t4lr.r:t4lr.id('T4_PS')}),
+ (pat('<w:rStyl',e),'T4_LK',{lva:oi+17,oi:oi+17,t4lr.r:t4lr.id('T4_RS')}),
+ (net.and_(sty,pat('<w:based',e)),'T4_LK',{lva:oi+18,oi:oi+18,t4lr.r:t4lr.id('T4_BO')}),
+ (net.and_(sty,pat('</w:docD',e)),'PX',{ddef:cs,oi:oi+8}),
+ (net.and_(sty,pat('<w:style',e)),'T4_S0',{rl:OA+oi+8}),
+ (net.and_(sty,pat('</w:styl',e)),'T4_SE',{w1:(as_x(STY)+nsty*32+25,cs),w2:(as_x(STY)+nsty*32+26,sjc),oi:oi+8}),
  (pat('<w:sz ',e),'SZ0',{rl:OA+oi+13}),
  (pat('<w:color',e),'CO0',{rl:OA+oi+16}),
  (pat('<w:rFont',e),'RF9',{rl:OA+oi+19}),
@@ -173,11 +193,12 @@ PTL=rom.PTS
 for hp_ in range(80):
     best=min(range(len(PTL)),key=lambda i:abs(PTL[i]*2-hp_)) if hp_ else 0
     cl=cl+hps[hp_]*best
-on('SZ0',(None,'PX',{cs:cs+cl,oi:oi+13}))
+on('SZ0',(None,'PX',{cs:cs-csd['size']+cl,oi:oi+13}))
 e=S('JC0'); j1=net.eq(W[0],99,e);j2=net.or_(net.eq(W[0],114,e),net.eq(W[0],101,e));j3=net.eq(W[0],98,e)
-on('JC0',(None,'PX',{w1:(cb+ALIGN,j1*1+j2*2+j3*3),oi:oi+13}))
+on('JC0',(sty,'PX',{sjc:j1*1+j2*2+j3*3,oi:oi+13}),(None,'PX',{w1:(cb+ALIGN,j1*1+j2*2+j3*3),oi:oi+13}))
 e=S('PN1')
-on('PN1',(pfirst,'PX',{pfirst:0}),(None,'SPLIT',{oret.r:oret.id('PX')}))
+on('PN1',(pfirst,'T4_PN2',{pfirst:0}),(None,'SPLIT',{oret.r:oret.id('T4_PN2')}))
+on('T4_PN2',(None,'PX',{w1:(cb+ALIGN,pdefjc),pcs:pdef,rins:0,rdel:0,rfk:0}))
 # text inside a run
 e=S('TX0')
 on('TX0',(None,'TX1',{rl:OA+oi}))
@@ -186,17 +207,17 @@ on('TX2',(None,'TX3',{rl:OA+oi}))
 e=S('TX3')
 amp_=net.eq(W[0],38,e);ltx=net.eq(W[0],60,e)
 on('TX3',(ltx,'PX',None),
- (net.and_(amp_,net.eq(W[1],97,e)),'INS',{ins_ch:38,ins_st:cs,oi:oi+5,oret.r:oret.id('TX2')}),
- (net.and_(amp_,net.eq(W[1],108,e)),'INS',{ins_ch:60,ins_st:cs,oi:oi+4,oret.r:oret.id('TX2')}),
- (net.and_(amp_,net.eq(W[1],103,e)),'INS',{ins_ch:62,ins_st:cs,oi:oi+4,oret.r:oret.id('TX2')}),
+ (net.and_(amp_,net.eq(W[1],97,e)),'INS',{ins_ch:38,ins_st:cs+rhi,oi:oi+5,oret.r:oret.id('TX2')}),
+ (net.and_(amp_,net.eq(W[1],108,e)),'INS',{ins_ch:60,ins_st:cs+rhi,oi:oi+4,oret.r:oret.id('TX2')}),
+ (net.and_(amp_,net.eq(W[1],103,e)),'INS',{ins_ch:62,ins_st:cs+rhi,oi:oi+4,oret.r:oret.id('TX2')}),
  (net.or_(net.gt(W[0],126,e),net.lt(W[0],32,e),net.ge(clen,1000,e)),'TX2',{oi:oi+1}),
- (None,'INS',{ins_ch:W[0],ins_st:cs,oi:oi+1,oret.r:oret.id('TX2')}))
-e=S('RF9'); on('RF9',(pat('Caladea',e),'PX',{cs:cs+128,oi:oi+19}),(None,'PX',{oi:oi+8}))
+ (None,'INS',{ins_ch:W[0],ins_st:cs+rhi,oi:oi+1,oret.r:oret.id('TX2')}))
+e=S('RF9'); on('RF9',(net.or_(pat('Caladea',e),pat('Cambria',e),pat('Times Ne',e)),'PX',{cs:cs+(ONE-csd['font'])*128,oi:oi+19}),(None,'PX',{cs:cs-csd['font']*128,oi:oi+8}))
 e=S('CO0'); cvv=X()
 for j_ in range(1,8):
     hx='%02X%02X%02X'%PAL_F[j_]; cvv=cvv+pat(hx,e)*(j_*256)
-on('CO0',(None,'PX',{cs:cs+cvv,oi:oi+16}))
-on('OPEND',(None,'OPE2',{nolog:0,clip0:0,clip1:0}))
+on('CO0',(None,'PX',{cs:cs-csd['color']*256+cvv,oi:oi+16}))
+on('OPEND',(ONE-zpass,'OP1',{zpass:1,sty:0}),(None,'OPE2',{nolog:0,clip0:0,clip1:0}))
 on('OPE2',(None,'SYNC',{autos:1,lc:1,dfrom:0}))
 
 # ---- PNG reader: chunks, inflate, row filters, decimation to fit the page ----

@@ -25,7 +25,7 @@ offs[1]=off+len(body); body+=b'1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n'
 for i_,f_ in enumerate(FONTS):
     offs[3+i_]=off+len(body); body+=('%d 0 obj\n<</Type/Font/Subtype/Type1/BaseFont/%s/Encoding/WinAnsiEncoding>>\nendobj\n'%(3+i_,f_)).encode()
 FIRST=11
-on('PDF',(None,'PD_h',{fp:0}))
+on('PDF',(None,'PD_h',{fp:0,embase:OUTB}))
 lit('PD_h',head+body,'PD_x')
 xw=WPort(1)
 seq=sorted(offs.items())
@@ -67,7 +67,7 @@ for k_,pw_ in enumerate((1000000,100000,10000,1000,100,10,1)):
             val=val-dd*big
     dg=X()
     for t in range(1,10): dg=dg+net.step(val-pw_*t+0.5)
-    on(cur_n,(None,nx_,{fw2:(as_x(FILE)+qlenat+k_,48+dg)})); cur_n=nx_
+    on(cur_n,(None,nx_,{fw2:(as_x(OUTB)+qlenat+k_,48+dg)})); cur_n=nx_
 e=S('PD_LR'); on('PD_LR',(net.ge(qp,npar,e),'PD_E',None),(None,'PD_O',None))
 pg_open('PD_O','PD_L5')
 pg_open('PD_0','PD_1')
@@ -103,7 +103,7 @@ for k_,pw_ in enumerate((1000000,100000,10000,1000,100,10,1)):
             val=val-dd*big
     dg=X()
     for t in range(1,10): dg=dg+net.step(val-pw_*t+0.5)
-    on(cur_n,(None,nx_,{fw2:(as_x(FILE)+qlenat+k_,48+dg)})); cur_n=nx_
+    on(cur_n,(None,nx_,{fw2:(as_x(OUTB)+qlenat+k_,48+dg)})); cur_n=nx_
 pg_open('PD_O2','PD_8')
 # one text line with style runs
 lit('PD_8',b'BT 1 0 0 1 ','PD_8x')

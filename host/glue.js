@@ -23,7 +23,7 @@ const dispatch=(k,a=0,b=0,c=0)=>{
  const n=e.run(h.halt,window.annMax||50000000);
  const f=new Uint32Array(mem(),e.p_fb(),1024000),q=new Uint32Array(img.data.buffer);for(let i=0;i<1024000;i++)q[i]=f[i]|0xff000000;ctx.putImageData(img,0,0);
  const clip=e.val(h.clipout);if(clip){const bb=bank();const cs=[];for(let i=0;i<clip-1;i++)cs.push(bb[h.cb+i]);const txt=String.fromCharCode(...cs);window.annClip=txt;try{navigator.clipboard.writeText(txt).catch(()=>{});}catch(_){}}
- const sv=e.val(h.saveout),pd=e.val(h.pdfout);if(sv||pd){const n=sv||pd,bb=bank();const u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=bb[h.file+i];saveFile(u,sv?'Document1.docx':'Document1.pdf');}
+ const sv=e.val(h.saveout),pd=e.val(h.pdfout);if(sv||pd){const n=sv||pd,bb=bank(),a0=e.val(h.outbase);const u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=bb[a0+i];saveFile(u,sv?'Document1.docx':'Document1.pdf');}
  if(e.val(h.wpic)){const f=document.createElement('input');f.type='file';f.onchange=()=>f.files[0]&&openPic(f.files[0]);f.click();}
  if(e.val(h.wopen)){const f=document.createElement('input');f.type='file';f.onchange=()=>f.files[0]&&openFile(f.files[0]);f.click();}
  const wp=e.val(h.wantp);
