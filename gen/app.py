@@ -78,8 +78,21 @@ GE=g_en.w
 def style_decode(val,en):
     b=net.bits(val,18,en); return dict(size=b[0]+b[1]*2+b[2]*4+b[3]*8,sb=b[:4],bold=b[4],ital=b[5],und=b[6],font=b[7],colbits=b[8:11],color=b[8]+b[9]*2+b[10]*4,ins=b[11],dele=b[12],f0=b[13],f1=b[14],sup=b[15],sub=b[16],nop=b[17],hi=b[11]*2048+b[12]*4096+b[13]*8192+b[14]*16384+b[15]*32768+b[16]*65536+b[17]*131072)
 SD=style_decode(g_st.w,GE)
-size_hot=net.decode(SD['size'],11,GE,hot=True)
-chr_hot=net.decode(g_ch.w-32,97,GE,hot=True)
+# Glyph addressing is a decision tree: each node is enabled by its parent and reads its
+# selector lazily, so a lookup visits a path through the tree and not all of the table.
+def tnode(parent,sel,neg=False):
+    return net.step(parent*M-M+((ONE-sel) if neg else sel)-0.5)
+def tsplit(parent,sel): return tnode(parent,sel,True),tnode(parent,sel)
+def _tree(parent,sels):
+    if not sels: return [parent]
+    l0,l1=tsplit(parent,sels[-1])
+    return _tree(l0,sels[:-1])+_tree(l1,sels[:-1])
+_leaf=_tree(GE,SD['sb'])
+size_hot=_leaf[:10]+[sum(_leaf[10:],X())]
+# character index in binary; values past the table (97 entries) clamp to its last entry
+_chv=net.relu(g_ch.w-32+1+GE*M-M)
+_chok=net.step(_chv)
+_chbits=net.bits(_chv-1-net.relu(_chv-97),7,_chok)
 adv=net.wire();asc=net.wire();lh=net.wire();small=net.wire()
 for si,h in enumerate(size_hot):
     a,l=rom.metrics(si); net.connect(asc,h*a); net.connect(lh,h*l)
@@ -87,64 +100,75 @@ for si,h in enumerate(size_hot):
 SW,SH,LW,LH=rom.SW,rom.SH,rom.LW,rom.LH
 fastw=net.and_(g_draw.w,small,fg[0].w,bg[0].w)
 fastsel=net.and_(g_draw.w,small,fg[0].w,bg[1].w)
-anyfast=fastw+fastsel
-def plane(w,h,name):
-    net.group('glyph patch '+name)
-    on=net.and_(g_draw.w,small,ONE-anyfast) if name=='small' else net.and_(g_draw.w,ONE-small)
-    fgo=[net.and_(on,f.w) for f in fg]; bgo=[net.and_(on,b.w) for b in bg]
-    cov=[net.wire() for _ in range(w*h)]; first=None; rows=[]
-    outs=[]
-    for i in range(w*h):
-        c=cov[i]; m=net.step(c); o=[X(),X(),X()]
-        for j,col in enumerate(PAL_F):
-            g=net.relu(c+fgo[j]-1)
-            for k in range(3): o[k]=o[k]+g*col[k]
-        for j,col in enumerate(PAL_B):
-            g=net.relu(c+bgo[j]-1); mk=net.relu(m+bgo[j]-1)
-            for k in range(3): o[k]=o[k]+(mk-g)*col[k]
-        outs.append((o,m))
-    data=[]
-    for o,m in outs:
-        for e in (o[0],o[1],o[2],m):
-            w_=net.wire(); net.connect(w_,e); data.append(w_)
-    return on,cov,data
-on_s,cov_s,dat_s=plane(SW,SH,'small'); on_l,cov_l,dat_l=plane(LW,LH,'large')
-# direct black-on-white plane: ink pixels only, no color gating
-net.group('glyph patch fast')
-cov_f=[net.wire() for _ in range(SW*SH)]
-for i in range(SW*SH):
-    c=cov_f[i]; m=net.step(c)
-    for k in range(3): net.connect(dat_s[4*i+k],(m-c)*255)
-    net.connect(dat_s[4*i+3],m)
-cov_g=[net.wire() for _ in range(SW*SH)]
-for i in range(SW*SH):
-    c=cov_g[i]; m=net.step(c)
-    for k in range(3): net.connect(dat_s[4*i+k],(m-c)*PAL_B[1][k])
-    net.connect(dat_s[4*i+3],m)
-net.group('glyph weights (font outlines)')
-face=[]
-t0=time.time()
+net.group('glyph patch')
+GLY={}; _used=[set(),set()]
 for fi in range(2):
-  fb=net.font=None
   for bo in range(2):
     for it in range(2):
       for si in range(11):
-        fh=net.and_(size_hot[si],SD['font'] if fi else ONE-SD['font'],SD['bold'] if bo else ONE-SD['bold'],SD['ital'] if it else ONE-SD['ital'])
-        if rom.small(si): fh_f=net.and_(fh,fastw); fh_g=net.and_(fh,fastsel); fh_s=net.and_(fh,ONE-anyfast)
         for ci in range(96):
-            a,pts=rom.glyph(fi,bo,it,si,32+ci)
-            if rom.small(si):
-                Gf=net.and_(fh_f,chr_hot[ci]); Gs=net.and_(fh_s,chr_hot[ci]); Gg=net.and_(fh_g,chr_hot[ci])
-                if a: net.connect(adv,(Gf+Gs+Gg)*a)
-                for x,y,q in pts:
-                    net.connect(cov_s[y*SW+x],Gs*(q/15.0)); net.connect(cov_f[y*SW+x],Gf*(q/15.0)); net.connect(cov_g[y*SW+x],Gg*(q/15.0))
-            else:
-                G=net.and_(fh,chr_hot[ci])
-                if a: net.connect(adv,G*a)
-                for x,y,q in pts: net.connect(cov_l[y*LW+x],G*(q/15.0))
-        if fi==0 and bo==0 and it==0 and si==9:   # code 128: one period of the spelling squiggle
-            Gs=net.and_(fh_s,chr_hot[96]); net.connect(adv,Gs*4)
-            for x,y in ((2,1),(3,0),(4,1),(5,2)): net.connect(cov_s[y*SW+x],Gs)
+            a_,pts=rom.glyph(fi,bo,it,si,32+ci); GLY[fi,bo,it,si,ci]=(a_,pts)
+            _used[rom.small(si)].update((x_,y_) for x_,y_,_q in pts)
+for _k in list(GLY):
+    if _k[4]==95: GLY[_k[:4]+(96,)]=(0,[])
+# code 128: one period of the spelling squiggle
+GLY[0,0,0,9,96]=(4,[(2,1,15),(3,0,15),(4,1,15),(5,2,15)])
+_used[1].update({(2,1),(3,0),(4,1),(5,2)})
+def plane(w,h,used,fastsel_):
+    """One coverage layer per patch. An ink pixel enables its colour neurons, which read the
+    selected colour lazily. Black on white needs no colour neurons at all. Pixels no glyph
+    ever covers have no neurons except the output cells the patch port reads."""
+    cov={};data=[net.wire() for _ in range(4*w*h)]
+    nonw=ONE-fastw
+    for y_ in range(h):
+      for x_ in range(w):
+        if (x_,y_) not in used: continue
+        i=y_*w+x_; c=net.wire(); cov[i]=c; m=net.step(c)
+        o=[(m-c)*255]*3
+        nw=net.step(m*M-M+nonw-0.5)
+        slow=nw
+        if fastsel_:
+            sl=net.step(nw*M-M+fastsel-0.5); slow=net.step(nw*M-M+(ONE-fastsel)-0.5)
+            cs=net.relu(sl*M-M+m-c)
+            for k in range(3): o[k]=o[k]+cs*(PAL_B[1][k]-255)
+        ic=net.relu(slow*M-M+m-c)
+        for k in range(3): o[k]=o[k]-ic*255
+        for j,col in enumerate(PAL_F):
+            g=net.relu(slow*M-M+c+fg[j].w-1)
+            for k in range(3):
+                if col[k]: o[k]=o[k]+g*col[k]
+        for j,col in enumerate(PAL_B):
+            g=net.relu(slow*M-M+m-c+bg[j].w-1)
+            for k in range(3):
+                if col[k]: o[k]=o[k]+g*col[k]
+        for k in range(3): net.connect(data[4*i+k],o[k])
+        net.connect(data[4*i+3],m)
+    return cov,data
+cov_s,dat_s=plane(SW,SH,_used[1],True); cov_l,dat_l=plane(LW,LH,_used[0],False)
+on_s=net.and_(g_draw.w,small); on_l=net.and_(g_draw.w,ONE-small)
+net.group('glyph weights (font outlines)')
+t0=time.time()
+for si in range(11):
+  sh_=size_hot[si]
+  f0,f1=tsplit(sh_,SD['font'])
+  for fi,fn_ in enumerate((f0,f1)):
+    b0,b1=tsplit(fn_,SD['bold'])
+    for bo,bn_ in enumerate((b0,b1)):
+      i0,i1=tsplit(bn_,SD['ital'])
+      for it,fh in enumerate((i0,i1)):
+        def leaf(G,ci):
+            a,pts=GLY[fi,bo,it,si,ci]
+            if a: net.connect(adv,G*a)
+            if pts:
+                Gd=net.step(G*M-M+g_draw.w-0.5); cv=cov_s if rom.small(si) else cov_l; w_=SW if rom.small(si) else LW
+                for x_,y_,q in pts: net.connect(cv[y_*w_+x_],Gd*(q/15.0))
+        def inhabited(lo,hi): return any(GLY[fi,bo,it,si,ci][0] or GLY[fi,bo,it,si,ci][1] for ci in range(lo,min(hi,97)))
+        def walk(node,lo,k):
+            if k<0: leaf(node,lo); return
+            mid=lo+(1<<k)
+            if inhabited(lo,mid): walk(tnode(node,_chbits[k],True),lo,k-1)
+            if mid<97 and inhabited(mid,lo+(2<<k)): walk(tnode(node,_chbits[k]),mid,k-1)
+        walk(tnode(fh,_chok),0,6)
 print('glyph weights',time.time()-t0,'s',file=sys.stderr)
 class GlyPort:
     def drive(s,c,v):
@@ -153,7 +177,7 @@ class GlyPort:
 gly=GlyPort()
 g_y.lin(SD['sub']*3-SD['sup']*5)
 gx=g_x.w-2; gy=g_y.w
-for en,d,w,h in ((net.or_(on_s,fastw,fastsel),dat_s,SW,SH),(on_l,dat_l,LW,LH)):
+for en,d,w,h in ((on_s,dat_s,SW,SH),(on_l,dat_l,LW,LH)):
     px_=net.wire();py_=net.wire();net.connect(px_,net.gate(gx+2,en)-en*2);net.connect(py_,net.gate(gy,en))
     # neurons in a patch are consecutive after compile by port remap
     PatchPort(net.step(en),px_,py_,d,w,h)
@@ -457,8 +481,37 @@ net.group('paste')
 CB2=CB+200000; pi_=R()
 on('PASTE',(net.eq(mode,6,S('PASTE')),'T4_M0',{mode:0}),(has_sel,'DS0',{dret.r:dret.id('PS1'),grp:grp+1}),(None,'PS1',{grp:grp+1}))
 on('PS1',(None,'PS2',{pi_:0}))
+# Block paste. A window of cells is read at once. Their control characters are weighted by
+# position so one threshold layer finds how many cells lead before the first of them, and those
+# cells go to the paragraph, the styles and the undo log in a single write. A window that starts
+# with a control character, or a full paragraph, takes the single character path.
+PSN=32
+rpw=RPort(PSN); wpch=WPort(PSN,rpw.out[0],True); wpst=WPort(PSN,None,True); wplg=WPort(6*PSN)
+pn_=R(); PSW_=rpw.out
 e=S('PS2')
-on('PS2',(net.ge(pi_,evc,e),'AFTER_ED',None),(None,'PS3',{r1:as_x(CB2)+pi_}))
+on('PS2',(net.ge(pi_,evc,e),'AFTER_ED',None),(None,'PSW',{rpw:as_x(CB2)+pi_}))
+e=S('PSW')
+_bad=[net.step(as_x(32)-PSW_[i_]-0.5+e*M-M) for i_ in range(PSN)]
+_score=sum((_bad[i_]*float(2**(PSN-1-i_)) for i_ in range(PSN)),X())
+_lead=e*PSN-sum((net.step(_score-float(2**(PSN-1-i_))+0.5) for i_ in range(PSN)),X())
+_n1=_lead-net.relu(_lead-(evc-pi_)+e*M-M)
+_cap=net.relu(as_x(1000)-clen+e*M-M)
+_n2=_n1-net.relu(_n1-_cap+e*M-M)
+_tail=clen-co
+on('PSW',(trk,'PS3',{r1:as_x(CB2)+pi_}),(ONE-net.step(_n2),'PS3',{r1:as_x(CB2)+pi_}),(net.step(_tail),'PSS1',{pn_:_n2,rb:(cb+co,_tail)}),(None,'PSY',{pn_:_n2,rpw:as_x(CB2)+pi_}))
+on('PSS1',(None,'PSS2',{wb:(cb+co+pn_,clen-co),rb:(cb+1024+co,clen-co)}))
+on('PSS2',(None,'PSY',{wb:(cb+1024+co+pn_,clen-co),rpw:as_x(CB2)+pi_}))
+e=S('PSY'); mark_d(e,cp)
+_st=[net.wire() for _ in range(PSN)]
+for w_ in _st: net.connect(w_,G_(ty,e))
+wpst.ext=_st[0]; net.aligned.append([next(iter(w_.t)) for w_ in _st])
+cc_=net.and_(e,ONE-nolog)
+_lg=[]
+for i_ in range(PSN): _lg+=[as_x(1),cp,co+i_,PSW_[i_],ty,grp]
+wplg.drive(cc_,[usp]+_lg)
+wrap_=net.ge(usp,UEND_,cc_); nxtu=net.gate(usp+pn_*6,cc_-wrap_)+wrap_*UB
+fsm.set(usp,cc_,nxtu); fsm.set(urp,cc_,nxtu)
+on('PSY',(None,'PS2',{wpch:(cb+co,pn_),wpst:(cb+1024+co,pn_),w3:(cb+LEN,clen+pn_),w4:(cb+DIRTY,1),co:co+pn_,clen:clen+pn_,pi_:pi_+pn_}))
 e=S('PS3')
 on('PS3',(net.eq(R1,10,e),'SPLIT',{pi_:pi_+1,oret.r:oret.id('PS2')}),(net.lt(R1,32,e),'PS2',{pi_:pi_+1}),(net.ge(clen,1000,e),'PS2',{pi_:pi_+1}),(None,'INS',{ins_ch:R1,ins_st:TST,pi_:pi_+1,oret.r:oret.id('PS2')}))
 # ---- layout and paint walk ----
@@ -644,7 +697,7 @@ fsm.set(lb,net.and_(sp,ONE-over),off+1);fsm.set(lbx,net.and_(sp,ONE-over),lx);fs
 on('L2',(net.and_(over,hasb),'EM',{lend:lb,lwid:lbx,lspc:lspb,off:lb,llast:0}),
  (over,'EM',{lend:off,lwid:lx,lspc:lsn,llast:0}),
  (lastc,'EM',{**advance,lend:off+1,lwid:lx+adv,lspc:lsn,llast:1}),
- (None,'L1',advance))
+ (None,'L2',{**advance,r1:pbs+off+1,r2:pbs+1024+off+1}))
 e=S('EM'); delta=net.relu(ww-lwid); alh=net.decode(al,4,e)
 just=net.and_(alh[3],ONE-llast); sph=net.decode(lspc,64,just); ex=X()
 deltaj=net.gate(delta,just)
@@ -951,12 +1004,24 @@ fsm.finish()
 def nid(x):
     if isinstance(x,X): return next(iter(x.t))
     return x
-wvl_data=[wlog,wln,wvl,w1,w2,w3,w4,fw,fw2,wo,imw,wl_i,xw]
+wvl_data=[wlog,wln,wvl,w1,w2,w3,w4,fw,fw2,wo,imw,wl_i,xw,wplg]
 for p in wvl_data: net.aligned.append([nid(b.w) for b in p.d])
 for b in (dat_s,dat_l): net.aligned.append([nid(w_) for w_ in b])
+net.keep=[nid(q) for q in (halt.w,timer.w,clipout.w,saveout.w,pdfout.w,picout.w,openout.w,wantp.w,ev_kind,ev_a,ev_b,ev_c)]
+for p in net.ports:
+    for q in p.rec(None)[1:]:
+        if isinstance(q,X): net.keep.append(nid(q))
+        elif isinstance(q,int): pass
+    if isinstance(p,PatchPort): net.keep+=[nid(q) for q in p.a[:3]]
+    if isinstance(p,(RPort,PixPort)): net.keep+=[nid(q) for q in p.out]
 c=net.compile(); new=c['new']
+gn_=[''] *c['n']
+for g_,ids_ in net.groups.items():
+    for i_ in ids_: gn_[new[i_]]=g_
+json.dump(gn_,open('../build/ngroups.json','w'))
 print('neurons',c['n'],'layers',c['L'],file=sys.stderr)
 names={new[next(iter(v_.t))]:k_ for k_,v_ in list(globals().items()) if isinstance(v_,X) and len(v_.t)==1}
+print('regs in AND inputs',sorted(names.get(new[j],str(new[j])) for j in net.bool_regs_seen),file=sys.stderr)
 json.dump(names,open('../build/names.json','w'))
 json.dump({str(new[next(iter(r_.t))]):k_ for k_,(r_,_) in fsm.states.items()},open('../build/states.json','w'))
 pr=[]
@@ -973,21 +1038,32 @@ import numpy as np
 n=c['n'];ost=np.zeros(n+1,dtype=np.int32);
 dst=[];ww_=[]
 for i in range(n):
-    o=c['out'][i]; ost[i+1]=ost[i]+len(o)
-    for d,w_ in o: dst.append(d);ww_.append(w_)
+    o=sorted(c['out'][i]); ost[i+1]=len(o)      # sizes, ascending targets, delta coded
+    prev=0
+    for d,w_ in o: dst.append(d-prev);prev=d;ww_.append(w_)
 ist=np.zeros(n+1,dtype=np.int32);isr=[];iww=[]
 for i in range(n):
-    ist[i+1]=ist[i]+len(c['lazy'][i])
+    ist[i+1]=len(c['lazy'][i])
     for j_,w_ in c['lazy'][i]: isr.append(j_);iww.append(w_)
-hdr=dict(outbase=new[nid(outbase.w)],pdfout=new[nid(pdfout.w)],ni=len(isr),wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,e=len(dst),L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
+import collections
+_wc=collections.Counter(ww_)+collections.Counter(iww)
+wtab=sorted(_wc,key=lambda w_:(-_wc[w_],w_)); wix={w_:k_ for k_,w_ in enumerate(wtab)}; assert len(wtab)<65536
+def _pack(vals,big):      # small values one byte, others an escape then fixed width
+    o=bytearray()
+    for v_ in vals:
+        if v_<255: o.append(v_)
+        else: o.append(255); o+=int(v_).to_bytes(big,'little')
+    return bytes(o)
+_dz=_pack(dst,4); _wz=_pack([wix[w_] for w_ in ww_],2)
+hdr=dict(outbase=new[nid(outbase.w)],dn=len(_dz),wn=len(_wz),pdfout=new[nid(pdfout.w)],ni=len(isr),nt=len(wtab),wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,e=len(dst),L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
  ev=[new[nid(q)] for q in (ev_kind,ev_a,ev_b,ev_c,ev_t)],cb=CB,cb2=CB2,init=[[new[i],v] for i,v in net.init.items()],
  bank_init=[[LEN+SLOT0,0],[DIRTY+SLOT0,1],[PT,SLOT0],[SLOT0+SAVE,112],[SLOT0+SAVE+1,16],[SLOT0+SAVE+2,1]])
 import os
 dd=np.array(dst,dtype=np.int32)
-raw=b''.join([ist.tobytes(),np.array(isr,dtype=np.int32).tobytes(),np.array(iww,dtype=np.float64).tobytes(),np.array(c['act'],dtype=np.uint8).tobytes(),np.array(c['bias'],dtype=np.float64).tobytes(),ost.tobytes(),dd.tobytes(),np.array(ww_,dtype=np.float64).tobytes(),np.array(c['lstart'],dtype=np.int32).tobytes(),np.array(pr,dtype=np.int32).tobytes()])
-h=json.dumps(hdr).encode()
+raw=b''.join([ist.tobytes(),np.array(isr,dtype=np.int32).tobytes(),np.array([wix[w_] for w_ in iww],dtype=np.uint16).tobytes(),np.array(c['act'],dtype=np.uint8).tobytes(),np.array(c['bias'],dtype=np.float64).tobytes(),ost.tobytes(),_dz,_wz,np.array(c['lstart'],dtype=np.int32).tobytes(),np.array(pr,dtype=np.int32).tobytes(),np.array(wtab,dtype=np.float64).tobytes()])
+h=json.dumps(hdr,separators=(',',':')).encode()
 blob=struct.pack('<I',len(h))+h+b'\0'*((4-(len(h)+4)%4)%4)+raw
-gz=gzip.compress(blob,6)
+gz=gzip.compress(blob,9)
 open('../build/net.bin.gz','wb').write(gz)
 prov={k:len(v) for k,v in net.groups.items()}
 json.dump(dict(neurons=n,edges=len(dst),layers=c['L'],groups=prov,states=len(fsm.states)),open('../build/provenance.json','w'),indent=1)
