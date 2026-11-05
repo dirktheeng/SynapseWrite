@@ -16,5 +16,20 @@ const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);}
  await C(...R.s(1));const h5=await shot(p,'tb5');ok('shading changes image',h5!==h4);
  await K('Control+z');const h5u=await shot(p);ok('shading undo restores',h5u===h4);
  await K('Control+y');const h5r=await shot(p);ok('shading redo',h5r===h5);
+ // column width drag on the first inner border: x=319+208
+ const yb=170+150+15;await p.mouse.move(319+208,yb);await p.mouse.down();await p.mouse.move(319+260,yb);await p.waitForTimeout(60);await p.mouse.up();
+ const h6=await shot(p,'tb6');ok('column drag changes image',h6!==h5);
+ await K('Control+z');const h6u=await shot(p);ok('column drag undo restores',h6u===h5);
+ await K('Control+y');const h6r=await shot(p);ok('column drag redo',h6r===h6);
+ const sh=async()=>{await p.mouse.move(1270,5);return await p.screenshot({clip:{x:0,y:174,width:1262,height:600}});};
+ await K('End');const a=await sh();fs.writeFileSync('build/tb_a.png',a);
+ const save=async f=>{const [dl]=await Promise.all([p.waitForEvent('download'),K('Control+s')]);await dl.saveAs(f);};
+ const open=async f=>{await p.evaluate(u=>annOpen(new Blob([new Uint8Array(u)])),[...fs.readFileSync(f)]);await p.waitForTimeout(500);await check('open');};
+ await save('build/tb.docx');await open('build/tb.docx');await K('ArrowDown');await K('ArrowUp');await K('End');
+ const a2=await sh();fs.writeFileSync('build/tb_b.png',a2);ok('table save then open',H(a)===H(a2));
+ require('child_process').execSync('rm -rf build/tblo; timeout 120 soffice --headless --convert-to pdf --outdir build/tblo build/tb.docx >/dev/null 2>&1; timeout 120 soffice --headless --convert-to docx:"MS Word 2007 XML" --outdir build/tblo build/tb.docx >/dev/null 2>&1; pdftoppm -r 50 -png build/tblo/tb.pdf build/tblo/lo');
+ await open('build/tblo/tb.docx');await K('ArrowDown');await K('ArrowUp');await K('End');const a3=await sh();fs.writeFileSync('build/tb_c.png',a3);
+ const [dl]=await Promise.all([p.waitForEvent('download'),K('Control+p')]);await dl.saveAs('build/tb.pdf');
+ require('child_process').execSync('pdftoppm -r 60 -png build/tb.pdf build/tbpdf');
  await p.waitForTimeout(100);
  console.log(JSON.stringify(res));await b.close();})();
