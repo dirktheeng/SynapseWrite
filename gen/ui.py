@@ -2,7 +2,7 @@
 import rom
 from nn import X
 TW=rom
-BLUE=(43,87,154);LG=(243,243,243);BD=(208,208,208);WHT=(255,255,255);TAB=(255,255,255)
+BLUE=(51,85,153);LG=(238,238,238);BD=(208,208,208);WHT=(255,255,255);TAB=(255,255,255)
 def twidth(s,si=9,b=0):
     return sum(rom.glyph(0,b,0,si,ord(c))[0] for c in s)
 ST=lambda si=9,b=0:si+16*b
@@ -64,6 +64,32 @@ def home(u):
         u.btn(x+i*88,64,84,50,nm,21+i,9,3 if i>=2 else 0,0,WHT)
     group_label(u,x,348,'Styles'); x+=358
     u.btn(x,64,70,24,'Find',25); u.btn(x,90,70,24,'Replace',26); group_label(u,x,72,'Editing')
+HOME_X=880;LAY_X=200;CW=26;CH=22;GID=55
+def cell(u,ox,row,col,label='',span=1,col_rgb=None,ly=0):
+    x=ox+col*CW;y=64+row*CH;w=CW*span-2;h=CH-2
+    u.r(x,y,w,h,LG,200+GID)
+    if col_rgb is not None: u.r(x+3,y+3,w-6,h-6,col_rgb,200+GID)
+    if label:
+        tw=twidth(label); u.t(x+(w-tw)//2,y+(h-rom.metrics(9)[1])//2,label)
+def home2(u):
+    F=__import__('app_pal').F;B=__import__('app_pal').B
+    ox=HOME_X
+    for c,l in enumerate(('S','x2','x3','<|','|>')): cell(u,ox,0,c,l)
+    u.r(ox+4,64+10,CW-10,1,(0,0,0),200+GID)
+    cell(u,ox,0,5,'',1,(255,255,255)); u.r(ox+5*CW+4,64+10,CW-10,1,(0,0,0),200+GID)
+    for i in range(7): cell(u,ox,0,6+i,'',1,B[5+i])
+    cell(u,ox,0,13,'H3'); cell(u,ox,0,14,'Q')
+    for i in range(15): cell(u,ox,1,i,'',1,F[8+i])
+    for i in range(9): cell(u,ox,2,i,'',1,F[23+i])
+    cell(u,ox,2,9,'Update Style',3)
+    group_label(u,ox,390,'Font, Highlight, More')
+def layout2(u):
+    ox=LAY_X
+    for i,l in enumerate(('-','+')*4): cell(u,ox,0,i,l)
+    for i,l in enumerate(('1.0','1.15','1.5','2.0','2.5','3.0')): cell(u,ox,0,8+i,l)
+    for i,l in enumerate(('Left','First','Before','After')): u.t(ox+i*2*CW+4,88,l,9,1,3)
+    u.t(ox+8*CW+4,88,'Line spacing',9,1,3)
+    group_label(u,ox,14*CW,'Paragraph')
 def insert(u):
     u.btn(8,64,70,24,'Table 2x2',40); u.btn(82,64,70,24,'Table 3x3',41); u.btn(156,64,70,24,'Table 4x4',42); group_label(u,8,218,'Tables'); u.btn(240,64,70,24,'Header',46); group_label(u,240,72,'Header'); u.btn(322,64,70,24,'Picture',52); group_label(u,322,72,'Pictures')
 def layout(u):
@@ -91,7 +117,7 @@ def build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S):
     fsm.on('UI',*[(hot[i],f'UI_{i}',None) for i in range(6)],(None,'RD0',None))
     for k in range(6):
         u=L(); u.i=list(u0.i); tabbar(u,names,k)
-        home(u) if k==0 else (insert(u) if k==1 else layout(u) if k==2 else refs(u) if k==3 else review(u) if k==4 else stub(u,STUBS[k]))
+        (home(u),home2(u)) if k==0 else (insert(u) if k==1 else (layout(u),layout2(u)) if k==2 else refs(u) if k==3 else review(u) if k==4 else stub(u,STUBS[k]))
         tok=fsm.S(f'UI_{k}')
         fsm.states[f'UI_{k}'][1].append((tok,None))
         seq=[net.reg() for _ in range(len(u.i)+1)]

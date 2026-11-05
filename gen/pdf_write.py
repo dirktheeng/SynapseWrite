@@ -73,24 +73,30 @@ pg_open('PD_O','PD_L5')
 pg_open('PD_0','PD_1')
 # walk paragraphs using the saved layout
 e=S('PD_1'); on('PD_1',(net.ge(qp,npar,e),'PD_C',None),(None,'PD_2',{r1:as_x(PT)+qp}))
-on('PD_2',(None,'PD_3',{qb:R1,rl:R1+SAVE,rc:R1+2062}))
+on('PD_2',(None,'PD_3',{qb:R1,rl:R1+SAVE,rc:R1+2062,rp6:R1+PIND,rim:R1+ALIGN}))
 e=S('PD_3')
 first_p=net.eq(qtop,0,e)
-on('PD_3',(first_p,'PD_4',{qyy:rl.out[0],qtop:rl.out[1],qcols:rc.out[0],qci:rc.out[1]}),
- (net.gt(rl.out[1],qtop,e),'PD_C',{qyy:rl.out[0],qtop:rl.out[1],qcols:rc.out[0],qci:rc.out[1]}),
- (None,'PD_4',{qyy:rl.out[0],qcols:rc.out[0],qci:rc.out[1]}))
+qyy0=rl.out[0]+G_(rp6.out[3],net.gt(rl.out[0],rl.out[1]+96,e))
+qlb=net.bits(rim.out[1],4,e); qkind=qlb[0]+qlb[1]*2; qlvl=qlb[2]+qlb[3]*2
+qk=R();ql=R();qmk=R();qln=R()
+qln_new,qmk_new=list_step(rl.out[4],qkind,qlvl,e)
+qex={qk:qkind,ql:qlvl,qmk:qmk_new}
+on('PD_3',(first_p,'PD_4',{qyy:qyy0,qtop:rl.out[1],qcols:rc.out[0],qci:rc.out[1],**qex}),
+ (net.gt(rl.out[1],qtop,e),'PD_C',{qyy:qyy0,qtop:rl.out[1],qcols:rc.out[0],qci:rc.out[1],**qex}),
+ (None,'PD_4',{qyy:qyy0,qcols:rc.out[0],qci:rc.out[1],**qex}))
 on('PD_L5',(None,'PD_4',None))
 on('PD_4',(None,'PD_5',{r1:qb+NLINES}))
 on('PD_5',(None,'PD_6',{qnl:R1,qlj:0}))
-e=S('PD_6'); on('PD_6',(net.ge(qlj,qnl,e),'PD_N',None),(None,'PD_7',{rl:qb+LINES+qlj*8,rc:qb+2062}))
+e=S('PD_6'); on('PD_6',(net.ge(qlj,qnl,e),'PD_N',None),(None,'PD_7',{rl:qb+LINES+qlj*8,rc:qb+2062,r2:qb+LINES+qlj*8+11}))
 e=S('PD_7'); e7=e
 Wl=rl.out
 tb7=net.step(rc.out[0]); hc7=net.decode(rc.out[0],9,e7); hi7=net.decode(rc.out[1],9,e7); gx7=X()
 for cc_ in range(1,9):
     for ii_ in range(cc_): gx7=gx7+net.and_(net.step(hc7[cc_]),net.step(hi7[ii_]))*(ii_*(TW//cc_)+6)
-ovf=net.and_(net.gt(qyy+Wl[3],qtop+960,e),net.gt(qyy,qtop+96,e))
-lmv={qs:Wl[0],qe:Wl[1],qx:(Wl[2]+gx7+96)*0.75,qh:Wl[3],qa:Wl[4],qo:Wl[0]}
-on('PD_7',(ovf,'PD_C2',{**lmv,qyy:qtop+PST+96,qtop:qtop+PST}),(None,'PD_8',lmv))
+ovf=net.or_(net.and_(net.gt(qyy+Wl[3],qtop+960,e),net.gt(qyy,qtop+96,e)),net.and_(ONE-tb7,keep_lines(e,qyy,qtop,Wl[3],R2,qlj,qnl)))
+qind=net.gate(ql*48+48,net.step(qk))
+lmv={qs:Wl[0],qe:Wl[1],qx:(Wl[2]+gx7+96+qind)*0.75,qh:Wl[3],qa:Wl[4],qo:Wl[0]}
+on('PD_7',(ovf,'PD_C2',{**lmv,qyy:qtop+PST+96,qtop:qtop+PST}),(None,'T2_PM',lmv))
 pg_close('PD_C2','PD_QH')
 cur_n='PD_QH'
 for k_,pw_ in enumerate((1000000,100000,10000,1000,100,10,1)):
@@ -104,7 +110,7 @@ for k_,pw_ in enumerate((1000000,100000,10000,1000,100,10,1)):
     dg=X()
     for t in range(1,10): dg=dg+net.step(val-pw_*t+0.5)
     on(cur_n,(None,nx_,{fw2:(as_x(FILE)+qlenat+k_,48+dg)})); cur_n=nx_
-pg_open('PD_O2','PD_8')
+pg_open('PD_O2','T2_PM')
 # one text line with style runs
 lit('PD_8',b'BT 1 0 0 1 ','PD_8x')
 number('PD_8x',qx,'PD_8s'); lit('PD_8s',b' ','PD_8y')
@@ -115,18 +121,21 @@ e=S('PD_9'); on('PD_9',(net.ge(qo,qe,e),'PD_Z',None),(None,'PD_A',{r1:qb+qo,r2:q
 e=S('PD_A')
 on('PD_A',(net.step(net.step(R2-qsty)+net.step(qsty-R2)),'PD_F',{qsty:R2,ins_ch:R1,ins_st:R2}),(None,'PD_T',{ins_ch:R1}))
 for st_ in ('PD_F',): sv_en.lin(S(st_)); sv_in.add(S(st_),ins_st)
-e=S('PD_F'); zh=net.decode(SV['size'],11,e); pts=X()
-for i_,h_ in enumerate(zh): pts=pts+h_*rom.PTS[i_]
-on('PD_F',(None,'PD_Fa',{qfn:SV['bold']+SV['ital']*2+SV['font']*4+3,qsz:pts,qbase:SV['color']}))
+e=S('PD_F'); zh=net.decode(SV['size'],len(rom.PTS),e); pts=X(); ptv=X()
+for i_,h_ in enumerate(zh): pts=pts+h_*rom.PTS[i_]; ptv=ptv+h_*rom.PTS[script_size(i_)]
+vf_=net.step(SV['sup']+SV['sub']); qv=R()
+on('PD_F',(None,'PD_Fa',{qfn:SV['bold']+SV['ital']*2+SV['font']*4+3,qsz:G_(pts,ONE-vf_)+G_(ptv,vf_),qbase:SV['color'],qv:SV['vert']}))
 lit('PD_Fa',b'/F','PD_Fb')
 e=S('PD_Fb'); on('PD_Fb',(None,'PD_Fc',None))
 em_en.lin(e); em_b.add(e,48+qfn-3)
 lit('PD_Fc',b' ','PD_Fd')
 number('PD_Fd',qsz,'PD_Fe')
-lit('PD_Fe',b' Tf ','PD_Ff')
-e=S('PD_Ff'); ch8=net.decode(qbase,8,e)
-PCS=['0 0 0','.35 .35 .35','1 1 1','.17 .34 .6','.75 0 0','0 .5 .24','.9 .47 0','.44 .19 .63']
-on('PD_Ff',*[(ch8[j],f'PD_Co{j}',None) for j in range(8)],(None,'PD_T',None))
+lit('PD_Fe',b' Tf ','PD_Fv')
+e=S('PD_Fv'); on('PD_Fv',(net.eq(qv,1,e),'PD_Fv1',None),(net.eq(qv,2,e),'PD_Fv2',None),(None,'PD_Fv0',None))
+lit('PD_Fv0',b'0 Ts ','PD_Ff');lit('PD_Fv1',b'4 Ts ','PD_Ff');lit('PD_Fv2',b'-2 Ts ','PD_Ff')
+e=S('PD_Ff'); ch8=net.decode(qbase,32,e)
+PCS=['%.2f %.2f %.2f'%(c_[0]/255,c_[1]/255,c_[2]/255) for c_ in PAL_F]
+on('PD_Ff',*[(ch8[j],f'PD_Co{j}',None) for j in range(32)],(None,'PD_T',None))
 for j,pc_ in enumerate(PCS): lit(f'PD_Co{j}',(pc_+' rg ').encode(),'PD_T')
 on('PD_T',(None,'PD_Tb',None))
 lit('PD_Tb',b'(','PD_Tc')
