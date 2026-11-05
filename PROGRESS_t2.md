@@ -15,3 +15,5 @@ Each entry says what was tried, why, and what the run showed.
 11. Docx reader walks numbering, styles, document in three passes. Attribute parsers for spacing and ind, twips to pixels by subtraction, on/off property values, UTF-8 decode through the code map, nearest palette color through a compiled 512 line table, basedOn, docDefaults.
 12. Parser offset bugs found by tests: numFmt value offset, line and left attribute quote handling, styleId offset. Ctrl+Home and Ctrl+End were missing and added, which also fixed caret blink flakiness in the image tests.
 13. Foreign file test built with python-docx (its template comes from Word): headings, Latin-1, run formats, style based lists all read. Found: style table too small (32) so moved to 196 records; numbered list after bullets saved under the bullet numId; palette lacked Office theme colors and got them.
+14. Kerning history reads as empty at a line start: the decoder enable now needs a nonzero previous character. PARITY.md updated.
+15. Final run: e2e 69/69, tier2 44/44, roundtrip all true, latency under 100 ms.

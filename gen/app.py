@@ -162,7 +162,7 @@ for f_ in FACES:
             for x,y,q in pts: net.connect(cov[y*W_+x],G*(q/15.0))
 # advances and kerning are in ems per face, then scaled by the drawn size. Both are linear in the size.
 kp_en=Bus(net); kp_in=Bus(net)
-kprev_hot=net.decode(kp_in.w-32,95,kp_en.w,hot=True)
+kprev_hot=net.decode2(kp_in.w-32,95,kp_en.w)
 KP=rom.kern_pairs()
 kw={f_:X() for f_ in FACES}; aw={f_:X() for f_ in FACES}
 for f_ in FACES:
@@ -638,7 +638,7 @@ Kp=pi*2048+off; insel=net.and_(net.ge(Kp,Lo,e),net.lt(Kp,Hi,e)); nosel=e-insel
 isp=net.eq(R1,32,e); xtra=G_(lex,isp); chere=net.and_(net.eq(pi,cp,e),net.eq(off,co,e))
 fsm.set(cx,chere,x);fsm.set(cacol,chere,col)
 g_en.lin(e);g_ch.add(e,R1);g_st.add(e,R2);g_x.add(e,x+kern+0.5);g_y.add(e,gly_y+YB)
-kp_en.lin(e);kp_in.add(e,kprev)
+ke2=net.and_(e,net.step(kprev));kp_en.lin(ke2);kp_in.add(ke2,kprev)
 g_draw.lin(e-isp)
 colh=net.decode_z(SD['color'],32,e)
 for j in range(32): fg[j].lin(colh[j])
@@ -708,7 +708,7 @@ e=S('LE0'); measure(e,32,ty)
 on('LE0',(None,'EM',{lasc:asc,lhh:lh,lend:0,lwid:0,lspc:0,llast:1}))
 fsm.set(kprev,S('LAY0'),0)
 on('L1',(None,'L2',{r1:pbs+off,r2:pbs+1024+off}))
-e=S('L2'); measure(e,R1,R2); kp_en.lin(e); kp_in.add(e,kprev)
+e=S('L2'); measure(e,R1,R2); ke2=net.and_(e,net.step(kprev)); kp_en.lin(ke2); kp_in.add(ke2,kprev)
 sp=net.eq(R1,32,e); over=net.and_(net.gt(lx+adv+kern,ww,e),ONE-sp); hasb=net.gt(lb,ls_,e); nsp=e-sp
 lastc=net.ge(off+1,plen_,e); newword=net.and_(nsp,prevsp)
 advance={kprev:R1,lx:lx+adv+kern,lasc:net.max_(asc,lasc),lhh:net.max_(lh,lhh),off:off+1,prevsp:sp,wc:wc+newword,lsn:lsn+sp}
