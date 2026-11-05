@@ -78,8 +78,25 @@ GE=g_en.w
 def style_decode(val,en):
     b=net.bits(val,11,en); return dict(size=b[0]+b[1]*2+b[2]*4+b[3]*8,sb=b[:4],bold=b[4],ital=b[5],und=b[6],font=b[7],colbits=b[8:],color=b[8]+b[9]*2+b[10]*4)
 SD=style_decode(g_st.w,GE)
-size_hot=net.decode(SD['size'],11,GE,hot=True)
-chr_hot=net.decode(g_ch.w-32,96,GE,hot=True)
+# Glyph addressing is a decision tree: each node is enabled by its parent and reads its
+# selector lazily, so a lookup visits a path through the tree and not all of the table.
+def tnode(parent,sel,neg=False):
+    return net.step(parent*M-M+((ONE-sel) if neg else sel)-0.5)
+def tsplit(parent,sel): return tnode(parent,sel,True),tnode(parent,sel)
+def _tree(parent,sels):
+    if not sels: return [parent]
+    l0,l1=tsplit(parent,sels[-1])
+    return _tree(l0,sels[:-1])+_tree(l1,sels[:-1])
+_leaf=_tree(GE,SD['sb'])
+size_hot=_leaf[:10]+[sum(_leaf[10:],X())]
+# character index: base 16 digits by two thermometers, one hot digits read lazily
+_chv=net.relu(g_ch.w-32+1+GE*M-M)
+_ht=[net.step(_chv-16*k_-0.5) for k_ in range(1,6)]
+_base=net.step(_chv)
+chr_hi=[net.step(_base-_ht[0]-0.5)]+[net.step(_ht[k_]-(_ht[k_+1] if k_<4 else X())-0.5) for k_ in range(5)]
+_rem=_chv-sum((t_*16 for t_ in _ht),X())
+_lt=[_base]+[net.step(_rem-j_-0.5) for j_ in range(1,16)]
+chr_lo=[net.step(_lt[j_]-(_lt[j_+1] if j_<15 else X())-0.5) for j_ in range(16)]
 adv=net.wire();asc=net.wire();lh=net.wire();small=net.wire()
 for si,h in enumerate(size_hot):
     a,l=rom.metrics(si); net.connect(asc,h*a); net.connect(lh,h*l)
@@ -87,61 +104,67 @@ for si,h in enumerate(size_hot):
 SW,SH,LW,LH=rom.SW,rom.SH,rom.LW,rom.LH
 fastw=net.and_(g_draw.w,small,fg[0].w,bg[0].w)
 fastsel=net.and_(g_draw.w,small,fg[0].w,bg[1].w)
-anyfast=fastw+fastsel
-def plane(w,h,name):
-    net.group('glyph patch '+name)
-    on=net.and_(g_draw.w,small,ONE-anyfast) if name=='small' else net.and_(g_draw.w,ONE-small)
-    fgo=[net.and_(on,f.w) for f in fg]; bgo=[net.and_(on,b.w) for b in bg]
-    cov=[net.wire() for _ in range(w*h)]; first=None; rows=[]
-    outs=[]
-    for i in range(w*h):
-        c=cov[i]; m=net.step(c); o=[X(),X(),X()]
-        for j,col in enumerate(PAL_F):
-            g=net.relu(c+fgo[j]-1)
-            for k in range(3): o[k]=o[k]+g*col[k]
-        for j,col in enumerate(PAL_B):
-            g=net.relu(c+bgo[j]-1); mk=net.relu(m+bgo[j]-1)
-            for k in range(3): o[k]=o[k]+(mk-g)*col[k]
-        outs.append((o,m))
-    data=[]
-    for o,m in outs:
-        for e in (o[0],o[1],o[2],m):
-            w_=net.wire(); net.connect(w_,e); data.append(w_)
-    return on,cov,data
-on_s,cov_s,dat_s=plane(SW,SH,'small'); on_l,cov_l,dat_l=plane(LW,LH,'large')
-# direct black-on-white plane: ink pixels only, no color gating
-net.group('glyph patch fast')
-cov_f=[net.wire() for _ in range(SW*SH)]
-for i in range(SW*SH):
-    c=cov_f[i]; m=net.step(c)
-    for k in range(3): net.connect(dat_s[4*i+k],(m-c)*255)
-    net.connect(dat_s[4*i+3],m)
-cov_g=[net.wire() for _ in range(SW*SH)]
-for i in range(SW*SH):
-    c=cov_g[i]; m=net.step(c)
-    for k in range(3): net.connect(dat_s[4*i+k],(m-c)*PAL_B[1][k])
-    net.connect(dat_s[4*i+3],m)
-net.group('glyph weights (font outlines)')
-face=[]
-t0=time.time()
+net.group('glyph patch')
+GLY={}; _used=[set(),set()]
 for fi in range(2):
-  fb=net.font=None
   for bo in range(2):
     for it in range(2):
       for si in range(11):
-        fh=net.and_(size_hot[si],SD['font'] if fi else ONE-SD['font'],SD['bold'] if bo else ONE-SD['bold'],SD['ital'] if it else ONE-SD['ital'])
-        if rom.small(si): fh_f=net.and_(fh,fastw); fh_g=net.and_(fh,fastsel); fh_s=net.and_(fh,ONE-anyfast)
         for ci in range(96):
-            a,pts=rom.glyph(fi,bo,it,si,32+ci)
-            if rom.small(si):
-                Gf=net.and_(fh_f,chr_hot[ci]); Gs=net.and_(fh_s,chr_hot[ci]); Gg=net.and_(fh_g,chr_hot[ci])
-                if a: net.connect(adv,(Gf+Gs+Gg)*a)
-                for x,y,q in pts:
-                    net.connect(cov_s[y*SW+x],Gs*(q/15.0)); net.connect(cov_f[y*SW+x],Gf*(q/15.0)); net.connect(cov_g[y*SW+x],Gg*(q/15.0))
-            else:
-                G=net.and_(fh,chr_hot[ci])
-                if a: net.connect(adv,G*a)
-                for x,y,q in pts: net.connect(cov_l[y*LW+x],G*(q/15.0))
+            a_,pts=rom.glyph(fi,bo,it,si,32+ci); GLY[fi,bo,it,si,ci]=(a_,pts)
+            _used[rom.small(si)].update((x_,y_) for x_,y_,_q in pts)
+def plane(w,h,used,fastsel_):
+    """One coverage layer per patch. An ink pixel enables its colour neurons, which read the
+    selected colour lazily. Black on white needs no colour neurons at all. Pixels no glyph
+    ever covers have no neurons except the output cells the patch port reads."""
+    cov={};data=[net.wire() for _ in range(4*w*h)]
+    nonw=ONE-fastw
+    for y_ in range(h):
+      for x_ in range(w):
+        if (x_,y_) not in used: continue
+        i=y_*w+x_; c=net.wire(); cov[i]=c; m=net.step(c)
+        o=[(m-c)*255]*3
+        nw=net.step(m*M-M+nonw-0.5)
+        slow=nw
+        if fastsel_:
+            sl=net.step(nw*M-M+fastsel-0.5); slow=net.step(nw*M-M+(ONE-fastsel)-0.5)
+            cs=net.relu(sl*M-M+m-c)
+            for k in range(3): o[k]=o[k]+cs*(PAL_B[1][k]-255)
+        ic=net.relu(slow*M-M+m-c)
+        for k in range(3): o[k]=o[k]-ic*255
+        for j,col in enumerate(PAL_F):
+            g=net.relu(slow*M-M+c+fg[j].w-1)
+            for k in range(3):
+                if col[k]: o[k]=o[k]+g*col[k]
+        for j,col in enumerate(PAL_B):
+            g=net.relu(slow*M-M+m-c+bg[j].w-1)
+            for k in range(3):
+                if col[k]: o[k]=o[k]+g*col[k]
+        for k in range(3): net.connect(data[4*i+k],o[k])
+        net.connect(data[4*i+3],m)
+    return cov,data
+cov_s,dat_s=plane(SW,SH,_used[1],True); cov_l,dat_l=plane(LW,LH,_used[0],False)
+on_s=net.and_(g_draw.w,small); on_l=net.and_(g_draw.w,ONE-small)
+net.group('glyph weights (font outlines)')
+t0=time.time()
+for si in range(11):
+  sh_=size_hot[si]
+  f0,f1=tsplit(sh_,SD['font'])
+  for fi,fn_ in enumerate((f0,f1)):
+    b0,b1=tsplit(fn_,SD['bold'])
+    for bo,bn_ in enumerate((b0,b1)):
+      i0,i1=tsplit(bn_,SD['ital'])
+      for it,fh in enumerate((i0,i1)):
+        for hi_ in range(6):
+          Fh=net.step(fh*M-M+chr_hi[hi_]-0.5)
+          for lo_ in range(16):
+            a,pts=GLY[fi,bo,it,si,hi_*16+lo_]
+            if not a and not pts: continue
+            G=net.step(Fh*M-M+chr_lo[lo_]-0.5)
+            if a: net.connect(adv,G*a)
+            if pts:
+                Gd=net.step(G*M-M+g_draw.w-0.5); cv=cov_s if rom.small(si) else cov_l; w_=SW if rom.small(si) else LW
+                for x_,y_,q in pts: net.connect(cv[y_*w_+x_],Gd*(q/15.0))
 print('glyph weights',time.time()-t0,'s',file=sys.stderr)
 class GlyPort:
     def drive(s,c,v):
@@ -149,7 +172,7 @@ class GlyPort:
         fg[f].lin(c) if isinstance(f,int) else None; bg[b].lin(c) if isinstance(b,int) else None
 gly=GlyPort()
 gx=g_x.w-2; gy=g_y.w
-for en,d,w,h in ((net.or_(on_s,fastw,fastsel),dat_s,SW,SH),(on_l,dat_l,LW,LH)):
+for en,d,w,h in ((on_s,dat_s,SW,SH),(on_l,dat_l,LW,LH)):
     px_=net.wire();py_=net.wire();net.connect(px_,net.gate(gx+2,en)-en*2);net.connect(py_,net.gate(gy,en))
     # neurons in a patch are consecutive after compile by port remap
     PatchPort(net.step(en),px_,py_,d,w,h)
