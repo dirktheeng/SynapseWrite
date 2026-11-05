@@ -19,7 +19,7 @@ const cv=document.getElementById('screen'),ctx=cv.getContext('2d',{alpha:false})
 let timer=0;const stats=window.annStats={ticks:0,ms:0,edges:0,events:0};
 const dispatch=(k,a=0,b=0,c=0)=>{
  const t0=performance.now();const E0=e.edges();
- e.inject(h.ev[0],k);if(a)e.inject(h.ev[1],a);if(b)e.inject(h.ev[2],b);if(c)e.inject(h.ev[3],c);
+ e.inject(h.ev[0],k);e.inject(h.ev[4],Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/864e5));if(a)e.inject(h.ev[1],a);if(b)e.inject(h.ev[2],b);if(c)e.inject(h.ev[3],c);
  const n=e.run(h.halt,window.annMax||50000000);
  const f=new Uint32Array(mem(),e.p_fb(),1024000),q=new Uint32Array(img.data.buffer);for(let i=0;i<1024000;i++)q[i]=f[i]|0xff000000;ctx.putImageData(img,0,0);
  const clip=e.val(h.clipout);if(clip){const bb=bank();const cs=[];for(let i=0;i<clip-1;i++)cs.push(bb[h.cb+i]);const txt=String.fromCharCode(...cs);window.annClip=txt;try{navigator.clipboard.writeText(txt).catch(()=>{});}catch(_){}}

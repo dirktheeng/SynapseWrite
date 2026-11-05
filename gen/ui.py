@@ -66,12 +66,13 @@ def home(u):
     u.btn(x,64,70,24,'Find',25); u.btn(x,90,70,24,'Replace',26); group_label(u,x,72,'Editing')
 def insert(u):
     u.btn(8,64,70,24,'Table 2x2',40); u.btn(82,64,70,24,'Table 3x3',41); u.btn(156,64,70,24,'Table 4x4',42); group_label(u,8,218,'Tables'); u.btn(240,64,70,24,'Header',46); group_label(u,240,72,'Header'); u.btn(322,64,70,24,'Picture',52); group_label(u,322,72,'Pictures')
+    u.btn(404,64,60,24,'Page No',35); u.btn(468,64,50,24,'Date',54); u.btn(522,64,76,24,'Word Count',55); u.btn(602,64,76,24,'Update All',1); group_label(u,404,274,'Fields'); u.btn(690,64,70,24,'Equation',2); group_label(u,690,70,'Math')
 def layout(u):
     u.btn(8,64,80,24,'One Column',43); u.btn(92,64,80,24,'Two Columns',44); group_label(u,8,164,'Columns')
 def refs(u):
-    u.btn(8,64,120,24,'Table of Contents',45); group_label(u,8,122,'Table of Contents'); u.btn(142,64,100,24,'Insert Footnote',51); group_label(u,142,102,'Footnotes')
+    u.btn(8,64,120,24,'Table of Contents',45); group_label(u,8,122,'Table of Contents'); u.btn(142,64,100,24,'Insert Footnote',51); group_label(u,142,102,'Footnotes'); u.btn(254,64,90,24,'Mail Merge',35); group_label(u,254,90,'Mailings')
 def review(u):
-    u.btn(8,64,100,24,'New Comment',49); group_label(u,8,102,'Comments')
+    u.btn(8,64,100,24,'New Comment',49); group_label(u,8,102,'Comments'); u.btn(120,64,70,24,'Spelling',54); group_label(u,120,70,'Proofing'); u.btn(202,64,100,24,'Track Changes',35); u.btn(306,64,60,24,'Accept',55); u.btn(370,64,60,24,'Reject',1); group_label(u,202,228,'Tracking')
 def stub(u,labels):
     x=8
     for g,items in labels:
