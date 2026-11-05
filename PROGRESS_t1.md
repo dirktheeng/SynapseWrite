@@ -13,3 +13,5 @@ Run log:
 - Real fix found by tests: undo of a paragraph property moved the caret to offset 0. It now keeps the caret offset.
 - Thumb tests: a single wheel event of -99999 did not reach the top of the document, so the drag started on the track. Test now uses several smaller wheel events. Not yet explained why the large event fell short.
 - Explained the wheel shortfall: the network's gated registers clamp negative values to 0, so wheel up is capped at 1000 px per event (pre-existing, harmless for real wheels). Same clamp was a real bug in my margins: a negative line x0 became 0. Line x0 is now stored with +48 and painting and PDF subtract 48.
+- Polish: find bar uses the ribbon background so text fields stand out; dropdown chevrons no longer overlap labels. PARITY.md updated.
+- t4 under this machine's load (load average about 5, other jobs running) is noisy: same op with identical ticks ranged from 48 to 199 ms. Tick and edge counts are the stable measure: about 7 percent more edges than baseline on the walks.

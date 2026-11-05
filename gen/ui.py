@@ -78,8 +78,8 @@ class L:
     def big(s,x,y,w,h,label,id_,icon,chev=False):
         "Large icon on top, label below."
         s.r(x,y,w,h,LG,200+id_,HVG); s.art(x+(w-32)//2,y+3,icon,200+id_,2)
-        tw=twidth(label); s.t(x+(w-tw)//2,y+h-20,label,9,0,3,True)
-        if chev: s.art(x+w-14,y+h-20,'chev',200+id_)
+        tw=twidth(label); lx=x+(w-tw)//2-(6 if chev else 0); e=s.t(lx,y+h-20,label,9,0,3,True)
+        if chev: s.art(e-3,y+h-20,'chev',200+id_)
     def qbtn(s,x,y,w,h,icon,id_):
         s.r(x,y,w,h,BLUE,200+id_,HVB); s.art(x+(w-16)//2,y+(h-16)//2,icon,200+id_)
 def common():
