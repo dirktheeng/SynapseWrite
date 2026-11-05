@@ -196,7 +196,8 @@ on('TX2',(None,'TX3',{rl:OA+oi}))
 
 e=S('TX3')
 amp_=net.eq(W[0],38,e);ltx=net.eq(W[0],60,e)
-on('TX3',(ltx,'PX',None),(rdig,'T3_DG',None),
+isdg_=net.and_(net.ge(W[0],48,e),net.lt(W[0],58,e))
+on('TX3',(ltx,'PX',None),(net.and_(rdig,isdg_),'TX2',{tpgv:tpgv*10+W[0]-48,oi:oi+1,w1:(cb+TPG,tpgv*10+W[0]-48)}),(rdig,'TX2',{oi:oi+1}),
  (net.and_(amp_,net.eq(W[1],97,e)),'INS',{ins_ch:38,ins_st:cs,oi:oi+5,oret.r:oret.id('TX2')}),
  (net.and_(amp_,net.eq(W[1],108,e)),'INS',{ins_ch:60,ins_st:cs,oi:oi+4,oret.r:oret.id('TX2')}),
  (net.and_(amp_,net.eq(W[1],103,e)),'INS',{ins_ch:62,ins_st:cs,oi:oi+4,oret.r:oret.id('TX2')}),
