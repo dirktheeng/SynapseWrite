@@ -558,9 +558,9 @@ on('R7',(net.and_(vis,pa),'R8',None),(None,'R9',None))
 sy=yy+DOCY-scroll
 ind=net.step(lsf)*48
 e=S('R8')
-on('R8',(net.and_(net.eq(ls_,0,e),net.eq(lsf,1,e)),'BUL',{rA:(lleft,sy,as_x(TX)+rx0+xcol+tpad-lleft+lx+ind,lhh,WHITE,1),x:as_x(TX)+rx0+xcol+tpad+ind+lx,off:ls_,col:1}),
- (net.and_(net.eq(ls_,0,e),net.eq(lsf,2,e)),'NUM',{rA:(lleft,sy,as_x(TX)+rx0+xcol+tpad-lleft+lx+ind,lhh,WHITE,1),x:as_x(TX)+rx0+xcol+tpad+ind+lx,off:ls_,col:1}),
- (None,'C0',{rA:(lleft,sy,as_x(TX)+rx0+xcol+tpad-lleft+lx+ind,lhh,WHITE,1),x:as_x(TX)+rx0+xcol+tpad+ind+lx,off:ls_,col:1}))
+on('R8',(net.and_(net.eq(ls_,0,e),net.eq(lsf,1,e)),'BUL',{rA:(lleft,sy,as_x(TX-48)+rx0+xcol+tpad-lleft+lx+ind,lhh,WHITE,1),x:as_x(TX-48)+rx0+xcol+tpad+ind+lx,off:ls_,col:1}),
+ (net.and_(net.eq(ls_,0,e),net.eq(lsf,2,e)),'NUM',{rA:(lleft,sy,as_x(TX-48)+rx0+xcol+tpad-lleft+lx+ind,lhh,WHITE,1),x:as_x(TX-48)+rx0+xcol+tpad+ind+lx,off:ls_,col:1}),
+ (None,'C0',{rA:(lleft,sy,as_x(TX-48)+rx0+xcol+tpad-lleft+lx+ind,lhh,WHITE,1),x:as_x(TX-48)+rx0+xcol+tpad+ind+lx,off:ls_,col:1}))
 gly_y=sy+lasc-asc
 on('BUL',(None,'C0',{gly:(127,0,x-20,gly_y,0,0)}))
 e=S('NUM'); nb=net.ge(listn,10,e); tens=X(); 
@@ -647,7 +647,7 @@ e=S('EM'); delta=net.relu(ww-lwid); alh=net.decode(al,4,e)
 just=net.and_(alh[3],ONE-llast); sph=net.decode(lspc,64,just); ex=X()
 deltaj=net.gate(delta,just)
 for k_ in range(1,64): ex=ex+net.gate(deltaj*(1.0/k_),sph[k_])
-x0=net.gate(delta*0.5,alh[1])+net.gate(delta,alh[2])+net.gate(t1_pind,e)-net.gate(t1_mv,e)
+x0=net.gate(delta*0.5,alh[1])+net.gate(delta,alh[2])+net.gate(t1_pind,e)-net.gate(t1_mv,e)+e*48
 lsph=net.decode(t1_plsp,4,e); lsx_b=net.bits(net.gate(lhh*0.15,lsph[1])+net.gate(lhh*0.5,lsph[2])+net.gate(lhh,lsph[3]),8,e)
 lsx=sum((b_*(1<<i_) for i_,b_ in enumerate(lsx_b)),X())
 wln.drive(e,(pbs+LINES+lj*8,ls_,lend,x0,lhh+lsx,lasc,ex))
