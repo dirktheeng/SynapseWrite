@@ -7,10 +7,10 @@ const blob=await gunzip(b64(window.NET_B64));
 const hl=new DataView(blob.buffer).getUint32(0,true);const h=JSON.parse(new TextDecoder().decode(blob.subarray(4,4+hl)));
 let o=4+hl;o+=(4-o%4)%4;
 const {instance:{exports:e}}=await WebAssembly.instantiate(b64(window.ENG_B64),{});
-e.setup(h.n,h.e,h.L,h.nports,h.bank,h.ni);
+e.setup(h.n,h.e,h.L,h.nports,h.bank,h.ni,h.nt);
 const mem=()=>e.memory.buffer;
 const put=(ptr,bytes)=>{new Uint8Array(mem(),ptr,bytes).set(blob.subarray(o,o+bytes));o+=bytes;};
-put(e.p_istart(),4*(h.n+1));put(e.p_isrc(),4*h.ni);put(e.p_iw(),8*h.ni);put(e.p_act(),h.n);put(e.p_bias(),8*h.n);put(e.p_ostart(),4*(h.n+1));put(e.p_dst(),4*h.e);put(e.p_w(),8*h.e);put(e.p_lstart(),4*(h.L+1));put(e.p_ports(),4*h.nports);
+put(e.p_istart(),4*(h.n+1));put(e.p_isrc(),4*h.ni);put(e.p_iwi(),2*h.ni);put(e.p_act(),h.n);put(e.p_bias(),8*h.n);put(e.p_ostart(),4*(h.n+1));put(e.p_dst(),4*h.e);put(e.p_wi(),2*h.e);put(e.p_lstart(),4*(h.L+1));put(e.p_ports(),4*h.nports);put(e.p_wtab(),8*h.nt);
 e.finish();
 for(const [i,v] of h.init)e.inject(i,v);
 const bank=()=>new Float32Array(mem(),e.p_bank(),h.bank);
@@ -21,7 +21,7 @@ const dispatch=(k,a=0,b=0,c=0)=>{
  const t0=performance.now();const E0=e.edges();
  e.inject(h.ev[0],k);if(a)e.inject(h.ev[1],a);if(b)e.inject(h.ev[2],b);if(c)e.inject(h.ev[3],c);
  const n=e.run(h.halt,window.annMax||50000000);
- const f=new Uint32Array(mem(),e.p_fb(),1024000),q=new Uint32Array(img.data.buffer);for(let i=0;i<1024000;i++)q[i]=f[i]|0xff000000;ctx.putImageData(img,0,0);
+ const y0=e.dirty0(),y1=e.dirty1();if(y1>y0){const f=new Uint32Array(mem(),e.p_fb(),1024000),q=new Uint32Array(img.data.buffer);for(let i=y0*1280,z=y1*1280;i<z;i++)q[i]=f[i]|0xff000000;ctx.putImageData(img,0,0,0,y0,1280,y1-y0);}
  const clip=e.val(h.clipout);if(clip){const bb=bank();const cs=[];for(let i=0;i<clip-1;i++)cs.push(bb[h.cb+i]);const txt=String.fromCharCode(...cs);window.annClip=txt;try{navigator.clipboard.writeText(txt).catch(()=>{});}catch(_){}}
  const sv=e.val(h.saveout),pd=e.val(h.pdfout);if(sv||pd){const n=sv||pd,bb=bank();const u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=bb[h.file+i];saveFile(u,sv?'Document1.docx':'Document1.pdf');}
  if(e.val(h.wpic)){const f=document.createElement('input');f.type='file';f.onchange=()=>f.files[0]&&openPic(f.files[0]);f.click();}

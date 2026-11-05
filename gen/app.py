@@ -981,21 +981,23 @@ import numpy as np
 n=c['n'];ost=np.zeros(n+1,dtype=np.int32);
 dst=[];ww_=[]
 for i in range(n):
-    o=c['out'][i]; ost[i+1]=ost[i]+len(o)
-    for d,w_ in o: dst.append(d);ww_.append(w_)
+    o=sorted(c['out'][i]); ost[i+1]=len(o)      # sizes, ascending targets, delta coded
+    prev=0
+    for d,w_ in o: dst.append(d-prev);prev=d;ww_.append(w_)
 ist=np.zeros(n+1,dtype=np.int32);isr=[];iww=[]
 for i in range(n):
-    ist[i+1]=ist[i]+len(c['lazy'][i])
+    ist[i+1]=len(c['lazy'][i])
     for j_,w_ in c['lazy'][i]: isr.append(j_);iww.append(w_)
-hdr=dict(pdfout=new[nid(pdfout.w)],ni=len(isr),wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,e=len(dst),L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
+wtab=sorted(set(ww_)|set(iww)); wix={w_:k_ for k_,w_ in enumerate(wtab)}; assert len(wtab)<65536
+hdr=dict(pdfout=new[nid(pdfout.w)],ni=len(isr),nt=len(wtab),wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,e=len(dst),L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
  ev=[new[nid(q)] for q in (ev_kind,ev_a,ev_b,ev_c)],cb=CB,cb2=CB2,init=[[new[i],v] for i,v in net.init.items()],
  bank_init=[[LEN+SLOT0,0],[DIRTY+SLOT0,1],[PT,SLOT0],[SLOT0+SAVE,112],[SLOT0+SAVE+1,16],[SLOT0+SAVE+2,1]])
 import os
 dd=np.array(dst,dtype=np.int32)
-raw=b''.join([ist.tobytes(),np.array(isr,dtype=np.int32).tobytes(),np.array(iww,dtype=np.float64).tobytes(),np.array(c['act'],dtype=np.uint8).tobytes(),np.array(c['bias'],dtype=np.float64).tobytes(),ost.tobytes(),dd.tobytes(),np.array(ww_,dtype=np.float64).tobytes(),np.array(c['lstart'],dtype=np.int32).tobytes(),np.array(pr,dtype=np.int32).tobytes()])
-h=json.dumps(hdr).encode()
+raw=b''.join([ist.tobytes(),np.array(isr,dtype=np.int32).tobytes(),np.array([wix[w_] for w_ in iww],dtype=np.uint16).tobytes(),np.array(c['act'],dtype=np.uint8).tobytes(),np.array(c['bias'],dtype=np.float64).tobytes(),ost.tobytes(),dd.tobytes(),np.array([wix[w_] for w_ in ww_],dtype=np.uint16).tobytes(),np.array(c['lstart'],dtype=np.int32).tobytes(),np.array(pr,dtype=np.int32).tobytes(),np.array(wtab,dtype=np.float64).tobytes()])
+h=json.dumps(hdr,separators=(',',':')).encode()
 blob=struct.pack('<I',len(h))+h+b'\0'*((4-(len(h)+4)%4)%4)+raw
-gz=gzip.compress(blob,6)
+gz=gzip.compress(blob,9)
 open('../build/net.bin.gz','wb').write(gz)
 prov={k:len(v) for k,v in net.groups.items()}
 json.dump(dict(neurons=n,edges=len(dst),layers=c['L'],groups=prov,states=len(fsm.states)),open('../build/provenance.json','w'),indent=1)
