@@ -946,7 +946,7 @@ net.group('ribbon display list')
 import ui
 ui.build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S)
 # ---- finish ----
-for r in (jret,oret,dret,wret,bret,gret,hret,cret,iret,nret,t4r,fvr,t4cr,zret,t4lr): r.gen()
+for r in (jret,oret,dret,wret,bret,gret,hret,cret,iret,nret,t4r,fvr,t4cr,zret,t4lr,pfr,pfc): r.gen()
 fsm.finish()
 def nid(x):
     if isinstance(x,X): return next(iter(x.t))
