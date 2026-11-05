@@ -62,7 +62,7 @@ const cell=(r,c)=>click(880+c*26+8,64+r*22+8);const lay=(r,c)=>click(200+c*26+8,
  const paste=t=>async p=>{await p.evaluate(x=>annPaste(x),t);};
  await same('accented key equals paste',[uni('\u00e9\u00f1\u20ac')],[paste('\u00e9\u00f1\u20ac')]);
  await diff('accent changes the glyph',[uni('\u00e9')],['e']);
- await same('find folds Latin-1 case',[paste('\u00c9t\u00e9 x'),key('Home'),key('Control+f'),paste('\u00e9t'),key('Enter'),key('Escape'),'A'],[paste('A\u00e9 x')]);
+ await same('find folds Latin-1 case',[paste('\u00c9t\u00e9 x'),key('Home'),key('Control+f'),uni('\u00e9t'),key('Enter'),key('Escape'),'A'],[paste('A\u00e9 x')]);
  await same('backspace over an accent',[uni('a\u00e9'),key('Backspace')],['a']);
  await same('Ctrl+Home goes to the start',['ab',key('Enter'),'cd',key('Control+Home'),'X'],['Xab',key('Enter'),'cd',key('ArrowUp'),key('Home'),key('ArrowRight')]);
  await diff('strike changes pixels',['abc',key('Shift+Home'),cell(0,0),key('End')],['abc']);

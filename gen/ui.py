@@ -74,7 +74,8 @@ def cell(u,ox,row,col,label='',span=1,col_rgb=None,ly=0):
 def home2(u):
     F=__import__('app_pal').F;B=__import__('app_pal').B
     ox=HOME_X
-    for c,l in enumerate(('S','x2','x3','<|','|>')): cell(u,ox,0,c,l)
+    for c,l in enumerate(('S','x\xb2','x','<|','|>')): cell(u,ox,0,c,l)
+    u.t(ox+2*CW+14,64+9,'2',11)
     u.r(ox+4,64+10,CW-10,1,(0,0,0),200+GID)
     cell(u,ox,0,5,'',1,(255,255,255)); u.r(ox+5*CW+4,64+10,CW-10,1,(0,0,0),200+GID)
     for i in range(7): cell(u,ox,0,6+i,'',1,B[5+i])

@@ -569,7 +569,7 @@ def list_step(ln_,kind,lvl,e):
     lbits=net.bits(ln_,24,e); lc0=sum((lbits[i]*(1<<i) for i in range(8)),X()); lc1=sum((lbits[8+i]*(1<<i) for i in range(8)),X()); lc2=sum((lbits[16+i]*(1<<i) for i in range(8)),X())
     lvh=net.decode(lvl,4,e); isnum=net.eq(kind,2,e); inlist=net.step(kind)
     deep=lvh[2]+lvh[3]
-    n0=G_(lc0+net.and_(isnum,lvh[0]),net.and_(e,inlist)); n1=G_(lc1+net.and_(isnum,lvh[1]),net.and_(e,inlist,ONE-lvh[0])); n2=G_(lc2+net.and_(isnum,deep),net.and_(e,inlist,deep))
+    n0=G_(lc0+net.and_(isnum,lvh[0]),net.and_(e,inlist,ONE-net.and_(lvh[0],net.eq(kind,1,e)))); n1=G_(lc1+net.and_(isnum,lvh[1]),net.and_(e,inlist,ONE-lvh[0])); n2=G_(lc2+net.and_(isnum,deep),net.and_(e,inlist,deep))
     return n0+n1*256+n2*65536, G_(n0,lvh[0])+G_(n1,lvh[1])+G_(n2,deep)
 nlist,mk_now=list_step(listn,lsf,plvl,e)
 fsm.set(mkn,e,mk_now)

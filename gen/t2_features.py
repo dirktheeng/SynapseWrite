@@ -219,7 +219,7 @@ on('T2_ST0',(net.step(ONE-t2df),'T2_SW',{t2si:DEFREC,t2df:1,t2rr.r:t2rr.id('T2_S
 on('T2_ST0b',(None,'T2_ST',{t2skip:1,t2ido:0}))
 on('T2_ST',(None,'T2_ST1',{rl:OA+oi}))
 e=S('T2_ST1')
-on('T2_ST1',(net.eq(W[0],62,e),'T2_ST2',None),(pat('w:type="',e),'T2_ST3',{rl:OA+oi+8}),(pat('w:styleI',e),'T2_ST',{t2ido:oi+12,oi:oi+12}),(None,'T2_ST',{oi:oi+1}))
+on('T2_ST1',(net.eq(W[0],62,e),'T2_ST2',None),(pat('w:type="',e),'T2_ST3',{rl:OA+oi+8}),(pat('w:styleI',e),'T2_ST',{t2ido:oi+11,oi:oi+11}),(None,'T2_ST',{oi:oi+1}))
 e=S('T2_ST3'); on('T2_ST3',(pat('paragrap',e),'T2_ST',{t2skip:0,oi:oi+8}),(None,'T2_ST',{oi:oi+8}))
 on('T2_ST2',(t2skip,'PX',None),(None,'T2_FS',{t2oi:oi,oi:t2ido,t2i:0,t2jj:0,t2rr.r:t2rr.id('T2_ST4')}))
 # id search: compares the string at oi against each table id
@@ -243,7 +243,7 @@ on('T2_PS1',(None,'T2_FS',{t2i:0,t2jj:0,t2rr.r:t2rr.id('T2_PS2')}))
 on('T2_PS2',(t2fnd,'T2_AP',None),(None,'PX',None))
 on('T2_PR',(None,'T2_AP',{t2i:0}))
 on('T2_AP',(None,'T2_AP1',{rl:as_x(STY)+t2i*STYN}))
-on('T2_AP1',(None,'PX',{t2ps:W[0],cs:W[0],w1:(cb+ALIGN,W[1]),w2:(cb+LIST,W[7]),wln:(cb+PIND,W[2],W[3],W[4],W[5],W[6],t2i)}))
+on('T2_AP1',(None,'PX',{t2il:0,t2ps:W[0],cs:W[0],w1:(cb+ALIGN,W[1]),w2:(cb+LIST,W[7]),wln:(cb+PIND,W[2],W[3],W[4],W[5],W[6],t2i)}))
 # PDF list markers
 e=S('T2_PM'); on('T2_PM',(net.and_(net.eq(qlj,0,e),net.step(qk)),'T2_PMa',None),(None,'PD_8',None))
 lit('T2_PMa',b'BT 1 0 0 1 ','T2_PMb')
