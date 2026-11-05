@@ -473,8 +473,37 @@ net.group('paste')
 CB2=CB+200000; pi_=R()
 on('PASTE',(has_sel,'DS0',{dret.r:dret.id('PS1'),grp:grp+1}),(None,'PS1',{grp:grp+1}))
 on('PS1',(None,'PS2',{pi_:0}))
+# Block paste. A window of cells is read at once. Their control characters are weighted by
+# position so one threshold layer finds how many cells lead before the first of them, and those
+# cells go to the paragraph, the styles and the undo log in a single write. A window that starts
+# with a control character, or a full paragraph, takes the single character path.
+PSN=32
+rpw=RPort(PSN); wpch=WPort(PSN,rpw.out[0],True); wpst=WPort(PSN,None,True); wplg=WPort(6*PSN)
+pn_=R(); PSW_=rpw.out
 e=S('PS2')
-on('PS2',(net.ge(pi_,evc,e),'AFTER_ED',None),(None,'PS3',{r1:as_x(CB2)+pi_}))
+on('PS2',(net.ge(pi_,evc,e),'AFTER_ED',None),(None,'PSW',{rpw:as_x(CB2)+pi_}))
+e=S('PSW')
+_bad=[net.step(as_x(32)-PSW_[i_]-0.5+e*M-M) for i_ in range(PSN)]
+_score=sum((_bad[i_]*float(2**(PSN-1-i_)) for i_ in range(PSN)),X())
+_lead=e*PSN-sum((net.step(_score-float(2**(PSN-1-i_))+0.5) for i_ in range(PSN)),X())
+_n1=_lead-net.relu(_lead-(evc-pi_)+e*M-M)
+_cap=net.relu(as_x(1000)-clen+e*M-M)
+_n2=_n1-net.relu(_n1-_cap+e*M-M)
+_tail=clen-co
+on('PSW',(ONE-net.step(_n2),'PS3',{r1:as_x(CB2)+pi_}),(net.step(_tail),'PSS1',{pn_:_n2,rb:(cb+co,_tail)}),(None,'PSY',{pn_:_n2,rpw:as_x(CB2)+pi_}))
+on('PSS1',(None,'PSS2',{wb:(cb+co+pn_,clen-co),rb:(cb+1024+co,clen-co)}))
+on('PSS2',(None,'PSY',{wb:(cb+1024+co+pn_,clen-co),rpw:as_x(CB2)+pi_}))
+e=S('PSY'); mark_d(e,cp)
+_st=[net.wire() for _ in range(PSN)]
+for w_ in _st: net.connect(w_,G_(ty,e))
+wpst.ext=_st[0]; net.aligned.append([next(iter(w_.t)) for w_ in _st])
+cc_=net.and_(e,ONE-nolog)
+_lg=[]
+for i_ in range(PSN): _lg+=[as_x(1),cp,co+i_,PSW_[i_],ty,grp]
+wplg.drive(cc_,[usp]+_lg)
+wrap_=net.ge(usp,UEND_,cc_); nxtu=net.gate(usp+pn_*6,cc_-wrap_)+wrap_*UB
+fsm.set(usp,cc_,nxtu); fsm.set(urp,cc_,nxtu)
+on('PSY',(None,'PS2',{wpch:(cb+co,pn_),wpst:(cb+1024+co,pn_),w3:(cb+LEN,clen+pn_),w4:(cb+DIRTY,1),co:co+pn_,clen:clen+pn_,pi_:pi_+pn_}))
 e=S('PS3')
 on('PS3',(net.eq(R1,10,e),'SPLIT',{pi_:pi_+1,oret.r:oret.id('PS2')}),(net.lt(R1,32,e),'PS2',{pi_:pi_+1}),(net.ge(clen,1000,e),'PS2',{pi_:pi_+1}),(None,'INS',{ins_ch:R1,ins_st:ty,pi_:pi_+1,oret.r:oret.id('PS2')}))
 # ---- layout and paint walk ----
@@ -603,7 +632,7 @@ for rr,xx,ww,aa in ((rA,x,adv2+1,col),(rB,x+adv2,adv2+1+xtra,col+1)):
     rr.b[8].add(e,aa)
 und=net.and_(e,SD['und']); ucol=colh
 rC.drive(und,(x,sy+lasc+2,adv+xtra,1,(0,0,0),col))
-on('C1',(None,'C0',{x:x+adv+xtra,col:col+1,off:off+1}))
+on('C1',(net.ge(off+1,le_,e),'CE',{x:x+adv+xtra,col:col+1,off:off+1}),(None,'C1',{x:x+adv+xtra,col:col+1,off:off+1,r1:pbs+off+1,r2:pbs+1024+off+1}))
 e=S('CE'); chere2=net.and_(net.eq(pi,cp,e),net.eq(off,co,e))
 fsm.set(cx,chere2,x);fsm.set(cacol,chere2,col)
 on('IM0',(net.ge(irow,pih,S('IM0')),'CB0',None),(None,'IM0',{imr:(x,sy+irow,as_x(IMG0)+pio+iaddr,pim),irow:irow+1,iaddr:iaddr+pim}))
@@ -655,7 +684,7 @@ fsm.set(lb,net.and_(sp,ONE-over),off+1);fsm.set(lbx,net.and_(sp,ONE-over),lx);fs
 on('L2',(net.and_(over,hasb),'EM',{lend:lb,lwid:lbx,lspc:lspb,off:lb,llast:0}),
  (over,'EM',{lend:off,lwid:lx,lspc:lsn,llast:0}),
  (lastc,'EM',{**advance,lend:off+1,lwid:lx+adv,lspc:lsn,llast:1}),
- (None,'L1',advance))
+ (None,'L2',{**advance,r1:pbs+off+1,r2:pbs+1024+off+1}))
 e=S('EM'); delta=net.relu(ww-lwid); alh=net.decode(al,4,e)
 just=net.and_(alh[3],ONE-llast); sph=net.decode(lspc,64,just); ex=X()
 deltaj=net.gate(delta,just)
@@ -959,7 +988,7 @@ fsm.finish()
 def nid(x):
     if isinstance(x,X): return next(iter(x.t))
     return x
-wvl_data=[wlog,wln,wvl,w1,w2,w3,w4,fw,fw2,wo,imw,wl_i,xw]
+wvl_data=[wlog,wln,wvl,w1,w2,w3,w4,fw,fw2,wo,imw,wl_i,xw,wplg]
 for p in wvl_data: net.aligned.append([nid(b.w) for b in p.d])
 for b in (dat_s,dat_l): net.aligned.append([nid(w_) for w_ in b])
 net.keep=[nid(q) for q in (halt.w,timer.w,clipout.w,saveout.w,pdfout.w,picout.w,openout.w,wantp.w,ev_kind,ev_a,ev_b,ev_c)]
