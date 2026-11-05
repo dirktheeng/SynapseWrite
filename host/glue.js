@@ -27,7 +27,7 @@ const dispatch=(k,a=0,b=0,c=0)=>{
  if(e.val(h.wpic)){const f=document.createElement('input');f.type='file';f.onchange=()=>f.files[0]&&openPic(f.files[0]);f.click();}
  if(e.val(h.wopen)){const f=document.createElement('input');f.type='file';f.onchange=()=>f.files[0]&&openFile(f.files[0]);f.click();}
  const wp=e.val(h.wantp);
- const ms=e.val(h.timer);clearTimeout(timer);if(ms)timer=setTimeout(()=>dispatch(7),ms);
+ const ms=e.val(h.timer);if(ms){clearTimeout(timer);timer=setTimeout(()=>dispatch(7),ms);}
  if(wp)try{navigator.clipboard.readText().then(pasteText).catch(()=>{});}catch(_){}
  stats.ticks=n;stats.ms=performance.now()-t0;stats['k'+k]=stats.ms;stats['t'+k]=n;stats['e'+k]=e.edges()-E0;stats.edges=e.edges()-E0;stats.events++;
 };
@@ -41,12 +41,12 @@ const saveFile=async (u,name)=>{let dl=null;try{dl=window.claude?await window.cl
 const NAMED={Backspace:8,Tab:9,Enter:13,Escape:27,Delete:127,ArrowLeft:128,ArrowUp:129,ArrowRight:130,ArrowDown:131,Home:132,End:133,PageUp:134,PageDown:135};
 const mods=ev=>(ev.ctrlKey||ev.metaKey?1:0)+(ev.shiftKey?2:0);
 window.addEventListener('keydown',ev=>{let c=NAMED[ev.key];if(!c&&ev.key.length===1)c=(ev.ctrlKey||ev.metaKey)?ev.key.toLowerCase().charCodeAt(0):ev.key.charCodeAt(0);
- if(!c)return;if((ev.ctrlKey||ev.metaKey)&&c===118)return;ev.preventDefault();dispatch(2,c,mods(ev));});
+ if(!c)return;if((ev.ctrlKey||ev.metaKey)&&c===118)return;ev.preventDefault();dispatch(2,c,mods(ev),Math.floor(performance.now()));});
 window.addEventListener('paste',ev=>{ev.preventDefault();pasteText(ev.clipboardData.getData('text'));});
 const pos=ev=>{const r=cv.getBoundingClientRect();return [Math.round((ev.clientX-r.left)*1280/r.width),Math.round((ev.clientY-r.top)*800/r.height)];};
-cv.addEventListener('mousedown',ev=>{const [x,y]=pos(ev);dispatch(3,x,y);});
+cv.addEventListener('mousedown',ev=>{const [x,y]=pos(ev);dispatch(3,x,y,Math.floor(performance.now()));});
 window.addEventListener('mouseup',ev=>{const [x,y]=pos(ev);dispatch(4,x,y);});
-let moving=false;window.addEventListener('mousemove',ev=>{if(!ev.buttons||moving)return;moving=true;requestAnimationFrame(()=>{moving=false;const [x,y]=pos(ev);dispatch(5,x,y);});});
+let moving=false;cv.addEventListener('mouseleave',()=>dispatch(11));window.addEventListener('mousemove',ev=>{if(!ev.buttons){const [x,y]=pos(ev);dispatch(11,x,y);return;}if(moving)return;moving=true;requestAnimationFrame(()=>{moving=false;const [x,y]=pos(ev);dispatch(5,x,y);});});
 cv.addEventListener('wheel',ev=>{ev.preventDefault();dispatch(6,0,0,Math.round(ev.deltaY)+1000);},{passive:false});
 window.annDispatch=dispatch;window.annVal=i=>e.val(i);dispatch(1);window.annReady=true;
 })();
