@@ -1,0 +1,1 @@
+const load=require('./load');load().then(({e,h})=>{const os=new Int32Array(e.memory.buffer,e.p_ostart(),h.n+1),d=new Int32Array(e.memory.buffer,e.p_dst(),h.e),a=new Uint8Array(e.memory.buffer,e.p_act(),h.n);for(const i of process.argv.slice(2).map(Number)){console.log(i,'act',a[i],'fan',os[i+1]-os[i],[...d.subarray(os[i],os[i+1])].join(','));}});

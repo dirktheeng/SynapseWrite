@@ -63,20 +63,30 @@ static inline void run_ports(void){
  for(i32 i=nwp,e=nwp+nrp;i<e;i++)if(v[pen[i]]!=0)read_port(ports+pptr[i]);}
 static long edges_total=0; __attribute__((export_name("edges"))) f64 edges(void){return (f64)edges_total;}
 #define SET(d) do{bits[(d)>>6]|=1ull<<((d)&63);sum[(d)>>12]|=1ull<<(((d)>>6)&63);}while(0)
+#ifdef COUNT
+static double c_ops[4];__attribute__((export_name("ops"))) f64 ops(i32 k){return c_ops[k];}
+static f32*c_n;__attribute__((export_name("workp"))) void* workp(void){if(!c_n)c_n=alloc(4*N);return c_n;}
+#define CN(i,x) if(c_n)c_n[i]+=(x)
+#define CNT(k) c_ops[k]+=1
+#else
+#define CNT(k)
+#define CN(i,x)
+#endif
 // A pull neuron computes only when a consumer reads it, at most once per tick. Inputs are stored
 // with the largest weights first, so a closed gate ends the evaluation at once.
-static f64 pull(i32 i){ if(stamp[i]==tickno)return v[i]; f64 x=bias[i];
- for(i32 q=istart[i],e=istart[i+1];q<e;q++){f64 w_=wtab[iwi[q]];if(x<=-549755813888.0&&w_<549755813888.0&&w_>-549755813888.0)break;i32 s=isrc[q];x+=w_*(s>=0?v[s]:pull(~s));}
- i32 ac=act[i];f64 o=ac==0?x:ac==1?(x>1e-9?1:0):(x>0?x:0); stamp[i]=tickno; if(o!=0){v[i]=o;live[nlive++]=i;} return o;}
+static f64 pull(i32 i){ if(stamp[i]==tickno)return v[i]; CNT(2);CN(i,1); f64 x=bias[i]; i32 ac=act[i],q=istart[i],e=istart[i+1];
+ if(ac&4){ac&=3;i32 s=isrc[q];CNT(3);f64 y=s>=0?v[s]:pull(~s);if(y==0){stamp[i]=tickno;return 0;}x+=wtab[iwi[q]]*y;q++;}
+ for(;q<e;q++){f64 w_=wtab[iwi[q]];if(x<=-549755813888.0&&w_<549755813888.0&&w_>-549755813888.0)break;i32 s=isrc[q];CNT(3);CN(i,1);x+=w_*(s>=0?v[s]:pull(~s));}
+ f64 o=ac==0?x:ac==1?(x>1e-9?1:0):(x>0?x:0); stamp[i]=tickno; if(o!=0){v[i]=o;live[nlive++]=i;} return o;}
 static void tick(void){ tickno++;
  for(i32 i=0;i<nlive;i++)v[live[i]]=0; nlive=0;
  for(i32 i=0;i<nnext;i++){i32 d=nlist[i];acc[d]=nacc[d];nacc[d]=0;nflag[d]=0;SET(d);} nnext=0;
  for(i32 sw=0;sw<SWORDS;sw++){u64 s;while((s=sum[sw])){i32 wd=sw*64+__builtin_ctzll(s);u64 b;
    while((b=bits[wd])){i32 i=wd*64+__builtin_ctzll(b);bits[wd]=b&(b-1);
-    f64 x=acc[i]+bias[i];acc[i]=0;
-    {i32 a0=istart[i],a1=istart[i+1];if(a1>a0&&x>-549755813888.0){for(i32 q=a0;q<a1;q++){i32 s=isrc[q];x+=wtab[iwi[q]]*(s>=0?v[s]:pull(~s));}}}
+    f64 x=acc[i]+bias[i];acc[i]=0;CNT(0);CN(i,1);
+    {i32 a0=istart[i],a1=istart[i+1];if(a1>a0&&x>-549755813888.0){for(i32 q=a0;q<a1;q++){i32 s=isrc[q];CNT(1);CN(i,1);x+=wtab[iwi[q]]*(s>=0?v[s]:pull(~s));}}}
     i32 ac=act[i];if(ac==3){v[i]+=x;continue;}f64 o=ac==0?x:ac==1?(x>1e-9?1:0):(x>0?x:0);
-    if(o!=0){v[i]=o;live[nlive++]=i;i32 q=ostart[i],sp=osplit[i],en=ostart[i+1];edges_total+=en-q;
+    if(o!=0){v[i]=o;live[nlive++]=i;i32 q=ostart[i],sp=osplit[i],en=ostart[i+1];edges_total+=en-q;CN(i,en-q);
      for(;q<sp;q++){i32 d=dst[q];nacc[d]+=o*wtab[wi[q]];if(!nflag[d]){nflag[d]=1;nlist[nnext++]=d;}}
      for(;q<en;q++){i32 d=dst[q];acc[d]+=o*wtab[wi[q]];SET(d);}}}
    sum[sw]&=~(1ull<<(wd&63));}}

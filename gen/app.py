@@ -89,14 +89,10 @@ def _tree(parent,sels):
     return _tree(l0,sels[:-1])+_tree(l1,sels[:-1])
 _leaf=_tree(GE,SD['sb'])
 size_hot=_leaf[:10]+[sum(_leaf[10:],X())]
-# character index: base 16 digits by two thermometers, one hot digits read lazily
+# character index in binary; values past the table clamp to its last entry
 _chv=net.relu(g_ch.w-32+1+GE*M-M)
-_ht=[net.step(_chv-16*k_-0.5) for k_ in range(1,6)]
-_base=net.step(_chv)
-chr_hi=[net.step(_base-_ht[0]-0.5)]+[net.step(_ht[k_]-(_ht[k_+1] if k_<4 else X())-0.5) for k_ in range(5)]
-_rem=_chv-sum((t_*16 for t_ in _ht),X())
-_lt=[_base]+[net.step(_rem-j_-0.5) for j_ in range(1,16)]
-chr_lo=[net.step(_lt[j_]-(_lt[j_+1] if j_<15 else X())-0.5) for j_ in range(16)]
+_chok=net.step(_chv)
+_chbits=net.bits(_chv-1-net.relu(_chv-96),7,_chok)
 adv=net.wire();asc=net.wire();lh=net.wire();small=net.wire()
 for si,h in enumerate(size_hot):
     a,l=rom.metrics(si); net.connect(asc,h*a); net.connect(lh,h*l)
@@ -155,16 +151,19 @@ for si in range(11):
     for bo,bn_ in enumerate((b0,b1)):
       i0,i1=tsplit(bn_,SD['ital'])
       for it,fh in enumerate((i0,i1)):
-        for hi_ in range(6):
-          Fh=net.step(fh*M-M+chr_hi[hi_]-0.5)
-          for lo_ in range(16):
-            a,pts=GLY[fi,bo,it,si,hi_*16+lo_]
-            if not a and not pts: continue
-            G=net.step(Fh*M-M+chr_lo[lo_]-0.5)
+        def leaf(G,ci):
+            a,pts=GLY[fi,bo,it,si,ci]
             if a: net.connect(adv,G*a)
             if pts:
                 Gd=net.step(G*M-M+g_draw.w-0.5); cv=cov_s if rom.small(si) else cov_l; w_=SW if rom.small(si) else LW
                 for x_,y_,q in pts: net.connect(cv[y_*w_+x_],Gd*(q/15.0))
+        def inhabited(lo,hi): return any(GLY[fi,bo,it,si,ci][0] or GLY[fi,bo,it,si,ci][1] for ci in range(lo,min(hi,96)))
+        def walk(node,lo,k):
+            if k<0: leaf(node,lo); return
+            mid=lo+(1<<k)
+            if inhabited(lo,mid): walk(tnode(node,_chbits[k],True),lo,k-1)
+            if mid<96 and inhabited(mid,lo+(2<<k)): walk(tnode(node,_chbits[k]),mid,k-1)
+        walk(tnode(fh,_chok),0,6)
 print('glyph weights',time.time()-t0,'s',file=sys.stderr)
 class GlyPort:
     def drive(s,c,v):
@@ -999,8 +998,13 @@ for p in net.ports:
     if isinstance(p,PatchPort): net.keep+=[nid(q) for q in p.a[:3]]
     if isinstance(p,(RPort,PixPort)): net.keep+=[nid(q) for q in p.out]
 c=net.compile(); new=c['new']
+gn_=[''] *c['n']
+for g_,ids_ in net.groups.items():
+    for i_ in ids_: gn_[new[i_]]=g_
+json.dump(gn_,open('../build/ngroups.json','w'))
 print('neurons',c['n'],'layers',c['L'],file=sys.stderr)
 names={new[next(iter(v_.t))]:k_ for k_,v_ in list(globals().items()) if isinstance(v_,X) and len(v_.t)==1}
+print('regs in AND inputs',sorted(names.get(new[j],str(new[j])) for j in net.bool_regs_seen),file=sys.stderr)
 json.dump(names,open('../build/names.json','w'))
 json.dump({str(new[next(iter(r_.t))]):k_ for k_,(r_,_) in fsm.states.items()},open('../build/states.json','w'))
 pr=[]

@@ -70,7 +70,10 @@ class Net:
     def and_(s,*a):
         e=X(c=-(len(a)-1))
         for x in a: e=e+x
-        return s.step(e)
+        r=s.step(e)
+        # An AND's inputs are 0 or 1 by construction, so any of them may wake it.
+        s.bool_in=getattr(s,'bool_in',set()); s.bool_in.add(next(iter(r.t)))
+        return r
     def or_(s,*a):
         e=X()
         for x in a: e=e+x
@@ -145,7 +148,7 @@ class Net:
             if s.act[j]==STEP or j in boolreg: return 0.0,1.0
             if s.act[j]==RELU: return 0.0,INF
             return -INF,INF
-        ins=[]; push=[None]*n; npush=[0]*n; nread=[0]*n
+        ins=[]; push=[None]*n; npush=[0]*n; nread=[0]*n; trig={}
         for i in range(n):
             agg={}
             for j,w in s.inp[i]: agg[j]=agg.get(j,0)+w
@@ -158,17 +161,22 @@ class Net:
                     ctl=[j for j,w in agg.items() if abs(w)>=M/2]
                     if s.bias[i]<=-M/2 and ctl: P=set(ctl)
                     else:
-                        tops=[]
-                        for j,w in agg.items(): tops.append(w*(bounds(j)[1] if w>0 else bounds(j)[0]))
+                        tops=[]; boolin=i in getattr(s,'bool_in',())
+                        for j,w in agg.items():
+                            lo_,hi_=(0.0,1.0) if boolin and s.kind[j]=='reg' else bounds(j)
+                            tops.append(w*(hi_ if w>0 else lo_))
                         ninf=sum(1 for t in tops if t==INF); tot=s.bias[i]+sum(t for t in tops if t!=INF)
                         best=None
+                        if boolin:
+                            for j in agg:
+                                if s.kind[j]=='reg' and j not in boolreg and j!=s.ONE_id: s.bool_regs_seen=getattr(s,'bool_regs_seen',set())|{j}
                         for (j,w),t in zip(agg.items(),tops):
                             if w<=0: continue
                             rest=(tot-t) if t!=INF else tot
                             if (ninf-(t==INF))==0 and rest<=1e-12:
                                 rank=(0 if j in boolreg else 1 if s.act[j]==STEP else 2)
                                 if best is None or rank<best[0]: best=(rank,j)
-                        if best: P={best[1]}
+                        if best: P={best[1]}; trig[i]=best[1]
             push[i]=P
             for j in agg:
                 if j in P: npush[j]+=1
@@ -193,6 +201,9 @@ class Net:
                 if j in push[i]: out[new[j]].append((new[i],w))
                 else: rd.append((abs(w),~new[j] if pull[j] else new[j],w))
             rd.sort(key=lambda q:-q[0])
+            if pull[i] and i in trig:     # read the input that decides first; zero ends the evaluation
+                t_=trig[i]; rd=[q for q in rd if abs(q[1] if q[1]>=0 else ~q[1])==new[t_]]+[q for q in rd if abs(q[1] if q[1]>=0 else ~q[1])!=new[t_]]
+                act[i]=act[i]|4
             lazy[new[i]]=[(q[1],q[2]) for q in rd]
         import sys as _s
         print('pull',sum(pull),'sticky',nsticky,file=_s.stderr)
