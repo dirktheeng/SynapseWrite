@@ -92,7 +92,7 @@ chr_hot=net.decode2(g_ch.w-32,224,GE)
 adv=net.wire();asc=net.wire();asc_e=net.wire();lh=net.wire();small=net.wire();rise=net.wire();strk=net.wire()
 # superscript and subscript draw a smaller compiled size; the line keeps the nominal metrics
 def script_size(i):
-    px=rom.PTS[i]*0.68
+    px=rom.PTS[i]*0.72
     return min(range(NS),key=lambda j:(abs(rom.PTS[j]-px),rom.PTS[j]))
 vflag=net.step(SD['sup']+SD['sub'])
 size_hot=[]
@@ -103,7 +103,7 @@ for j in range(NS):
     size_hot.append(net.and_(raw_hot[j],ONE-vflag)+(net.and_(srcs,vflag) if srcs.t else X()))
 for si,h in enumerate(raw_hot):
     a,l=rom.metrics(si); net.connect(asc,h*a); net.connect(lh,h*l)
-    px=round(rom.PTS[si]*96/72); net.connect(strk,h*round(a-px*0.28))
+    px=round(rom.PTS[si]*96/72); net.connect(strk,h*round(px*0.28))
     net.connect(rise,net.and_(h,SD['sup'])*round(px*0.36)); net.connect(rise,net.and_(h,SD['sub'])*(-round(px*0.16)))
 for si,h in enumerate(size_hot):
     a,l=rom.metrics(si); net.connect(asc_e,h*a)
@@ -262,7 +262,7 @@ on('KEY',
  (net.and_(findon,net.and_(printable,nc)),'FTYPE',{}),
  (N(128),'MOVL',{}),(N(130),'MOVR',{}),(N(129),'MOVU',{}),(N(131),'MOVD',{}),(N(132),'MOVH',{}),(N(133),'MOVE',{}),
  (N(134),'RD0',{scroll:net.relu(scroll-500),autos:0}),(N(135),'RD0',{scroll:scroll+500,autos:0}),
- (K('p'),'PDF',{}),(K('s'),'SAVE',{}),(K('o'),'HALT',{wopen:1}),(K('z'),'UNDO',{}),(K('y'),'REDO',{}),(K('a'),'SELALL',{}),(K('c'),'COPY',{}),(K('x'),'CUT',{}),
+ (K(132),'MVJ',{jp:0,jo:0,jret.r:jret.id('MVEND')}),(K(133),'MVJ',{jp:net.relu(npar-1),jo:2047,jret.r:jret.id('MVEND')}),(K('p'),'PDF',{}),(K('s'),'SAVE',{}),(K('o'),'HALT',{wopen:1}),(K('z'),'UNDO',{}),(K('y'),'REDO',{}),(K('a'),'SELALL',{}),(K('c'),'COPY',{}),(K('x'),'CUT',{}),
  (K('b'),'FMTS',{fm:1}),(K('i'),'FMTS',{fm:2}),(K('u'),'FMTS',{fm:3}),
  (K('e'),'SETAL',{alv:1}),(K('l'),'SETAL',{alv:0}),(K('r'),'SETAL',{alv:2}),(K('j'),'SETAL',{alv:3}),
  (K('f'),'RD0',{mode:1,field:0}),(K('h'),'RD0',{mode:2,field:0}),

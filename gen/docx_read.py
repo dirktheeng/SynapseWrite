@@ -184,7 +184,7 @@ on('PX2',(net.and_(t2skip,ONE-pat('</w:styl',e)),'PX',{oi:oi+1}),
  (pat('<w:abstr',e),'T2_AB',{rl:OA+oi+8}),
  (pat('<w:num ',e),'T2_NM',{oi:oi+7,t2n_:0,t2rr.r:t2rr.id('T2_NX')}),
  (pat('<w:lvl ',e),'T2_NM',{oi:oi+7,t2n_:0,t2rr.r:t2rr.id('T2_LV')}),
- (pat('<w:numFm',e),'T2_FM',{rl:OA+oi+18}),
+ (pat('<w:numFm',e),'T2_FM',{rl:OA+oi+17}),
  (None,'PX',{oi:oi+1}))
 e=S('SZ0')
 hpv=(W[0]-48)*10+(W[1]-48)

@@ -184,7 +184,7 @@ t2fld=R()
 on('T2_IN',(net.step(R1),'PX',None),(None,'T2_AT',None))
 on('T2_AT',(None,'T2_AT1',{rl:OA+oi}))
 e=S('T2_AT1')
-def att(p_,fld,nxt='T2_A0'): return (pat(p_,e),'T2_NM',{oi:oi+len(p_),t2fld:fld,t2n_:0,t2rr.r:t2rr.id(nxt)})
+def att(p_,fld,nxt='T2_A0'): return (pat(p_,e),'T2_NM',{oi:oi+len(p_)-(1 if p_.endswith('"') else 0),t2fld:fld,t2n_:0,t2rr.r:t2rr.id(nxt)})
 on('T2_AT1',(net.eq(W[0],62,e),'PX',None),
  att('w:before',PSPB),att('w:after=',PSPA),att('w:left="',PIND),att('w:start=',PIND),att('w:firstL',PFIRST),att('w:hangin',PFIRST,'T2_A2'),att('w:line="',PLSP,'T2_A4'),
  (pat('w:lineRu',e),'T2_A6',{rl:OA+oi+12}),(None,'T2_AT',{oi:oi+1}))
