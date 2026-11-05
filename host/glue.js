@@ -15,13 +15,13 @@ e.finish();
 for(const [i,v] of h.init)e.inject(i,v);
 const bank=()=>new Float32Array(mem(),e.p_bank(),h.bank);
 {const b=bank();for(const [a,v] of h.bank_init)b[a]=v;}
-const cv=document.getElementById('screen'),ctx=cv.getContext('2d',{alpha:false});const img=ctx.createImageData(1280,800);
+const cv=document.getElementById('screen'),ctx=cv.getContext('2d',{alpha:false,willReadFrequently:true});const img=ctx.createImageData(1280,800);
 let timer=0;const stats=window.annStats={ticks:0,ms:0,edges:0,events:0};
 const dispatch=(k,a=0,b=0,c=0)=>{
  const t0=performance.now();const E0=e.edges();
  e.inject(h.ev[0],k);if(a)e.inject(h.ev[1],a);if(b)e.inject(h.ev[2],b);if(c)e.inject(h.ev[3],c);
  const n=e.run(h.halt,window.annMax||50000000);
- const y0=e.dirty0(),y1=e.dirty1();if(y1>y0){const f=new Uint32Array(mem(),e.p_fb(),1024000),q=new Uint32Array(img.data.buffer);for(let i=y0*1280,z=y1*1280;i<z;i++)q[i]=f[i]|0xff000000;ctx.putImageData(img,0,0,0,y0,1280,y1-y0);}
+ {const dr=new Uint8Array(mem(),e.p_drow(),801),f=new Uint32Array(mem(),e.p_fb(),1024000),q=new Uint32Array(img.data.buffer);for(let y=0;y<800;y++)if(dr[y]){let z=y;while(dr[z])dr[z++]=0;for(let i=y*1280,j=z*1280;i<j;i++)q[i]=f[i]|0xff000000;ctx.putImageData(img,0,0,0,y,1280,z-y);y=z;}}
  const clip=e.val(h.clipout);if(clip){const bb=bank();const cs=[];for(let i=0;i<clip-1;i++)cs.push(bb[h.cb+i]);const txt=String.fromCharCode(...cs);window.annClip=txt;try{navigator.clipboard.writeText(txt).catch(()=>{});}catch(_){}}
  const sv=e.val(h.saveout),pd=e.val(h.pdfout);if(sv||pd){const n=sv||pd,bb=bank();const u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=bb[h.file+i];saveFile(u,sv?'Document1.docx':'Document1.pdf');}
  if(e.val(h.wpic)){const f=document.createElement('input');f.type='file';f.onchange=()=>f.files[0]&&openPic(f.files[0]);f.click();}

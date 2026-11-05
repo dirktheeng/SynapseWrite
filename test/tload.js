@@ -1,0 +1,3 @@
+// Page load: time from navigation to the first frame being ready, and page size.
+const {chromium}=require('playwright');const path=process.argv[2]||require('path').resolve(__dirname,'../build/index.html');
+(async()=>{const b=await chromium.launch();let best=1e9;for(let i=0;i<4;i++){const p=await b.newPage({viewport:{width:1280,height:800}});const t=Date.now();await p.goto('file://'+path);await p.waitForFunction('window.annReady',{timeout:60000,polling:5});best=Math.min(best,Date.now()-t);await p.close();}console.log('load ms',best,'bytes',require('fs').statSync(path).size);await b.close();})();

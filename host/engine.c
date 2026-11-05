@@ -11,7 +11,7 @@ __attribute__((export_name("alloc"))) void* alloc(i32 n){u8*p=(u8*)(((unsigned l
 static i32 *stamp,tickno=1; static i32 *istart,*isrc; static u16 *iwi,*wi; static f64 *wtab; static i32 NI;
 static i32 N,E,L,NP,NT; static u8*act; static f64*bias,*v,*acc,*nacc; static i32*ostart,*osplit,*dst;
 static i32*lstart,*live,*nlist,*ports,*pen,*pptr; static u8*nflag; static i32 nlive,nnext,nwp,nrp; static u64*bits,*sum; static i32 SWORDS;
-static f32*bank; static u8*fb; enum{W=1280,H=800,YB=4096}; static i32 dy0=H,dy1=0;
+static f32*bank; static u8*fb; enum{W=1280,H=800,YB=4096};
 __attribute__((export_name("setup"))) void setup(i32 n,i32 e,i32 l,i32 np,i32 banksize,i32 ni,i32 nt){N=n;E=e;L=l;NP=np;NI=ni;NT=nt;istart=alloc(4*(n+1));isrc=alloc(4*ni+4);iwi=alloc(2*ni+2);wtab=alloc(8*nt+8);
  act=alloc(n);bias=alloc(8*n);v=alloc(8*n);acc=alloc(8*n);nacc=alloc(8*n);ostart=alloc(4*(n+1));osplit=alloc(4*n);dst=alloc(4*e+4);wi=alloc(2*e+2);
  stamp=alloc(4*n);lstart=alloc(4*(l+1));live=alloc(4*n);nlist=alloc(4*n);nflag=alloc(n);bits=alloc(8*(n/64+2));SWORDS=n/4096+2;sum=alloc(8*SWORDS);
@@ -31,12 +31,12 @@ __attribute__((export_name("finish"))) void finish(void){
    p+=len;}
   if(pass)nrp=c;else nwp=c;}}
 __attribute__((export_name("inject"))) void inject(i32 i,f64 x){nacc[i]+=x;if(!nflag[i]){nflag[i]=1;nlist[nnext++]=i;}}
-__attribute__((export_name("dirty0"))) i32 dirty0(void){return dy0;}
-__attribute__((export_name("dirty1"))) i32 dirty1(void){i32 y=dy1;dy0=H;dy1=0;return y;}
+// Rows of the image changed since the last call, as passive bookkeeping for the display.
+static u8 drow[801];
+__attribute__((export_name("p_drow"))) void* p_drow(void){return drow;}
 static inline i32 I(i32 n){return n<0?0:(i32)__builtin_floor(v[n]);}
 static inline i32 V(i32 n){return n<0?0:(i32)__builtin_floor(v[n]);}
 static inline u8 C(f64 x){x+=.5;return x<0?0:x>255?255:(u8)x;}
-static inline void mark(i32 y0,i32 y1){if(y0<dy0)dy0=y0;if(y1>dy1)dy1=y1;}
 static void write_port(i32*p){switch(p[0]){
   case 1:{ // block or scalar write: {1,en,addr,data,len,lenN}
    i32 a=I(p[2]),n=p[5]>=0?I(p[5]):p[4];if(n>p[4])n=p[4];f64*d=v+p[3];f32*b=bank+a;for(i32 j=0;j<n;j++)b[j]=(f32)d[j];break;}
@@ -44,15 +44,15 @@ static void write_port(i32*p){switch(p[0]){
    i32 x=I(p[2]),y=I(p[3])-YB,w_=I(p[4]),h=I(p[5]);i32 y0=V(p[10]),y1=V(p[11]);if(y1==0){y0=0;y1=H;}
    i32 x1=x+w_,yy1=y+h;if(x<0)x=0;if(x1>W)x1=W;if(y<y0)y=y0;if(yy1>y1)yy1=y1;
    u8 c[4]={C(v[p[6]]),C(v[p[7]]),C(v[p[8]]),C(v[p[9]])};
-   if(y<yy1&&x<x1){mark(y,yy1);i32 cc;__builtin_memcpy(&cc,c,4);for(i32 yy=y;yy<yy1;yy++){i32*q=(i32*)(fb+4*(yy*W+x));for(i32 xx=x;xx<x1;xx++)*q++=cc;}}break;}
+   if(y<yy1&&x<x1){i32 cc;__builtin_memcpy(&cc,c,4);for(i32 yy=y;yy<yy1;yy++){i32*q=(i32*)(fb+4*(yy*W+x));i32 diff=0;for(i32 xx=x;xx<x1;xx++){diff|=(*q^cc)&0xffffff;*q++=cc;}if(diff)drow[yy]=1;}}break;}
   case 4:{ // patch write, each pixel masked by its nonzero 4th channel: {4,en,x,y,data,pw,ph,y0,y1}
    // Only neurons that fired this tick can have a nonzero mask, so the live list gives the pixels.
    i32 x=I(p[2]),y=I(p[3])-YB,pw=p[5],ph=p[6],y0=V(p[7]),y1=V(p[8]);if(y1==0){y0=0;y1=H;}i32 d=p[4];i32 cells=4*pw*ph;
    for(i32 t=0;t<nlive;t++){i32 q=live[t]-d;if((unsigned)q<(unsigned)cells&&(q&3)==3){i32 ix=q>>2,yy=y+ix/pw,xx=x+ix%pw;
-     if(yy>=y0&&yy<y1&&yy>=0&&yy<H&&xx>=0&&xx<W){u8*o=fb+4*(yy*W+xx);f64*c=v+d+q-3;o[0]=C(c[0]);o[1]=C(c[1]);o[2]=C(c[2]);mark(yy,yy+1);}}}break;}
+     if(yy>=y0&&yy<y1&&yy>=0&&yy<H&&xx>=0&&xx<W){u8*o=fb+4*(yy*W+xx);f64*c=v+d+q-3;o[0]=C(c[0]);o[1]=C(c[1]);o[2]=C(c[2]);drow[yy]=1;}}}break;}
   case 6:{ // image row copy, packed RGB cells to pixels: {6,en,x,y,addr,n,y0,y1}
    i32 x=I(p[2]),y=I(p[3])-YB,a=I(p[4]),n=I(p[5]),y0=V(p[6]),y1=V(p[7]);if(y1==0){y0=0;y1=H;}
-   if(y>=y0&&y<y1&&y>=0&&y<H){mark(y,y+1);for(i32 j=0;j<n;j++){i32 xx=x+j;if(xx>=0&&xx<W){u8*o=fb+4*(y*W+xx);i32 c=(i32)bank[a+j];o[0]=c>>16;o[1]=(c>>8)&255;o[2]=c&255;o[3]=1;}}}break;}
+   if(y>=y0&&y<y1&&y>=0&&y<H){drow[y]=1;for(i32 j=0;j<n;j++){i32 xx=x+j;if(xx>=0&&xx<W){u8*o=fb+4*(y*W+xx);i32 c=(i32)bank[a+j];o[0]=c>>16;o[1]=(c>>8)&255;o[2]=c&255;o[3]=1;}}}break;}
  }}
 static void read_port(i32*p){ if(p[0]==2){ // read: {2,en,addr,out,len,lenN}
    i32 a=I(p[2]),n=p[5]>=0?I(p[5]):p[4];if(n>p[4])n=p[4];i32 o=p[3];f32*b=bank+a;for(i32 j=0;j<n;j++){f32 x=b[j];if(x!=0)inject(o+j,x);}}
