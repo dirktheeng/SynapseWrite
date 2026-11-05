@@ -88,7 +88,7 @@ ST_STRIKE,ST_VERT,ST_HL=2048,4096,16384
 SD=style_decode(g_st.w,GE)
 NS=len(rom.PTS)
 raw_hot=net.decode(SD['size'],NS,GE,hot=True)
-chr_hot=net.decode(g_ch.w-32,224,GE,hot=True)
+chr_hot=net.decode2(g_ch.w-32,224,GE)
 adv=net.wire();asc=net.wire();asc_e=net.wire();lh=net.wire();small=net.wire();rise=net.wire();strk=net.wire()
 # superscript and subscript draw a smaller compiled size; the line keeps the nominal metrics
 def script_size(i):
@@ -128,16 +128,18 @@ def plane(w,h,name):
     fgl=colorlines(PAL_F,fg,on); bgl=colorlines(PAL_B,bg,on)
     cov=[net.wire() for _ in range(w*h)]
     data=[net.wire() for _ in range(4*w*h)]
+    # Only inked pixels are visited: the coverage threshold is each gate's enable, and the color
+    # lines are read on demand. A line firing does not touch the thousands of gates it feeds.
     for i in range(w*h):
         c=cov[i]; m=net.step(c)
         if name=='small':
             # black text on white or selection blue takes a two neuron shortcut
-            fw_=net.relu(m-c+fastw-1); fs_=net.relu(m-c+fastsel-1)
+            fw_=net.relu(m*(M+1)-c+fastw-1-M); fs_=net.relu(m*(M+1)-c+fastsel-1-M)
             for k in range(3): net.connect(data[4*i+k],fw_*255+fs_*PAL_B[1][k])
-            cs_=net.relu(c+on-1); ms_=net.step(cs_)
+            cs_=net.relu(m*M+c+on-1-M); ms_=net.step(cs_)
         else: cs_,ms_=c,m
-        for k,wt,ln in fgl: net.connect(data[4*i+k],net.relu(cs_+ln-1)*wt)
-        for k,wt,ln in bgl: net.connect(data[4*i+k],net.relu(ms_-cs_+ln-1)*wt)
+        for k,wt,ln in fgl: net.connect(data[4*i+k],net.relu(ms_*M+cs_+ln-1-M)*wt)
+        for k,wt,ln in bgl: net.connect(data[4*i+k],net.relu(ms_*(M+1)-cs_+ln-1-M)*wt)
         net.connect(data[4*i+3],m)
     return on,cov,data
 on_s,cov_s,dat_s=plane(SW,SH,'small'); on_l,cov_l,dat_l=plane(LW,LH,'large')
@@ -638,9 +640,9 @@ fsm.set(cx,chere,x);fsm.set(cacol,chere,col)
 g_en.lin(e);g_ch.add(e,R1);g_st.add(e,R2);g_x.add(e,x+kern+0.5);g_y.add(e,gly_y+YB)
 kp_en.lin(e);kp_in.add(e,kprev)
 g_draw.lin(e-isp)
-colh=net.decode(SD['color'],32,e)
+colh=net.decode_z(SD['color'],32,e)
 for j in range(32): fg[j].lin(colh[j])
-hlh=net.decode(SD['hl'],8,e); nohl=net.and_(nosel,hlh[0])
+hlh=net.decode_z(SD['hl'],8,e); nohl=net.and_(nosel,hlh[0])
 bg[1].lin(insel);bg[0].lin(nohl)
 hlcol=[insel*SEL[i]+nohl*255 for i in range(3)]
 for h_i in range(1,8):

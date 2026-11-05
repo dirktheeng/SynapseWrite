@@ -91,6 +91,15 @@ class Net:
         g=[s.step(v-(i+1)+0.5) for i in range(n)]+[X()]
         if hot: return [s.step(g[i]-g[i+1]-0.5) for i in range(n)]
         return [g[i]-g[i+1] for i in range(n)]
+    def decode_z(s,val,n,en):
+        """Decoder for values that are nearly always zero: a zero value visits one neuron only."""
+        v=as_x(val); nz=s.step(v); e2=s.and_(en,nz); h=s.decode(v,n,e2); z=s.and_(en,X({s.ONE_id:1.0})-nz)
+        return [z]+h[1:]
+    def decode2(s,val,n,en):
+        """Two level one-hot decoder: value to two nibble digits, then an AND per line. Few visits per use."""
+        b=s.bits(val,8,en)
+        lo=s.decode(b[0]+b[1]*2+b[2]*4+b[3]*8,16,en); hi=s.decode(b[4]+b[5]*2+b[6]*4+b[7]*8,16,en)
+        return [s.step(hi[i>>4]+lo[i&15]-1.5) for i in range(n)]
     def bits(s,val,nb,en):
         """Binary digits by descending thresholds. Returns low-to-high bits."""
         rem=s.gate(val,en);out=[None]*nb
