@@ -8,13 +8,13 @@ extern u8 __heap_base; static u8* hp=&__heap_base;
 __attribute__((export_name("alloc"))) void* alloc(i32 n){u8*p=(u8*)(((unsigned long)hp+15)&~15ul);hp=p+n;
   unsigned long need=((unsigned long)hp+65535)/65536, have=__builtin_wasm_memory_size(0);
   if(need>have)__builtin_wasm_memory_grow(0,need-have); __builtin_memset(p,0,n); return p;}
-static i32 *istart,*isrc; static u16 *iwi,*wi; static f64 *wtab; static i32 NI;
+static i32 *stamp,tickno=1; static i32 *istart,*isrc; static u16 *iwi,*wi; static f64 *wtab; static i32 NI;
 static i32 N,E,L,NP,NT; static u8*act; static f64*bias,*v,*acc,*nacc; static i32*ostart,*osplit,*dst;
 static i32*lstart,*live,*nlist,*ports,*pen,*pptr; static u8*nflag; static i32 nlive,nnext,nwp,nrp; static u64*bits,*sum; static i32 SWORDS;
 static f32*bank; static u8*fb; enum{W=1280,H=800,YB=4096}; static i32 dy0=H,dy1=0;
 __attribute__((export_name("setup"))) void setup(i32 n,i32 e,i32 l,i32 np,i32 banksize,i32 ni,i32 nt){N=n;E=e;L=l;NP=np;NI=ni;NT=nt;istart=alloc(4*(n+1));isrc=alloc(4*ni+4);iwi=alloc(2*ni+2);wtab=alloc(8*nt+8);
  act=alloc(n);bias=alloc(8*n);v=alloc(8*n);acc=alloc(8*n);nacc=alloc(8*n);ostart=alloc(4*(n+1));osplit=alloc(4*n);dst=alloc(4*e+4);wi=alloc(2*e+2);
- lstart=alloc(4*(l+1));live=alloc(4*n);nlist=alloc(4*n);nflag=alloc(n);bits=alloc(8*(n/64+2));SWORDS=n/4096+2;sum=alloc(8*SWORDS);
+ stamp=alloc(4*n);lstart=alloc(4*(l+1));live=alloc(4*n);nlist=alloc(4*n);nflag=alloc(n);bits=alloc(8*(n/64+2));SWORDS=n/4096+2;sum=alloc(8*SWORDS);
  ports=alloc(4*np);pen=alloc(4*np);pptr=alloc(4*np);bank=alloc(4*banksize);fb=alloc(W*H*4);}
 #define PTR(name,x) __attribute__((export_name(name))) void* x##_p(void){return x;}
 PTR("p_istart",istart)PTR("p_isrc",isrc)PTR("p_iwi",iwi)PTR("p_wtab",wtab)PTR("p_act",act)PTR("p_bias",bias)PTR("p_ostart",ostart)PTR("p_dst",dst)PTR("p_wi",wi)PTR("p_lstart",lstart)PTR("p_ports",ports)PTR("p_bank",bank)PTR("p_fb",fb)PTR("p_v",v)
@@ -63,14 +63,19 @@ static inline void run_ports(void){
  for(i32 i=nwp,e=nwp+nrp;i<e;i++)if(v[pen[i]]!=0)read_port(ports+pptr[i]);}
 static long edges_total=0; __attribute__((export_name("edges"))) f64 edges(void){return (f64)edges_total;}
 #define SET(d) do{bits[(d)>>6]|=1ull<<((d)&63);sum[(d)>>12]|=1ull<<(((d)>>6)&63);}while(0)
-static void tick(void){
+// A pull neuron computes only when a consumer reads it, at most once per tick. Inputs are stored
+// with the largest weights first, so a closed gate ends the evaluation at once.
+static f64 pull(i32 i){ if(stamp[i]==tickno)return v[i]; f64 x=bias[i];
+ for(i32 q=istart[i],e=istart[i+1];q<e;q++){f64 w_=wtab[iwi[q]];if(x<=-549755813888.0&&w_<549755813888.0&&w_>-549755813888.0)break;i32 s=isrc[q];x+=w_*(s>=0?v[s]:pull(~s));}
+ i32 ac=act[i];f64 o=ac==0?x:ac==1?(x>1e-9?1:0):(x>0?x:0); stamp[i]=tickno; if(o!=0){v[i]=o;live[nlive++]=i;} return o;}
+static void tick(void){ tickno++;
  for(i32 i=0;i<nlive;i++)v[live[i]]=0; nlive=0;
  for(i32 i=0;i<nnext;i++){i32 d=nlist[i];acc[d]=nacc[d];nacc[d]=0;nflag[d]=0;SET(d);} nnext=0;
  for(i32 sw=0;sw<SWORDS;sw++){u64 s;while((s=sum[sw])){i32 wd=sw*64+__builtin_ctzll(s);u64 b;
    while((b=bits[wd])){i32 i=wd*64+__builtin_ctzll(b);bits[wd]=b&(b-1);
     f64 x=acc[i]+bias[i];acc[i]=0;
-    {i32 a0=istart[i],a1=istart[i+1];if(a1>a0&&x>-549755813888.0){for(i32 q=a0;q<a1;q++)x+=wtab[iwi[q]]*v[isrc[q]];}}
-    i32 ac=act[i];f64 o=ac==0?x:ac==1?(x>1e-9?1:0):(x>0?x:0);
+    {i32 a0=istart[i],a1=istart[i+1];if(a1>a0&&x>-549755813888.0){for(i32 q=a0;q<a1;q++){i32 s=isrc[q];x+=wtab[iwi[q]]*(s>=0?v[s]:pull(~s));}}}
+    i32 ac=act[i];if(ac==3){v[i]+=x;continue;}f64 o=ac==0?x:ac==1?(x>1e-9?1:0):(x>0?x:0);
     if(o!=0){v[i]=o;live[nlive++]=i;i32 q=ostart[i],sp=osplit[i],en=ostart[i+1];edges_total+=en-q;
      for(;q<sp;q++){i32 d=dst[q];nacc[d]+=o*wtab[wi[q]];if(!nflag[d]){nflag[d]=1;nlist[nnext++]=d;}}
      for(;q<en;q++){i32 d=dst[q];acc[d]+=o*wtab[wi[q]];SET(d);}}}

@@ -962,6 +962,13 @@ def nid(x):
 wvl_data=[wlog,wln,wvl,w1,w2,w3,w4,fw,fw2,wo,imw,wl_i,xw]
 for p in wvl_data: net.aligned.append([nid(b.w) for b in p.d])
 for b in (dat_s,dat_l): net.aligned.append([nid(w_) for w_ in b])
+net.keep=[nid(q) for q in (halt.w,timer.w,clipout.w,saveout.w,pdfout.w,picout.w,openout.w,wantp.w,ev_kind,ev_a,ev_b,ev_c)]
+for p in net.ports:
+    for q in p.rec(None)[1:]:
+        if isinstance(q,X): net.keep.append(nid(q))
+        elif isinstance(q,int): pass
+    if isinstance(p,PatchPort): net.keep+=[nid(q) for q in p.a[:3]]
+    if isinstance(p,(RPort,PixPort)): net.keep+=[nid(q) for q in p.out]
 c=net.compile(); new=c['new']
 print('neurons',c['n'],'layers',c['L'],file=sys.stderr)
 names={new[next(iter(v_.t))]:k_ for k_,v_ in list(globals().items()) if isinstance(v_,X) and len(v_.t)==1}

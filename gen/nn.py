@@ -130,18 +130,74 @@ class Net:
         for i in range(n): lstart[layer[i]+1]+=1
         for l in range(L): lstart[l+1]+=lstart[l]
         out=[[] for _ in range(n)]; lazy=[[] for _ in range(n)]
-        # A gated neuron's value inputs are read only after its enable fires. With the
-        # enable off its output is zero whatever the values are, so this is the same function.
+        # Evaluation modes. Every one computes the same function as visiting all inputs.
+        # gated: with the enable off the output is zero whatever the values are, so the value
+        #   inputs are read only after the enable fires.
+        # trigger: if one input being zero already forces the output to zero, only that input
+        #   needs to wake the neuron and the others are read after it does.
+        # pull: a neuron all of whose consumers read it lazily computes only when read.
+        # sticky: a register whose only activity is holding itself keeps its value in place.
+        keep=set(getattr(s,'keep',()));
+        for ids in s.aligned: keep.update(ids)
+        boolreg=getattr(s,'boolreg',set())
+        INF=float('inf')
+        def bounds(j):
+            if s.act[j]==STEP or j in boolreg: return 0.0,1.0
+            if s.act[j]==RELU: return 0.0,INF
+            return -INF,INF
+        ins=[]; push=[None]*n; npush=[0]*n; nread=[0]*n
         for i in range(n):
             agg={}
             for j,w in s.inp[i]: agg[j]=agg.get(j,0)+w
             agg={j:w for j,w in agg.items() if w!=0}
-            ctl=[j for j,w in agg.items() if abs(w)>=M/2]
-            gated=s.act[i] in (STEP,RELU) and s.bias[i]<=-M/2 and ctl
-            for j,w in agg.items():
-                if gated and abs(w)<M/2: lazy[new[i]].append((new[j],w))
-                else: out[new[j]].append((new[i],w))
-        return dict(lazy=lazy,n=n,L=L,new=new,lstart=lstart,out=out,act=[s.act[i] for i in idxs],bias=[s.bias[i] for i in idxs],layer=layer)
+            ins.append(agg)
+            if s.kind[i]=='reg': P=set(agg)
+            else:
+                P=set(agg)
+                if s.act[i] in (STEP,RELU):
+                    ctl=[j for j,w in agg.items() if abs(w)>=M/2]
+                    if s.bias[i]<=-M/2 and ctl: P=set(ctl)
+                    else:
+                        tops=[]
+                        for j,w in agg.items(): tops.append(w*(bounds(j)[1] if w>0 else bounds(j)[0]))
+                        ninf=sum(1 for t in tops if t==INF); tot=s.bias[i]+sum(t for t in tops if t!=INF)
+                        best=None
+                        for (j,w),t in zip(agg.items(),tops):
+                            if w<=0: continue
+                            rest=(tot-t) if t!=INF else tot
+                            if (ninf-(t==INF))==0 and rest<=1e-12:
+                                rank=(0 if j in boolreg else 1 if s.act[j]==STEP else 2)
+                                if best is None or rank<best[0]: best=(rank,j)
+                        if best: P={best[1]}
+            push[i]=P
+            for j in agg:
+                if j in P: npush[j]+=1
+                else: nread[j]+=1
+        pull=[False]*n; work=[i for i in range(n)]
+        PULLMAX=getattr(s,'pullmax',12)
+        while work:
+            i=work.pop()
+            if pull[i] or npush[i] or s.kind[i]=='reg' or i in keep or len(ins[i])>PULLMAX: continue
+            pull[i]=True
+            for j in push[i]:
+                npush[j]-=1; nread[j]+=1
+                if not npush[j]: work.append(j)
+            push[i]=set()
+        act=list(s.act); nsticky=0
+        for i in range(n):
+            if s.kind[i]=='reg' and ins[i].get(i)==1.0 and npush[i]==1:
+                push[i].discard(i); del ins[i][i]; act[i]=3; nsticky+=1
+        for i in range(n):
+            rd=[]
+            for j,w in ins[i].items():
+                if j in push[i]: out[new[j]].append((new[i],w))
+                else: rd.append((abs(w),~new[j] if pull[j] else new[j],w))
+            rd.sort(key=lambda q:-q[0])
+            lazy[new[i]]=[(q[1],q[2]) for q in rd]
+        import sys as _s
+        print('pull',sum(pull),'sticky',nsticky,file=_s.stderr)
+        s.pullv=[pull[i] for i in idxs]
+        return dict(lazy=lazy,n=n,L=L,new=new,lstart=lstart,out=out,act=[act[i] for i in idxs],bias=[s.bias[i] for i in idxs],layer=layer)
 
 class Bus:
     """A shared vector signal. Each source is gated by the condition that selects it."""
@@ -153,7 +209,10 @@ class FSM:
     """Control registers whose next values are gated sums over one-hot state neurons."""
     def __init__(s,net): s.net=net; s.states={}; s.assign={}
     def state(s,name,init=0):
-        if name not in s.states: s.states[name]=[s.net.reg(init),[]]
+        if name not in s.states:
+            s.states[name]=[s.net.reg(init),[]]
+            if not hasattr(s.net,'boolreg'): s.net.boolreg=set()
+            s.net.boolreg.add(next(iter(s.states[name][0].t)))
         return s.states[name][0]
     def S(s,name): return s.state(name)
     def set(s,r,cond,val):
