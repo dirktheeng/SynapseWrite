@@ -227,7 +227,7 @@ e=S('T2_FS'); on('T2_FS',(net.ge(t2i,nsty,e),'T2RR',{t2fnd:0}),(None,'T2_FS1',{r
 e=S('T2_FS1'); q_=net.eq(R2,34,e)
 on('T2_FS1',(net.and_(q_,net.eq(R1,0,e)),'T2RR',{t2fnd:1}),(net.and_(ONE-q_,net.eq(R1,R2,e)),'T2_FS',{t2jj:t2jj+1}),(None,'T2_FS',{t2i:t2i+1,t2jj:0}))
 e=S('T2_ST4')
-on('T2_ST4',(t2fnd,'T2_ST9',{t2si:t2i}),(net.lt(nsty,32,e),'T2_ST5',{t2si:nsty,nsty:nsty+1,t2jj:0}),(None,'T2_ST9',{t2si:38}))
+on('T2_ST4',(t2fnd,'T2_ST9',{t2si:t2i}),(net.lt(nsty,STYMAX,e),'T2_ST5',{t2si:nsty,nsty:nsty+1,t2jj:0}),(None,'T2_ST9',{t2si:DEFREC+1}))
 on('T2_ST5',(None,'T2_ST6',{r1:OA+oi+t2jj}))
 e=S('T2_ST6'); on('T2_ST6',(net.or_(net.eq(R1,34,e),net.ge(t2jj,19,e)),'T2_ST9',{w1:(as_x(STY)+t2si*STYN+8+t2jj,0)}),(None,'T2_ST5',{w1:(as_x(STY)+t2si*STYN+8+t2jj,R1),t2jj:t2jj+1}))
 on('T2_ST9',(None,'T2_AP',{oi:t2oi,t2i:DEFREC}))

@@ -71,6 +71,14 @@ const LAT='Français Été naïve Ñandú Ångström ß æ ø ¿ © € “quote
   let found=[];for(let n=0;n<10;n++){await A.pdf('build/t2_w.pdf');const pg=execSync('pdftotext -layout build/t2_w.pdf -').toString().split('\f');
    const c=pg.map(q=>q.split('\n').filter(l=>/one two|twenty|thirteen|thirty|five six|eight nine/.test(l)).length);const parts=c.filter(v=>v>0);found.push(parts.join('+'));
    await A.K('Control+Home');await A.p.evaluate(()=>annPaste('filler\n'));await A.K('Control+End');await A.p.waitForTimeout(100);}
-  const bad=found.filter(f=>f.split('+').some(v=>v==='1'));ok('no single stranded line across ten page positions',bad.length===0&&found.some(f=>f.includes('+')),found.join(' '));await A.b.close();}
+  const bad=found.filter(f=>f.split('+').some(v=>v==='1'));console.log(found.join(' '));ok('no single stranded line across ten page positions',bad.length===0&&found.some(f=>f.includes('+')),found.join(' '));await A.b.close();}
+ {const A=await open_();execSync('python3 test/mk_foreign.py build/foreign.docx');await A.open('build/foreign.docx');await A.p.waitForTimeout(25000);await A.p.mouse.move(1270,5);const a=await A.p.screenshot({path:'build/t2_foreign.png'});
+  await A.save('build/t2_foreign_out.docx');const x=xml('build/t2_foreign_out.docx');
+  ok('foreign file: Latin-1 text',x.includes('R\u00e9sum\u00e9 of Tests')&&x.includes('\u201cCurly\u201d \u2014'));
+  ok('foreign file: style references kept',x.includes('w:pStyle w:val="Title"')&&x.includes('w:pStyle w:val="Heading1"')&&x.includes('w:pStyle w:val="Quote"'));
+  ok('foreign file: style based lists read',x.includes('<w:numId w:val="1"/>')&&x.includes('<w:numId w:val="2"/>'));
+  ok('foreign file: run formats read',x.includes('<w:strike/>')&&x.includes('superscript')&&x.includes('subscript')&&x.includes('w:highlight w:val="yellow"'));
+  ok('foreign file: paragraph properties read',x.includes('w:left="720"')&&x.includes('w:firstLine="360"')&&x.includes('w:line="360"')&&x.includes('w:val="both"'));
+  await A.b.close();}
  const n=R.filter(r=>r[1]).length;console.log(`${n}/${R.length} passed`);fs.writeFileSync('build/tier2.json',JSON.stringify(R,null,1));
 })();

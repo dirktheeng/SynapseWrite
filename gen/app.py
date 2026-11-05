@@ -8,7 +8,7 @@ PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=14
 LEN,DIRTY,ALIGN,LIST,NLINES,WORDS,ENDY,PBRK=2048,2049,2050,2051,2052,2053,2054,2055; SAVE=2056; LINES=2064; IMF=3670; CMTL=3699; CMT=3700; FNS=3690; FNL=3692; FNT=3900
 # paragraph properties: left indent px, first line offset px (signed), line spacing index, space before px, space after px, style index. LIST holds kind+4*level.
 PIND,PFIRST,PLSP,PSPB,PSPA,PSTY=3693,3694,3695,3696,3697,3698; DEFSPA=11
-STY=28000; STY0=26000; STYN=48; NUMT=25000; MKT=32000; SCR=SLOTMAX; DEFREC=39   # style table, its ROM copy, numbering kinds, list marker ROM, scratch record
+STY=40000; STY0=26000; STYN=48; NUMT=25000; MKT=32000; SCR=SLOTMAX; DEFREC=198; STYMAX=196   # style table, its ROM copy, numbering kinds, list marker ROM, scratch record
 # ---- screen geometry ----
 DOCY,DOCB=174,776; VH=DOCB-DOCY; PX=223; TX=319; TW=624; PH=1056; PST=1072; YB=4096
 from app_pal import F as PAL_F,B as PAL_B,HL_NAMES
