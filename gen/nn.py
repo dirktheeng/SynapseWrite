@@ -1,0 +1,190 @@
+"""Weight generator primitives. Every weight is written directly from reasoning about
+what the neuron must compute. There is no loss, gradient, data set, or search here."""
+ID,STEP,RELU=0,1,2
+M=float(2**40)
+class X:
+    """Lazy linear expression over neurons. Linear maps fold into the next real neuron."""
+    __slots__=('t','c')
+    def __init__(s,t=None,c=0.0): s.t=t or {}; s.c=float(c)
+    def __add__(s,o):
+        o=as_x(o); t=dict(s.t)
+        for k,w in o.t.items():
+            t[k]=t.get(k,0)+w
+            if t[k]==0: del t[k]
+        return X(t,s.c+o.c)
+    __radd__=__add__
+    def __neg__(s): return X({k:-w for k,w in s.t.items()},-s.c)
+    def __sub__(s,o): return s+(-as_x(o))
+    def __rsub__(s,o): return as_x(o)-s
+    def __mul__(s,k):
+        if k==0: return X()
+        return X({n:w*k for n,w in s.t.items()},s.c*k)
+    __rmul__=__mul__
+    def is_const(s): return not s.t
+def as_x(o): return o if isinstance(o,X) else X(c=o)
+
+class Net:
+    def __init__(s):
+        s.act=[];s.bias=[];s.inp=[];s.kind=[];s.init={};s.names={};s.ports=[];s.groups={};s.cur=['core'];s.aligned=[]
+        s.ONE_id=s._new(ID,0,'reg'); s.init[s.ONE_id]=1.0; s.inp[s.ONE_id].append((s.ONE_id,1.0)); s.ONE=X({s.ONE_id:1.0})
+    def _new(s,a,b,kind='comb'):
+        s.act.append(a);s.bias.append(b);s.inp.append([]);s.kind.append(kind)
+        s.groups.setdefault(s.cur[0],[]).append(len(s.act)-1); return len(s.act)-1
+    def group(s,name): s.cur[0]=name
+    def _feed(s,i,e):
+        e=as_x(e)
+        for k,w in e.t.items(): s.inp[i].append((k,w))
+        return e.c
+    def _node(s,a,e):
+        e=as_x(e)
+        if a!=ID and s.ONE_id in e.t:   # the constant neuron folds into the bias
+            t=dict(e.t); w=t.pop(s.ONE_id); e=X(t,e.c+w)
+        i=s._new(a,0.0); c=s._feed(i,e)
+        if a==ID:
+            if c: s.inp[i].append((s.ONE_id,c))
+        elif c>0: s.inp[i].append((s.ONE_id,c))
+        else: s.bias[i]=c
+        return X({i:1.0})
+    def relu(s,e): return s._node(RELU,e)
+    def step(s,e): return s._node(STEP,e)
+    def wire(s): return X({s._new(ID,0.0):1.0})
+    def connect(s,w,e):
+        i=next(iter(w.t)); c=s._feed(i,e)
+        if c: s.inp[i].append((s.ONE_id,c))
+    def input(s,n=1):
+        a=[s._new(ID,0.0,'reg') for _ in range(n)]
+        return [X({i:1.0}) for i in a] if n>1 else X({a[0]:1.0})
+    def reg(s,init=0.0):
+        i=s._new(ID,0.0,'reg')
+        if init: s.init[i]=float(init)
+        return X({i:1.0})
+    def rec(s,r,e):
+        """Recurrent connection: e(t) feeds register r(t+1)."""
+        i=next(iter(r.t)); e=as_x(e); c=e.c
+        for k,w in e.t.items(): s.inp[i].append((k,w))
+        if c: s.inp[i].append((s.ONE_id,c))
+    def gate(s,val,en):
+        val=as_x(val);en=as_x(en)
+        if val.is_const(): return en*val.c
+        return s.relu(val+en*M-M)
+    def and_(s,*a):
+        e=X(c=-(len(a)-1))
+        for x in a: e=e+x
+        return s.step(e)
+    def or_(s,*a):
+        e=X()
+        for x in a: e=e+x
+        return s.step(e)
+    def ge(s,a,b,en):
+        """Integer a>=b when en is 1, otherwise 0."""
+        return s.step(as_x(a)-b+0.5+as_x(en)*M-M)
+    def gt(s,a,b,en): return s.ge(a,as_x(b)+1,en)
+    def lt(s,a,b,en): return s.ge(b,as_x(a)+1,en)
+    def eq(s,a,b,en): return s.and_(s.ge(a,b,en),s.ge(b,a,en))
+    def max_(s,a,b): return as_x(b)+s.relu(as_x(a)-b)
+    def min_(s,a,b): return as_x(a)-s.relu(as_x(a)-b)
+    def decode(s,val,n,en,hot=False):
+        """One-hot layer. A gate neuron first zeroes the value, so no threshold neuron
+        is visited unless the decoder is enabled. hot=True adds a true one-hot neuron so
+        a wide fan-out is visited only for the single active line."""
+        v=s.relu(as_x(val)+1+as_x(en)*M-M)
+        g=[s.step(v-(i+1)+0.5) for i in range(n)]+[X()]
+        if hot: return [s.step(g[i]-g[i+1]-0.5) for i in range(n)]
+        return [g[i]-g[i+1] for i in range(n)]
+    def bits(s,val,nb,en):
+        """Binary digits by descending thresholds. Returns low-to-high bits."""
+        rem=s.gate(val,en);out=[None]*nb
+        for k in reversed(range(nb)):
+            b=s.step(rem-2**k+0.5); out[k]=b; rem=rem-b*(2**k)
+        return out
+    # ---- compile ----
+    def compile(s):
+        n=len(s.act); layer=[-1]*n; state=[0]*n
+        import sys; sys.setrecursionlimit(1000000)
+        order=[]
+        for root in range(n):
+            if state[root]: continue
+            stack=[(root,0)]
+            while stack:
+                i,idx=stack.pop()
+                if idx==0:
+                    if state[i]: continue
+                    state[i]=1
+                if s.kind[i]=='reg': layer[i]=0; state[i]=2; continue
+                adv=False; ins=s.inp[i]
+                while idx<len(ins):
+                    j=ins[idx][0]; idx+=1
+                    if state[j]==0: stack.append((i,idx)); stack.append((j,0)); adv=True; break
+                    if state[j]==1: raise Exception('combinational loop at neuron %d'%i)
+                if adv: continue
+                layer[i]=1+max([layer[j] for j,_ in ins],default=0); state[i]=2
+        L=max(layer)+1
+        key=[(0,i) for i in range(n)]
+        for g,ids in enumerate(s.aligned):
+            ml=max(layer[i] for i in ids)
+            for p,i in enumerate(ids): layer[i]=ml; key[i]=(g+1,p)
+        L=max(layer)+1
+        idxs=sorted(range(n),key=lambda i:(layer[i],key[i])); new=[0]*n
+        for a,i in enumerate(idxs): new[i]=a
+        lstart=[0]*(L+1)
+        for i in range(n): lstart[layer[i]+1]+=1
+        for l in range(L): lstart[l+1]+=lstart[l]
+        out=[[] for _ in range(n)]; lazy=[[] for _ in range(n)]
+        # A gated neuron's value inputs are read only after its enable fires. With the
+        # enable off its output is zero whatever the values are, so this is the same function.
+        for i in range(n):
+            agg={}
+            for j,w in s.inp[i]: agg[j]=agg.get(j,0)+w
+            agg={j:w for j,w in agg.items() if w!=0}
+            ctl=[j for j,w in agg.items() if abs(w)>=M/2]
+            gated=s.act[i] in (STEP,RELU) and s.bias[i]<=-M/2 and ctl
+            for j,w in agg.items():
+                if gated and abs(w)<M/2: lazy[new[i]].append((new[j],w))
+                else: out[new[j]].append((new[i],w))
+        return dict(lazy=lazy,n=n,L=L,new=new,lstart=lstart,out=out,act=[s.act[i] for i in idxs],bias=[s.bias[i] for i in idxs],layer=layer)
+
+class Bus:
+    """A shared vector signal. Each source is gated by the condition that selects it."""
+    def __init__(s,net): s.net=net; s.w=net.wire()
+    def add(s,cond,val): s.net.connect(s.w,s.net.gate(val,cond))
+    def lin(s,e): s.net.connect(s.w,e)
+
+class FSM:
+    """Control registers whose next values are gated sums over one-hot state neurons."""
+    def __init__(s,net): s.net=net; s.states={}; s.assign={}
+    def state(s,name,init=0):
+        if name not in s.states: s.states[name]=[s.net.reg(init),[]]
+        return s.states[name][0]
+    def S(s,name): return s.state(name)
+    def set(s,r,cond,val):
+        k=next(iter(r.t)); s.assign.setdefault(k,[r,[]])[1].append((cond,as_x(val)))
+    def on(s,name,*rules):
+        """rules: (cond or None, next state name, {target:value}). First true rule wins."""
+        net=s.net; st=s.state(name); rem=st
+        s.seen_on=getattr(s,'seen_on',set())
+        assert name not in s.seen_on, 'state defined twice: '+name
+        s.seen_on.add(name)
+        for cond,nxt,acts in rules:
+            c=rem if cond is None else net.and_(rem,cond)
+            if cond is not None: rem=rem-c
+            s.states[name][1].append((c,nxt))
+            for tgt,val in (acts or {}).items(): s.apply(tgt,c,val)
+    def apply(s,t,c,val):
+        if isinstance(t,Bus): t.add(c,val)
+        elif isinstance(t,X): s.set(t,c,val)
+        else: t.drive(c,val)
+    def finish(s):
+        net=s.net
+        for name,(r,outs) in s.states.items():
+            e=r
+            for c,_ in outs: e=e-c
+            net.rec(r,e)
+        for name,(r,outs) in s.states.items():
+            for c,nxt in outs:
+                if nxt is not None: net.rec(s.state(nxt),c)
+        for k,(r,lst) in s.assign.items():
+            anyc=X()
+            for c,_ in lst: anyc=anyc+c
+            e=r-net.relu(r+anyc*M-M)
+            for c,v in lst: e=e+net.gate(v,c)
+            net.rec(r,e)

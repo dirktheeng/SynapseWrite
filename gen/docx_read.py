@@ -1,0 +1,260 @@
+
+openout=Bus(net); openout.add(S('HALT'),wopen); fsm.set(wopen,S('HALT'),0)
+iret=Ret('IR');bret=Ret('BR');gret=Ret('GR');hret=Ret('HR');cret=Ret('CR')
+ip=R();cur=R();nb=R();bitv=R();gbn=R();gbv=R();gbw=R();gbi=R();ob=R();oi=R();zp=R();pfirst=R();cs=R();ntxt=R()
+lln=R();bfinal=R();nlen=R();ndist=R();ncode=R();idx=R();prev=R();rept=R();rval=R();cval=R()
+code=R();first=R();index=R();hlen=R();cnt=R();hb=R();sym=R();ln=R();lb=R();lc_=R();sb=R();dist=R();copyn=R()
+LN=TBL+1200; CLH=TBL+800; LH=TBL; DH=TBL+400; OFFS=TBL+1000
+# open: reset the document, then walk zip members
+on('OP0',(None,'OP1',{wln:(nextb+SAVE,112,16,1,0,0,0),w1:(as_x(PT),nextb),w2:(nextb+DIRTY,1),w3:(nextb+LEN,0),cp:0,cb:nextb,co:0,clen:0,ap:0,ao:0,npar:1,nextb:nextb+STRIDE,usp:UB,urp:UB,scroll:0,nolog:1,zp:0,pfirst:1,cs:0,ty:0,dfrom:0,lc:1,bgp:0}))
+FA=as_x(FILE)
+W=rl.out
+def pat(st,e,offs=0):
+    c=[]
+    for i,ch in enumerate(st): c.append(net.eq(W[i+offs],ord(ch),e))
+    return net.and_(*c)
+mth=R();csz=R();nm=R();ext=R();cmt=R();loff=R()
+# locate the end record by scanning back, then walk the central directory
+on('OP1',(None,'ZE0',{zp:net.relu(evc-22)}))
+on('ZE0',(None,'ZE1',{rl:FA+zp}))
+e=S('ZE1')
+sig=net.and_(net.eq(W[0],80,e),net.eq(W[1],75,e),net.eq(W[2],5,e),net.eq(W[3],6,e))
+on('ZE1',(sig,'ZE2',{rl:FA+zp+16}),(net.eq(zp,0,e),'OPEND',None),(None,'ZE0',{zp:zp-1}))
+on('ZE2',(None,'X_C0',{zp:W[0]+W[1]*256+W[2]*65536}))
+on('X_C0',(None,'X_C1',{rl:FA+zp}))
+e=S('X_C1')
+on('X_C1',(net.and_(net.eq(W[0],80,e),net.eq(W[1],75,e),net.eq(W[2],1,e),net.eq(W[3],2,e)),'C2',{rl:FA+zp+8}),(None,'OPEND',None))
+on('C2',(None,'C3',{mth:W[2]+W[3]*256,rl:FA+zp+20}))
+on('C3',(None,'C4',{csz:W[0]+W[1]*256+W[2]*65536,rl:FA+zp+28}))
+on('C4',(None,'C5',{nm:W[0]+W[1]*256,ext:W[2]+W[3]*256,cmt:W[4]+W[5]*256,rl:FA+zp+42}))
+on('C5',(None,'C6',{loff:W[0]+W[1]*256+W[2]*65536,rl:FA+zp+46+nm-8}) if False else (None,'C5b',{loff:W[0]+W[1]*256+W[2]*65536}))
+on('C5b',(None,'C6',{rl:FA+zp+46+nm-8}))
+e=S('C6')
+on('C6',(net.and_(pat('ment.xml',e),net.eq(nm,17,e)),'C7',{rl:FA+loff+26}),(None,'X_C0',{zp:zp+46+nm+ext+cmt}))
+on('C7',(None,'Z7',{ip:loff+30+W[0]+W[1]*256+W[2]+W[3]*256,ob:0,nb:0,cur:0}))
+e=S('Z7')
+on('Z7',(net.eq(mth,8,e),'BH',{iret.r:iret.id('PX')}),(None,'ZS',{oi:0}))
+# stored member
+OA=as_x(OUTB)
+e=S('ZS'); on('ZS',(net.ge(oi,csz,e),'PX',{oi:0}),(None,'ZS1',{r1:FA+ip+oi}))
+wo=WPort(1)
+on('ZS1',(None,'ZS',{wo:(OA+oi,R1),oi:oi+1,ob:oi+1}))
+# bit reader
+e=S('BT')
+on('BT',(net.eq(nb,0,e),'BTa',{r1:FA+ip,ip:ip+1}),(None,'BTb',None))
+on('BTa',(None,'BTb',{cur:R1,nb:8}))
+e=S('BTb'); hb_=net.bits(cur,8,e)[0]
+on('BTb',(None,'BR',{bitv:hb_,cur:(cur-hb_)*0.5,nb:nb-1}))
+# n bit field
+def getn(st,n,ret):
+    on(st,(None,'GBL',{gbn:n,gbv:0,gbw:1,gbi:0,gret.r:gret.id(ret)}))
+e=S('GBL')
+on('GBL',(net.ge(gbi,gbn,e),'GR',None),(None,'BT',{bret.r:bret.id('GB2')}))
+e=S('GB2')
+on('GB2',(None,'GBL',{gbv:gbv+G_(gbw,bitv),gbw:gbw*2,gbi:gbi+1}))
+# Huffman decode, after puff: count[] at hb, symbols at hb+16
+on('DEC',(None,'X_D1',{code:0,first:0,index:0,hlen:1}))
+on('X_D1',(None,'BT',{bret.r:bret.id('X_D2')}))
+on('X_D2',(None,'X_D3',{code:code+bitv,r1:hb+hlen}))
+e=S('X_D3')
+on('X_D3',(net.lt(code,first+R1,e),'D4',{r2:hb+16+index+code-first}),(net.ge(hlen,15,e),'OPEND',None),(None,'X_D1',{index:index+R1,first:(first+R1)*2,code:code*2,hlen:hlen+1}))
+on('D4',(None,'HR',{sym:R2}))
+# build table from lengths LN[lb..lb+ln)
+bi=R();bo=R()
+on('BLD',(None,'BC',{bi:0}))
+e=S('BC')
+on('BC',(net.ge(bi,16,e),'BD',{bi:0}),(None,'BC',{w1:(hb+bi,0),bi:bi+1}))
+e=S('BD')
+on('BD',(net.ge(bi,ln,e),'BE',{bi:1,bo:0}),(None,'BD1',{r1:as_x(LN)+lb+bi}))
+on('BD1',(None,'BD2',{r2:hb+R1,cval:R1}))
+on('BD2',(None,'BD',{w1:(hb+cval,R2+1),bi:bi+1}))
+e=S('BE')
+on('BE',(net.ge(bi,16,e),'BF',{bi:0}),(None,'BE1',{r1:hb+bi}))
+on('BE1',(None,'BE',{w1:(as_x(OFFS)+bi,bo),bo:bo+R1,bi:bi+1}))
+e=S('BF')
+on('BF',(net.ge(bi,ln,e),'CR',None),(None,'BF1',{r1:as_x(LN)+lb+bi}))
+e=S('BF1')
+on('BF1',(net.step(R1),'BF2',{cval:R1,r2:as_x(OFFS)+R1}),(None,'BF',{bi:bi+1}))
+on('BF2',(None,'BF',{w1:(hb+16+R2,bi),w2:(as_x(OFFS)+cval,R2+1),bi:bi+1}))
+# block header
+getn('BH',1,'BH1')
+on('BH1',(None,'BH1b',{bfinal:gbv}))
+getn('BH1b',2,'BH2')
+e=S('BH2'); ty_h=net.decode(gbv,4,e)
+on('BH2',(ty_h[0],'ST0',{nb:0}),(ty_h[1],'FX0',{idx:0}),(ty_h[2],'DY0',None),(None,'OPEND',None))
+# stored block
+on('ST0',(None,'X_ST1',{rl:FA+ip}))
+on('X_ST1',(None,'ST2',{copyn:W[0]+W[1]*256,ip:ip+4}))
+e=S('ST2')
+on('ST2',(net.step(copyn),'ST3',{r1:FA+ip}),(None,'BEND',None))
+on('ST3',(None,'ST2',{wo:(OA+ob,R1),ob:ob+1,ip:ip+1,copyn:copyn-1}))
+# fixed tables
+e=S('FX0')
+fl=X(c=0); a1=net.lt(idx,144,e);a2=net.and_(net.ge(idx,144,e),net.lt(idx,256,e));a3=net.and_(net.ge(idx,256,e),net.lt(idx,280,e));a4=net.ge(idx,280,e)
+on('FX0',(net.ge(idx,288,e),'FX1',None),(None,'FX0',{w1:(as_x(LN)+idx,a1*8+a2*9+a3*7+a4*8),idx:idx+1}))
+on('FX1',(None,'BLD',{hb:LH,lb:0,ln:288,cret.r:cret.id('FX2')}))
+on('FX2',(None,'FX3',{idx:0}))
+e=S('FX3')
+on('FX3',(net.ge(idx,30,e),'FX4',None),(None,'FX3',{w1:(as_x(LN)+idx,5),idx:idx+1}))
+on('FX4',(None,'BLD',{hb:DH,lb:0,ln:30,cret.r:cret.id('CODES')}))
+# dynamic tables
+getn('DY0',5,'DY1')
+on('DY1',(None,'DY1b',{nlen:gbv+257})); getn('DY1b',5,'DY2')
+on('DY2',(None,'DY2b',{ndist:gbv+1})); getn('DY2b',4,'DY3')
+on('DY3',(None,'DY4',{ncode:gbv+4,idx:0}))
+e=S('DY4')
+on('DY4',(net.ge(idx,19,e),'DY5',{idx:0}),(None,'DY4',{w1:(as_x(LN)+idx,0),idx:idx+1}))
+e=S('DY5')
+on('DY5',(net.ge(idx,ncode,e),'DY7',None),(None,'DY5g',None))
+getn('DY5g',3,'DY6')
+ORDER=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15]
+e=S('DY6'); oh=net.decode(idx,19,e); od=X()
+for i_,v_ in enumerate(ORDER): od=od+oh[i_]*v_
+on('DY6',(None,'DY5',{w1:(as_x(LN)+od,gbv),idx:idx+1}))
+on('DY7',(None,'BLD',{hb:CLH,lb:0,ln:19,cret.r:cret.id('DY8')}))
+on('DY8',(None,'DY9',{idx:0,prev:0}))
+e=S('DY9')
+on('DY9',(net.ge(idx,nlen+ndist,e),'DYA',None),(None,'DEC',{hb:CLH,hret.r:hret.id('DYs')}))
+e=S('DYs')
+on('DYs',(net.lt(sym,16,e),'DY9',{w1:(as_x(LN)+idx,sym),prev:sym,idx:idx+1}),(net.eq(sym,16,e),'DYr2',{rval:prev}),(net.eq(sym,17,e),'DYr3',{rval:0}),(None,'DYr7',{rval:0}))
+getn('DYr2',2,'DYa2');getn('DYr3',3,'DYa3');getn('DYr7',7,'DYa7')
+on('DYa2',(None,'DYl',{rept:gbv+3}));on('DYa3',(None,'DYl',{rept:gbv+3}));on('DYa7',(None,'DYl',{rept:gbv+11}))
+e=S('DYl')
+on('DYl',(net.step(rept),'DYl',{w1:(as_x(LN)+idx,rval),idx:idx+1,rept:rept-1,prev:rval}),(None,'DY9',None))
+on('DYA',(None,'BLD',{hb:LH,lb:0,ln:nlen,cret.r:cret.id('DYB')}))
+on('DYB',(None,'BLD',{hb:DH,lb:nlen,ln:ndist,cret.r:cret.id('CODES')}))
+# literal and length codes
+on('CODES',(None,'DEC',{hb:LH,hret.r:hret.id('CS')}))
+LB=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258]
+LE=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0]
+DB=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577]
+DE=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13]
+e=S('CS')
+lit_=net.lt(sym,256,e); eob=net.eq(sym,256,e)
+on('CS',(lit_,'CODES',{wo:(OA+ob,sym),ob:ob+1}),(eob,'BEND',None),(None,'CL0',None))
+e=S('CL0'); sh=net.decode(sym-257,29,e); bs=X();ex_=X()
+for i_ in range(29): bs=bs+sh[i_]*LB[i_]; ex_=ex_+sh[i_]*LE[i_]
+on('CL0',(None,'CL1',{lc_:bs,gbn:ex_,gbv:0,gbw:1,gbi:0,gret.r:gret.id('CL2')}))
+on('CL1',(None,'GBL',None))
+on('CL2',(None,'DEC',{copyn:lc_+gbv,hb:DH,hret.r:hret.id('CD_')}))
+e=S('CD_'); dh=net.decode(sym,30,e); db_=X();dx_=X()
+for i_ in range(30): db_=db_+dh[i_]*DB[i_]; dx_=dx_+dh[i_]*DE[i_]
+on('CD_',(None,'CD1',{lb:db_,gbn:dx_,gbv:0,gbw:1,gbi:0,gret.r:gret.id('CD2')}))
+on('CD1',(None,'GBL',None))
+on('CD2',(None,'CC',{dist:lb+gbv}))
+e=S('CC')
+on('CC',(net.step(copyn),'CC1',{r1:OA+ob-dist}),(None,'CODES',None))
+on('CC1',(None,'CC',{wo:(OA+ob,R1),ob:ob+1,copyn:copyn-1}))
+on('BEND',(bfinal,'IR',{oi:0}),(None,'BH',None))
+# XML scan: an eight-cell window is compared against literal tags in one tick
+e=S('PX')
+on('PX',(net.ge(oi,ob,e),'OPEND',None),(None,'PX1',{rl:OA+oi}))
+e=S('PX1')
+lt_=net.eq(W[0],60,e)
+on('PX1',(lt_,'PX2',{rl:OA+oi}),(None,'PX',{oi:oi+1}))
+e=S('PX2')
+def tag(n,end):
+    return net.and_(pat(n,e),net.or_(*[net.eq(W[len(n)],ord(q),e) for q in end]))
+on('PX2',(tag('<w:p',' >'),'PN1',{oi:oi+4}),
+ (tag('<w:t',' >'),'TX0',{oi:oi+4}),
+ (tag('<w:r',' >'),'PX',{cs:0,oi:oi+4}),
+ (pat('<w:b/>',e),'PX',{cs:cs+16,oi:oi+6}),
+ (pat('<w:i/>',e),'PX',{cs:cs+32,oi:oi+6}),
+ (pat('<w:u ',e),'PX',{cs:cs+64,oi:oi+5}),
+ (pat('<w:sz ',e),'SZ0',{rl:OA+oi+13}),
+ (pat('<w:color',e),'CO0',{rl:OA+oi+16}),
+ (pat('<w:rFont',e),'RF9',{rl:OA+oi+19}),
+ (pat('<w:jc ',e),'JC0',{rl:OA+oi+13}),
+ (None,'PX',{oi:oi+1}))
+e=S('SZ0')
+hpv=(W[0]-48)*10+(W[1]-48)
+hps=net.decode(hpv,80,e); cl=X()
+PTL=rom.PTS
+for hp_ in range(80):
+    best=min(range(len(PTL)),key=lambda i:abs(PTL[i]*2-hp_)) if hp_ else 0
+    cl=cl+hps[hp_]*best
+on('SZ0',(None,'PX',{cs:cs+cl,oi:oi+13}))
+e=S('JC0'); j1=net.eq(W[0],99,e);j2=net.or_(net.eq(W[0],114,e),net.eq(W[0],101,e));j3=net.eq(W[0],98,e)
+on('JC0',(None,'PX',{w1:(cb+ALIGN,j1*1+j2*2+j3*3),oi:oi+13}))
+e=S('PN1')
+on('PN1',(pfirst,'PX',{pfirst:0}),(None,'SPLIT',{oret.r:oret.id('PX')}))
+# text inside a run
+e=S('TX0')
+on('TX0',(None,'TX1',{rl:OA+oi}))
+e=S('TX1'); on('TX1',(net.eq(W[0],62,e),'TX2',{oi:oi+1}),(None,'TX0',{oi:oi+1}))
+on('TX2',(None,'TX3',{rl:OA+oi}))
+e=S('TX3')
+amp_=net.eq(W[0],38,e);ltx=net.eq(W[0],60,e)
+on('TX3',(ltx,'PX',None),
+ (net.and_(amp_,net.eq(W[1],97,e)),'INS',{ins_ch:38,ins_st:cs,oi:oi+5,oret.r:oret.id('TX2')}),
+ (net.and_(amp_,net.eq(W[1],108,e)),'INS',{ins_ch:60,ins_st:cs,oi:oi+4,oret.r:oret.id('TX2')}),
+ (net.and_(amp_,net.eq(W[1],103,e)),'INS',{ins_ch:62,ins_st:cs,oi:oi+4,oret.r:oret.id('TX2')}),
+ (net.or_(net.gt(W[0],126,e),net.lt(W[0],32,e),net.ge(clen,1000,e)),'TX2',{oi:oi+1}),
+ (None,'INS',{ins_ch:W[0],ins_st:cs,oi:oi+1,oret.r:oret.id('TX2')}))
+e=S('RF9'); on('RF9',(pat('Caladea',e),'PX',{cs:cs+128,oi:oi+19}),(None,'PX',{oi:oi+8}))
+e=S('CO0'); cvv=X()
+for j_ in range(1,8):
+    hx='%02X%02X%02X'%PAL_F[j_]; cvv=cvv+pat(hx,e)*(j_*256)
+on('CO0',(None,'PX',{cs:cs+cvv,oi:oi+16}))
+on('OPEND',(None,'OPE2',{nolog:0,clip0:0,clip1:0}))
+on('OPE2',(None,'SYNC',{autos:1,lc:1,dfrom:0}))
+
+# ---- PNG reader: chunks, inflate, row filters, decimation to fit the page ----
+net.group('png reader')
+picout=Bus(net); picout.add(S('HALT'),wpic); fsm.set(wpic,S('HALT'),0)
+pw=R();ph=R();pdep=R();pct=R();pbp=R();pst=R();dst=R();cl2=R();ck=R();psz=R();pcy=R();pos=R();ix=R();rowf=R();ky=R();kx=R();dw=R();dh=R();dcnt=R();pst0=R();rstart=R()
+on('PG_0',(None,'PG_1',{rl:FA}))
+e=S('PG_1')
+on('PG_1',(net.and_(net.eq(W[1],80,e),net.eq(W[2],78,e),net.eq(W[3],71,e)),'PG_C',{ip:8,dst:0,grp:grp+1}),(None,'HALT',None))
+on('PG_C',(None,'PG_D',{rl:FA+ip}))
+e=S('PG_D'); ihdr=pat('IHDR',e,4);idat=pat('IDAT',e,4);iend=pat('IEND',e,4)
+lenv=W[1]*65536+W[2]*256+W[3]
+on('PG_D',(ihdr,'PG_H',{rl:FA+ip+8}),(idat,'PG_I',{cl2:lenv,ip:ip+8}),(iend,'PG_Z',None),(net.ge(ip,evc,e),'HALT',None),(None,'PG_C',{ip:ip+12+lenv}))
+on('PG_H',(None,'PG_H2',{pw:W[2]*256+W[3],ph:W[6]*256+W[7],rl:FA+ip+16}))
+e=S('PG_H2'); ok=net.and_(net.eq(W[0],8,e),net.eq(W[4],0,e),net.or_(net.eq(W[1],0,e),net.eq(W[1],2,e),net.eq(W[1],6,e)))
+on('PG_H2',(ok,'PG_C',{pct:W[1],pbp:net.eq(W[1],0,e)+net.eq(W[1],2,e)*3+net.eq(W[1],6,e)*4,ip:ip+25}),(None,'HALT',None))
+e=S('PG_I'); on('PG_I',(net.step(cl2),'PG_J',{r1:FA+ip}),(None,'PG_C',{ip:ip+4}))
+on('PG_J',(None,'PG_I',{wo:(FA+dst,R1),dst:dst+1,ip:ip+1,cl2:cl2-1}))
+# inflate the concatenated stream after its two byte header
+on('PG_Z',(None,'PG_Y',{ip:2,ob:0,nb:0,cur:0,iret.r:iret.id('PG_U')}))
+on('PG_Y',(None,'BH',None))
+# stride by repeated addition
+on('PG_U',(None,'PG_U1',{pst:0,dcnt:0}))
+e=S('PG_U1'); on('PG_U1',(net.ge(dcnt,pbp,e),'PG_U2',{pst:pst+1}),(None,'PG_U1',{pst:pst+pw,dcnt:dcnt+1}))
+on('PG_U2',(None,'PG_R',{pos:0,pcy:0}))
+# row filters
+OAp=as_x(OUTB)
+e=S('PG_R'); on('PG_R',(net.ge(pcy,ph,e),'PG_K',{ck:1,psz:624}),(None,'PG_F',{r1:OAp+pos}))
+on('PG_F',(None,'PG_X',{rowf:R1,pos:pos+1,ix:0,rstart:pos+1}))
+e=S('PG_X')
+on('PG_X',(net.ge(ix,pst-1,e),'PG_R',{pcy:pcy+1}),(None,'PG_P',{r1:OAp+pos,r2:G_(OAp+pos-pbp,net.ge(ix,pbp,e)),rU:G_(OAp+pos-pst,net.step(pcy)),rV:G_(OAp+pos-pst-pbp,net.and_(net.ge(ix,pbp,e),net.step(pcy)))}))
+e=S('PG_P'); ft=net.decode(rowf,5,e)
+hasL=net.ge(ix,pbp,e);hasU=net.step(pcy)
+a_=G_(R2,hasL);b_=G_(rU.out[0],hasU);c_=G_(rV.out[0],net.and_(hasL,hasU))
+xv=R1
+sm=a_+b_; avg=(sm-net.bits(sm,9,e)[0])*0.5
+def abs_(x): return net.relu(x)+net.relu(-x)
+pa=abs_(b_-c_);pb=abs_(a_-c_);pc=abs_(a_+b_-c_*2)
+ca=net.and_(e,net.ge(pb,pa,e),net.ge(pc,pa,e));cb_p=net.and_(e,ONE-ca,net.ge(pc,pb,e));cc=e-ca-cb_p
+paeth=G_(a_,ca)+G_(b_,cb_p)+G_(c_,cc)
+pred=G_(a_,ft[1])+G_(b_,ft[2])+G_(avg,ft[3])+G_(paeth,ft[4])
+tot=xv+pred; ov=net.ge(tot,256,e)
+on('PG_P',(None,'PG_X',{wo:(OAp+pos,tot-ov*256),pos:pos+1,ix:ix+1}))
+# smallest integer factor that fits 624 by 800
+e=S('PG_K'); on('PG_K',(net.ge(psz,pw,e),'PG_L',{dcnt:ck*800}),(None,'PG_K',{ck:ck+1,psz:psz+624}))
+e=S('PG_L'); on('PG_L',(net.ge(dcnt,ph,e),'PG_M',{pos:0,pcy:0,dh:0,ky:0,dst:imgp,dcnt:0}),(None,'PG_L',{ck:ck+1,dcnt:dcnt+800}))
+# copy kept pixels as packed RGB; rows start at pos
+e=S('PG_M'); on('PG_M',(net.ge(pcy,ph,e),'PG_Q',None),(net.lt(ky,ck,e)*0+net.step(ky),'PG_S',{pos:pos+pst,pcy:pcy+1,ky:ky+1}),(None,'PG_N',{ix:0,kx:0,dw:0,rstart:pos+1}))
+e=S('PG_S'); on('PG_S',(net.ge(ky,ck,e),'PG_M',{ky:0}),(None,'PG_M',None))
+e=S('PG_N'); on('PG_N',(net.ge(ix,pw,e),'PG_O',{pos:rstart+pst-1,pcy:pcy+1,dh:dh+1,ky:ky+1}),(net.step(kx),'PG_N2',{ix:ix+1,kx:kx+1}),(None,'PG_N3',{rl:OAp+rstart+dcnt}))
+fsm.set(dcnt,net.and_(S('PG_N'),net.step(kx)),dcnt+pbp)
+e=S('PG_N2'); on('PG_N2',(net.ge(kx,ck,e),'PG_N',{kx:0}),(None,'PG_N',None))
+on('PG_O',(net.ge(ky,ck,S('PG_O')),'PG_M',{ky:0,dcnt:0}),(None,'PG_M',{dcnt:0}))
+e=S('PG_N3'); gray=net.eq(pct,0,e)
+rv=W[0]; gv=G_(W[0],gray)+G_(W[1],e-gray); bv=G_(W[0],gray)+G_(W[2],e-gray)
+imw=WPort(1); wl_i=WPort(3)
+imw.drive(e,(as_x(IMG0)+dst,rv*65536+gv*256+bv))
+on('PG_N3',(net.ge(ck,2,e),'PG_N',{dst:dst+1,dw:dw+1,dcnt:dcnt+pbp,ix:ix+1,kx:1}),(None,'PG_N',{dst:dst+1,dw:dw+1,dcnt:dcnt+pbp,ix:ix+1,kx:0}))
+# insert a picture paragraph at the caret
+on('PG_Q',(None,'SPLIT',{oret.r:oret.id('PG_Q2')}))
+on('PG_Q2',(None,'SPLIT',{wl_i:(cb+IMF,dw,dh,imgp),w4:(cb+DIRTY,1),imgp:dst,oret.r:oret.id('AFTER_ED')}))

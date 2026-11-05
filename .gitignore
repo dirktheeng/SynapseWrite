@@ -1,0 +1,5 @@
+build/
+dist/
+*.bak*
+gen/__pycache__/
+fonts/*.tgz

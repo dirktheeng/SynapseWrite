@@ -1,0 +1,12 @@
+const d=require('./drive');const fs=require('fs');(async()=>{const {b,p}=await d();
+ const stat=async(l)=>console.log(l,JSON.stringify(await p.evaluate('annStats')));
+ await p.evaluate(()=>{let s='';for(let i=0;i<1500;i++)s+='This paragraph number '+i+' exists to make a long document that spans well over one hundred pages so we can measure how the network behaves at that scale with real line breaking and pagination work.\n';annPaste(s)});
+ await stat('paste 1500 paragraphs');
+ await p.screenshot({path:'build/t3a.png'});
+ await p.keyboard.type('x');await stat('type at end of doc');
+ await p.keyboard.type('y');await stat('type at end of doc');
+ await p.keyboard.press('Control+a');await stat('select all');
+ await p.keyboard.press('ArrowLeft');await stat('collapse to top');await p.keyboard.press('ArrowDown');await stat('down');
+ await p.keyboard.type('z');await stat('type at top');
+ await p.mouse.wheel(0,600);await p.waitForTimeout(100);await stat('wheel');
+ await p.screenshot({path:'build/t3.png'});await b.close();})();

@@ -1,0 +1,13 @@
+const d=require('./drive');(async()=>{const {b,p}=await d();
+ await p.keyboard.type('SynapseWrite demo');await p.mouse.click(574,88);await p.keyboard.press('End');await p.keyboard.press('Enter');
+ await p.mouse.click(485,88);
+ await p.keyboard.type('Every pixel here comes from programmed weights. ');
+ await p.keyboard.press('Control+b');await p.keyboard.type('Bold, ');await p.keyboard.press('Control+b');
+ await p.keyboard.press('Control+i');await p.keyboard.type('italic, ');await p.keyboard.press('Control+i');
+ await p.keyboard.press('Control+u');await p.keyboard.type('underlined');await p.keyboard.press('Control+u');
+ await p.keyboard.type(' and justified text that fills the measure so the spacing network has to distribute the leftover width evenly between words.');
+ await p.keyboard.press('Control+j');await p.keyboard.press('Enter');await p.keyboard.press('Control+l');
+ await p.mouse.click(330,75);await p.keyboard.type('Bullet one');await p.keyboard.press('Enter');await p.keyboard.type('Bullet two');await p.keyboard.press('Enter');
+ await p.mouse.click(364,75);await p.keyboard.type('Numbered');await p.keyboard.press('Enter');await p.keyboard.type('Numbered too');await p.keyboard.press('Enter');
+ await p.keyboard.press('Control+f');await p.keyboard.type('weights');await p.keyboard.press('Enter');
+ await p.waitForTimeout(100);await p.screenshot({path:'build/t5.png'});await b.close();})();

@@ -1,0 +1,13 @@
+const d=require('./drive');(async()=>{const {b,p}=await d();
+ await p.keyboard.type('Hello neural world, this text is rendered only by neurons. It wraps across lines when the paragraph is long enough to reach the right margin of the page, which this one is.');
+ console.log(await p.evaluate('annStats'));
+ await p.keyboard.press('Enter');await p.keyboard.type('Second paragraph.');
+ await p.keyboard.press('Shift+ArrowLeft');await p.keyboard.press('Shift+ArrowLeft');await p.keyboard.press('Shift+ArrowLeft');
+ await p.keyboard.press('Control+b');
+ await p.keyboard.press('ArrowRight');await p.keyboard.press('Enter');
+ await p.mouse.click(660,88);await p.keyboard.type('A heading');await p.keyboard.press('Enter');
+ await p.keyboard.type('Back to text. ');
+ await p.keyboard.press('Control+z');
+ console.log(await p.evaluate('annStats'));
+ await p.mouse.click(500,290);await p.keyboard.type('X');
+ await p.screenshot({path:'build/t1.png'});await b.close();})();
