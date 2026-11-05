@@ -8,20 +8,21 @@ extern u8 __heap_base; static u8* hp=&__heap_base;
 __attribute__((export_name("alloc"))) void* alloc(i32 n){u8*p=(u8*)(((unsigned long)hp+15)&~15ul);hp=p+n;
   unsigned long need=((unsigned long)hp+65535)/65536, have=__builtin_wasm_memory_size(0);
   if(need>have)__builtin_wasm_memory_grow(0,need-have); __builtin_memset(p,0,n); return p;}
-static i32 *stamp,tickno=1; static i32 *istart,*isrc; static u16 *iwi,*wi; static f64 *wtab; static i32 NI;
+static u8*dz,*wz; static i32 *stamp,tickno=1; static i32 *istart,*isrc; static u16 *iwi,*wi; static f64 *wtab; static i32 NI;
 static i32 N,E,L,NP,NT; static u8*act; static f64*bias,*v,*acc,*nacc; static i32*ostart,*osplit,*dst;
 static i32*lstart,*live,*nlist,*ports,*pen,*pptr; static u8*nflag; static i32 nlive,nnext,nwp,nrp; static u64*bits,*sum; static i32 SWORDS;
 static f32*bank; static u8*fb; enum{W=1280,H=800,YB=4096};
-__attribute__((export_name("setup"))) void setup(i32 n,i32 e,i32 l,i32 np,i32 banksize,i32 ni,i32 nt){N=n;E=e;L=l;NP=np;NI=ni;NT=nt;istart=alloc(4*(n+1));isrc=alloc(4*ni+4);iwi=alloc(2*ni+2);wtab=alloc(8*nt+8);
+__attribute__((export_name("setup"))) void setup(i32 n,i32 e,i32 l,i32 np,i32 banksize,i32 ni,i32 nt,i32 dn,i32 wn){dz=alloc(dn+1);wz=alloc(wn+1);N=n;E=e;L=l;NP=np;NI=ni;NT=nt;istart=alloc(4*(n+1));isrc=alloc(4*ni+4);iwi=alloc(2*ni+2);wtab=alloc(8*nt+8);
  act=alloc(n);bias=alloc(8*n);v=alloc(8*n);acc=alloc(8*n);nacc=alloc(8*n);ostart=alloc(4*(n+1));osplit=alloc(4*n);dst=alloc(4*e+4);wi=alloc(2*e+2);
  stamp=alloc(4*n);lstart=alloc(4*(l+1));live=alloc(4*n);nlist=alloc(4*n);nflag=alloc(n);bits=alloc(8*(n/64+2));SWORDS=n/4096+2;sum=alloc(8*SWORDS);
  ports=alloc(4*np);pen=alloc(4*np);pptr=alloc(4*np);bank=alloc(4*banksize);fb=alloc(W*H*4);}
 #define PTR(name,x) __attribute__((export_name(name))) void* x##_p(void){return x;}
-PTR("p_istart",istart)PTR("p_isrc",isrc)PTR("p_iwi",iwi)PTR("p_wtab",wtab)PTR("p_act",act)PTR("p_bias",bias)PTR("p_ostart",ostart)PTR("p_dst",dst)PTR("p_wi",wi)PTR("p_lstart",lstart)PTR("p_ports",ports)PTR("p_bank",bank)PTR("p_fb",fb)PTR("p_v",v)
+PTR("p_dz",dz)PTR("p_wz",wz)PTR("p_istart",istart)PTR("p_isrc",isrc)PTR("p_iwi",iwi)PTR("p_wtab",wtab)PTR("p_act",act)PTR("p_bias",bias)PTR("p_ostart",ostart)PTR("p_lstart",lstart)PTR("p_ports",ports)PTR("p_bank",bank)PTR("p_fb",fb)PTR("p_v",v)
 // Sizes and targets arrive delta coded so the weight file compresses; this restores them.
 // Each neuron's targets ascend, so its recurrent targets come first. Ports are indexed by enable.
 __attribute__((export_name("finish"))) void finish(void){
  for(i32 i=0;i<N;i++){istart[i+1]+=istart[i];ostart[i+1]+=ostart[i];}
+ {u8*d=dz,*w_=wz;for(i32 k=0;k<E;k++){i32 x=*d++;if(x==255){__builtin_memcpy(&x,d,4);d+=4;}dst[k]=x;u16 y=*w_++;if(y==255){__builtin_memcpy(&y,w_,2);w_+=2;}wi[k]=y;}}
  for(i32 l=0;l<L;l++)for(i32 i=lstart[l];i<lstart[l+1];i++){i32 s=ostart[i],e=ostart[i+1],end=lstart[l+1],q=s;
   for(i32 k=s+1;k<e;k++)dst[k]+=dst[k-1];
   while(q<e&&dst[q]<end)q++; osplit[i]=q;}
@@ -74,11 +75,11 @@ static f32*c_n;__attribute__((export_name("workp"))) void* workp(void){if(!c_n)c
 #endif
 // A pull neuron computes only when a consumer reads it, at most once per tick. Inputs are stored
 // with the largest weights first, so a closed gate ends the evaluation at once.
-static f64 pull(i32 i){ if(stamp[i]==tickno)return v[i]; CNT(2);CN(i,1); f64 x=bias[i]; i32 ac=act[i],q=istart[i],e=istart[i+1];
+__attribute__((noinline)) static f64 pull(i32 i){ if(stamp[i]==tickno)return v[i]; CNT(2);CN(i,1); f64 x=bias[i]; i32 ac=act[i],q=istart[i],e=istart[i+1];
  if(ac&4){ac&=3;i32 s=isrc[q];CNT(3);f64 y=s>=0?v[s]:pull(~s);if(y==0){stamp[i]=tickno;return 0;}x+=wtab[iwi[q]]*y;q++;}
  for(;q<e;q++){f64 w_=wtab[iwi[q]];if(x<=-549755813888.0&&w_<549755813888.0&&w_>-549755813888.0)break;i32 s=isrc[q];CNT(3);CN(i,1);x+=w_*(s>=0?v[s]:pull(~s));}
  f64 o=ac==0?x:ac==1?(x>1e-9?1:0):(x>0?x:0); stamp[i]=tickno; if(o!=0){v[i]=o;live[nlive++]=i;} return o;}
-static void tick(void){ tickno++;
+__attribute__((noinline)) static void tick(void){ tickno++;
  for(i32 i=0;i<nlive;i++)v[live[i]]=0; nlive=0;
  for(i32 i=0;i<nnext;i++){i32 d=nlist[i];acc[d]=nacc[d];nacc[d]=0;nflag[d]=0;SET(d);} nnext=0;
  for(i32 sw=0;sw<SWORDS;sw++){u64 s;while((s=sum[sw])){i32 wd=sw*64+__builtin_ctzll(s);u64 b;

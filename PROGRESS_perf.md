@@ -35,3 +35,22 @@ Bugs on the way: first version added a state between read and use, so cells were
 ## Step 5: binary glyph tree, cheaper AND wake up
 Character digit tree (64 visits) replaced by binary tree per face (25 visits). Page +20 KB, layout work -24%. Kept. Pull neurons with a trigger read it first and stop on zero, so the 11 style bits cost nothing for default style. AND inputs are boolean by construction, so any may wake the AND; state chosen first. Removes registers' per tick pushes (registers seen in AND inputs were checked by hand, all 0 or 1).
 Wall clock on this shared machine is noisy, so test/work.sh gives a deterministic work count (edges + visits + lazy reads + pull evaluations). Paste work 256M -> 146M.
+
+## Step 6: inflate and PNG
+Current byte kept bit reversed, so the next bit is one threshold (was 8 thresholds and 36 reads per bit). Field and Huffman reading now take one tick per bit (were 5 and 6). Match copy and IDAT join use the block port. PNG filter reads the next byte in the tick that writes this one. Ticks 1.74M -> 661K, work 162M -> 52M.
+
+## Step 7: display and file size
+Canvas willReadFrequently makes putImageData far cheaper on full redraws (enter 54 -> 17 ms in browser). Rows marked dirty only when a pixel changes; typing was copying 672 rows because the scrollbar repaints, now only its line and the status bar. Typing in browser 2.6 -> 1.1 ms.
+Dictionary ordered by frequency, targets and weight indices stored as one byte with an escape, expanded on load. Page 1.12 -> 1.02 MB.
+
+## Tried and rejected
+- Hash-consing identical pixel rows: saves 36K of 857K edges, adds a visit per row.
+- Engine pointers cached in tick locals with restrict: png 377 -> 655 ms, per tick setup outweighs reload savings on cheap ticks. Reverted.
+- Removing the per pixel data wires with a gray patch port: about 10% on paint for a port format change, not done.
+
+## Final, same load, alternating runs (load average 6 to 10 on 2 cores)
+Headless minimum of 3: base / new. paste 32490 / 1961 ms, png 15423 / 707 ms, wheel 58 / 19, enter 82 / 26, typing 1.6 / 0.5.
+Browser t4: paste 23600 / 1760 ms, typing 3.8 / 1.0, wheel 31 / 13, enter 41 / 17. Load 1026 / 369 ms.
+Quiet machine earlier: paste 13900 -> about 1230 ms, png 6390 -> about 350 ms.
+Deterministic: paste ticks 3.05M -> 481K, edges 1134M -> 39M. png ticks 1.74M -> 661K, edges 443M -> 12.6M. Network 1.70M -> 1.07M edges, 142K -> 102K neurons, page 2.905 -> 1.019 MB.
+Framebuffers (test/fbdump.js) and the 126 page t4 screenshots are identical to baseline.
