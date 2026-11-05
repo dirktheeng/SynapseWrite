@@ -271,7 +271,7 @@ abt=net.bits(av,8,e)
 def blend(c_):
     s_=X(c=0)
     for k_ in range(8): s_=s_+G_(c_*(2**k_),abt[k_])
-    rem_=(s_+(as_x(255)-av)*255+127)*(1.0/255); o_=X()
+    rem_=net.gate((s_+(as_x(255)-av)*255+127)*(1.0/255),e); o_=X()
     for k_ in reversed(range(8)):
         b_=net.step(rem_-2**k_+1e-6); o_=o_+b_*(2**k_); rem_=rem_-b_*(2**k_)
     return o_

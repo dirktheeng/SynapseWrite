@@ -890,3 +890,32 @@ open('../build/net.bin.gz','wb').write(gz)
 prov={k:len(v) for k,v in net.groups.items()}
 json.dump(dict(neurons=n,edges=len(dst),layers=c['L'],groups=prov,states=len(fsm.states)),open('../build/provenance.json','w'),indent=1)
 print('lazy',len(isr),'edges',len(dst),'raw',len(blob),'gz',len(gz),file=sys.stderr)
+if os.environ.get('T3_IDLE'):
+    idx=sorted(range(n),key=lambda i:0)
+    newinv=[0]*n
+    for i_,a_ in enumerate(new): newinv[a_]=i_
+    val=[0.0]*n; val0=[0.0]*n
+    for i_,v_ in net.init.items(): val0[i_]=v_
+    inp=net.inp; order=sorted(range(n),key=lambda i:c['layer'][i]); fired={}
+    tot=0
+    for i_ in order:
+        if net.kind[i_]=='reg': val[i_]=val0[i_]; continue
+        x_=net.bias[i_]
+        for j_,w_ in inp[i_]: x_+=w_*val[j_]
+        a_=net.act[i_]
+        val[i_]=x_ if a_==0 else (1.0 if (a_==1 and x_>1e-9) else (0.0 if a_==1 else max(x_,0.0)))
+    gn={k:g for g,v in net.groups.items() for k in v}
+    fan=[0]*n
+    for i_ in range(n):
+        for j_,w_ in inp[i_]: fan[j_]+=1
+    from collections import Counter
+    C_=Counter(); F_=Counter()
+    for i_ in range(n):
+        if val[i_]!=0: C_[gn[i_]]+=1; F_[gn[i_]]+=fan[i_]
+    print('idle fired',C_,'edges',F_,file=sys.stderr)
+    fan=[len(c['out'][new[i_]]) for i_ in range(n)]
+    print('real edges',sum(fan[i_] for i_ in range(n) if val[i_]!=0),file=sys.stderr)
+    top=sorted([(fan[i_],i_,gn[i_],net.kind[i_]) for i_ in range(n) if val[i_]!=0],reverse=True)[:25]
+    nm_={next(iter(v_.t)):k_ for k_,v_ in list(globals().items()) if isinstance(v_,X) and len(v_.t)==1}
+    print([(a_,nm_.get(b_,b_),c_) for a_,b_,c_,d_ in top],file=sys.stderr)
+    print([nm_.get(i_,i_) for i_ in range(n) if val[i_]!=0 and gn[i_]=='tier3'],file=sys.stderr)
