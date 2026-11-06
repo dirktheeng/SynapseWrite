@@ -61,7 +61,7 @@ for ri,r in enumerate(rows):
     yy+=PH+ (80 if ri==0 else 0)
     if ri==0:hub_y=yy-60
 H_=yy+14-net
-b+=rect(30,net,940,H_,BLUE,14,2,'#f5f8fd')+t(46,net+26,'The network: every box below is one set of weights, all in the same graph',15,INK,'start',700)
+b+=rect(30,net,940,H_,BLUE,14,2,'#f5f8fd')+t(46,net+26,'One network. Colored panels are README categories; names are labels on its neurons',15,INK,'start',700)
 b+=inner
 regs=G['shared control registers']['neurons'];wire=G['bank and port wiring']['neurons']
 b+=rect(46,hub_y,908,40,BLUE,8,2)+t(500,hub_y+25,f'Hub: compiled control ({G["compiled control"]["neurons"]:,}), shared registers ({regs:,}), port wiring ({wire:,})',13.5,INK,'middle',700)

@@ -134,7 +134,7 @@ The same is true of PNG pictures and PDF export. The network also chooses the fi
 
 ## How everything is connected
 
-These sub-networks are not wired in a chain. They are all one graph, built around a hub. This figure and the numbers below are decoded from the shipped weight file, and the engine ports are read from the same file.
+The whole app is one neural network: one graph of neurons, evaluated by one engine. A "sub-network" is a label on a set of those neurons, recorded by the generator so each neuron can be traced to its purpose. There is no boundary in the weights between them. The colored families in this figure are just categories for this README. The sub-networks are also not wired in a chain: they are built around a hub. This figure and the numbers below are decoded from the shipped weight file, and the engine ports are read from the same file.
 
 <p align="center"><img src="docs/figures/network_wiring.svg" alt="Connection diagram from browser through glue, network families and hub, engine ports, memory and screen, back through glue"></p>
 
