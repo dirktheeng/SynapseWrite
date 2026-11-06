@@ -35,3 +35,8 @@ Viewed 11 pt side by side: x snap makes stems crisper, but with whole pixel pens
 
 ## Step 4: memory
 Bank made sparse instead of shrunk: 1024 pages of 64K cells, each taking wasm memory on first write, untouched pages read as zero. No capacity was reduced and no address moved. Wasm memory at start: 73 MB (master 244 MB bank plus arrays). The weight file's streams are freed after decoding.
+
+## Final measurements
+Page 3,174,935 bytes (master 3,380,860). Neurons about 680K. Wasm memory 73 MB at start.
+Machine shared with other agents, load average 20 to 40 on 2 cores, renderers OOM killed from time to time. Suites run from snapshots with crash reruns and longer timeouts; e2e in two shards. Both are harness only, not committed, assertions unchanged.
+Failures seen on the final build were all caret blink phase under load where the differing pixels were looked at: footnote undo, resize redo (one pixel column at the caret). Hover, Back returns, footnote redo, no pointer on touch, all features save then open vary between runs or passed on the build before; see the report.

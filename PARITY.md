@@ -61,12 +61,10 @@ Evidence: `test/e2e.js`, `test/t3_table.js`, `test/t3_pic.js`, `test/t3_misc.js`
 ## Deployment targets
 | Target | Result |
 |---|---|
-| Static page | Self-contained HTML, 3.3 MB, about 413,000 neurons, about 2.37 million weights plus 420,000 read on demand |
+| Static page | Self-contained HTML, 3.17 MB, eight families, about 680,000 neurons, about 1.07 million weights plus 1.22 million read on demand. Wasm memory 73 MB at start, growing by 256 KB pages as the bank is written. |
 | Browsers | Tested in headless Chromium only. Edge and Firefox not tested. |
-| Typing, 126 pages | About 1 ms at document end, 4 ms at top on a quiet machine. CPU in this container, no GPU. |
-| Enter, undo near the top, 126 pages | About 20 ms each. Page totals finish in the background. |
-| Wheel, caret jump to top, 126 pages | About 16 ms and 18 ms. |
-| Select all, 126 pages | About 19 ms. |
+| Latency, 126 pages | Measured only on a heavily shared machine (load average 20 to 40 on 2 cores), best of 8, ms, with master in the same run: type at end 1.9 (1.4), wheel 21 (27), select all 112 (60), jump to top 154 (97), type at top 23 (4.6), Enter 131 (52), undo 184 (87). Not measured on a quiet machine. Master's values here are about 5 times its quiet values. |
+| Cold page, 30 lines of new glyphs | 230 to 600 ms in the same conditions, single runs. |
 | Paste of 1,900 paragraphs | About 1.4 s. |
 
 ## Limits
