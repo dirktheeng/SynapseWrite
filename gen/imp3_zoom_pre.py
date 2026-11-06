@@ -2,7 +2,8 @@ TAGB_SPAN=600000
 # Zoom: a linear map between the document's own pixels and the screen, sitting between the paint buses and the ports.
 # Levels are one-hot registers; at 100 percent none is on, so every gate here stays closed and adds no work.
 # Layout, hit lists and saved files keep document pixels; only what reaches the ports and what comes back from the mouse is mapped.
-ZL=[0.5,0.75,1.25,1.5,1.75,2.0]; ZLH=[net.reg() for _ in ZL]; ZCX=631
+ZL=[0.5,0.75,1.25,1.5,1.75,2.0,2.5,3.0,4.0,5.0];   # p1: 250 to 500 percent added, as Word goes to 500
+ZLH=[net.reg() for _ in ZL]; ZCX=631
 zany=net.or_(*ZLH); zdoc=net.step(zany*M-M+clip0-173.5); zrul=net.reg(); VHZ=net.reg(DOCB-DOCY); zt=net.reg(2); zpct=net.reg(100); rdm=net.reg()
 _zx=[net.and_(h_,net.or_(zdoc,zrul)) for h_ in ZLH]; _zy=[net.and_(h_,zdoc) for h_ in ZLH]
 zsf=net.reg(4096); zwd=net.reg()   # a page wider than the window slides sideways: zsf is the slide plus 4096, zwd says one is on

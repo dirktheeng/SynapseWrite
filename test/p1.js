@@ -47,5 +47,19 @@ const yel=(r,g,b)=>r>200&&g>180&&b<170; // match tint
   // View > Read Mode, then View > Print Layout from the read view is not reachable (bars covered), so Esc; the button acts in print layout without harm
   A=await lib();A.type('stay');A.click(372,47);A.settle();const h0=A.hash(0,800);A.click(398,74);A.settle();A.shot('build/p1_rib2.png');A.type('!');A.settle();ok('Print Layout in print layout keeps editing',/stay!/.test(xml(A)));
  }
+
+ if(!only||only=='zoom'){
+  // zoom in from 100 percent up to 500 by the status bar plus, as Word goes to 500
+  const ink=(A)=>{const f=A.fb();let t=-1,b=-1;for(let y=174;y<770;y++){for(let x=20;x<1262;x++){const i=(y*1280+x)*4;if(f[i]<90&&f[i+1]<90&&f[i+2]<90){if(t<0)t=y;b=y;break;}}}return b-t+1;};
+  let A=await lib();A.type('Zoom Hello');A.settle();const h1=ink(A);for(let i=0;i<4;i++){A.click(1232,788);A.settle();}A.key(128);A.key(130);A.settle();const h2=ink(A);
+  for(let i=0;i<4;i++){A.click(1232,788);A.settle();}A.key(128);A.key(130);A.settle();A.shot('build/p1_z500.png');const h5=ink(A);
+  ok('500 percent draws text five times as tall as 100',Math.abs(h5/h1-5)<0.8,[h1,h2,h5]);
+  const q=A=>{A.key(128);A.key(130);A.settle();return A.hash(174,800);};const s5=q(A);A.click(1232,788);A.settle();ok('zoom stops at 500',q(A)===s5);
+  // typing at 500 percent lands at the caret, then back to 100 is pixel equal to one that never zoomed
+  A.type('!');A.settle();for(let i=0;i<8;i++){A.click(1096,788);A.settle();}
+  A.key(132,1);A.settle();ok('typing at 500 lands at the caret, and back at 100 the text is its own size',/Zoom Hello!/.test(xml(A))&&ink(A)===h1,ink(A));
+  // the View tab steps up to 500 too
+  let C=await lib();C.type('Zoom Hello');C.click(372,47);C.settle();for(let i=0;i<8;i++){C.click(210,74);C.settle();}C.key(128);C.key(130);C.settle();C.shot('build/p1_z500v.png');ok('View > Zoom In reaches 500',Math.abs(ink(C)/h1-5)<0.8,ink(C));
+ }
  const f=R.filter(x=>!x).length;console.log(R.length-f,'passed',f,'failed');process.exit(f?1:0);
 })();
