@@ -10,3 +10,5 @@ Captured every tab, menus and File screen with real clicks, viewed each. Finding
 - Ruler: ticks at 1/6, 1/2, 5/6 inch (uneven), stop at 6 in, and static so they ignore margins.
 - Chevrons off center in their buttons. Status 100% one px above the left text.
 - Scrollbar judged fine: current Word also hides arrows until hover. Adding arrows would change thumb scale and the drag test constant, not done.
+## After first build
+Build OK: 3,391,652 byte page, 2,461,755 edges. test/rv_a1.js 38/38. Viewed all tabs and File from the real build; they match the preview. Narrow margins now move the ruler scale. Next: full suites one at a time.
