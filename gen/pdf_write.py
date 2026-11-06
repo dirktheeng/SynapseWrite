@@ -11,7 +11,7 @@ def pd_patch(st,nx):
     number(st+'p',qi,st+'q')
     on(st+'q',(None,nx,{fp:qsvf}))
 import pdf_fonts
-PXV=[(p_,v_) for p_ in rom.EXT_PAGES for v_ in rom.EXT_VARS]; NFB_=len(FACES); NFC=len(FACES)+len(PXV); OROOT=3+3*NFC; FIRST=OROOT+1; PUS=999000; PFT=999100   # faces used by this PDF, and where each face's bytes are in the read only part of the bank
+PXV=[(p_,v_) for p_ in rom.EXT_PAGES for v_ in rom.EXT_VARS]; NFB_=len(FACES); NFC=len(FACES)+len(PXV); OROOT=3+3*NFC; DROOT=OROOT+1; FIRST=OROOT+2; PUS=999000; PFT=999100   # faces used by this PDF, and where each face's bytes are in the read only part of the bank
 PF_ROM=bytearray(); PF_INIT=[]
 for i_,f_ in enumerate(FACES):
     bl_,o1_,o2_=pdf_fonts.face_blob(i_,*f_,3+3*i_)
@@ -21,7 +21,7 @@ for i0_,(p_,v_) in enumerate(PXV):
     i_=NFB_+i0_; bl_,o1_,o2_=pdf_fonts.ext_blob(i_,v_,p_,3+3*i_)
     for j_,v2_ in enumerate((len(PF_ROM)+1,len(bl_),o1_,o2_)): PF_INIT.append([PFT+i_*4+j_,v2_])
     PF_ROM+=bl_
-head=b'%PDF-1.4\n'; cat_=b'1 0 obj\n<</Type/Catalog/Pages 2 0 R/Outlines %d 0 R>>\nendobj\n'%OROOT
+head=b'%PDF-1.4\n'; cat_=b'1 0 obj\n<</Type/Catalog/Pages 2 0 R/Outlines %d 0 R/Dests %d 0 R>>\nendobj\n'%(OROOT,DROOT)
 pfr=Ret('T4_PFR')
 on('PDF',(None,'PD_h',{fp:0,embase:OUTB}))
 lit('PD_h',head+cat_,'PD_x')
@@ -245,3 +245,4 @@ pdfl=R(); on('PD_END',(None,'HALT',{pdfl:fp}))
 pdfout=Bus(net); pdfout.add(S('HF'),pdfl); fsm.set(pdfl,S('HF'),0)
 exec(open('rv_a6_pdf.py').read())
 exec(open('feat2_pdf.py').read())
+exec(open('p3_pdf.py').read())

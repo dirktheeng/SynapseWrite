@@ -2,6 +2,7 @@
 PURPOSE={
  'feat2 built up math':'Builds, measures, paints, saves as OMML, reads and prints the newer equation forms: root with an index, n-ary with limits, accents, delimiters as tall as their line, two row matrix.',
  'feat2 pdf run effects':'Prints character spacing, run shading, double strike and external links as link annotations.',
+ 'p3 pdf destinations':'Prints bookmarks as named destinations and outline items, and internal links as GoTo link annotations.',
  'feat1 run effects':'Decodes the extended field of a style entry for the glyph network: caps and small caps draw and measure the capital, small capitals take a smaller size, hidden text takes no width or ink, character spacing joins the advance.',
  'feat1 docx reader':'Reads caps, small caps, double strike, hidden text, character spacing, run shading, links with their targets, bookmarks, contextual spacing and widow control from a .docx.',
  'feat1 docx writer':'Writes those run and paragraph properties back, opens and closes links and bookmarks around runs, and lists external link targets as relationships.',
