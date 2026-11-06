@@ -159,17 +159,18 @@ on('T1_V1',(None,'T1_M0',None))
 # ---- menus: rows use alpha 254, the row is computed from the pointer y ----
 T1_SZ=[8,9,10,11,12,14,16,18,20,22,24,26,28,36,48,72]    # rows of the size menu, in points
 T1_CN=['Black','Gray','White','Blue','Red','Green','Orange','Purple']
-def t1_gmenu(k,x,y,colors,more=None,more2=None):
+def t1_gmenu(k,x,y,colors,more=None,more2=None,recent=False,nxt='T1_END'):
     "A grid of color swatches; the cell comes from the pointer x and y."
     u=ui.L(); rows_=(len(colors)+7)//8
-    n_=rows_+(1 if more else 0)
+    n_=rows_+(1 if more else 0)+(1 if recent else 0)
     u.r(x+2,y+2,GC*8+1,GC*n_+1,(200,198,196),0); u.r(x-1,y-1,GC*8+2,GC*n_+2,(150,148,146),0)
     if more: u.r(x,y+rows_*GC,GC*8,GC,WHITE,254,PAL_B[5],rows_*8); u.t(x+8,y+rows_*GC+1,more,9,0,0,True)
     if more2: n_+=1; u.r(x+2,y+2,GC*8+1,GC*n_+1,(200,198,196),0); u.r(x-1,y-1,GC*8+2,GC*n_+2,(150,148,146),0); u.r(x,y+rows_*GC,GC*8,GC,WHITE,254,PAL_B[5],rows_*8); u.t(x+8,y+rows_*GC+1,more,9,0,0,True); u.r(x,y+(rows_+1)*GC,GC*8,GC,WHITE,254,PAL_B[5],rows_*8+8); u.t(x+8,y+(rows_+1)*GC+1,more2,9,0,0,True)
     for i_,c_ in enumerate(colors):
         cx_=x+(i_%8)*GC; cy_=y+(i_//8)*GC
         u.r(cx_,cy_,GC,GC,WHITE,254,PAL_B[5],i_); u.r(cx_+3,cy_+3,GC-6,GC-6,(150,150,150),254); u.r(cx_+4,cy_+4,GC-8,GC-8,c_,254)
-    t1_chain(f'T1_MM{k}',u,'T1_END')
+    if recent: imp6_recent_cells(u,x,y+(rows_+2)*GC)
+    t1_chain(f'T1_MM{k}',u,nxt)
 def t1_menu(k,x,y,w,labels,draw=None):
     u=ui.L(); n=len(labels)
     u.r(x+2,y+2,w+1,RH*n+1,(200,198,196),0); u.r(x-1,y-1,w+2,RH*n+2,(150,148,146),0)
@@ -186,7 +187,7 @@ def _fop(u,r_,x,y):
     u.t(x+26,y+2,['Match case','Whole words'][r_],9,0,0,True)
 t1_menu(1,112,87,128,[0]*(len(rom.FAM)+1),_fnt)
 t1_menu(2,242,87,48,[str(i_) for i_ in T1_SZ])
-t1_gmenu(3,270,115,PAL_F,'More Colors...',IMP5_PICK_ROW)
+t1_gmenu(3,270,115,PAL_F,'More Colors...',IMP5_PICK_ROW,recent=True,nxt='IMP6_RC0')
 t1_gmenu(15,270,115,IMP5_PICK)
 t1_gmenu(7,306,115,[(255,255,255)]+PAL_B[6:13])
 t1_menu(8,464,115,70,['1.0','1.15','1.5','2.0'])
@@ -216,7 +217,7 @@ for r_ in range(len(rom.FAM)): mrules.append((mc(1,r_),'FMTS',{fm:10,fcol:r_,fnx
 mrules.append((mc(1,8),'V4_PR',{prk:5,**CM}))
 for r_,si_ in enumerate(T1_SZ): mrules.append((mc(2,r_),'FMTS',{fm:9,fsi:rom.sz_raw(rom.SZ.index(si_)),**CM}))
 for r_ in range(32): mrules.append((mc(3,r_),'FMTS',{fm:7,fcol:r_,fck:0,**CM}))
-mrules+=imp5_pick_rules(mr,CM,e)
+mrules+=imp5_pick_rules(mr,CM,e)+imp6_recent_rules(mr,CM,e)
 mrules.append((net.and_(net.step(mr[3]),net.ge(t1_mrow,32,e),net.lt(t1_mrow,64,e)),'V4_PR',{prk:1,**CM}))
 for r_ in range(8): mrules.append((mc(7,r_),'FMTS',{fm:15,fhl:r_,**CM}))
 mrules.append((mc(4,0),'RD0',{t1_case:ONE-t1_case,**CSTART,**CM}))

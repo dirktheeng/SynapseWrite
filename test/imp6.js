@@ -37,5 +37,22 @@ exports.zip=zip;
   // with nothing to repeat, F4 changes nothing
   let C=await lib();C.type('nothing');C.settle();const x0=part(C,'word/document.xml');C.key(139);C.settle();C.key('!');C.settle();ok('F4 with nothing to repeat changes nothing',part(C,'word/document.xml')===x0.replace('nothing<','nothing!<'));
  }
+
+ if(!only||only=='recent'){
+  const px=(A,x,y)=>{const f=A.fb(),i=(y*1280+x)*4;return [f[i],f[i+1],f[i+2]];};const hx=c=>c.map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase();
+  const menu=A=>{A.click(299,102);A.settle();};const cell=(r,c)=>[270+c*22+11,115+r*22+11];
+  let A=await lib();A.type('first words');A.key(97,1);A.settle();menu(A);const empty=hx(px(A,...cell(6,0)));A.shot('build/imp6_rc0.png');
+  A.click(300,236);A.settle();const c1=px(A,...cell(4,1));A.click(...cell(4,1));A.settle();
+  A.key(97,1);A.settle();menu(A);A.click(300,236);A.settle();const c2=px(A,...cell(6,5));A.click(...cell(6,5));A.settle();
+  A.key(97,1);A.settle();menu(A);A.shot('build/imp6_rc1.png');const r0=hx(px(A,...cell(6,0))),r1=hx(px(A,...cell(6,1))),r2=hx(px(A,...cell(6,2)));
+  ok('the recent row starts empty',empty=='FFFFFF',empty);
+  ok('recent colors show newest first',r0==hx(c2)&&r1==hx(c1)&&r2=='FFFFFF',[r0,r1,r2,hx(c1),hx(c2)].join(' '));
+  A.key(27);A.settle();A.key(133,1);A.key(13);A.type('fresh colored words');A.settle();A.key(132);A.key(133,2);A.settle();menu(A);A.click(...cell(6,1));A.settle();A.click(600,700);A.settle();A.shot('build/imp6_rc2.png');
+  let x=part(A,'word/document.xml');ok('a recent cell applies its exact color',new RegExp('w:color w:val="'+hx(c1)+'"/>(?:(?!</w:r>).)*fresh').test(x),hx(c1));
+  const n=count(A,223,1039,174,776,(a,b,d)=>Math.abs(a-c1[0])<=2&&Math.abs(b-c1[1])<=2&&Math.abs(d-c1[2])<=2);ok('drawn in that color',n>20,n);
+  A.key(132);A.key(133,2);A.settle();menu(A);const q0=hx(px(A,...cell(6,0))),q1=hx(px(A,...cell(6,1)));ok('the used color moves to the front, not doubled',q0==hx(c1)&&q1==hx(c2)&&hx(px(A,...cell(6,2)))=='FFFFFF',[q0,q1].join(' '));
+  A.click(...cell(6,6));A.settle();const x2=part(A,'word/document.xml');ok('an empty recent cell changes nothing',x2===x);
+  A.key('z',1);A.settle();x=part(A,'word/document.xml');ok('undo takes the recent color off',!new RegExp(hx(c1)+'"/>(?:(?!</w:r>).)*fresh').test(x));
+ }
  console.log(R.filter(x=>x).length,'passed,',R.filter(x=>!x).length,'failed');process.exit(R.every(x=>x)?0:1);
 })();
