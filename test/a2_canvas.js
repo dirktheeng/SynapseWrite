@@ -1,7 +1,7 @@
 // Document canvas look. Built by real input events, judged on canvas pixels and the saved file.
 const d=require('./drive');const {execSync}=require('child_process');const fs=require('fs');let fails=0,n=0;
 const ok=(name,c,x)=>{n++;if(!c)fails++;console.log(c?'PASS':'FAIL',name,x===undefined?'':x);};
-const img=async p=>{await p.mouse.move(1270,5);await p.waitForTimeout(60);await p.evaluate(()=>annDispatch(12));return p.evaluate(()=>{const c=document.getElementById('screen').getContext('2d').getImageData(0,0,1280,800).data;const o=[];for(let i=0;i<c.length;i+=4)o.push(c[i]<<16|c[i+1]<<8|c[i+2]);return o;});};
+const img=async p=>{await p.mouse.move(1270,5);await p.waitForTimeout(60);await p.evaluate(()=>annDispatch(12));const b64=await p.evaluate(()=>{const c=document.getElementById('screen').getContext('2d').getImageData(0,0,1280,800).data;let s='';for(let i=0;i<c.length;i+=32768)s+=String.fromCharCode.apply(null,c.subarray(i,i+32768));return btoa(s);});const B=Buffer.from(b64,'base64');const o=new Int32Array(1280*800);for(let i=0;i<o.length;i++)o[i]=B[4*i]<<16|B[4*i+1]<<8|B[4*i+2];return o;};
 const px=(I,x,y)=>I[y*1280+x];
 const runs=(I,x,y0,y1,f)=>{const r=[];let s=-1;for(let y=y0;y<=y1;y++){const h=y<y1&&f(px(I,x,y));if(h&&s<0)s=y;if(!h&&s>=0){r.push([s,y-s]);s=-1;}}return r;};
 const rowsInk=(I,x0,x1,y0,y1,f)=>{const r=[];let s=-1;for(let y=y0;y<=y1;y++){let h=false;if(y<y1)for(let x=x0;x<x1;x++)if(f(px(I,x,y))){h=true;break;}if(h&&s<0)s=y;if(!h&&s>=0){r.push(s);s=-1;}}return r;};
@@ -20,10 +20,10 @@ const go={home:[80,47],ins:[135,47],ref:[262,47],rev:[333,47]};
  {const {b,p}=await d();const K=k=>p.keyboard.press(k),T=t=>p.keyboard.type(t),C=(x,y)=>p.mouse.click(x,y);
   // lists: tight items, marker at the quarter inch, space after the last item
   await C(325,76);await T('Bullet one');await K('Enter');await T('Bullet two');await K('Enter');await K('Enter');await T('After');const I=await img(p);
-  const rows=rowsInk(I,367,520,270,420,dark);ok('list items one line apart',rows[1]-rows[0]===22,JSON.stringify(rows));ok('space after the last item',rows[2]-rows[1]===33);
+  const rows=rowsInk(I,319,520,270,420,dark);ok('list items one line apart',rows[1]-rows[0]===22,JSON.stringify(rows));ok('space after the last item',rows[2]-rows[1]===33);
   let mx=9999;for(let y=rows[0];y<rows[0]+16;y++)for(let x=325;x<366;x++)if(dark(px(I,x,y))&&x<mx)mx=x;ok('bullet starts near the quarter inch',mx>=343&&mx<=347,mx);
   const [dl]=await Promise.all([p.waitForEvent('download'),K('Control+s')]);await dl.saveAs('build/a2c.docx');const xml=execSync('unzip -p build/a2c.docx word/document.xml').toString();ok('list items saved with contextual spacing',(xml.match(/<w:contextualSpacing\/>/g)||[]).length===2);
-  const bytes=[...fs.readFileSync('build/a2c.docx')];await p.evaluate(u=>annOpen(new Blob([new Uint8Array(u)])),bytes);await p.waitForTimeout(1200);const I2=await img(p);ok('reopened list looks the same',JSON.stringify(rowsInk(I2,367,520,270,420,dark))===JSON.stringify(rows));
+  const bytes=[...fs.readFileSync('build/a2c.docx')];await p.evaluate(u=>annOpen(new Blob([new Uint8Array(u)])),bytes);await p.waitForTimeout(1200);const I2=await img(p);ok('reopened list looks the same',JSON.stringify(rowsInk(I2,319,520,270,420,dark))===JSON.stringify(rows));
   // selection shows the paragraph mark
   await K('Control+a');const S=await img(p);const sel=0xccddee;let w=0;for(let x=367;x<600;x++)if(px(S,x,rows[0]+3)===sel)w=x;const I0=await (async()=>I2)();let e=0;for(let x=367;x<600;x++)if(dark(px(I2,x,rows[0]+2))||dark(px(I2,x,rows[0]+6))||dark(px(I2,x,rows[0]+9)))e=x;ok('selection runs past the last glyph',w>e+2,[w,e]);
   await b.close();}
