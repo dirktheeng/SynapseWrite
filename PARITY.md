@@ -71,11 +71,11 @@ Compared by eye with how Word looks, from memory; no copy of Word was available.
 ## Deployment targets
 | Target | Result |
 |---|---|
-| Static page | Self-contained HTML, 3.17 MB, eight families, about 680,000 neurons, about 1.07 million weights plus 1.22 million read on demand. Wasm memory 73 MB at start, growing by 256 KB pages as the bank is written. |
+| Static page | Self-contained HTML, 3.22 MB, eight families, about 444,000 neurons, about 0.94 million weights plus 0.75 million read on demand. Wasm memory about 96 MB after a 126 page paste (`test/t4.js`), growing by 256 KB pages as the bank is written. |
 | Browsers | Tested in headless Chromium only. Firefox and Edge are untested. |
-| Latency, 126 pages | Measured only on a heavily shared machine (load average 20 to 40 on 2 cores), best of 8, ms, with master in the same run: type at end 1.9 (1.4), wheel 21 (27), select all 112 (60), jump to top 154 (97), type at top 23 (4.6), Enter 131 (52), undo 184 (87). Not measured on a quiet machine. Master's values here are about 5 times its quiet values. |
-| Cold page, 30 lines of new glyphs | 230 to 600 ms in the same conditions, single runs. |
-| Paste of 1,900 paragraphs | About 1.4 s. |
+| Latency, 126 pages | Headless Chromium on a shared 2 core machine, single run of `test/t4.js`, ms, with deterministic ticks and edges: first key below the background 9.4 (604, 337 K), next keys 0.4 (66, 4 K to 5 K), wheel 44 (2,364, 1.94 M), select all 49 (2,374, 2.24 M), jump to top 43 (2,380, 1.94 M), type at top 5.6 (478, 236 K), Enter 43 (2,527, 1.89 M), undo 53 (2,608, 1.98 M). Not measured on a quiet machine. |
+| Cold page, 30 lines of new glyphs | 46 to 76 ms, single runs of `test/t4.js`. |
+| Paste of 1,900 paragraphs | About 0.34 s for the part before the background (84 K ticks, 5.6 M edges). |
 
 ## Limits
 About 3,000 paragraphs, 1,000 characters per paragraph, 200 characters per line, and no memory reclaim for deleted paragraphs.
