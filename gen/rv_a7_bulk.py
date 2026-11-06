@@ -110,7 +110,7 @@ for i_ in range(PSN):
 _nq=a7_lead(_cd,e)
 on('A7_FF',(net.step(_nq),'F3',{fo:fo+_nq}),(None,'F4',{r1:fbs+fo+fk,r2:as_x(Q)+fk}))
 # paste record, written when the block run ends
-e=S('A7_PF'); c_=net.and_(e,ONE-nolog); a7_log(c_,usp,12,a7_pp,a7_po,a7_pn,ty)
+e=S('A7_PF'); c_=net.and_(e,ONE-nolog); a7_log(c_,usp,12,a7_pp,a7_po,a7_pn,TST)
 on('A7_PF',(None,'A7_PG',None))
-e=S('A7_PG'); c_=net.and_(e,ONE-nolog); a7_log(c_,usp+6+a7_pn,12,a7_pp,a7_po,a7_pn,ty); a7_adv(c_,usp+12+a7_pn)
+e=S('A7_PG'); c_=net.and_(e,ONE-nolog); a7_log(c_,usp+6+a7_pn,12,a7_pp,a7_po,a7_pn,TST); a7_adv(c_,usp+12+a7_pn)
 on('A7_PG',(None,'PS2',{a7_pn:0}))

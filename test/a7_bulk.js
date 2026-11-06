@@ -42,5 +42,5 @@ const big=()=>doc(1900,LONG);
   for(let i=0;i<3;i++){A.key('y',1);A.settle();A.key('z',1);A.settle();}ok('redo and undo cycles keep everything',endh(A)===h0);}
  // slot reuse: enter and undo many times never runs out
  {const A=await lib();A.paste('text');for(let i=0;i<3200;i++){A.key(13);A.key(8);}A.key(13);A.type('after');const h=view(A);const B=await lib();B.paste('text\nafter');ok('4000 enter and backspace cycles still split',view(B)===h);}
- console.log(fails?'FAILURES '+fails:'ALL PASS');
+ console.log(fails?'FAILURES '+fails:'ALL PASS');process.exit(0);
 })().catch(x=>console.log(x.stack));

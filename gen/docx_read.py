@@ -226,12 +226,17 @@ on('T3_PN2',(None,'T2_PR',{w1:(cb+ALIGN,0),w2:(cb+SECN,rdp),rdp:0,rtoc:0,rdig:0}
 e=S('TX0')
 on('TX0',(None,'TX1',{rl:OA+oi}))
 e=S('TX1'); on('TX1',(net.eq(W[0],62,e),'TX2',{oi:oi+1}),(None,'TX0',{oi:oi+1}))
-on('TX2',(None,'TX3',{rl:OA+oi}))
+on('TX2',(None,'TX3',{rl:OA+oi,rpw:OA+oi}))
 
 e=S('TX3')
 amp_=net.eq(W[0],38,e);ltx=net.eq(W[0],60,e)
 isdg_=net.and_(net.ge(W[0],48,e),net.lt(W[0],58,e))
-on('TX3',(ltx,'PX',None),(net.and_(rdig,isdg_),'TX2',{tpgv:tpgv*10+W[0]-48,oi:oi+1,w1:(cb+TPG,tpgv*10+W[0]-48)}),(rdig,'TX2',{oi:oi+1}),
+_wt=rpw.out
+_ntx=a7_lead([net.step(net.step(as_x(32)-_wt[i_]-0.5+e*M-M)+net.step(_wt[i_]-126.5+e*M-M)+net.eq(_wt[i_],38,e)+net.eq(_wt[i_],60,e)) for i_ in range(PSN)],e)
+_ncap=net.relu(as_x(1000)-clen+e*M-M); _ntx2=_ntx-net.relu(_ntx-_ncap+e*M-M); _tgo=net.and_(e,ONE-rdig,net.step(_ntx2-1.5),net.eq(co,clen,e)); _tg=G_(cs+rhi,_tgo)
+for w_ in _st: net.connect(w_,_tg)
+wpch.drive(_tgo,(cb+co,_ntx2)); wpst.drive(_tgo,(cb+1024+co,_ntx2)); w3.drive(_tgo,(cb+LEN,clen+_ntx2)); w4.drive(_tgo,(cb+DIRTY,1))
+on('TX3',(_tgo,'TX2',{oi:oi+_ntx2,co:co+_ntx2,clen:clen+_ntx2}),(ltx,'PX',None),(net.and_(rdig,isdg_),'TX2',{tpgv:tpgv*10+W[0]-48,oi:oi+1,w1:(cb+TPG,tpgv*10+W[0]-48)}),(rdig,'TX2',{oi:oi+1}),
  (net.and_(amp_,net.eq(W[1],97,e),net.eq(W[2],112,e)),'INS',{ins_ch:39,ins_st:cs+rhi,oi:oi+6,oret.r:oret.id('TX2')}),
  (net.and_(amp_,net.eq(W[1],113,e)),'INS',{ins_ch:34,ins_st:cs+rhi,oi:oi+6,oret.r:oret.id('TX2')}),
  (net.and_(amp_,net.eq(W[1],97,e)),'INS',{ins_ch:38,ins_st:cs+rhi,oi:oi+5,oret.r:oret.id('TX2')}),
