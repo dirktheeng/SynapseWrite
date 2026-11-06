@@ -99,7 +99,7 @@ gx7=G_(qcx+6,net.step(qcols))
 tb7=net.step(qcols)
 qnx_=qfh+Wl[7]+net.step(qfh+Wl[7])*14
 ovf=net.or_(net.and_(net.gt(qyy+Wl[3]+qnx_,qtop+qmt+qth,e),net.gt(qyy,qtop+qmt,e)),net.and_(ONE-tb7,keep_lines(e,qyy,qtop,Wl[3],R2,qlj,qnl,qmt,qth,qnx_)))
-lmv={qs:Wl[0],qe:Wl[1],qx:Wl[2]-48+gx7+qml,qh:Wl[3],qa:Wl[4],qo:Wl[0],qex:Wl[5]}
+lmv={qs:Wl[0],qe:Wl[1],rv_qm:gx7+qml,qx:Wl[2]-48+gx7+qml,qh:Wl[3],qa:Wl[4],qo:Wl[0],qex:Wl[5]}
 col2=net.and_(ovf,net.eq(qnc,2,e),ONE-net.step(qxc))
 on('PD_7',(col2,'PD_8',{**lmv,qyy:qtop+qmt,qxc:(qtw-24)*0.5+24}),(ovf,'PD_C2',{**lmv,qyy:qtop+qps+qmt,qtop:qtop+qps,qxc:0}),(None,'PD_8',lmv))
 pg_close('PD_C2','PD_QH')
@@ -124,7 +124,7 @@ on('PD_R',(net.step(qiw),'T4P_IM',None),(None,'PD_9',{qsty:999999,qop:0,qxx:qx+q
 e=S('PD_9'); on('PD_9',(net.ge(qo,qe,e),'PD_Z',None),(None,'PD_A',{r1:qb+qo,rs:qb+1024+qo}))
 e=S('PD_A'); measure(e,R1,RSR,RSC); ke3=net.and_(e,net.step(qpc)); kp_en.lin(ke3); kp_in.add(ke3,qpc)
 pdiff=net.step(net.step(RSC-qsty)+net.step(qsty-RSC)); psp=net.eq(R1,32,e)
-ladv={ins_ch:R1,ins_st:RSC,ins_rec:RSR,qadv:adv+kern+G_(qex,psp),qpc:R1}
+ladv={ins_ch:R1,ins_st:RSC,ins_rec:RSR,qadv:adv+kern+G_(qex,psp)+rv_tabw(qxx-rv_qm-qxc,net.eq(R1,9,e)),qpc:R1}
 on('PD_A',(net.ge(R1,1000,e),'T4P_MK',{qo:qo+1,qfid:R1-1000}),(net.and_(pdiff,qop),'T4P_CL',{**ladv,pfcr.r:pfcr.id('PD_F')}),(pdiff,'PD_F',ladv),(qop,'PD_Tc',ladv),(None,'T4P_O',ladv))
 sv_en.lin(S('PD_F')); sv_in.add(S('PD_F'),ins_rec); sv_fl.add(S('PD_F'),ins_st)
 e=S('PD_F'); zh=net.decode(SV['si'],rom.NSZ,e); pts=X(); ptv=X()
@@ -153,10 +153,10 @@ number('T4P_Od',qyb+qrise-3,'T4P_Oe'); lit('T4P_Oe',b' Tm (','PD_Tc')
 e=S('PD_Tc'); esc=net.or_(net.eq(ins_ch,40,e),net.eq(ins_ch,41,e),net.eq(ins_ch,92,e))
 on('PD_Tc',(esc,'PD_Te',None),(None,'PD_Td',None))
 lit('PD_Te',b'\\','PD_Td')
-e=S('PD_Td'); em_en.lin(e); em_b.add(e,ins_ch)
+e=S('PD_Td'); em_en.lin(e); em_b.add(e,ins_ch+net.eq(ins_ch,9,e)*23+net.eq(ins_ch,11,e)*21)
 on('PD_Td',(None,'PD_Tg',{qo:qo+1,qxx:qxx+qadv}))
 e=S('PD_Tg')
-on('PD_Tg',(net.eq(ins_ch,32,e),'T4P_CL',{pfcr.r:pfcr.id('PD_9')}),(None,'PD_9',None))
+on('PD_Tg',(net.or_(net.eq(ins_ch,32,e),net.eq(ins_ch,9,e)),'T4P_CL',{pfcr.r:pfcr.id('PD_9')}),(None,'PD_9',None))
 # closing a chunk draws its underline or strike line
 on('T4P_CL',(None,'T4P_Ca',{qop:0}))
 lit('T4P_Ca',b')Tj ET\n','T4P_C2')

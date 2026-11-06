@@ -11,7 +11,7 @@ text_=net.and_(net.gt(mp_pta,0,e),net.lt(mp_pta,200,e),indoc)
 box=net.and_(ONE-bstg,net.or_(net.eq(mp_pta,206,e),net.eq(mp_pta,243,e)),net.lt(mp_pty,DOCY,e))
 hk=net.step(mp_ptk); kcol=net.and_(hk,net.lt(mp_ptk,18,e)); kbot=net.eq(mp_ptk,18,e); kcor=net.eq(mp_ptk,19,e)
 nok=net.and_(e,ONE-hk)
-marg=net.and_(nok,blank,ONE-drag,net.ge(mp_ptx,s_px,e),net.lt(mp_ptx,s_tx-3,e))
+marg=net.and_(nok,net.or_(blank,text_),ONE-drag,net.ge(mp_ptx,s_px,e),net.lt(mp_ptx,s_tx-3,e))
 beam=net.and_(nok,ONE-marg,net.or_(drag,blank,text_,box))
 # the sprite is two glyphs drawn by the same unit as text: the white layer here, the black one in the next state. No clip, no id plane.
 ptshape=beam*1+kcol*2+kbot*3+kcor*4+marg*5; mp_ptsn=R()

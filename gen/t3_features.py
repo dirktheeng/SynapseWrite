@@ -939,7 +939,7 @@ on('T3_RC4',(net.ge(tq,xl,e),'PX',None),(None,'T3_RC5',{r1:xb+tq}))
 on('T3_RC5',(None,'T3_RC4',{w1:(cb+CMT+tq,R1),tq:tq+1}))
 # TOC entries and tabs
 e=S('T3_RT0')
-on('T3_RT0',(rtoc,'PX',{rdig:1,tpgv:0}),(None,'INS',{ins_ch:32,ins_st:csi+rhi,tabn:0,oret.r:oret.id('T3_RT3')}))
+on('T3_RT0',(rtoc,'PX',{rdig:1,tpgv:0}),(None,'INS',{ins_ch:9,ins_st:csi+rhi,tabn:0,oret.r:oret.id('PX')}))
 on('T3_RT3',(None,'INS',{ins_ch:32,ins_st:csi+rhi,oret.r:oret.id('T3_RT4')}));on('T3_RT4',(None,'INS',{ins_ch:32,ins_st:csi+rhi,oret.r:oret.id('T3_RT5')}));on('T3_RT5',(None,'INS',{ins_ch:32,ins_st:csi+rhi,oret.r:oret.id('PX')}))
 on('T3_RT1',(None,'T3_RT2',{rl:OA+oi}))
 e=S('T3_RT2')
