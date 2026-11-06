@@ -28,7 +28,7 @@ STY=40000; STY0=26000; STYN=48; NUMT=25000; MKT=32000; SCR=SLOTMAX; DEFREC=198; 
 DOCY,DOCB=174,776; VH=DOCB-DOCY; PX=223; TX=319; TW=624; PH=1056; PST=1072; YB=4096
 from app_pal import F as PAL_F,B as PAL_B,HL_NAMES
 # ---- ports ----
-STYT_=1100000; IDXM_=(1<<19)-1
+STYT_=1100000; IDXM_=(1<<18)-1
 class RPort:
     def __init__(s,cells,varlen=False):
         s.en=Bus(net);s.addr=Bus(net);s.cells=cells;s.out=net.input(cells) if cells>1 else [net.input()]
@@ -114,24 +114,24 @@ g_en=Bus(net);g_ch=Bus(net);g_st=Bus(net);g_x=Bus(net);g_y=Bus(net);g_draw=Bus(n
 fg=[Bus(net) for _ in PAL_F]; bg=[Bus(net) for _ in PAL_B]
 GE=g_en.w
 # A character's style cell holds an index into the interned style table, with the per character flags above it:
-#   cell: table index 0-18, ins 19, del 20, field kind 21-22, no proof 23.
+#   cell: table index 0-17, math 18, ins 19, del 20, field kind 21-22, no proof 23.
 #   record: size 0-3 and 19-21, bold 4, ital 5, und 6, font 7 and 22-23, color low 8-10, strike 11, sup 12, sub 13, highlight 14-16, color high 17-18.
 # Record 0 is the default: Carlito 11 pt. A record is never changed once written, so undo, clipboard and files only move indices.
-ST_STRIKE,ST_VERT,ST_SUP,ST_SUB,ST_HL,ST_INS,ST_DEL,ST_F0,ST_NOP=1<<11,1<<12,1<<12,1<<13,1<<14,1<<19,1<<20,1<<21,1<<23
-STYT=1100000; STYCAP=4096; IDXM=(1<<19)-1
+ST_STRIKE,ST_VERT,ST_SUP,ST_SUB,ST_HL,ST_INS,ST_DEL,ST_F0,ST_NOP,ST_MATH=1<<11,1<<12,1<<12,1<<13,1<<14,1<<19,1<<20,1<<21,1<<23,1<<18
+STYT=1100000; STYCAP=4096; IDXM=(1<<18)-1
 def style_decode(val,en):
     b=net.bits(val,24,en)
     return dict(size=b[0]+b[1]*2+b[2]*4+b[3]*8+b[19]*(1<<19)+b[20]*(1<<20)+b[21]*(1<<21),si=b[0]+b[1]*2+b[2]*4+b[3]*8+b[19]*16+b[20]*32+b[21]*64,sb=b[:4]+b[19:22],bold=b[4],ital=b[5],und=b[6],font=b[7]+b[22]*2+b[23]*4,fontraw=b[7]*128+b[22]*(1<<22)+b[23]*(1<<23),fb=[b[7],b[22],b[23]],color=b[8]+b[9]*2+b[10]*4+b[17]*8+b[18]*16,
       colraw=b[8]*256+b[9]*512+b[10]*1024+b[17]*131072+b[18]*262144,strike=b[11],vert=b[12]+b[13]*2,sup=b[12],sub=b[13],hl=b[14]+b[15]*2+b[16]*4)
 def flag_decode(val,en):
     "The flags of a cell. Most cells have none, so one neuron answers for them."
-    v=as_x(val); nz=net.step(v-(1<<19)+0.5+as_x(en)*M-M); rem=net.gate(v,nz); o={}
-    for k_,nm_ in ((23,'nop'),(22,'f1'),(21,'f0'),(20,'dele'),(19,'ins')):
+    v=as_x(val); nz=net.step(v-(1<<18)+0.5+as_x(en)*M-M); rem=net.gate(v,nz); o={}
+    for k_,nm_ in ((23,'nop'),(22,'f1'),(21,'f0'),(20,'dele'),(19,'ins'),(18,'math')):
         o[nm_]=net.step(rem-(1<<k_)+0.5); rem=rem-o[nm_]*(1<<k_)
-    o['flags']=o['ins']*ST_INS+o['dele']*ST_DEL+o['f0']*ST_F0+o['f1']*ST_F0*2+o['nop']*ST_NOP
+    o['flags']=o['ins']*ST_INS+o['dele']*ST_DEL+o['f0']*ST_F0+o['f1']*ST_F0*2+o['nop']*ST_NOP+o['math']*ST_MATH
     return o
-MATHFAM=1; MATHRAW=rom.font_raw(MATHFAM)   # an equation character is the math family (Caladea) with no proof set
-def is_math(D): return net.and_(D['fb'][0],ONE-D['fb'][1],ONE-D['fb'][2],D['nop'])
+MATHFAM=1; MATHRAW=rom.font_raw(MATHFAM)   # an equation character carries the math flag, which no ordinary text can get. Choosing another font for it makes it ordinary text.
+def is_math(D): return net.and_(D['fb'][0],ONE-D['fb'][1],ONE-D['fb'][2],D['math'])
 g_fl=Bus(net)
 SD=style_decode(g_st.w,GE); SD.update(flag_decode(g_fl.w,GE))
 # Glyph addressing is a decision tree: each node is enabled by its parent and reads its

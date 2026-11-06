@@ -154,7 +154,7 @@ def _eqstyle(en,chv):
     s1=net.eq(a6es,1,en); s2=net.eq(a6es,2,en)
     rec=cs-FD['fontraw']+en*MATHRAW+G_(ONE-FD['ital'],lett)*32+G_(ONE-FD['sup'],s1)*ST_SUP+G_(ONE-FD['sub'],s2)*ST_SUB
     ic_en.lin(en); ic_val.add(en,rec); ic_fb.add(en,csi)
-    return {a6efl:rhi+G_(ONE-FD['nop'],en)*ST_NOP}
+    return {a6efl:rhi+G_(ONE-FD['nop'],en)*ST_NOP+en*ST_MATH}
 on('A6E_IS',(None,'INS',{ins_st:ROUT+a6efl}))
 on('A6E_R0',(None,'A6E_R1a',{rl:OA+oi}))
 e=S('A6E_R1a'); on('A6E_R1a',(net.eq(W[0],62,e),'A6E_R2a',{oi:oi+1}),(None,'A6E_R0',{oi:oi+1}))

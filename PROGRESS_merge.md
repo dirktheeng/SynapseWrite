@@ -34,3 +34,8 @@ After: while a7_far holds and cp >= bpi the caret is below the viewport, so AFTE
 New test: test/a7_type.js.
 ## a7 test runs
 a7_bulk ALL PASS, a7_save ALL PASS, a7_type ALL PASS, e2e 210/210, t3_table no false, roundtrip no false, rv_a6_eq 9/9, rv_a6_track 17/17, rv_a6 6/6, rv_a3 49/49, t4_docx 18/18; tier2, t4_pdf, a4, a5_docx: see the report.
+
+# Merge log: step list after a7 (head 0cc05a5)
+## Step 1: math mark
+Records have all 24 bits taken and the 5 flag bits with kind 1, 2, 3 are all in use, and a bank cell is 32 bit float so bit 24 cannot sit beside low bits. STYCAP is 4096, so the index only needs 12 bits. Bit 18 of the cell moved from the index to a new flag: ST_MATH. IDXM and the rs port mask are now 18 bits, flag_decode starts at bit 18 and FD['flags'] carries it, so all flag preserving paths keep it. Ignore sets only ST_NOP, so ordinary text cannot get it. is_math is the flag AND family Caladea, so choosing another font makes an equation ordinary text as before. Writers of the mark: Equation command (T4_EM) and reader (_eqstyle). Equation characters keep ST_NOP too, the spell checker reads it.
+New test test/rv_math_mark.js, 6/6. Same test on the previous head: 1/6, which confirms it catches the defect. rv_a6_eq 9/9.

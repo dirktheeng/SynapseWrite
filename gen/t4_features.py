@@ -98,7 +98,7 @@ lo_=low0(R1,e); lett=net.and_(net.ge(lo_,97,e),net.lt(lo_,123,e),app)
 hsc=net.and_(app,net.step(eq_sc)); s1=net.and_(hsc,net.eq(eq_sc,1,e)); s2=net.and_(hsc,net.eq(eq_sc,2,e))
 neweq=RSR+G_(ONE-FD['ital'],lett)*32-G_(FD['fontraw'],app)+app*128+G_(ONE-FD['sup'],s1)*ST_SUP+G_(ONE-FD['sub'],s2)*ST_SUB
 ic_en.lin(app); ic_val.add(app,neweq); ic_fb.add(app,RSC-FD['flags'])
-eqold=R(); eqfl=R(); fsm.set(eqold,app,RSC); fsm.set(eqfl,app,FD['flags']+G_(ONE-FD['nop'],app)*ST_NOP)
+eqold=R(); eqfl=R(); fsm.set(eqold,app,RSC); fsm.set(eqfl,app,FD['flags']+G_(ONE-FD['nop'],app)*ST_NOP+G_(ONE-FD['math'],app)*ST_MATH)
 adj_=a_eo-net.eq(cp,a_ep,e)
 dl_={a_eo:adj_,oret.r:oret.id('T4_EL')}
 on('T4_EM',(isc,'DEL',{**dl_,eq_sc:1,eq_gr:0,eq_pre:1}),(isb,'DEL',{**dl_,eq_sc:2,eq_gr:0,eq_pre:1}),(opn,'DEL',{**dl_,eq_gr:1,eq_pre:0}),(cls,'DEL',{**dl_,eq_gr:0,eq_sc:0}),
