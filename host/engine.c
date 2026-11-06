@@ -99,12 +99,14 @@ static long edges_total=0; __attribute__((export_name("edges"))) f64 edges(void)
 #define SET(d) do{bits[(d)>>6]|=1ull<<((d)&63);sum[(d)>>12]|=1ull<<(((d)>>6)&63);}while(0)
 #ifdef COUNT
 static double c_ops[4];__attribute__((export_name("ops"))) f64 ops(i32 k){return c_ops[k];}
-static f32*c_n;__attribute__((export_name("workp"))) void* workp(void){if(!c_n)c_n=alloc(4*N);return c_n;}
+static f32*c_n,*c_f;__attribute__((export_name("workp"))) void* workp(void){if(!c_n){c_n=alloc(4*N);c_f=alloc(4*N);}return c_n;}__attribute__((export_name("firep"))) void* firep(void){return c_f;}
 #define CN(i,x) if(c_n)c_n[i]+=(x)
+#define CF(i) if(c_f)c_f[i]+=1
 #define CNT(k) c_ops[k]+=1
 #else
 #define CNT(k)
 #define CN(i,x)
+#define CF(i)
 #endif
 // A pull neuron computes only when a consumer reads it, at most once per tick. Inputs are stored
 // with the largest weights first, so a closed gate ends the evaluation at once.
@@ -120,7 +122,7 @@ __attribute__((noinline)) static void tick(void){ tickno++;
     Nr*r=nr+i;f64 x=r->acc+r->bias;r->acc=0;CNT(0);CN(i,1);
     {i32 a0=r->is,a1=r[1].is;if(a1>a0&&x>-549755813888.0){for(i32 q=a0;q<a1;q++){i32 s=lz[q].n;CNT(1);CN(i,1);x+=wtab[lz[q].w]*(s>=0?v[s]:pull(~s));}}}
     i32 ac=r->act;if(ac==3){v[i]+=x;CHK_STICKY(i);continue;}f64 o=ac==0?x:ac==1?(x>1e-9?1:0):(x>0?x:0);
-    if(o!=0){v[i]=o;live[nlive++]=i;i32 q=r->os,sp=r->sp,en=r[1].os;edges_total+=en-q;CN(i,en-q);
+    if(o!=0){v[i]=o;live[nlive++]=i;i32 q=r->os,sp=r->sp,en=r[1].os;edges_total+=en-q;CN(i,en-q);CF(i);
      for(;q<sp;q++){i32 d=eg[q].n;nacc[d]+=o*wtab[eg[q].w];if(!nflag[d]){nflag[d]=1;nlist[nnext++]=d;}}
      for(;q<en;q++){i32 d=eg[q].n;nr[d].acc+=o*wtab[eg[q].w];SET(d);}}}
    sum[sw]&=~(1ull<<(wd&63));}}

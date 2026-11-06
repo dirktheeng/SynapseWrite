@@ -1,6 +1,7 @@
 """Weight generator primitives. Every weight is written directly from reasoning about
 what the neuron must compute. There is no loss, gradient, data set, or search here."""
-import sys
+import sys,os
+DBG=bool(os.environ.get('NETDBG'))
 ID,STEP,RELU=0,1,2
 M=float(2**40)
 class X:
@@ -45,6 +46,12 @@ class Net:
             if not n.endswith(('nn.py','app.py')) and n[0]!='<': w=n
             f=f.f_back
         s.src[len(s.act)-1]=w.rsplit('/',1)[-1]
+        if DBG:
+            f=sys._getframe(1); q=[]
+            while f and len(q)<3:
+                if not f.f_code.co_filename.endswith('nn.py'): q.append(f.f_code.co_filename.rsplit('/',1)[-1]+':'+str(f.f_lineno))
+                f=f.f_back
+            s.line=getattr(s,'line',{}); s.line[len(s.act)-1]=' '.join(q)
         return len(s.act)-1
     def group(s,name): s.cur[0]=name
     def domain(s,d):

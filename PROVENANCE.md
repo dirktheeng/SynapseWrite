@@ -2,7 +2,7 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-442592 neurons, 959404 edges, 164 layers, 3371 control states.
+442283 neurons, 958155 edges, 164 layers, 3371 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
@@ -15,7 +15,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | glyph store | Keeps drawn glyphs in memory and copies them to the screen. | gen/glyphnet.py (16) | 16 | 50 |
 | stem units | Stem position units for the hinting of letters. |  | 0 | 0 |
 | row sequencer | Steps the glyph unit through the rows of a character. | gen/glyphnet.py (29) | 29 | 72 |
-| glyph weights (outline edges) | Font outlines as edges in weights, one group per glyph program. | gen/glyphnet.py (360317) | 360317 | 1304439 |
+| glyph weights (outline edges) | Font outlines as edges in weights, one group per glyph program. | gen/glyphnet.py (360008) | 360008 | 1302913 |
 | ramp bank | Coverage ramps for the edge network. | gen/glyphnet.py (3731) | 3731 | 7451 |
 | coverage | Adds edge coverage into pixel coverage. | gen/glyphnet.py (1800), gen/app.py (11) | 1811 | 10744 |
 | style interner | Finds or adds a style record in the interned table, in its own clock domain. | gen/app.py (55) | 55 | 129 |
