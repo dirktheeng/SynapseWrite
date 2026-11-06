@@ -11,14 +11,14 @@
 239011
 ],
 [
-"docx crc",
-"docx crc",
-73820
-],
-[
 "snapping layer",
 "glyph weights (outline edges)",
 65743
+],
+[
+"docx crc",
+"docx crc",
+41052
 ],
 [
 "glyph metrics",
@@ -38,12 +38,17 @@
 [
 "rv a3 interaction",
 "rv a3 interaction",
-23357
+23684
 ],
 [
 "glyph network",
 "glyph metrics",
 18333
+],
+[
+"docx crc",
+"compiled control",
+16609
 ],
 [
 "docx reader",
@@ -53,7 +58,7 @@
 [
 "docx reader rv_a5",
 "docx reader rv_a5",
-12464
+12469
 ],
 [
 "chrome",
@@ -78,12 +83,12 @@
 [
 "compiled control",
 "compiled control",
-5928
+5934
 ],
 [
 "key handling",
 "key handling",
-5779
+5885
 ],
 [
 "coverage",
@@ -108,7 +113,7 @@
 [
 "png reader",
 "compiled control",
-3282
+3290
 ],
 [
 "layout and paint",
@@ -118,17 +123,22 @@
 [
 "compiled control",
 "png reader",
-3129
+3139
+],
+[
+"recent colors",
+"recent colors",
+2713
+],
+[
+"compiled control",
+"shared control registers",
+2710
 ],
 [
 "chrome",
 "glyph network",
 2705
-],
-[
-"compiled control",
-"shared control registers",
-2692
 ],
 [
 "pictures",
@@ -138,7 +148,7 @@
 [
 "shared control registers",
 "compiled control",
-2424
+2434
 ],
 [
 "paste",
@@ -168,7 +178,7 @@
 [
 "rv a3 interaction",
 "compiled control",
-1915
+1935
 ],
 [
 "docx writer",
@@ -213,7 +223,7 @@
 [
 "docx reader",
 "compiled control",
-1380
+1381
 ],
 [
 "compiled control",
@@ -263,12 +273,12 @@
 [
 "raw event interpretation",
 "raw event interpretation",
-1025
+1038
 ],
 [
 "docx reader rv_a5",
 "compiled control",
-991
+994
 ],
 [
 "glyph network",
@@ -313,7 +323,7 @@
 [
 "bank and port wiring",
 "compiled control",
-824
+828
 ],
 [
 "rv a3 interaction",
@@ -328,7 +338,7 @@
 [
 "shared control registers",
 "rv a3 interaction",
-742
+753
 ],
 [
 "compiled control",
@@ -393,7 +403,7 @@
 [
 "compiled control",
 "docx reader",
-563
+564
 ],
 [
 "layout and paint",
@@ -428,7 +438,7 @@
 [
 "rv a3 interaction",
 "shared control registers",
-504
+508
 ],
 [
 "find and replace",
@@ -478,7 +488,7 @@
 [
 "tier 2",
 "compiled control",
-429
+431
 ],
 [
 "glyph geometry",
@@ -493,7 +503,7 @@
 [
 "raw event interpretation",
 "compiled control",
-412
+414
 ],
 [
 "docx reader tier 2",
@@ -521,6 +531,11 @@
 386
 ],
 [
+"prompt bar",
+"compiled control",
+384
+],
+[
 "tables",
 "bank and port wiring",
 384
@@ -539,11 +554,6 @@
 "undo",
 "undo",
 375
-],
-[
-"prompt bar",
-"compiled control",
-368
 ],
 [
 "glyph network",
@@ -606,14 +616,14 @@
 321
 ],
 [
+"compiled control",
+"layout and paint",
+317
+],
+[
 "shared control registers",
 "tables",
 315
-],
-[
-"compiled control",
-"layout and paint",
-314
 ],
 [
 "shared control registers",
@@ -639,11 +649,6 @@
 "sections",
 "compiled control",
 294
-],
-[
-"docx crc",
-"compiled control",
-289
 ],
 [
 "ribbon actions",
@@ -733,7 +738,7 @@
 [
 "range walker",
 "compiled control",
-225
+226
 ],
 [
 "compiled control",
@@ -796,6 +801,11 @@
 214
 ],
 [
+"compiled control",
+"range walker",
+213
+],
+[
 "sections",
 "sections",
 212
@@ -804,11 +814,6 @@
 "edit primitives",
 "bank and port wiring",
 212
-],
-[
-"compiled control",
-"range walker",
-211
 ],
 [
 "character maps",
@@ -908,7 +913,7 @@
 [
 "docx reader",
 "docx reader rv_a5",
-169
+171
 ],
 [
 "shared control registers",
@@ -973,7 +978,7 @@
 [
 "bank and port wiring",
 "docx reader rv_a5",
-144
+145
 ],
 [
 "find and replace",
@@ -1151,6 +1156,11 @@
 100
 ],
 [
+"compiled control",
+"tier 2",
+99
+],
+[
 "bank and port wiring",
 "find and replace",
 98
@@ -1166,13 +1176,13 @@
 97
 ],
 [
-"compiled control",
-"tier 2",
-97
-],
-[
 "pointer",
 "compiled control",
+95
+],
+[
+"key handling",
+"pointer",
 95
 ],
 [
@@ -1183,11 +1193,6 @@
 [
 "table of contents",
 "compiled control",
-94
-],
-[
-"key handling",
-"pointer",
 94
 ],
 [
@@ -1233,7 +1238,7 @@
 [
 "docx reader rv_a5",
 "docx reader",
-86
+87
 ],
 [
 "pointer",
@@ -1299,6 +1304,11 @@
 "compiled control",
 "docx deflate",
 75
+],
+[
+"recent colors",
+"bank and port wiring",
+72
 ],
 [
 "bank and port wiring",
@@ -1371,6 +1381,11 @@
 65
 ],
 [
+"docx writer",
+"zip crc check",
+64
+],
+[
 "a4 commands",
 "shared control registers",
 64
@@ -1436,6 +1451,11 @@
 58
 ],
 [
+"shared control registers",
+"recent colors",
+58
+],
+[
 "a4 borders",
 "bank and port wiring",
 58
@@ -1486,6 +1506,11 @@
 53
 ],
 [
+"compiled control",
+"prompt bar",
+53
+],
+[
 "docx reader rv_a5",
 "range walker",
 52
@@ -1501,17 +1526,7 @@
 52
 ],
 [
-"compiled control",
-"prompt bar",
-52
-],
-[
 "shared control registers",
-"docx reader",
-51
-],
-[
-"png reader",
 "docx reader",
 51
 ],
@@ -1533,6 +1548,11 @@
 [
 "shared control registers",
 "line breaking",
+50
+],
+[
+"png reader",
+"docx reader",
 50
 ],
 [
@@ -1571,6 +1591,11 @@
 47
 ],
 [
+"tier 2",
+"shared control registers",
+47
+],
+[
 "bank and port wiring",
 "png reader",
 45
@@ -1578,11 +1603,6 @@
 [
 "glyph unit",
 "glyph pixel records",
-45
-],
-[
-"tier 2",
-"shared control registers",
 45
 ],
 [
@@ -1671,8 +1691,18 @@
 40
 ],
 [
+"range walker",
+"shared control registers",
+40
+],
+[
 "find across paragraphs",
 "shared control registers",
+40
+],
+[
+"rv a3 interaction",
+"layout and paint",
 40
 ],
 [
@@ -1696,11 +1726,6 @@
 39
 ],
 [
-"range walker",
-"shared control registers",
-39
-],
-[
 "docx writer",
 "bank and port wiring",
 39
@@ -1708,11 +1733,6 @@
 [
 "docx reader tier 3",
 "bank and port wiring",
-39
-],
-[
-"rv a3 interaction",
-"layout and paint",
 39
 ],
 [
@@ -1798,6 +1818,11 @@
 [
 "layout and paint",
 "spell dictionary",
+33
+],
+[
+"repeat last command",
+"repeat last command",
 33
 ],
 [
@@ -1901,6 +1926,11 @@
 30
 ],
 [
+"compiled control",
+"docx crc",
+30
+],
+[
 "key handling",
 "range walker",
 30
@@ -1963,11 +1993,6 @@
 [
 "a4 docx",
 "bank and port wiring",
-28
-],
-[
-"compiled control",
-"docx crc",
 28
 ],
 [
@@ -2058,6 +2083,11 @@
 [
 "bank and port wiring",
 "docx writer",
+24
+],
+[
+"zip crc check",
+"zip crc check",
 24
 ],
 [
@@ -2158,6 +2188,11 @@
 [
 "bank and port wiring",
 "sections",
+21
+],
+[
+"prompt bar",
+"recent colors",
 21
 ],
 [
@@ -2511,6 +2546,11 @@
 16
 ],
 [
+"zip crc check",
+"compiled control",
+15
+],
+[
 "pointer",
 "chrome",
 15
@@ -2592,6 +2632,11 @@
 ],
 [
 "screen check",
+"compiled control",
+14
+],
+[
+"recent colors",
 "compiled control",
 14
 ],
@@ -2871,12 +2916,22 @@
 10
 ],
 [
+"shared control registers",
+"repeat last command",
+10
+],
+[
 "find and replace",
 "rv a3 interaction",
 10
 ],
 [
 "view: wheel and thumb drag",
+"compiled control",
+10
+],
+[
+"repeat last command",
 "compiled control",
 10
 ],
@@ -2986,11 +3041,6 @@
 9
 ],
 [
-"pictures",
-"png reader",
-9
-],
-[
 "vertical ruler drag",
 "compiled control",
 9
@@ -3048,6 +3098,11 @@
 [
 "tier3",
 "compiled control",
+8
+],
+[
+"pictures",
+"png reader",
 8
 ],
 [
@@ -3187,6 +3242,11 @@
 ],
 [
 "docx reader rv_a5",
+"docx reader tier 2",
+7
+],
+[
+"docx reader rv_a5",
 "docx reader notes",
 7
 ],
@@ -3203,6 +3263,11 @@
 [
 "screen check",
 "bank and port wiring",
+7
+],
+[
+"compiled control",
+"zip crc check",
 7
 ],
 [
@@ -3357,7 +3422,7 @@
 ],
 [
 "docx reader rv_a5",
-"docx reader tier 2",
+"docx writer",
 6
 ],
 [
@@ -3408,6 +3473,11 @@
 [
 "bank and port wiring",
 "docx crc",
+5
+],
+[
+"docx reader",
+"zip crc check",
 5
 ],
 [
@@ -3511,6 +3581,11 @@
 5
 ],
 [
+"repeat last command",
+"layout and paint",
+5
+],
+[
 "a4 commands",
 "screenshot hit test",
 5
@@ -3528,11 +3603,6 @@
 [
 "a4 pagenum",
 "tables",
-5
-],
-[
-"docx reader rv_a5",
-"docx writer",
 5
 ],
 [
@@ -3791,6 +3861,11 @@
 4
 ],
 [
+"rv a3 interaction",
+"prompt bar",
+4
+],
+[
 "paste",
 "find across paragraphs",
 3
@@ -3828,6 +3903,11 @@
 [
 "tables",
 "docx reader notes",
+3
+],
+[
+"range walker",
+"repeat last command",
 3
 ],
 [
@@ -3943,6 +4023,11 @@
 [
 "png reader",
 "screenshot hit test",
+3
+],
+[
+"zip crc check",
+"docx crc",
 3
 ],
 [
@@ -4098,11 +4183,6 @@
 [
 "a4 commands",
 "a4 merge",
-3
-],
-[
-"rv a3 interaction",
-"prompt bar",
 3
 ],
 [
@@ -4331,6 +4411,16 @@
 2
 ],
 [
+"zip crc check",
+"bank and port wiring",
+2
+],
+[
+"zip crc check",
+"png reader",
+2
+],
+[
 "prompt bar",
 "view: side scroll and vertical ruler",
 2
@@ -4516,6 +4606,11 @@
 2
 ],
 [
+"repeat last command",
+"range walker",
+2
+],
+[
 "paste",
 "bulk edits",
 2
@@ -4528,6 +4623,11 @@
 [
 "raw event interpretation",
 "zoom",
+2
+],
+[
+"repeat last command",
+"tier 2",
 2
 ],
 [
@@ -4758,6 +4858,11 @@
 [
 "docx reader notes",
 "docx writer",
+1
+],
+[
+"bank and port wiring",
+"zip crc check",
 1
 ],
 [
@@ -4996,6 +5101,11 @@
 1
 ],
 [
+"recent colors",
+"rv a3 interaction",
+1
+],
+[
 "canvas look",
 "notes and balloons",
 1
@@ -5151,6 +5261,11 @@
 1
 ],
 [
+"repeat last command",
+"shared control registers",
+1
+],
+[
 "a4 pagenum",
 "key handling",
 1
@@ -5158,6 +5273,11 @@
 [
 "docx reader rv_a5",
 "paste",
+1
+],
+[
+"rv a3 interaction",
+"recent colors",
 1
 ],
 [
@@ -5221,6 +5341,11 @@
 1
 ],
 [
+"zip crc check",
+"docx reader",
+1
+],
+[
 "extended characters",
 "docx reader",
 1
@@ -5228,6 +5353,11 @@
 [
 "tables",
 "a4 commands",
+1
+],
+[
+"pictures",
+"zip crc check",
 1
 ],
 [
@@ -5348,6 +5478,11 @@
 [
 "docx reader rv_a5",
 "table of contents",
+1
+],
+[
+"key handling",
+"repeat last command",
 1
 ],
 [
