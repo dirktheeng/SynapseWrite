@@ -7,9 +7,9 @@
 
 | | |
 |---|---|
-| **Neurons** | 443,759, in 68 named sub-networks |
-| **Edges** | 941,650, in 166 layers |
-| **Control states** | 3,499 one-hot state neurons |
+| **Neurons** | 444,066, in 68 named sub-networks |
+| **Edges** | 942,629, in 166 layers |
+| **Control states** | 3,564 one-hot state neurons |
 | **Non-network code at run time** | 81 lines of glue, 140 lines of inference engine |
 | **Deployment** | one static HTML file, about 3.2 MB |
 | **Training code** | none: no data, loss, gradient, search or fitting |
@@ -33,7 +33,7 @@ Each key press, click, mouse move or timer signal starts ticks. A tick is one pa
 
 <p align="center"><img src="docs/figures/tick_loop.svg" alt="Animated diagram of one tick"></p>
 
-The glue repeats ticks until the network's halt neuron fires, then waits for the next event. Typing a letter takes about 150 ticks. Nothing about what a key means is known outside the network: the glue passes along the code units of the browser's key name, and neurons decide the rest.
+The glue repeats ticks until the network's halt neuron fires, then waits for the next event. Typing a letter takes about 65 ticks. Nothing about what a key means is known outside the network: the glue passes along the code units of the browser's key name, and neurons decide the rest.
 
 The engine evaluates this rule, and nothing more:
 
@@ -77,15 +77,15 @@ Neurons rest at zero, and the engine only visits a neuron when something nonzero
 
 | Event | Ticks | Edges pushed | Neurons fired |
 |---|---:|---:|---:|
-| Type a letter | 156 | 101,249 | 1,729 |
-| Type a new letter | 154 | 127,065 | 2,118 |
-| Move the mouse | 10 | 50,135 | 1,282 |
-| Click in text | 313 | 197,526 | 2,620 |
-| Scroll one notch | 295 | 194,538 | 2,364 |
-| Press Ctrl+B | 300 | 192,710 | 2,477 |
-| Paste two lines | 423 | 406,387 | 3,717 |
+| Type a letter | 65 | 4,476 | 1,122 |
+| Type a new letter | 136 | 112,353 | 2,024 |
+| Move the mouse | 10 | 50,136 | 1,287 |
+| Click in text | 313 | 197,557 | 2,651 |
+| Scroll one notch | 295 | 194,572 | 2,399 |
+| Press Ctrl+B | 300 | 192,741 | 2,507 |
+| Paste two lines | 423 | 406,418 | 3,745 |
 
-Figures are from a short document at commit `40524cd`. A long document costs more on events that repaint the whole view.
+Figures are from a short document at commit `f0ade7f`. A long document costs more on events that repaint the whole view.
 
 ## Memory: the network holds the pointers
 
@@ -167,7 +167,7 @@ python3 test/audit.py
 
 Tests drive the app only through events, and they judge only output images and saved files.
 
-| Check | What it shows | Last run at `40524cd` |
+| Check | What it shows | Last run at `f0ade7f` |
 |---|---|---|
 | `test/e2e.js` | Editing, formatting and interaction, by comparing screens | 210 of 210 |
 | `test/audit.py` | Glue and engine hold no application logic, no training code, provenance complete | 67 of 67 |
@@ -179,15 +179,16 @@ More suites cover tables, pictures, fonts, PDF, tracked changes, equations and b
 
 ### Latency
 
-Measured in headless Chromium on a CPU through WASM, on a long test document at `40524cd`:
+Measured in headless Chromium on a CPU through WASM, on a long test document at `f0ade7f`:
 
 | Action | Time |
 |---|---:|
-| Type at the end of a long document | about 2 ms |
-| Jump to top | 44 ms |
-| Press Enter at the top of a long document | 42 ms |
-| Undo | 41 ms |
-| First paint of a page in a new font, 11 pt | 41 to 79 ms |
+| Type at the end of a long document | under 1 ms |
+| Select all | 48 ms |
+| Jump to top | 47 ms |
+| Press Enter at the top of a long document | 46 ms |
+| Undo | 46 ms |
+| First paint of a page in a new font, 11 pt | 39 to 77 ms |
 
 The project's target is under 100 ms from event to frame, at 1280 by 800. It has not been measured on a mid-range GPU.
 
