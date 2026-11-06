@@ -454,7 +454,7 @@ class GlyphUnit:
         # ---- ramp bank, shared by all glyphs and written once ----
         net.group('ramp bank')
         # A column past the glyph's cells is never stored, so each tier of columns opens only for a glyph that wide.
-        TIERS=[t_ for t_ in (6,9,12,16,20,28,40,64,100) if t_<LW]; ctier=[latch(net.step(cells-t_-0.5)) for t_ in TIERS]
+        BLK=8; TIERS=[t_ for t_ in (8,16,24,32,48,64,96,128) if t_<LW]; ctier=[latch(net.step(cells-t_-0.5)) for t_ in TIERS]
         def tier_of(q): return next((i_ for i_,t_ in enumerate(TIERS) if q<=t_),len(TIERS))
         def tiers(en):
             o_=[en]
@@ -465,11 +465,14 @@ class GlyphUnit:
         for gp in (slots,aslots):
             for sg,L_ in gp.items():
                 for xk in L_:
-                    en=net.step(xk); et=tiers(en); R=[]
+                    en=net.step(xk); et=tiers(en)
                     xs=net.wire(); net.connect(xs,net.relu(xk+ox+en*M-M))
-                    for q in range(LW+1):
-                        R.append(net.relu(et[tier_of(q)]*M-M+(q+PAD+OFF)-xs)); nbank+=1
-                    for p_ in range(LW): w[p_]=w[p_]+(R[p_+1]-R[p_])*sg
+                    # Blocks of columns. Left of the crossing nothing opens. Right of it every column gains the same whole unit, from one neuron. Only the block holding the crossing needs its ramps.
+                    for a_ in range(0,LW,BLK):
+                        b_=min(a_+BLK,LW); e_=et[tier_of(a_+1)]
+                        open_=net.step(e_*M-M+(b_+PAD+OFF)-xs); full=net.step(open_*M-M+(a_+PAD+OFF)-xs); pe=net.step(open_-full-0.5)
+                        R={q:net.relu(pe*M-M+(q+PAD+OFF)-xs) for q in range(a_+1,b_+1)}; nbank+=b_-a_
+                        for p_ in range(a_,b_): w[p_]=w[p_]+(full+R[p_+1]-R.get(p_,X()))*sg
         g.nbank=nbank
         net.group('coverage')
         ac=[net.reg() for _ in range(LW)]

@@ -233,7 +233,7 @@ class Net:
                 if j in P: npush[j]+=1
                 else: nread[j]+=1
         pull=[False]*n; work=[i for i in range(n)]
-        PULLMAX=getattr(s,'pullmax',12)
+        PULLMAX=getattr(s,'pullmax',300)
         while work:
             i=work.pop()
             if pull[i] or npush[i] or s.kind[i]=='reg' or i in keep or len(ins[i])>PULLMAX: continue
