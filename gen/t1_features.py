@@ -17,7 +17,7 @@ def t1_text(start,txt,x0,y,f,b,nxt,st=9):
     for i,ch in enumerate(txt):
         n=f'{start}_{i}'
         on(cur,(None,n,{gly:(ord(ch),st,xx,y,f,b)}))
-        xx+=rom.glyph(0,(st>>4)&1,0,si,ord(ch))[0]; cur=n
+        xx+=rom.adv_px(0,(st>>4)&1,0,si,ord(ch)); cur=n
     on(cur,(None,nxt,None))
 #@@ keys
 # undo grouping inputs: a pause or any navigation or command key starts a new group

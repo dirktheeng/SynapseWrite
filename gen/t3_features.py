@@ -717,7 +717,7 @@ e=S('T3_TD0')
 on('T3_TD0',(None,'T3_TD1',{r1:ptsrc+SAVE+2}))
 e=S('T3_TD1'); hs=net.step(ptsrc)
 tval=G_(R1,hs)+G_(ptpg,ONE-hs)
-DW0=rom.glyph(0,0,0,0,48)[0]; DOTW=rom.glyph(0,0,0,0,46)[0]+2
+DW0=rom.adv_px(0,0,0,0,48); DOTW=rom.adv_px(0,0,0,0,46)+2
 tdg=R(); tpv=R(); txe=R()
 n3=net.ge(tval,10,e)+net.ge(tval,100,e)+1
 on('T3_TD1',(None,'T3_TD2',{tpv:tval,txe:s_tx+s_tw-n3*DW0-4}))

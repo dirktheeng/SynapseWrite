@@ -10,11 +10,11 @@ __attribute__((export_name("alloc"))) void* alloc(i32 n){u8*p=(u8*)(((unsigned l
   if(need>have)__builtin_wasm_memory_grow(0,need-have); return p;}
 static u8*dz,*wz; static i32 *stamp,tickno=1; static i32 *istart,*isrc; static u16 *iwi,*wi; static f64 *wtab; static i32 NI;
 static i32 N,E,L,NP,NT; static u8*act; static f64*bias,*v,*acc,*nacc; static i32*ostart,*osplit,*dst;
-static i32*lstart,*live,*nlist,*ports,*pen,*pptr; static u8*nflag; static i32 nlive,nnext,nwp,nrp; static u64*bits,*sum; static i32 SWORDS;
+static i32*lstart,*live,*nlist,*ports,*pen,*pptr,*live2,*nlist2; static u8*nflag; static i32 nlive,nnext,nlive2,nnext2,N1,D; static i32 pb[2][3]; static u64*bits,*sum; static i32 SWORDS,sw0[2],sw1[2];
 static f32*bank; static u8*fb; enum{W=1280,H=800,YB=4096};
-__attribute__((export_name("setup"))) void setup(i32 n,i32 e,i32 l,i32 np,i32 banksize,i32 ni,i32 nt,i32 dn,i32 wn){dz=alloc(dn+1);wz=alloc(wn+1);N=n;E=e;L=l;NP=np;NI=ni;NT=nt;istart=alloc(4*(n+1));isrc=alloc(4*ni+4);iwi=alloc(2*ni+2);wtab=alloc(8*nt+8);
+__attribute__((export_name("setup"))) void setup(i32 n,i32 e,i32 l,i32 np,i32 banksize,i32 ni,i32 nt,i32 dn,i32 wn,i32 n1){N1=n1;dz=alloc(dn+1);wz=alloc(wn+1);N=n;E=e;L=l;NP=np;NI=ni;NT=nt;istart=alloc(4*(n+1));isrc=alloc(4*ni+4);iwi=alloc(2*ni+2);wtab=alloc(8*nt+8);
  act=alloc(n);bias=alloc(8*n);v=alloc(8*n);acc=alloc(8*n);nacc=alloc(8*n);ostart=alloc(4*(n+1));osplit=alloc(4*n);dst=alloc(4*e+4);wi=alloc(2*e+2);
- stamp=alloc(4*n);lstart=alloc(4*(l+1));live=alloc(4*n);nlist=alloc(4*n);nflag=alloc(n);bits=alloc(8*(n/64+2));SWORDS=n/4096+2;sum=alloc(8*SWORDS);
+ stamp=alloc(4*n);lstart=alloc(4*(l+1));live=alloc(4*n);nlist=alloc(4*n);live2=alloc(4*(n-n1+1));nlist2=alloc(4*(n-n1+1));nflag=alloc(n);bits=alloc(8*(n/64+2));SWORDS=n/4096+2;sum=alloc(8*SWORDS);sw0[0]=0;sw1[0]=n1/4096+1;sw0[1]=n1/4096;sw1[1]=SWORDS;
  ports=alloc(4*np);pen=alloc(4*np);pptr=alloc(4*np);bank=alloc(4*banksize);fb=alloc(W*H*4);}
 #define PTR(name,x) __attribute__((export_name(name))) void* x##_p(void){return x;}
 PTR("p_dz",dz)PTR("p_wz",wz)PTR("p_istart",istart)PTR("p_isrc",isrc)PTR("p_iwi",iwi)PTR("p_wtab",wtab)PTR("p_act",act)PTR("p_bias",bias)PTR("p_ostart",ostart)PTR("p_lstart",lstart)PTR("p_ports",ports)PTR("p_bank",bank)PTR("p_fb",fb)PTR("p_v",v)
@@ -26,11 +26,15 @@ __attribute__((export_name("finish"))) void finish(void){
  for(i32 l=0;l<L;l++)for(i32 i=lstart[l];i<lstart[l+1];i++){i32 s=ostart[i],e=ostart[i+1],end=lstart[l+1],q=s;
   for(i32 k=s+1;k<e;k++)dst[k]+=dst[k-1];
   while(q<e&&dst[q]<end)q++; osplit[i]=q;}
- for(i32 pass=0;pass<2;pass++){i32*p=ports,*e=ports+NP;i32 c=0;
-  while(p<e){i32 k=p[0],len=k==1||k==2?6:k==3?12:k==4?9:k==6?8:k==7?8:4;
-   if((k==1||k==3||k==4||k==6||k==7)==(pass==0)){pen[(pass?nwp:0)+c]=p[1];pptr[(pass?nwp:0)+c]=(i32)(p-ports);c++;}
+ // Ports are grouped by clock domain, writes first. A port of kind 9 marks the start of domain 1.
+ i32 c=0;for(i32 d=0;d<2;d++)for(i32 pass=0;pass<2;pass++){i32*p=ports,*e=ports+NP;i32 cd=0;pb[d][pass]=c;
+  while(p<e){i32 k=p[0],len=k==1||k==2?6:k==3?12:k==4?9:k==6?8:k==7?8:k==8?5+2*p[3]+2*p[4]:k==9?1:k==10?8:4;
+   if(k==9)cd=1;else if(cd==d&&(k==1||k==3||k==4||k==6||k==7||k==8)==(pass==0)){pen[c]=p[1];pptr[c]=(i32)(p-ports);c++;}
    p+=len;}
-  if(pass)nrp=c;else nwp=c;}}
+  if(pass)pb[d][2]=c;}}
+// Initial values of one clock domain go on that domain's list.
+static inline void swap_dom(void){i32*t=live;live=live2;live2=t;t=nlist;nlist=nlist2;nlist2=t;i32 a=nlive;nlive=nlive2;nlive2=a;a=nnext;nnext=nnext2;nnext2=a;D=!D;}
+__attribute__((export_name("dom"))) void dom(void){swap_dom();}
 __attribute__((export_name("inject"))) void inject(i32 i,f64 x){nacc[i]+=x;if(!nflag[i]){nflag[i]=1;nlist[nnext++]=i;}}
 // Rows of the image changed since the last call, as passive bookkeeping for the display.
 static u8 drow[801];
@@ -38,7 +42,9 @@ __attribute__((export_name("p_drow"))) void* p_drow(void){return drow;}
 static inline i32 I(i32 n){return n<0?0:(i32)__builtin_floor(v[n]);}
 static inline i32 V(i32 n){return n<0?0:(i32)__builtin_floor(v[n]);}
 static inline u8 C(f64 x){x+=.5;return x<0?0:x>255?255:(u8)x;}
+static void call_port(i32*p);
 static void write_port(i32*p){switch(p[0]){
+  case 8:call_port(p);break;
   case 1:{ // block or scalar write: {1,en,addr,data,len,lenN}
    i32 a=I(p[2]),n=p[5]>=0?I(p[5]):p[4];if(n>p[4])n=p[4];f64*d=v+p[3];f32*b=bank+a;for(i32 j=0;j<n;j++)b[j]=(f32)d[j];break;}
   case 3:{ // rectangle write: {3,en,x,y,w,h,r,g,b,a,y0,y1}
@@ -59,13 +65,15 @@ static void write_port(i32*p){switch(p[0]){
    for(i32 r=0;r<ph;r++){i32 yy=y+r;for(i32 c=0;c<pw;c++,b++){i32 xx=x+c;if(yy<0||yy>=H||xx<0||xx>=W)continue;u8*o=fb+4*(yy*W+xx);
      if(dir==0)*b=(f32)((o[0]<<16)|(o[1]<<8)|o[2]);else{i32 k=(i32)*b;u8 r_=k>>16,g_=(k>>8)&255,b_=k&255;if(o[0]!=r_||o[1]!=g_||o[2]!=b_){o[0]=r_;o[1]=g_;o[2]=b_;drow[yy]=1;}}}}break;}
  }}
-static void read_port(i32*p){ if(p[0]==2){ // read: {2,en,addr,out,len,lenN}
+static void read_port(i32*p){ if(p[0]==10){ // read through an index cell: {10,en,addr,out,base,mask,stride,len}
+   f32 x=bank[I(p[2])];i32 o=p[3];if(x!=0)inject(o,x);f32*b=bank+p[4]+(((i32)x)&p[5])*p[6];for(i32 j=0;j<p[7];j++){f32 y=b[j];if(y!=0)inject(o+1+j,y);}}
+  else if(p[0]==2){ // read: {2,en,addr,out,len,lenN}
    i32 a=I(p[2]),n=p[5]>=0?I(p[5]):p[4];if(n>p[4])n=p[4];i32 o=p[3];f32*b=bank+a;for(i32 j=0;j<n;j++){f32 x=b[j];if(x!=0)inject(o+j,x);}}
   else { // screenshot pixel read: {5,en,xy,out} with xy neuron packed as x+y*65536
    i32 xy=I(p[2]),x=xy&65535,y=xy>>16;if(x>=0&&x<W&&y>=0&&y<H){u8*o=fb+4*(y*W+x);for(i32 j=0;j<4;j++)if(o[j])inject(p[3]+j,o[j]);}}}
-static inline void run_ports(void){
- for(i32 i=0;i<nwp;i++)if(v[pen[i]]!=0)write_port(ports+pptr[i]);
- for(i32 i=nwp,e=nwp+nrp;i<e;i++)if(v[pen[i]]!=0)read_port(ports+pptr[i]);}
+static inline void run_ports(void){i32 d=D,a=pb[d][0],b=pb[d][1],c=pb[d][2];
+ for(i32 i=a;i<b;i++)if(v[pen[i]]!=0)write_port(ports+pptr[i]);
+ for(i32 i=b;i<c;i++)if(v[pen[i]]!=0)read_port(ports+pptr[i]);}
 static long edges_total=0; __attribute__((export_name("edges"))) f64 edges(void){return (f64)edges_total;}
 #define SET(d) do{bits[(d)>>6]|=1ull<<((d)&63);sum[(d)>>12]|=1ull<<(((d)>>6)&63);}while(0)
 #ifdef COUNT
@@ -86,7 +94,7 @@ __attribute__((noinline)) static f64 pull(i32 i){ if(stamp[i]==tickno)return v[i
 __attribute__((noinline)) static void tick(void){ tickno++;
  for(i32 i=0;i<nlive;i++)v[live[i]]=0; nlive=0;
  for(i32 i=0;i<nnext;i++){i32 d=nlist[i];acc[d]=nacc[d];nacc[d]=0;nflag[d]=0;SET(d);} nnext=0;
- for(i32 sw=0;sw<SWORDS;sw++){u64 s;while((s=sum[sw])){i32 wd=sw*64+__builtin_ctzll(s);u64 b;
+ for(i32 sw=sw0[D],swe=sw1[D];sw<swe;sw++){u64 s;while((s=sum[sw])){i32 wd=sw*64+__builtin_ctzll(s);u64 b;
    while((b=bits[wd])){i32 i=wd*64+__builtin_ctzll(b);bits[wd]=b&(b-1);
     f64 x=acc[i]+bias[i];acc[i]=0;CNT(0);CN(i,1);
     {i32 a0=istart[i],a1=istart[i+1];if(a1>a0&&x>-549755813888.0){for(i32 q=a0;q<a1;q++){i32 s=isrc[q];CNT(1);CN(i,1);x+=wtab[iwi[q]]*(s>=0?v[s]:pull(~s));}}}
@@ -96,6 +104,13 @@ __attribute__((noinline)) static void tick(void){ tickno++;
      for(;q<en;q++){i32 d=dst[q];acc[d]+=o*wtab[wi[q]];SET(d);}}}
    sum[sw]&=~(1ull<<(wd&63));}}
  run_ports();}
+// A second clock domain. The calling domain's clock stops: its values and lists stay as they are while the
+// other domain ticks until its done neuron fires. {8,en,done,nargs,nrets,src,dst,...,src,dst,...}
+static void call_port(i32*p){i32 na=p[3],nr=p[4];i32*q=p+5;swap_dom();
+ for(i32 k=0;k<na;k++){f64 x=v[q[2*k]];if(x!=0)inject(q[2*k+1],x);}
+ i32 n=0;do{tick();}while(v[p[2]]==0&&++n<100000000);
+ q+=2*na;f64 r[8];for(i32 k=0;k<nr;k++)r[k]=v[q[2*k]];swap_dom();
+ for(i32 k=0;k<nr;k++)if(r[k]!=0)inject(q[2*k+1],r[k]);}
 // Run ticks until the halt neuron fires. Returns the tick count.
 __attribute__((export_name("run"))) i32 run(i32 halt,i32 maxticks){i32 n=0;while(n<maxticks){tick();n++;if(v[halt]!=0)break;}return n;}
 __attribute__((export_name("val"))) f64 val(i32 i){return v[i];}

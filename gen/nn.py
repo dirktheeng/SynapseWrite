@@ -25,12 +25,18 @@ def as_x(o): return o if isinstance(o,X) else X(c=o)
 
 class Net:
     def __init__(s):
-        s.act=[];s.bias=[];s.inp=[];s.kind=[];s.init={};s.names={};s.ports=[];s.groups={};s.cur=['core'];s.aligned=[]
+        s.act=[];s.bias=[];s.inp=[];s.kind=[];s.init={};s.names={};s.ports=[];s.groups={};s.cur=['core'];s.aligned=[];s.dom=[];s.dm=0
         s.ONE_id=s._new(ID,0,'reg'); s.init[s.ONE_id]=1.0; s.inp[s.ONE_id].append((s.ONE_id,1.0)); s.ONE=X({s.ONE_id:1.0})
     def _new(s,a,b,kind='comb'):
-        s.act.append(a);s.bias.append(b);s.inp.append([]);s.kind.append(kind)
+        s.act.append(a);s.bias.append(b);s.inp.append([]);s.kind.append(kind);s.dom.append(s.dm)
         s.groups.setdefault(s.cur[0],[]).append(len(s.act)-1); return len(s.act)-1
     def group(s,name): s.cur[0]=name
+    def domain(s,d):
+        """Selects the clock domain of the neurons made next. Domain 1 runs only inside a call port, while domain 0
+        is stopped. No synapse crosses domains: values cross only through the call port."""
+        s.dm=d
+        if d and not hasattr(s,'ONE1'):
+            s.ONE1=s._new(ID,0,'reg'); s.init[s.ONE1]=1.0; s.inp[s.ONE1].append((s.ONE1,1.0))
     def _feed(s,i,e):
         e=as_x(e)
         for k,w in e.t.items(): s.inp[i].append((k,w))
@@ -112,6 +118,9 @@ class Net:
     # ---- compile ----
     def compile(s):
         n=len(s.act); layer=[-1]*n; state=[0]*n
+        for i in range(n):
+            if s.dom[i] and i!=getattr(s,'ONE1',-1): s.inp[i]=[(s.ONE1 if j==s.ONE_id else j,w) for j,w in s.inp[i]]
+            for j,_w in s.inp[i]: assert s.dom[j]==s.dom[i],('synapse across clock domains',j,i)
         import sys; sys.setrecursionlimit(1000000)
         order=[]
         for root in range(n):
@@ -139,6 +148,9 @@ class Net:
         for g,ids in enumerate(s.aligned):
             ml=max(layer[i] for i in ids)
             for p,i in enumerate(ids): layer[i]=ml; key[i]=(g+1,p)
+        L0=max([layer[i] for i in range(n) if not s.dom[i]])+1
+        for i in range(n):
+            if s.dom[i]: layer[i]+=L0       # domain 1 is numbered after domain 0, so each domain scans only its own bitmap
         L=max(layer)+1
         idxs=sorted(range(n),key=lambda i:(layer[i],key[i])); new=[0]*n
         for a,i in enumerate(idxs): new[i]=a
@@ -221,7 +233,7 @@ class Net:
         import sys as _s
         print('pull',sum(pull),'sticky',nsticky,file=_s.stderr)
         s.pullv=[pull[i] for i in idxs]
-        return dict(lazy=lazy,n=n,L=L,new=new,lstart=lstart,out=out,act=[act[i] for i in idxs],bias=[s.bias[i] for i in idxs],layer=layer)
+        return dict(n1=sum(1 for d_ in s.dom if not d_),lazy=lazy,n=n,L=L,new=new,lstart=lstart,out=out,act=[act[i] for i in idxs],bias=[s.bias[i] for i in idxs],layer=layer)
 
 class Bus:
     """A shared vector signal. Each source is gated by the condition that selects it."""

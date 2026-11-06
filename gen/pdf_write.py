@@ -161,7 +161,7 @@ on('PD_Z',(qop,'T4P_CL',{pfcr.r:pfcr.id('PD_Y')}),(None,'PD_Y',None))
 e=S('PD_Y'); on('PD_Y',(net.and_(net.step(qtoc),net.ge(qlj+1,qnl,e)),'T4P_TD0',None),(None,'PD_6',{qyy:qyy+qh,qlj:qlj+1}))
 # a table of contents entry: dot leader and the live page number, as on the screen
 on('T4P_TD0',(None,'T4P_TD1',{r1:qsrc+SAVE+2}))
-e=S('T4P_TD1'); hs_=net.step(qsrc); tv_=G_(R1,hs_)+G_(qtpg,ONE-hs_); DW0_=rom.glyph(0,0,0,0,48)[0]; DOTW_=rom.glyph(0,0,0,0,46)[0]+2
+e=S('T4P_TD1'); hs_=net.step(qsrc); tv_=G_(R1,hs_)+G_(qtpg,ONE-hs_); DW0_=rom.adv_px(0,0,0,0,48); DOTW_=rom.adv_px(0,0,0,0,46)+2
 on('T4P_TD1',(None,'T4P_TD2',{qtpv:tv_,qtxe:qml+qtw-(net.ge(tv_,10,e)+net.ge(tv_,100,e)+1)*DW0_-4}))
 e=S('T4P_TD2'); on('T4P_TD2',(net.ge(qxx+DOTW_,qtxe,e),'T4P_TN',None),(None,'T4P_TD3',None))
 lit('T4P_TD3',b'BT /F0 15 Tf 0 0 0 rg 1 0 0 1 ','T4P_TD4'); number('T4P_TD4',qxx,'T4P_TD5'); lit('T4P_TD5',b' ','T4P_TD6'); number('T4P_TD6',qyb,'T4P_TD7'); lit('T4P_TD7',b' Tm (.)Tj ET\n','T4P_TD8')

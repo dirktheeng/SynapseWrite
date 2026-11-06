@@ -1,25 +1,34 @@
-"""A directly programmed glyph network. Every weight below is written from an open font outline
-or from a font metric. There is no training, fitting, search, or transform basis.
+"""The glyph unit: a directly programmed network that draws text. Every weight below is written from an open font
+outline or from a font metric. There is no training, fitting, search, or transform basis.
 
-One tick computes one sample line of one glyph. The sample line height y is a register.
+It is a separate clock domain inside the application network, entered through a call port. While it runs, the paint state
+is stalled. One call draws one glyph:
+  tag read: key = face, size, code. The tag holds a block address in the store and the block header holds the key,
+    so a stale tag after a flush fails the compare, and a flush is only a reset of the bump pointer.
+  hit path: one pixel row per tick from the store, through one row plane (coverage and color to pixel), to the patch port.
+  miss path: the generator below writes the glyph to the store, then the tag is read again.
+Generator, one tick per sample line:
   glyph register -> binary tree over the glyph's outline heights -> the outline edges that cross y.
   edge neuron: its weights are the edge's line coefficients, x = X0*s + m*(y - Y(Y0)) + stem shift.
   slot wires: edges whose height spans are disjoint share a wire, chosen by interval colouring.
   ramp bank: R_q = relu(q - x), so a pixel's share of a crossing is R_(q+1) - R_q (analytic in x).
   signed sum = winding. A clamp gives coverage. K sample lines accumulate into one pixel row.
-Size scales through the s input. Vertical snapping is a piecewise linear height map whose knots are
-rounded font metrics. Horizontal snapping shifts edges by the rounded offsets of their nearest stems."""
-import math,sys
+Size scales through the s input. Vertical snapping is a piecewise linear height map whose knots are rounded font metrics.
+Horizontal snapping shifts edges by the rounded offsets of their nearest stems.
+An accented letter fires its base letter's program and its accent's program, using the font's own composite data."""
+import math
 from fontTools.pens.basePen import BasePen
 from nn import *
 import rom
-PAD=16.0      # crossing wires carry x+PAD so that gates (which clamp at zero) can pass them
-YP=128.0      # the height register carries y+YP for the same reason
+PAD=64.0      # crossing wires carry x+PAD so that gates (which clamp at zero) can pass them
+YP=256.0      # the height register carries y+YP for the same reason
 DP=8.0        # stem shift registers carry shift+DP
-X0PATCH=2     # glyph origin column inside a patch, the same as the bitmap ROM
-SW,LW=rom.SW,rom.LW
+AO=256.0      # accent shift registers carry shift+AO
+HDR=5         # store block header: key+1, rows, cells, x origin, top
+OFF=64        # offset of header values that may be negative
 QUANT=4.0     # outline vertices are kept to a quarter of a font unit
-TOL_PX,TOL_PPEM=0.1,48   # flatness: a tenth of a pixel at the largest size, 36 pt
+TOL_PX,TOL_PPEM=0.1,48   # flatness: a tenth of a pixel at 36 pt
+K=4           # sample lines per pixel row
 def tol_em(): return TOL_PX/TOL_PPEM
 class Flat(BasePen):
     def __init__(s,gs,tol):
@@ -61,20 +70,25 @@ def merge(c,tol):
             else: o.append(b); i+=1
         q=o
     return q
-_OC={}
-def contours(fi,bo,it,code,tol=None):
-    "Closed flattened contours of one glyph in em units (y up), with no search or fit."
-    key=(fi,bo,it,code,tol)
-    if key in _OC: return _OC[key]
-    ch=rom.cp1252(code); sub=rom._src(fi,bo,it,ch); out=[]
-    if sub:
-        f=rom.tt(fi,bo,it,sub); gs=f.getGlyphSet(); upm=f['head'].unitsPerEm; n=f.getBestCmap()[ord(ch)]
-        t_=(tol if tol is not None else tol_em())*upm
-        p=Flat(gs,t_); gs[n].draw(p)
-        for c in p.cs:
-            m=merge(c,t_/8)
-            if len(m)>=3: out.append([(a/upm,b/upm) for a,b in m])
-    _OC[key]=out; return out
+_NC={}
+def named(fi,bo,it,sub,name):
+    "Closed flattened contours of one font glyph in em units (y up)."
+    key=(fi,bo,it,sub,name)
+    if key in _NC: return _NC[key]
+    f=rom.tt(fi,bo,it,sub); gs=f.getGlyphSet(); upm=f['head'].unitsPerEm; t_=tol_em()*upm
+    p=Flat(gs,t_); gs[name].draw(p); out=[]
+    for c in p.cs:
+        m=merge(c,t_/8)
+        if len(m)>=3: out.append([(a/upm,b/upm) for a,b in m])
+    _NC[key]=out; return out
+def src(fi,bo,it,code):
+    ch=rom.cp1252(code)
+    if ch is None: return None
+    sub=rom._src(fi,bo,it,ch)
+    return (sub,rom.tt(fi,bo,it,sub).getBestCmap()[ord(ch)]) if sub else None
+def contours(fi,bo,it,code):
+    s_=src(fi,bo,it,code)
+    return named(fi,bo,it,*s_) if s_ else []
 def edges(cs):
     "Non horizontal edges as (Y0,X0,Y1,X1,sign), Y0<Y1. Sign is +1 for upward, the left side of ink in a TrueType outline."
     E=[]
@@ -84,8 +98,8 @@ def edges(cs):
             if a[1]==b[1]: continue
             E.append((a[1],a[0],b[1],b[0],1) if a[1]<b[1] else (b[1],b[0],a[1],a[0],-1))
     return E
-def _ymax(fi,bo,it,ch,flat=None):
-    cs=contours(fi,bo,it,ord(ch)); ys=[p[1] for c in cs for p in c]; return max(ys),min(ys)
+def _ymax(fi,bo,it,ch):
+    cs=contours(fi,bo,it,ord(ch)); ys=[p[1] for c in cs for p in c]; return (max(ys),min(ys)) if ys else (0.0,0.0)
 _FM={}
 def face_metrics(fi,bo,it):
     "Heights the snapping knots are written from, read off the outlines of named letters."
@@ -94,7 +108,7 @@ def face_metrics(fi,bo,it):
     xh=_ymax(fi,bo,it,'x')[0]; cap=_ymax(fi,bo,it,'H')[0]; asc=_ymax(fi,bo,it,'d')[0]; des=_ymax(fi,bo,it,'p')[1]
     xo=max(_ymax(fi,bo,it,'o')[0]-xh,0); co=max(_ymax(fi,bo,it,'O')[0]-cap,0); bo_=max(-_ymax(fi,bo,it,'o')[1],0)
     # vertical stem width from the lower case l: its widest near vertical span
-    xs=[p[0] for c in contours(fi,bo,it,ord('l')) for p in c]; ws=max(xs)-min(xs)
+    xs=[p[0] for c in contours(fi,bo,it,ord('l')) for p in c]; ws=(max(xs)-min(xs)) if xs else 0.0
     if it==0:
         # a serif l is wider than its stem, so read the width at mid height through the crossings
         h=asc/2; cr=[]
@@ -102,11 +116,11 @@ def face_metrics(fi,bo,it):
             if Y0<=h<Y1: cr.append(X0+(h-Y0)*(X1-X0)/(Y1-Y0))
         if len(cr)>=2: ws=max(cr)-min(cr)
     m=dict(xh=xh,cap=cap,asc=max(asc,cap),des=des,xo=xo,co=co,bo=bo_,stem=ws); _FM[k]=m; return m
-def stems(fi,bo,it,code,E=None):
+def stems(fi,bo,it,cs):
     """Vertical stems found by a fixed rule: a run of near vertical upward edges paired with the nearest
     near vertical downward run, with a width near the face's standard stem. Italics have none."""
     if it: return []
-    fm=face_metrics(fi,bo,it); cs=contours(fi,bo,it,code); runs=[]
+    fm=face_metrics(fi,bo,it); runs=[]
     for c in cs:
         n=len(c); seg=[]
         for i in range(n):
@@ -153,170 +167,319 @@ def _shift_weights(xm,st):
             t=round((xm-a[0])/(b[0]-a[0])*16)/16
             return [(u_,e_,w_) for u_,e_,w_ in ((a[1],a[2],1-t),(b[1],b[2],t)) if w_]
     return []
+SLOPE_BITS=11
 def q_slope(m):
-    "Keeps 11 significant bits so that slopes share the engine's weight dictionary."
+    "Keeps a fixed number of significant bits so that slopes share the engine's weight dictionary."
     if m==0: return 0.0
-    e=math.floor(math.log2(abs(m))); return round(m/2**(e-11))*2**(e-11)
-def miter(cs,bold):
-    """Vertex offsets for one outward offset of 1 em along the edge normals. Each vertex moves to where its
-    two offset lines meet, so slopes never change. A TrueType outer contour runs clockwise, so outward is left of travel."""
-    V={}
-    for c in cs:
-        n=len(c)
-        for i,b in enumerate(c):
-            a,d=c[i-1],c[(i+1)%n]
-            ux,uy=b[0]-a[0],b[1]-a[1]; vx,vy=d[0]-b[0],d[1]-b[1]
-            lu=math.hypot(ux,uy) or 1; lv=math.hypot(vx,vy) or 1
-            n1=(-uy/lu,ux/lu); n2=(-vy/lv,vx/lv)
-            hx,hy=n1[0]+n2[0],n1[1]+n2[1]; k=1+n1[0]*n2[0]+n1[1]*n2[1]
-            k=max(k,0.5)    # miter limit
-            V[b]=(hx/k,hy/k)
-    return V
-class GlyphNet:
-    def __init__(g,faces,codes,K=4,synth=False,xsnap=True,wround=False,tol=None,xh_round=0.5):
-        g.faces=faces; g.codes=codes; g.K=K; g.synth=synth; g.xsnap=xsnap; g.wround=wround; g.tol=tol; g.xh_round=xh_round
-        g.net=net=Net(); g.stats=dict(edges=0,knots=0,stems=0,flat=0); g.per={}
+    e=math.floor(math.log2(abs(m))); return round(m/2**(e-SLOPE_BITS))*2**(e-SLOPE_BITS)
+GRID_X=8192
+def structure(fi,bo,it,codes):
+    """How each code of one face is made, from the font's own composite data: {code:[(program key,dx,dy)]}.
+    Two components without a transform, the first in place, make base + accent. Anything else is drawn whole.
+    Programs used as a second component form the accent group: they take their position from shift registers."""
+    S={}
+    for c in codes:
+        s_=src(fi,bo,it,c)
+        if not s_: continue
+        sub,name=s_; f=rom.tt(fi,bo,it,sub); g=f['glyf'][name]; upm=f['head'].unitsPerEm
+        comp=getattr(g,'components',None) if g.isComposite() else None
+        if comp and len(comp)==2 and not any(hasattr(q,'transform') for q in comp) and comp[0].x==0 and comp[0].y==0 and not f['glyf'][comp[0].glyphName].isComposite() and not f['glyf'][comp[1].glyphName].isComposite():
+            S[c]=[((sub,comp[0].glyphName),0.0,0.0),((sub,comp[1].glyphName),comp[1].x/upm,comp[1].y/upm)]
+        else: S[c]=[((sub,name),0.0,0.0)]
+    acc={p[1][0] for p in S.values() if len(p)==2}
+    # a program cannot be both: a base that is also someone's accent makes that code whole
+    for c,p in list(S.items()):
+        if len(p)==2 and p[0][0] in acc:
+            s_=src(fi,bo,it,c); S[c]=[(s_,0.0,0.0)]
+    acc={p[1][0] for p in S.values() if len(p)==2}
+    return S,acc
+class GlyphUnit:
+    def __init__(g,net,faces,codes,pseudo,LW,TAG,STORE,STORE_END,clip,palF,palB,ONE,patch_cls,sprite_cls):
+        """faces: list of (fi,bo,it). codes: real codes. pseudo: {face index:{code:(contours,raw)}} shapes that are not font glyphs."""
+        g.net=net; g.faces=faces; g.codes=codes; g.pseudo=pseudo; g.LW=LW; g.TAG=TAG; g.STORE=STORE; g.STORE_END=STORE_END; g.clip=clip
+        g.palF=palF; g.palB=palB; g.patch_cls=patch_cls; g.sprite_cls=sprite_cls
+        g.stats=dict(edges=0,knots=0,stems=0,programs=0,accent_programs=0); g.per={}
+        net.domain(1); net.group('glyph unit')
         g._build()
+        net.domain(0)
     def _slots(g,E):
         "Interval colouring: sweep by lower height, take the lowest free slot of the edge's direction."
-        res=[None]*len(E); free={1:[],-1:[]}; mg=0.06 if g.synth else 0.0   # offset edges need a margin
+        res=[None]*len(E); free={1:[],-1:[]}
         for i in sorted(range(len(E)),key=lambda i:(E[i][0],E[i][1])):
             Y0,_,Y1,_,sg=E[i]; L=free[sg]
             for k,end in enumerate(L):
-                if end+mg<=Y0: L[k]=Y1; res[i]=k; break
+                if end<=Y0: L[k]=Y1; res[i]=k; break
             else: L.append(Y1); res[i]=len(L)-1
         return res,len(free[1]),len(free[-1])
     def _build(g):
-        net=g.net; K=g.K; ONE=net.ONE
-        net.group('controls')
-        I=g.I=dict(start=net.input(),ch=net.input(),face=net.input(),s=net.input(),y0=net.input(),rows=net.input(),addr=net.input(),cells=net.input(),snapy=net.input(),snapx=net.input(),large=net.input(),bold=net.input(),slant=net.input())
-        st=I['start']
+        net=g.net; ONE=net.ONE; LW=g.LW
+        # ---- arguments, valid on the go tick only ----
+        A=g.A=dict(go=net.input(),ch=net.input(),face=net.input(),sz=net.input(),ppem=net.input(),pt=net.input(),x=net.input(),y=net.input(),fg=net.input(),bg=net.input(),nc=net.input())
+        go=A['go']
+        fin=net.wire()
+        def L0(val,load,clear): 
+            r=net.reg(); net.rec(r,r-net.relu(r+clear*M-M)+net.gate(val,load)); return r
+        def L(val,load=go): return L0(val,load,fin)
+        Lch=L(A['ch']);Lface=L(A['face']);Lsz=L(A['sz']);Lppem=L(A['ppem']);Lpt=L(A['pt']);Lx=L(A['x']);Ly=L(A['y']);Lfg=L(A['fg']);Lbg=L(A['bg']);Lnc=L(A['nc'])
+        # ---- tag read ----
+        retry=net.reg(); s0=net.reg(); s1=net.reg(); net.rec(s0,go+retry); net.rec(s1,s0)
+        g.FK=rom.NSZ*256
+        g.key=Lface*g.FK+Lsz*256+Lch
+        kw=net.wire(); net.connect(kw,net.gate(g.key+g.TAG,s0))
+        tagout=net.input(1+HDR); tag,H=tagout[0],tagout[1:]
+        rd=_TagRead(s0,kw,tag,g.STORE,1+HDR); net.ports.append(rd); rd.dom=1
+        kl=net.gate(g.key+1,s1)          # the block must carry this key
+        hit=net.step(s1-net.step(kl-H[0]-0.5)-net.step(H[0]-kl-0.5)-0.5)
+        miss=net.step(s1-hit-0.5)
+        # ---- hit path ----
+        rowsz=net.step(net.gate(H[1],hit)-0.5)
+        start=net.and_(hit,rowsz); empty=hit-start
+        brun=net.reg(); brows=net.reg(); bcells=L(H[2],start)
+        baddr=net.reg(); bpy=net.reg(); bwr=net.reg(); blast=net.reg()
+        lastt=net.step(brun*M-M+1.5-brows)     # one row left
+        net.rec(brun,brun-lastt+start)
+        net.rec(brows,brows-brun+net.gate(H[1],start))
+        net.rec(baddr,baddr-net.relu(baddr+fin*M-M)+net.gate(tag+g.STORE+HDR,start)+net.gate(bcells,brun))
+        bpx=L(Lx-H[3]+OFF+OFF,start)
+        net.rec(bpy,bpy-net.relu(bpy+fin*M-M)+net.gate(Ly-H[4]+OFF,start)+bwr)
+        net.rec(bwr,brun); net.rec(blast,lastt)
+        net.connect(fin,net.step(blast+empty))
+        g.fin=fin
+        rowcov=net.input(LW) if LW>1 else [net.input()]
+        rr=_RowRead(brun,baddr,rowcov[0],LW,bcells); net.ports.append(rr); rr.dom=1
+        # ---- colour: one line per channel bit of the selected palette entries, held during the draw ----
+        sg=net.reg(); s1g=net.reg(); net.rec(sg,go); net.rec(s1g,sg)      # first pass only; a retry after a miss loads nothing twice
+        fgb=net.eq(Lfg,1,sg)
+        fast=L(net.and_(fgb,net.eq(Lbg,1,sg)),sg); fsel=L(net.and_(fgb,net.eq(Lbg,2,sg)),sg)
+        slow0=net.and_(s1g,ONE-fast,ONE-empty)
+        def lines(pal,val):
+            h=net.decode(val-1,len(pal),slow0); out=[]
+            for k in range(3):
+                for b_,wt in enumerate(GRIDW):
+                    e_=X()
+                    for j,col in enumerate(pal):
+                        if gridbits(col[k])[b_]: e_=e_+h[j]
+                    if e_.t: out.append((k,wt,L(net.step(e_),slow0)))
+            return out
+        fgl=lines(g.palF,Lfg); bgl=lines(g.palB,Lbg)
+        # ---- row plane ----
+        data=[net.wire() for _ in range(4*LW)]
+        nonw=ONE-fast
+        for i in range(LW):
+            c=rowcov[i]; m=net.step(c)
+            o=[(m-c)*255]*3
+            nw=net.step(m*M-M+nonw-0.5)
+            sl=net.step(nw*M-M+fsel-0.5); slow=net.step(nw*M-M+(ONE-fsel)-0.5)
+            cs=net.relu(sl*M-M+m-c)
+            for k in range(3): o[k]=o[k]+cs*(g.palB[1][k]-255)
+            ic=net.relu(slow*M-M+m-c)
+            for k in range(3): o[k]=o[k]-ic*255
+            for k,wt,ln in fgl: o[k]=o[k]+net.relu(slow*M-M+c+ln-1)*wt
+            for k,wt,ln in bgl: o[k]=o[k]+net.relu(slow*M-M+m-c+ln-1)*wt
+            for k in range(3): net.connect(data[4*i+k],o[k])
+            net.connect(data[4*i+3],m)
+        net.aligned.append([next(iter(w.t)) for w in data])
+        px=net.wire(); py=net.wire()
+        net.connect(px,net.gate(bpx,bwr)-bwr*OFF); net.connect(py,net.gate(bpy,bwr))
+        p1=g.patch_cls(net.step(bwr-Lnc*2-0.5),px,py,data,LW,1); p2=g.sprite_cls(net.step(bwr+Lnc*2-2.5),px,py,data,LW,1)
+        p1.dom=1;p2.dom=1
+        # ---- miss path: the generator ----
+        g._generator(miss,Lch,Lface,Lppem,Lpt,g.key,retry,fin)
+    def _generator(g,st,Lch,Lface,Lppem,Lpt,key,retry,fin):
+        net=g.net; ONE=net.ONE; LW=g.LW
         done=net.wire()
         def latch(val,load=st,clear=done):
             r=net.reg(); net.rec(r,r-net.relu(r+clear*M-M)+net.gate(val,load)); return r
-        s=g.s=latch(I['s']); yr=g.yr=net.reg(); rows=net.reg(); addr=net.reg(); cells=latch(I['cells']); large=latch(I['large'])
-        snapx=I['snapx']; snapy=I['snapy']
+        I_s=g._sin=Lppem
+        s=g.s=latch(I_s); yr=g.yr=net.reg(); rows=net.reg(); addr=net.reg(); 
         # one hot face and a binary tree over the character, walked only on the start tick
-        fh=net.decode(I['face'],len(g.faces),st,hot=True) if len(g.faces)>1 else [st]
-        chv=net.relu(I['ch']-32+1+st*M-M); chok=net.step(chv); bits=net.bits(chv-1,8,chok)
+        faceidx=Lface
+        NF=max(len(g.faces),max(g.pseudo)+1)
+        fh=net.decode(faceidx,NF,st,hot=True)
+        chv=net.relu(Lch-32+1+st*M-M); chok=net.step(chv); bits=net.bits(chv-1,8,chok)
         leaf={}
         def tnode(p,sel,neg=False): return net.step(p*M-M+((ONE-sel) if neg else sel)-0.5)
+        prog_codes={}
+        for fi,f in enumerate(g.faces): prog_codes[fi]=list(g.codes)
+        for fi,d in g.pseudo.items(): prog_codes[fi]=sorted(set(prog_codes.get(fi,[]))|set(d))
         def tree(root,fi):
-            S=set(c-32 for c in g.codes)
+            S=set(c-32 for c in prog_codes[fi])
             def walk(node,lo,k):
                 if k<0: leaf[fi,lo+32]=node; return
                 mid=lo+(1<<k)
                 if any(lo<=i<mid for i in S): walk(tnode(node,bits[k],True),lo,k-1)
                 if any(mid<=i<mid+(1<<k) for i in S): walk(tnode(node,bits[k]),mid,k-1)
             walk(root,0,7)
-        for fi,_f in enumerate(g.faces): tree(tnode(fh[fi],chok),fi)
-        # snapping knots: rounded font metrics, computed once per glyph and held in registers
+        for fi in range(NF): tree(tnode(fh[fi],chok),fi)
+        # snapping is chosen per draw: x and y at text sizes of the humanist upright, y elsewhere up to 24 pt, none above
         net.group('snapping layer')
+        snapyv=net.step(as_x(24.5)-Lpt+st*M-M)
+        ny=net.step(st*M-M+(ONE-snapyv)-0.5); sy=net.step(st*M-M+snapyv-0.5)
+        xrule=X()
+        for fi,f in enumerate(g.faces):
+            if rom.x_snap_face(*f): xrule=xrule+fh[fi]
+        sx=net.and_(net.step(xrule),net.ge(Lpt,11,st),net.lt(Lpt,19,st))
         def per_face(name):
             e=X()
             for fi,f in enumerate(g.faces):
-                z=face_metrics(*f)[name] if isinstance(name,str) else name(face_metrics(*f))
-                e=e+net.gate(I['s']*z,fh[fi])
+                z=face_metrics(*f)[name]
+                e=e+net.gate(I_s*z,fh[fi])
             return e
-        sy=net.and_(st,snapy); ny=net.step(st*M-M+(ONE-snapy)-0.5)
-        def floor_(v,en):
+        def floor_(v,en,nb=9):
             rem=net.gate(v,en); o=X()
-            for k in reversed(range(8)):
+            for k in reversed(range(nb)):
                 b=net.step(rem-2**k+1e-7); o=o+b*2**k; rem=rem-b*2**k
             return o
-        def knot(name,add=None,off=0.5):
-            v=per_face(name); ov=per_face(add) if add else None
-            return floor_(v+off,sy)+net.gate(v+(ov if add else 0),ny)
-        kn=g.kn=dict(D=latch(knot(lambda m:-m['des'])),XH=latch(knot('xh',off=g.xh_round)),CAP=latch(knot('cap')),ASC=latch(knot('asc')))
+        def knot(name,off=0.5):
+            v=per_face(name)
+            return floor_(v+off,sy)+net.gate(v,ny), v
+        kn=g.kn={}
+        v_des=X()
+        for fi,f in enumerate(g.faces): v_des=v_des+net.gate(I_s*(-face_metrics(*f)['des']),fh[fi])
+        kn['D']=latch(floor_(v_des+0.5,sy)+net.gate(v_des,ny))
+        kxh,vxh=knot('xh'); kcap,vcap=knot('cap'); kasc,vasc=knot('asc')
+        kn['XH']=latch(kxh); kn['CAP']=latch(kcap); kn['ASC']=latch(kasc)
         def over(name): return latch(net.gate(per_face(name),ny))
         kn['Bo']=over('bo'); kn['XHo']=over('xo'); kn['CAPo']=over('co')
+        # ---- block geometry, one set per face, from the face's extreme outline values ----
+        net.group('glyph geometry')
+        ext={}
+        for fi in range(NF):
+            f=g.faces[fi] if fi<len(g.faces) else None; xs=[];ys=[]
+            if f:
+                for c in g.codes:
+                    for ct in contours(*f,c):
+                        xs+=[p[0] for p in ct]; ys+=[p[1] for p in ct]
+            for c,(cs,_raw) in g.pseudo.get(fi,{}).items():
+                for ct in cs: xs+=[p[0] for p in ct]; ys+=[p[1] for p in ct]
+            ext[fi]=(min(xs),max(xs),min(ys),max(ys))
+        g.ext=ext
+        def fx(j):
+            e=X()
+            for fi in range(NF): e=e+net.gate(I_s*ext[fi][j]+OFF,fh[fi])
+            return e
+        T=floor_(fx(3),st)+2; B=floor_(fx(2),st)-1; Lf=floor_(fx(0),st)-2; Rt=floor_(fx(1),st)
+        # code exists in the face: a program fires. Filled below.
+        haswire=net.wire(); has=net.step(haswire)
+        OX=as_x(2*OFF)-Lf
+        cells=net.wire(); _c=Rt-Lf+3; net.connect(cells,_c-net.relu(_c-LW))
+        rowsv=net.gate(T-B,has)
+        run_=net.and_(st,has); nog=st-run_
+        # ---- store: bump allocation, flushed when a largest block might not fit ----
+        net.group('glyph store')
+        bp=net.reg(init=g.STORE+8)
+        maxb=LW*220+HDR+8
+        flush=net.step(st*M-M+bp-(g.STORE_END-maxb))
+        a0=net.gate(bp,st-flush)+flush*(g.STORE+8)
+        hw=[net.wire() for _ in range(HDR)]
+        for w_,v_ in zip(hw,(net.gate(key+1,st),rowsv,net.gate(cells,st),net.gate(OX,st),net.gate(T,st))): net.connect(w_,v_)
+        net.aligned.append([next(iter(w.t)) for w in hw])
+        a0w=net.wire(); net.connect(a0w,a0)
+        tagv=net.wire(); net.connect(tagv,a0-st*g.STORE); tkw=net.wire(); net.connect(tkw,net.gate(key+g.TAG,st))
+        p=_Write(st,a0w,hw[0],HDR); net.ports.append(p); p.dom=1
+        p=_Write(st,tkw,tagv,1); net.ports.append(p); p.dom=1
+        g.a0=a0;
         # stem units: a stem's rounded position, then its edge shifts, held in registers
         net.group('stem units')
         NU=4; bc=[net.wire() for _ in range(NU)]; bh=[net.wire() for _ in range(NU)]; uen=[net.wire() for _ in range(NU)]
         Wv=per_face('stem')
-        sx=net.and_(st,snapx) if g.xsnap else None
-        W=None
-        if g.xsnap:
-            if g.wround: W=1+net.relu(floor_(Wv+0.5,sx)-1)
-            else: W=Wv+X()
         g.dL=[];g.dR=[]
         for u in range(NU):
-            if not g.xsnap: g.dL.append(None);g.dR.append(None);continue
             en=net.step(uen[u])
-            wg=net.gate(W,en)
+            wg=net.gate(Wv+X(),en)
             fv=floor_(bc[u]-wg*0.5+16.5,en)
             Lp=fv-en*16
-            base=st*DP
             g.dL.append(latch(st*DP+net.relu(Lp-bc[u]+bh[u]+en*4+en*M-M)-en*4))
             g.dR.append(latch(st*DP+net.relu(Lp+wg-bc[u]-bh[u]+en*4+en*M-M)-en*4))
         net.group('row sequencer')
-        net.rec(yr,yr-net.relu(yr+done*M-M)+net.gate(I['y0']+YP-0.5/K,st))
-        ph=[net.reg() for _ in range(K)]; first=latch(st,st,ph[0])
+        ph=[net.reg() for _ in range(K)]; first=latch(run_,run_,ph[0])
         wr=net.step(ph[0]*M-M+0.5-first)
         rpos=net.step(rows-0.5)
         dn=net.step(wr*M-M+0.5-rows)
-        net.connect(done,dn)
-        net.rec(rows,rows-net.relu(rows+done*M-M)+net.gate(I['rows'],st)-net.step(ph[0]*M-M+rpos-0.5))
-        net.rec(ph[0],st+ph[K-1])
-        net.rec(ph[1] if K>1 else ph[0],ph[0]-dn)
+        net.connect(done,dn); net.connect(done,nog)
+        net.rec(retry,net.step(dn+nog))
+        net.rec(yr,yr-net.relu(yr+done*M-M)+net.gate(T-OFF+YP-0.5/K,run_))
+        net.rec(rows,rows-net.relu(rows+done*M-M)+net.gate(rowsv,run_)-net.step(ph[0]*M-M+rpos-0.5))
+        net.rec(ph[0],run_+ph[K-1])
+        net.rec(ph[1],ph[0]-dn)
         for i in range(2,K): net.rec(ph[i],ph[i-1])
-        run=latch(st)
-        net.rec(yr,(run-dn)*(-1.0/K))
+        runr=latch(run_,run_)
+        net.rec(yr,(runr-dn)*(-1.0/K))
         d2=net.reg(); net.rec(d2,dn)
         clr=net.step(wr+d2)
-        net.rec(addr,addr-net.relu(addr+done*M-M)+net.gate(I['addr'],st)+net.gate(cells,wr-dn))
-        # glyph programs
+        cl=latch(cells,st)
+        net.rec(addr,addr-net.relu(addr+done*M-M)+net.gate(a0+HDR,run_)+net.gate(cl,wr-dn))
+        net.rec(bp,bp-net.relu(bp+(dn+nog)*M-M)+net.gate(addr+cl,dn)+net.gate(a0+HDR,nog))
+        # ---- programs ----
         net.group('glyph weights (outline edges)')
-        g.sb=None;g.shear=None
         y=yr
-        if g.synth:
-            # one offset control: half the difference between the family's real bold and regular stems
-            g.sb=latch(sum((net.gate(I['s']*((face_metrics(f[0],1,0)['stem']-face_metrics(*f)['stem'])/2),fh[fi]) for fi,f in enumerate(g.faces)),X()),net.and_(st,I['bold']))
-            # one shear layer: the angle is the family's italic angle from the post table
-            g.shear=X()
-            for fi,f in enumerate(g.faces):
-                t=math.tan(math.radians(-rom.tt(f[0],0,1)['post'].italicAngle))
-                en=latch(fh[fi],net.and_(st,I['slant']))
-                g.shear=g.shear+net.relu(y*t+en*M-M)-en*(YP*t)
-        prog={}
+        ax=net.reg();ay=net.reg()
+        prog={}; comp={}     # program key -> data; (fi,code) -> composition
         for fi,f in enumerate(g.faces):
-            fm=face_metrics(*f)
-            for c in g.codes:
-                prog[fi,c]=g._glyph_prep(f,c)
-        nu=max([1]+[p['nup'] for p in prog.values()]); nd=max([1]+[p['ndn'] for p in prog.values()])
-        g.nup,g.ndn=nu,nd
-        slots={1:[net.wire() for _ in range(nu)],-1:[net.wire() for _ in range(nd)]}
-        for (fi,c),P in prog.items():
-            g._glyph(fi,c,P,leaf.get((fi,c),X()),slots,kn,s,y,bc,bh,uen,sx,done)
-        # ramp bank, shared by all glyphs and written once
+            S,acc=structure(*f,g.codes)
+            for c,parts in S.items():
+                comp[fi,c]=parts
+                for (pk,_dx,_dy) in parts:
+                    k=(fi,)+pk
+                    if k not in prog:
+                        cs=named(*f,*pk); E=edges(cs); sl,nu,nd=g._slots(E)
+                        prog[k]=dict(cs=cs,E=E,sl=sl,nup=nu,ndn=nd,acc=pk in acc,raw=False,st=stems(*f,cs) if rom.x_snap_face(*f) and pk not in acc else [],fm=face_metrics(*f),lf=net.wire())
+        for fi,d in g.pseudo.items():
+            for c,(cs,raw) in d.items():
+                k=(fi,'pseudo',c); E=edges(cs); sl,nu,nd=g._slots(E)
+                fm=face_metrics(*g.faces[fi]) if fi<len(g.faces) else None
+                prog[k]=dict(cs=cs,E=E,sl=sl,nup=nu,ndn=nd,acc=False,raw=raw,st=[],fm=fm,lf=net.wire()); comp[fi,c]=[(('pseudo',c),0.0,0.0)]
+        nu=max([1]+[p['nup'] for p in prog.values() if not p['acc']]); nd=max([1]+[p['ndn'] for p in prog.values() if not p['acc']])
+        nua=max([0]+[p['nup'] for p in prog.values() if p['acc']]); nda=max([0]+[p['ndn'] for p in prog.values() if p['acc']])
+        g.nup,g.ndn,g.nua,g.nda=nu,nd,nua,nda
+        slots={1:[net.wire() for _ in range(nu)],-1:[net.wire() for _ in range(nd)]}; aslots={1:[net.wire() for _ in range(nua)],-1:[net.wire() for _ in range(nda)]}
+        axv=X();ayv=X()
+        dxh=kxh-vxh; dcap=kcap-vcap
+        for (fi,c),parts in comp.items():
+            lf=leaf.get((fi,c))
+            if lf is None: continue
+            for j,(pk,dx,dy) in enumerate(parts):
+                k=(fi,)+pk; P=prog[k]
+                if P['E']: net.connect(haswire,lf)
+                net.connect(P['lf'],lf)
+                if j==1:
+                    # the accent keeps its distance from the snapped height of its base
+                    fm_=face_metrics(*g.faces[fi]); up_=max(p_[1] for c_ in P['cs'] for p_ in c_)+dy>fm_['xh']*0.8 if P['cs'] else False
+                    axv=axv+net.gate(I_s*dx+AO,lf); ayv=ayv+net.gate(I_s*dy+AO,lf)
+                    if up_: ayv=ayv+net.gate(dcap+8 if c<96 or 192<=c<223 else dxh+8,lf)-lf*8
+                elif P['acc']:
+                    axv=axv+lf*AO; ayv=ayv+lf*AO
+        net.rec(ax,ax-net.relu(ax+done*M-M)+axv); net.rec(ay,ay-net.relu(ay+done*M-M)+ayv)
+        for k,P in prog.items():
+            if not P['E']: continue
+            g._glyph(k,P,slots,aslots,kn,s,y,bc,bh,uen,sx,done,ax,ay,net.step(P['lf']))
+        # ---- ramp bank, shared by all glyphs and written once ----
         net.group('ramp bank')
+        c28=latch(net.step(cells-28.5),st); c64=latch(net.step(cells-64.5),st)
+        ox=latch(OX,st)
         w=[X() for _ in range(LW)]; nbank=0
-        for sg,L in slots.items():
-            for xk in L:
-                en=net.step(xk); enl=None
-                R=[]
-                for q in range(LW+1):
-                    if q==SW+1: enl=net.and_(en,large)
-                    e_=en if q<=SW else enl
-                    R.append(net.relu(e_*M-M+(q-X0PATCH+PAD)-xk)); nbank+=1
-                for p in range(LW): w[p]=w[p]+(R[p+1]-R[p])*sg
+        for gp in (slots,aslots):
+            for sg,L_ in gp.items():
+                for xk in L_:
+                    en=net.step(xk); enm=net.and_(en,c28); enl=net.and_(en,c64); R=[]
+                    xs=net.wire(); net.connect(xs,net.relu(xk+ox+en*M-M))
+                    for q in range(LW+1):
+                        e_=en if q<=28 else enm if q<=64 else enl
+                        R.append(net.relu(e_*M-M+(q+PAD+OFF)-xs)); nbank+=1
+                    for p_ in range(LW): w[p_]=w[p_]+(R[p_+1]-R[p_])*sg
         g.nbank=nbank
         net.group('coverage')
-        ac=[net.reg() for _ in range(LW)]    # consecutive registers: the write port reads them as a block
-        g.ac=ac
-        for p in range(LW):
-            wp=net.wire(); net.connect(wp,w[p])
+        ac=[net.reg() for _ in range(LW)]
+        out=[net.wire() for _ in range(LW)]
+        for p_ in range(LW):
+            wp=net.wire(); net.connect(wp,w[p_])
             cov=net.relu(wp)-net.relu(wp-1)
-            net.rec(ac[p],ac[p]-net.relu(ac[p]+clr*M-M)+cov*(1.0/K))
-        g.wr=wr;g.done=done;g.cells=cells;g.addr=addr
-        class P_:
-            def rec(s_,_): return [1,wr,addr,ac[0],LW,cells]
-        net.ports.append(P_())
-    def _glyph_prep(g,f,c):
-        cs=contours(*f,c,g.tol); E=edges(cs)
-        ys=sorted(set(y for e in E for y in (e[0],e[2])))
-        sl,nu,nd=g._slots(E)
-        return dict(cs=cs,E=E,ys=ys,sl=sl,nup=nu,ndn=nd,st=stems(*f,c) if g.xsnap else [],fm=face_metrics(*f))
+            net.rec(ac[p_],ac[p_]-net.relu(ac[p_]+clr*M-M)+cov*(1.0/K))
+            # darkening curve, the same one the old rasterizer used, written as a piecewise linear map of final coverage
+            a_=net.relu(ac[p_]+wr*M-M)
+            net.connect(out[p_],a_*GAMMA_K[0]-net.relu(a_-0.25)*GAMMA_K[1]-net.relu(a_-0.5)*GAMMA_K[2]-net.relu(a_-0.75)*GAMMA_K[3])
+        net.aligned.append([next(iter(w_.t)) for w_ in out])
+        p=_Write(wr,addr,out[0],LW,cl); net.ports.append(p); p.dom=1
     def _ymap(g,fm,Y,s,kn):
         "The height map as a linear expression over s and the knot registers. Identity when the knots are unrounded."
         xh,cap,asc,des,xo,co,bo=fm['xh'],fm['cap'],fm['asc'],fm['des'],fm['xo'],fm['co'],fm['bo']
@@ -335,137 +498,65 @@ class GlyphNet:
             if a<=Y<=b:
                 t=round((Y-a)/(b-a)*8192)/8192
                 return ka*(1-t)+kb*t
-    def _glyph(g,fi,c,P,lf,slots,kn,s,y,bc,bh,uen,sx,done):
-        net=g.net; E=P['E']; ys=P['ys']; fm=P['fm']
-        st=P['st']
-        if not lf.t: return
-        # stem constants go on the shared stem unit wires, once per draw
+    def _glyph(g,k,P,slots,aslots,kn,s,y,bc,bh,uen,sx,done,ax,ay,lf):
+        net=g.net; E=P['E']; fm=P['fm']; st=P['st']; accp=P['acc']; raw=P['raw'] or fm is None
         if st:
-            lfs=net.step(lf*M-M+g.I['snapx']-0.5)
+            lfs=net.step(lf*M-M+sx-0.5)
             for u,(l,r,_h) in enumerate(st):
-                net.connect(uen[u],lfs); net.connect(bc[u],net.gate(g.I['s']*((l+r)/2),lfs)); net.connect(bh[u],net.gate(g.I['s']*((r-l)/2),lfs))
+                net.connect(uen[u],lfs); net.connect(bc[u],net.gate(g._sin*((l+r)/2),lfs)); net.connect(bh[u],net.gate(g._sin*((r-l)/2),lfs))
             g.stats['stems']+=len(st)
         gr=net.reg(); net.rec(gr,gr-net.relu(gr+done*M-M)+lf)
-        if not E: return
-        V=None
-        if g.synth: V=miter(P['cs'],True)
-        # dy neurons: one per distinct outline height, read lazily by the tree and the edges
-        keys=sorted(set((e[0],(0 if not V else V[(e[1],e[0])][1])) for e in E)|set((e[2],(0 if not V else V[(e[3],e[2])][1])) for e in E))
+        keys=sorted(set(e[0] for e in E)|set(e[2] for e in E))
         dy={}
-        for k in keys:
-            n=net.wire(); ex=y-g._ymap(fm,k[0],s,kn)
-            if g.synth: ex=ex-g.sb*k[1]
-            net.connect(n,ex); dy[k]=n-YP
-        ys=sorted(set(keys),key=lambda k:k[0]+0.02*k[1])
-        idx={k:i for i,k in enumerate(ys)}
-        # binary tree over the height intervals
-        lo=net.step(gr*M-M+dy[ys[0]]); rt=net.step(lo*M-M-dy[ys[-1]])
+        for yk in keys:
+            n=net.wire()
+            if accp: ex=y-(ay-AO)-s*yk
+            elif raw: ex=y-s*yk
+            else: ex=y-g._ymap(fm,yk,s,kn)
+            net.connect(n,ex); dy[yk]=n-YP
+        idx={yk:i for i,yk in enumerate(keys)}
+        ls=net.step(gr*M-M+dy[keys[0]]); rt=net.step(ls*M-M-dy[keys[-1]])
         nodes={}
         def build(a,b,en):
             nodes[a,b]=en
             if b-a<=1: return
             m=(a+b)//2
-            up=net.step(en*M-M+dy[ys[m]]); dn_=net.step(en-up-0.5)
+            up=net.step(en*M-M+dy[keys[m]]); dn_=net.step(en-up-0.5)
             build(m,b,up); build(a,m,dn_)
-        build(0,len(ys)-1,rt)
+        build(0,len(keys)-1,rt)
         attach={}
         def place(i0,i1,a,b,i):
             if i0<=a and b<=i1: attach.setdefault((a,b),[]).append(i); return
             m=(a+b)//2
             if i0<m: place(i0,i1,a,m,i)
             if i1>m: place(i0,i1,m,b,i)
-        for i,e in enumerate(E):
-            if g.synth: k0=(e[0],V[(e[1],e[0])][1]);k1=(e[2],V[(e[3],e[2])][1])
-            else: k0=(e[0],0);k1=(e[2],0)
-            place(idx[k0],idx[k1],0,len(ys)-1,i)
+        for i,e in enumerate(E): place(idx[e[0]],idx[e[2]],0,len(keys)-1,i)
         en_of=[X() for _ in E]
-        for ab,L in attach.items():
-            for i in L: en_of[i]=en_of[i]+nodes[ab]
+        for ab,L_ in attach.items():
+            for i in L_: en_of[i]=en_of[i]+nodes[ab]
+        sl_=aslots if accp else slots
         for i,e in enumerate(E):
             Y0,X0,Y1,X1,sg=e
             m=q_slope((X1-X0)/(Y1-Y0))
-            k0=(Y0,0 if not V else V[(X0,Y0)][1])
-            ex=s*(round(X0*8192)/8192)+dy[k0]*m
-            if g.synth:
-                ex=ex+g.sb*V[(X0,Y0)][0]+g.shear
+            ex=s*(round(X0*GRID_X)/GRID_X)+dy[Y0]*m
+            if accp: ex=ex+ax-AO
             for u,side,wt in _shift_weights((X0+X1)/2,st):
                 r_=(g.dL if side==0 else g.dR)[u]
                 ex=ex+(r_-DP)*wt
             ex=ex+PAD
-            n=net.relu(ex+en_of[i]*M-M)
-            net.connect(slots[sg][P['sl'][i]],n)
-        g.stats['edges']+=len(E); g.stats['knots']+=len(keys)
-        g.per[fi,c]=dict(edges=len(E),knots=len(keys),stems=len(st))
-    def save(g,path):
-        "Writes the same file format the shipping network uses, so the real engine runs it."
-        import json,struct,gzip,collections,numpy as np
-        net=g.net; c=net.compile(); new=c['new']; nid=lambda x:next(iter(x.t))
-        pr=[]
-        for p in net.ports:
-            r=p.rec(None); pr+=[1,new[nid(r[1])],new[nid(r[2])],new[nid(r[3])],r[4],new[nid(r[5])]]
-        n=c['n']; ost=np.zeros(n+1,dtype=np.int32); dst=[];ww=[]
-        for i in range(n):
-            o=sorted(c['out'][i]); ost[i+1]=len(o); prev=0
-            for d,w in o: dst.append(d-prev);prev=d;ww.append(w)
-        ist=np.zeros(n+1,dtype=np.int32);isr=[];iww=[]
-        for i in range(n):
-            ist[i+1]=len(c['lazy'][i])
-            for j,w in c['lazy'][i]: isr.append(j);iww.append(w)
-        wc=collections.Counter(ww)+collections.Counter(iww)
-        wtab=sorted(wc,key=lambda w:(-wc[w],w)); wix={w:k for k,w in enumerate(wtab)}
-        assert len(wtab)<65536,len(wtab)
-        def pack(v,big):
-            o=bytearray()
-            for x in v:
-                if x<255:o.append(x)
-                else:o.append(255);o+=int(x).to_bytes(big,'little')
-            return bytes(o)
-        dz=pack(dst,4);wz=pack([wix[w] for w in ww],2)
-        I={k:new[nid(v)] for k,v in g.I.items()}
-        hdr=dict(n=n,e=len(dst),L=c['L'],nports=len(pr),bank=4000000,ni=len(isr),nt=len(wtab),dn=len(dz),wn=len(wz),init=[[new[i],v] for i,v in net.init.items()],
-            bank_init=[],dbg=dict(y=new[nid(g.yr)],wr=new[nid(g.wr)],kn=new[nid(g.kn['CAP'])],ac=new[nid(g.ac[3])]),I=I,halt=new[nid(g.done)],K=g.K)
-        raw=b''.join([ist.tobytes(),np.array(isr,dtype=np.int32).tobytes(),np.array([wix[w] for w in iww],dtype=np.uint16).tobytes(),np.array(c['act'],dtype=np.uint8).tobytes(),np.array(c['bias'],dtype=np.float64).tobytes(),ost.tobytes(),dz,wz,np.array(c['lstart'],dtype=np.int32).tobytes(),np.array(pr,dtype=np.int32).tobytes(),np.array(wtab,dtype=np.float64).tobytes()])
-        h=json.dumps(hdr,separators=(',',':')).encode()
-        blob=struct.pack('<I',len(h))+h+b'\0'*((4-(len(h)+4)%4)%4)+raw
-        gz=gzip.compress(blob,6); open(path,'wb').write(gz)
-        return dict(neurons=n,synapses=len(dst),lazy=len(isr),weights=len(dst)+len(isr),uniq=len(wtab),raw=len(blob),gz=len(gz),layers=c['L'],groups={k:len(v) for k,v in net.groups.items()},**g.stats,nup=g.nup,ndn=g.ndn,nbank=g.nbank)
-ASCII=list(range(32,127))
-ALLFACES=lambda fi:[(fi,b,i) for b in (0,1) for i in (0,1)]
-
-def cache_blit_net(W,H,path):
-    """The cache hit path as a real network: a tag read, a block read of stored coverage, and the patch port.
-    Tag table at bank cell TAG+key. A zero tag is a miss, which would start the generator above."""
-    import json,struct,gzip,numpy as np
-    net=Net(); key=net.input(); go=net.input(); px=net.input(); py=net.input()
-    tagv=net.input(); cov=[net.reg() for _ in range(W*H)]   # read port output cells, consecutive
-    xr=net.reg(); yr=net.reg(); net.rec(xr,net.gate(px,go)); net.rec(yr,net.gate(py,go))
-    x2=net.reg(); y2=net.reg(); net.rec(x2,net.gate(xr,net.step(tagv))); net.rec(y2,net.gate(yr,net.step(tagv)))
-    hit=net.step(tagv); hit2=net.reg(); net.rec(hit2,hit)
-    d=[net.wire() for _ in range(4*W*H)]
-    for i in range(W*H):
-        m=net.step(cov[i]); c=cov[i]
-        for k in range(3): net.connect(d[4*i+k],(m-c)*255)
-        net.connect(d[4*i+3],m)
-    pen=net.wire(); net.connect(pen,hit2); done=net.step(hit2)
-    # neurons read only by ports or the host must not become pull neurons
-    net.keep=[next(iter(x.t)) for x in d+[pen,done,hit]]
-    c=net.compile(); new=c['new']; nid=lambda x:next(iter(x.t))
-    n=c['n']; pr=[2,new[nid(go)],new[nid(key)],new[nid(tagv)],1,-1, 2,new[nid(hit)],new[nid(tagv)],new[nid(cov[0])],W*H,-1, 4,new[nid(pen)],new[nid(x2)],new[nid(y2)],new[nid(d[0])],W,H,-1,-1]
-    ost=np.zeros(n+1,dtype=np.int32);dst=[];ww=[];ist=np.zeros(n+1,dtype=np.int32);isr=[];iww=[]
-    for i in range(n):
-        o=sorted(c['out'][i]);ost[i+1]=len(o);p=0
-        for t,w in o:dst.append(t-p);p=t;ww.append(w)
-        ist[i+1]=len(c['lazy'][i])
-        for j,w in c['lazy'][i]:isr.append(j);iww.append(w)
-    wt=sorted(set(ww)|set(iww));wx={w:k for k,w in enumerate(wt)}
-    def pack(v,b):
-        o=bytearray()
-        for x in v:
-            if x<255:o.append(x)
-            else:o.append(255);o+=int(x).to_bytes(b,'little')
-        return bytes(o)
-    dz=pack(dst,4);wz=pack([wx[w] for w in ww],2)
-    hdr=dict(n=n,e=len(dst),L=c['L'],nports=len(pr),bank=4000000,ni=len(isr),nt=len(wt),dn=len(dz),wn=len(wz),init=[[new[i],v] for i,v in net.init.items()],key=new[nid(key)],go=new[nid(go)],px=new[nid(px)],py=new[nid(py)],halt=new[nid(done)])
-    raw=b''.join([ist.tobytes(),np.array(isr,dtype=np.int32).tobytes(),np.array([wx[w] for w in iww],dtype=np.uint16).tobytes(),np.array(c['act'],dtype=np.uint8).tobytes(),np.array(c['bias'],dtype=np.float64).tobytes(),ost.tobytes(),dz,wz,np.array(c['lstart'],dtype=np.int32).tobytes(),np.array(pr,dtype=np.int32).tobytes(),np.array(wt,dtype=np.float64).tobytes()])
-    h=json.dumps(hdr,separators=(',',':')).encode()
-    open(path,'wb').write(gzip.compress(struct.pack('<I',len(h))+h+b'\0'*((4-(len(h)+4)%4)%4)+raw,6))
+            net.connect(sl_[sg][P['sl'][i]],net.relu(ex+en_of[i]*M-M))
+        g.stats['edges']+=len(E); g.stats['knots']+=len(keys); g.stats['programs']+=1; g.stats['accent_programs']+=1 if accp else 0
+GAMMA_K=(1.32,0.35,0.09,0.06)
+GRIDW=(136,68,34,17,5)
+def gridbits(v):
+    assert v%17 in (0,5),v
+    return [(v//17>>(3-i))&1 for i in range(4)]+[1 if v%17==5 else 0]
+class _TagRead:
+    def __init__(s,en,addr,out,base,n): s.a=(en,addr,out,base,n)
+    def rec(s,nm): e,a,o,b,n=s.a; return [10,e,a,o,b,-1,1,n-1]
+class _RowRead:
+    def __init__(s,en,addr,out,cells,ln): s.a=(en,addr,out,cells,ln)
+    def rec(s,nm): e,a,o,c,l=s.a; return [2,e,a,o,c,l]
+class _Write:
+    def __init__(s,en,addr,data,cells,ln=None): s.a=(en,addr,data,cells,ln)
+    def rec(s,nm): e,a,d,c,l=s.a; return [1,e,a,d,c,l]

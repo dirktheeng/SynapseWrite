@@ -1,13 +1,13 @@
 """Writes the application network. Python here only computes weights at build time."""
 import json,struct,gzip,sys,time
 from nn import *
-import rom,docx_tpl
+import rom,docx_tpl,glyphnet
 net=Net(); fsm=FSM(net); on=fsm.on; ONE=net.ONE; G_=net.gate
 # ---- memory map (one passive tensor store) ----
 # Bank map. Low cells: PT 0, VL 20000, Q 21000, RPL 21200, HD 21400, HIT 22000, TGW 23300, SECB 23400, NUMT 25000, STY0 26000, TBL 30000, MKT 32000,
 # STY 40000, deflate hash 50000, mail merge 60000 and 100000, FNB 500000, XR 900000, ZT 1000000, HFB, FORD, FORD2, RIDB, PDFN up to 1020000, CB 1400000, CB2 1600000, slots 2000000.
 # High cells: undo 14500000, OUTB 20000000, IMG0 24000000, SAVEB 32000000 and everything from OUTP up only matters while reading, so a large save may run over it.
-PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; BANK=61000000; SAVEB=32000000; OUTP=40000000; PNGB=46000000; AUXB=50000000; RELB=51000000; CMB=51200000; FILE=53000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000
+PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; SAVEB=32000000; OUTP=40000000; PNGB=46000000; AUXB=50000000; RELB=51000000; CMB=51200000; FILE=53000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000; TAGB=61000000; GSTORE=61500000; GSTORE_END=63000000; BANK=63000000
 LEN,DIRTY,ALIGN,LIST,NLINES,WORDS,ENDY,PBRK=2048,2049,2050,2051,2052,2053,2054,2055; SAVE=2056; LINES=2064; IMF=3670; CMTL=3699; CMT=3700; FNS=3690; FNL=3692
 # Slot cells from 3670: IMF 3670-3672, META 3673-3680, RBOT 3681-3682, FNHT 3683, IMN 3684-3686, FNS 3690-3692, paragraph properties 3693-3698, CMTL 3699, comment text 3700-4095.
 META=3673; CWO,CXO,CSH,SECN,TOCF,TSRC,TPG,SSI=[META+i_ for i_ in range(8)]; RBOT=3681; FNHT=3683; ZT=1000000; HFB=1010000; FORD=1012000; FORD2=1014000; RIDB=1016000; FNB=500000; FNMAX=1500; HIT=22000; TGW=23300; SECB=23400
@@ -19,10 +19,6 @@ STY=40000; STY0=26000; STYN=48; NUMT=25000; MKT=32000; SCR=SLOTMAX; DEFREC=198; 
 # ---- screen geometry ----
 DOCY,DOCB=174,776; VH=DOCB-DOCY; PX=223; TX=319; TW=624; PH=1056; PST=1072; YB=4096
 from app_pal import F as PAL_F,B as PAL_B,HL_NAMES
-GRID=(136,68,34,17,5)   # every channel of every palette color is a sum of these bit weights
-def gridbits(v):
-    assert v%17 in (0,5),v
-    return [(v//17>>(3-i))&1 for i in range(4)]+[1 if v%17==5 else 0]
 # ---- ports ----
 class RPort:
     def __init__(s,cells,varlen=False):
@@ -75,6 +71,13 @@ class PixPort:
 class PatchPort:
     def __init__(s,en,x,y,data,w,h): s.a=(en,x,y,data,w,h); net.ports.append(s)
     def rec(s,nm): e,x,y,d,w,h=s.a; return [4,e,x,y,d,w,h,clip0,clip1]
+class SpritePort(PatchPort):
+    "A patch write with no clip: it always covers the whole screen."
+    def rec(s,nm): e,x,y,d,w,h=s.a; return [4,e,x,y,d,w,h,ZERO_R,ZERO_R]
+class CallPort:
+    "Runs the other clock domain until its done neuron fires. This domain is stopped meanwhile."
+    def __init__(s,en,done,args,rets=()): s.en=en;s.done=done;s.args=args;s.rets=rets;net.ports.append(s)
+    def rec(s,nm): return [8,s.en,s.done,s.args,s.rets]
 class BlitPort:
     "Copies a block of screen colors to the bank or back, leaving the id plane alone: {7,en,x,y,addr,dir,w,h}."
     def __init__(s,addr,dir_,w,h):
@@ -82,7 +85,7 @@ class BlitPort:
     def drive(s,c,v):
         s.b[0].lin(c); s.b[1].lin(net.gate(as_x(v[0])+64,c)-c*64); s.b[2].lin(net.gate(as_x(v[1])+64,c)-c*64)
     def rec(s,nm): return [7]+[b.w for b in s.b]+list(s.k)
-clip0=net.reg(); clip1=net.reg()
+clip0=net.reg(); clip1=net.reg(); ZERO_R=net.reg()
 rb=RPort(1100,True); wb=WPort(1100,rb.out[0],True)   # block copy through 1100 neurons
 rc=RPort(2); rf=RPort(3); r1=RPort(1); r2=RPort(1); rl=RPort(8); rlog=RPort(6); rp6=RPort(6)
 w1=WPort(1);w2=WPort(1);w3=WPort(1);w4=WPort(1);wlog=WPort(6);wvl=WPort(6);wln=WPort(6)
@@ -128,7 +131,7 @@ def chartree(root,bits,k,idxs,leaf):
         if any(i_ in S_ for i_ in range(lo,mid)): walk(tnode(node,bits[k_],True),lo,k_-1)
         if any(i_ in S_ for i_ in range(mid,mid+(1<<k_))): walk(tnode(node,bits[k_]),mid,k_-1)
     walk(root,0,k)
-adv=net.wire();asc=net.wire();asc_e=net.wire();lh=net.wire();small=net.wire();rise=net.wire();strk=net.wire()
+adv=net.wire();asc=net.wire();asc_e=net.wire();lh=net.wire();rise=net.wire();strk=net.wire()
 # superscript and subscript draw a smaller compiled size; the line keeps the nominal metrics
 def script_size(i):
     px=rom.PTS[i]*0.72
@@ -143,59 +146,7 @@ for si,h in enumerate(raw_hot):
     net.connect(rise,net.and_(h,SD['sup'])*round(px*0.36)); net.connect(rise,net.and_(h,SD['sub'])*(-round(px*0.16)))
 for si,h in enumerate(size_hot):
     a,l=rom.metrics(si); net.connect(asc_e,h*a)
-    if rom.small(si): net.connect(small,h)
-SW,SH,LW,LH=rom.SW,rom.SH,rom.LW,rom.LH
-fastw=net.and_(g_draw.w,small,fg[0].w,bg[0].w)
-fastsel=net.and_(g_draw.w,small,fg[0].w,bg[1].w)
-net.group('glyph patch')
-SQUIG=129     # code with no character: one period of the spelling squiggle
-PROG={}; _used=[set(),set()]
-FACES=[(fi,bo,it) for fi in range(2) for bo in range(2) for it in range(2)]
-t0=time.time()
-for f_ in FACES:
-    for si in range(NS):
-        pr_=rom.face_program(*f_,si)
-        if f_==(0,0,0) and si==9: pr_=pr_+[[[SQUIG],[(2,1,15),(3,0,15),(4,1,15),(5,2,15)]]]
-        PROG[f_+(si,)]=pr_
-        for _c,pts in pr_: _used[rom.small(si)].update((x_,y_) for x_,y_,_q in pts)
-print('glyph render',time.time()-t0,'s',file=sys.stderr)
-def colorlines(pal,buses):
-    "One line per channel bit; a line is on when the selected palette entry has that bit."
-    out=[]
-    for k in range(3):
-        for b_ in range(4):
-            e_=X()
-            for col,bus in zip(pal,buses):
-                if gridbits(col[k])[b_]: e_=e_+bus.w
-            if e_.t: out.append((k,GRID[b_],net.step(e_)))
-    return out
-_fgl=colorlines(PAL_F,fg); _bgl=colorlines(PAL_B,bg)
-def plane(w,h,used,fastsel_):
-    """One coverage layer per patch. An ink pixel enables its colour neurons, which read the
-    colour bit lines lazily. Black on white needs no colour neurons at all. Pixels no glyph
-    ever covers have no neurons except the output cells the patch port reads."""
-    cov={};data=[net.wire() for _ in range(4*w*h)]
-    nonw=ONE-fastw
-    for y_ in range(h):
-      for x_ in range(w):
-        if (x_,y_) not in used: continue
-        i=y_*w+x_; c=net.wire(); cov[i]=c; m=net.step(c)
-        o=[(m-c)*255]*3
-        nw=net.step(m*M-M+nonw-0.5)
-        slow=nw
-        if fastsel_:
-            sl=net.step(nw*M-M+fastsel-0.5); slow=net.step(nw*M-M+(ONE-fastsel)-0.5)
-            cs=net.relu(sl*M-M+m-c)
-            for k in range(3): o[k]=o[k]+cs*(PAL_B[1][k]-255)
-        ic=net.relu(slow*M-M+m-c)
-        for k in range(3): o[k]=o[k]-ic*255
-        for k,wt,ln in _fgl: o[k]=o[k]+net.relu(slow*M-M+c+ln-1)*wt
-        for k,wt,ln in _bgl: o[k]=o[k]+net.relu(slow*M-M+m-c+ln-1)*wt
-        for k in range(3): net.connect(data[4*i+k],o[k])
-        net.connect(data[4*i+3],m)
-    return cov,data
-cov_s,dat_s=plane(SW,SH,_used[1],True); cov_l,dat_l=plane(LW,LH,_used[0],False)
-on_s=net.and_(g_draw.w,small); on_l=net.and_(g_draw.w,ONE-small)
+GLW=rom.GLW; FACES=rom.FACES; SQUIG=129     # code with no character: one period of the spelling squiggle
 # metrics: one tree per face gives the advance in ems, then the drawn size scales it. No ink is touched.
 net.group('glyph metrics')
 t0=time.time()
@@ -236,38 +187,27 @@ for si,h in enumerate(size_hot):
     px=round(rom.PTS[si]*96/72); h_k=tnode(h,kanyb)
     net.connect(kern,net.gate(k1*px,h_k)-h_k*px)
 print('metric trees',time.time()-t0,'s',len(KP),'kern pairs',file=sys.stderr)
-# ink: a tree per drawn size and face, entered only when drawing. An accented letter fires its base
-# letter's group and a shared delta group.
-net.group('glyph weights (font outlines)')
-t0=time.time()
-for si in range(NS):
-  sd_=tnode(size_hot[si],g_draw.w)
-  cv=cov_s if rom.small(si) else cov_l; w_=SW if rom.small(si) else LW
-  f0,f1=tsplit(sd_,SD['font'])
-  for fi,fn_ in enumerate((f0,f1)):
-    b0,b1=tsplit(fn_,SD['bold'])
-    for bo,bn_ in enumerate((b0,b1)):
-      i0,i1=tsplit(bn_,SD['ital'])
-      for it,fh in enumerate((i0,i1)):
-        prog=PROG[fi,bo,it,si]; lv={}
-        codes=set(c_-32 for cl_,_p in prog for c_ in cl_)
-        def _il(G,ix,lv=lv): lv[ix]=G
-        chartree(tnode(fh,_chok),_chbits,7,codes,_il)
-        for cl_,pts in prog:
-            if len(cl_)==1: g_=lv[cl_[0]-32]
-            else: g_=net.step(sum((lv[c_-32] for c_ in cl_),X())-0.5)
-            for x_,y_,q in pts: net.connect(cv[y_*w_+x_],g_*(q/15.0))
-print('glyph weights',time.time()-t0,'s',file=sys.stderr)
+# the drawing unit: its own clock domain, entered through a call port, so the paint state stalls while it runs
+net.group('glyph unit')
+exec(open('ptr_shapes.py').read())
+_sq=_layer([".K..","K.K.","...K"],0,rom.metrics(9)[0],'K')
+_pseudo={0:{SQUIG:(_sq,True)},len(FACES):PTR_GLYPHS}
+glyph_unit=glyphnet.GlyphUnit(net,FACES,rom.CODES,_pseudo,GLW,TAGB,GSTORE,GSTORE_END,(clip0,clip1),PAL_F,PAL_B,ONE,PatchPort,SpritePort)
+_A=glyph_unit.A
+_face=net.wire(); _sz=net.wire(); _ppem=net.wire(); _pt=net.wire(); _fg=net.wire(); _bg=net.wire(); _base=net.wire(); g_nc=Bus(net); g_fx=Bus(net)
+for f_ in FACES: net.connect(_face,FH[f_]*FACES.index(f_))
+net.connect(_face,g_fx.w)
+for si,h in enumerate(size_hot):
+    px=round(rom.PTS[si]*96/72); net.connect(_sz,h*si); net.connect(_ppem,h*px); net.connect(_pt,h*rom.PTS[si])
+for j,b_ in enumerate(fg): net.connect(_fg,b_.w*(j+1))
+for j,b_ in enumerate(bg): net.connect(_bg,b_.w*(j+1))
+net.connect(_base,g_y.w+asc_e)
+GCALL=CallPort(net.step(g_draw.w),glyph_unit.fin,[(net.step(g_draw.w),_A['go']),(g_ch.w,_A['ch']),(_face,_A['face']),(_sz,_A['sz']),(_ppem,_A['ppem']),(_pt,_A['pt']),(g_x.w,_A['x']),(_base,_A['y']),(_fg,_A['fg']),(_bg,_A['bg']),(g_nc.w,_A['nc'])])
 class GlyPort:
     def drive(s,c,v):
         ch,st,x,y,f,b=v; g_en.lin(c); g_ch.add(c,ch); g_st.add(c,st); g_x.add(c,x); g_y.add(c,as_x(y)+YB); g_draw.lin(c)
         fg[f].lin(c) if isinstance(f,int) else None; bg[b].lin(c) if isinstance(b,int) else None
 gly=GlyPort()
-gx=g_x.w-2; gy=g_y.w
-for en,d,w,h in ((on_s,dat_s,SW,SH),(on_l,dat_l,LW,LH)):
-    px_=net.wire();py_=net.wire();net.connect(px_,net.gate(gx+2,en)-en*2);net.connect(py_,net.gate(gy,en))
-    # neurons in a patch are consecutive after compile by port remap
-    PatchPort(net.step(en),px_,py_,d,w,h)
 net.group('core')
 # ---- control registers ----
 R=net.reg
@@ -1036,13 +976,14 @@ def nid(x):
     return x
 wvl_data=[wlog,wln,wvl,w1,w2,w3,w4,fw,fw2,wo,imw,wl_i,xw,wplg,wht]+T3_WPORTS
 for p in wvl_data: net.aligned.append([nid(b.w) for b in p.d])
-for b in (dat_s,dat_l,dat_p): net.aligned.append([nid(w_) for w_ in b])
 net.keep=[nid(q) for q in (halt.w,timer.w,clipout.w,saveout.w,outbase.w,pdfout.w,picout.w,openout.w,wantp.w,ev_kind,ev_a,ev_b,ev_c,ev_t)]
 for p in net.ports:
     for q in p.rec(None)[1:]:
         if isinstance(q,X): net.keep.append(nid(q))
         elif isinstance(q,int): pass
     if isinstance(p,PatchPort): net.keep+=[nid(q) for q in p.a[:3]]
+    if isinstance(p,CallPort):
+        net.keep.append(nid(p.en)); net.keep.append(nid(p.done)); net.keep+=[nid(q) for q,_d in p.args]
     if isinstance(p,(RPort,PixPort)): net.keep+=[nid(q) for q in p.out]
 c=net.compile(); new=c['new']
 gn_=[''] *c['n']
@@ -1055,9 +996,13 @@ print('named regs in AND inputs',sorted(names[new[j]] for j in net.bool_regs_see
 json.dump(names,open('../build/names.json','w'))
 json.dump({str(new[next(iter(r_.t))]):k_ for k_,(r_,_) in fsm.states.items()},open('../build/states.json','w'))
 pr=[]
-for p in net.ports:
+_ports=[p for p in net.ports if not getattr(p,'dom',0)]+[None]+[p for p in net.ports if getattr(p,'dom',0)]
+for p in _ports:
+    if p is None: pr+=[9]; continue
     r=p.rec(None)
-    if r[0] in (1,2):
+    if r[0]==8: pr+=[8,new[nid(r[1])],new[nid(r[2])],len(r[3]),len(r[4])]+[new[nid(q)] for a_ in list(r[3])+list(r[4]) for q in a_]
+    elif r[0]==10: pr+=[10,new[nid(r[1])],new[nid(r[2])],new[nid(r[3])]]+list(r[4:])
+    elif r[0] in (1,2):
         d=r[3]
         pr+=[r[0],new[nid(r[1])],new[nid(r[2])],new[nid(d)],r[4],new[nid(r[5])] if r[5] is not None else -1]
     elif r[0]==3: pr+=[3]+[new[nid(q)] for q in r[1:]]
@@ -1086,8 +1031,8 @@ def _pack(vals,big):      # small values one byte, others an escape then fixed w
         else: o.append(255); o+=int(v_).to_bytes(big,'little')
     return bytes(o)
 _dz=_pack(dst,4); _wz=_pack([wix[w_] for w_ in ww_],2)
-hdr=dict(fmax=BANK-FILE,outbase=new[nid(outbase.w)],dn=len(_dz),wn=len(_wz),pdfout=new[nid(pdfout.w)],ni=len(isr),nt=len(wtab),wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,e=len(dst),L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
- ev=[new[nid(q)] for q in (ev_kind,ev_a,ev_b,ev_c,ev_t)],cb=CB,cb2=CB2,init=[[new[i],v] for i,v in net.init.items()],
+hdr=dict(fmax=TAGB-FILE,outbase=new[nid(outbase.w)],dn=len(_dz),wn=len(_wz),pdfout=new[nid(pdfout.w)],ni=len(isr),nt=len(wtab),wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,e=len(dst),L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
+ ev=[new[nid(q)] for q in (ev_kind,ev_a,ev_b,ev_c,ev_t)],cb=CB,cb2=CB2,n1=c['n1'],init=[[new[i],v] for i,v in net.init.items() if not net.dom[i]],init1=[[new[i],v] for i,v in net.init.items() if net.dom[i]],
  bank_init=[*[[SECB+i_,v_] for i_,v_ in enumerate((1,816,PH,PX,TX,TW,96,864))],[LEN+SLOT0,0],[DIRTY+SLOT0,1],[PT,SLOT0],[SLOT0+SAVE,112],[SLOT0+SAVE+1,16],[SLOT0+SAVE+2,1],[SLOT0+PSPA,DEFSPA]]+T2_ROM)
 import os
 dd=np.array(dst,dtype=np.int32)
@@ -1095,6 +1040,10 @@ raw=b''.join([ist.tobytes(),np.array(isr,dtype=np.int32).tobytes(),np.array([wix
 h=json.dumps(hdr,separators=(',',':')).encode()
 blob=struct.pack('<I',len(h))+h+b'\0'*((4-(len(h)+4)%4)%4)+raw
 gz=gzip.compress(blob,9)
+if os.environ.get('NETSTAT'):
+    secs=dict(ist=ist.tobytes(),isr=np.array(isr,dtype=np.int32).tobytes(),iw=np.array([wix[w_] for w_ in iww],dtype=np.uint16).tobytes(),act=np.array(c['act'],dtype=np.uint8).tobytes(),bias=np.array(c['bias'],dtype=np.float64).tobytes(),ost=ost.tobytes(),dz=_dz,wz=_wz,pr=np.array(pr,dtype=np.int32).tobytes(),wt=np.array(wtab,dtype=np.float64).tobytes(),hdr=h)
+    print({k:(len(v),len(gzip.compress(v,6))) for k,v in secs.items()},file=sys.stderr)
+    import pickle; pickle.dump(dict(ist=ist,isr=isr,iww=iww,act=c['act'],bias=c['bias'],ost=ost,dst=dst,ww=ww_,n=n,new=new,groups={k:[new[i] for i in v] for k,v in net.groups.items()}),open('/tmp/claude-0/net.pkl','wb'))
 open('../build/net.bin.gz','wb').write(gz)
 prov={k:len(v) for k,v in net.groups.items()}
 json.dump(dict(neurons=n,edges=len(dst),layers=c['L'],groups=prov,states=len(fsm.states)),open('../build/provenance.json','w'),indent=1)
