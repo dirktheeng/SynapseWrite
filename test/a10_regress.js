@@ -36,8 +36,10 @@ require('./load')().then(({e,h,bank})=>{
  if(saved){const p=(OUT||'.')+'/tmp_open.docx';fs.writeFileSync(p,saved);step('open',()=>F(9,p));step('resave',()=>save('c.docx'));step('pdf2',()=>pdf('b.pdf'));}
  step('open_lo',()=>F(9,FX+'/lo.docx'));
  step('save_lo',()=>save('d.docx'));
+ if(fs.existsSync(FX+'/foreign.docx')){step('open_fg',()=>F(9,FX+'/foreign.docx'));step('save_fg',()=>save('f.docx'));}
  step('merge_src',()=>{C(80,47);K(97,1);K(127);T('Hello {Name}, from {City}!');K(13);});
- step('merge',()=>{REF();C(299,76);P('Name,City\nAnn,"Rome, IT"\nBob,Oslo\n');HOME();});
+ step('banner',()=>{REF();C(299,76);});
+ step('merge',()=>{P('Name,City\nAnn,"Rome, IT"\nBob,Oslo\n');HOME();});
  step('save_merge',()=>save('e.docx'));
  for(const l of lines)console.log(l);console.log('total ticks',totT,'edges',totE,'mem',e.memory.buffer.byteLength);
 }).catch(x=>console.log(x.stack));

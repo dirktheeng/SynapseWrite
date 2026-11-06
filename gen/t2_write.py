@@ -86,19 +86,11 @@ for j,c_ in enumerate(crcr):
     if j<16: crcL=crcL+c_*(1<<j)
     else: crcH=crcH+c_*(1<<(j-16))
 cfL=R();cfH=R();dsize=R()
-def le_bytes(val,en,n=4):
-    bt=net.bits(val,8*n,en)
-    return [sum((bt[8*k+i]*(1<<i) for i in range(8)),X()) for k in range(n)]
-def crc_b(ix,en):
-    return le_bytes(cfL if ix<2 else cfH,en,2)[ix%2]
-# subroutine: write crc and both sizes at t2pa
-vals=[('c',i) for i in range(4)]+[('s',i) for i in range(4)]+[('u',i) for i in range(4)]
-cur_='T2Q'
-for n_,(kd,ix) in enumerate(vals):
-    ee2=S(cur_); bv_=crc_b(ix,ee2) if kd=='c' else le_bytes(dsize if kd=='s' else usize,ee2)[ix]
-    nx_=f'T2Q{n_}'
-    on(cur_,(None,nx_,{fw2:(t2pa+n_,bv_)})); cur_=nx_
-on(cur_,(None,'T2SR',None))
+# subroutine: write crc and both sizes at t2pa, then put the write position back
+t2sf=R();t2sb=R()
+on('T2Q',(None,'T2Q0',{t2sf:fp,t2sb:embase,fp:t2pa-SAVEB,embase:SAVEB}))
+lefield('T2Q0',cfL+cfH*65536,4,'T2Q1'); lefield('T2Q1',dsize,4,'T2Q2'); lefield('T2Q2',usize,4,'T2Q3')
+on('T2Q3',(None,'T2SR',{fp:t2sf,embase:t2sb}))
 fsm.set(pi,S('SAVE'),0); fsm.set(t2run,S('SAVE'),0); fsm.set(t2pk,S('SAVE'),0)
 e=S('SVP'); on('SVP',(net.ge(pi,npar,e),'T3_SVE',None),(net.ge(fp,3900000,e),'T3_SVE',None),(None,'SVa',{r1:as_x(PT)+pi}))
 on('SVa',(None,'SVm',{pbs:R1,rl:R1+LEN,rp6:R1+PIND,rc:R1+2062,rmeta:R1+META,rim:R1+IMF}))

@@ -13,3 +13,8 @@ Baseline: total ticks 4,676,921, edges 1,166,866,562. save 426,728 ticks 135.8M 
 3. Spell automaton as a memory table, walked one read per letter, instead of a neuron per node and per edge.
 4. Window comparator as a threshold bank over packed words instead of three neurons per pattern char.
 5. Little endian field writer, lookup tables for inflate, deflate and color.
+
+## Log
+- Literal ROM, numbers, spell, comparator each passed the hash regression (PDF compared with the embedded fonts masked: pdf_fonts.py subsets carry the build time, so two builds differ there regardless).
+- Field writer first failed: the big endian shift used a weight of 2^39 on bit 31, which nn.compile treats as a gate enable, and low bytes were lost. The regression hashes caught it. Fixed with an intermediate gate. Worth knowing for anyone writing large weights.
+- CO0 threshold bank: a 31 input step pushes (over PULLMAX), making the whole bank push. Using the sum directly keeps it lazy.

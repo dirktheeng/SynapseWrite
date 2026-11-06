@@ -290,29 +290,17 @@ on('T3_CD2',(None,'T3_CD3',{zhdr:RL[0],znl:RL[1],zL:RL[2],zH:RL[3],zs:RL[4],zu:R
 lit('T3_CD3',struct.pack('<IHHH',0x02014b50,20,20,0),'T3_CDm0')
 e=S('T3_CDm0'); em_en.lin(e); em_b.add(e,zmt); on('T3_CDm0',(None,'T3_CDm1',None))
 lit('T3_CDm1',struct.pack('<BHH',0,0,0x21),'T3_CDb0')
-cur_='T3_CDb0'
-for i_ in range(4):
-    nx_=f'T3_CDb{i_+1}'; e=S(cur_); em_en.lin(e); em_b.add(e,le_bytes(zL if i_<2 else zH,e,2)[i_%2]); on(cur_,(None,nx_,None)); cur_=nx_
-for i_ in range(8):
-    nx_=f'T3_CDs{i_}'; e=S(cur_); em_en.lin(e); em_b.add(e,le_bytes(zs if i_<4 else zu,e)[i_%4]); on(cur_,(None,nx_,None)); cur_=nx_
-for i_ in range(2):
-    nx_=f'T3_CDn{i_}'; e=S(cur_); em_en.lin(e); em_b.add(e,le_bytes(znl,e,2)[i_]); on(cur_,(None,nx_,None)); cur_=nx_
-lit(cur_,b'\0'*12,'T3_CDo0')
-cur_='T3_CDo0'
-for i_ in range(4):
-    nx_=f'T3_CDo{i_+1}'; e=S(cur_); em_en.lin(e); em_b.add(e,le_bytes(zhdr,e)[i_]); on(cur_,(None,nx_,None)); cur_=nx_
+lefield('T3_CDb0',zL+zH*65536,4,'T3_CDs0'); lefield('T3_CDs0',zs,4,'T3_CDs1'); lefield('T3_CDs1',zu,4,'T3_CDn0'); lefield('T3_CDn0',znl,2,'T3_CDn1')
+lit('T3_CDn1',b'\0'*12,'T3_CDo0')
+lefield('T3_CDo0',zhdr,4,'T3_CDo4'); cur_='T3_CDo4'
 on(cur_,(None,'T3_CDm',{tq:0}))
 e=S('T3_CDm')
 on('T3_CDm',(net.ge(tq,znl,e),'T3_CD1',{zk2:zk2+1}),(None,'T3_CDm2',{r1:as_x(SAVEB)+zhdr+30+tq}))
 e=S('T3_CDm2'); em_en.lin(e); em_b.add(e,R1); on('T3_CDm2',(None,'T3_CDm',{tq:tq+1}))
 on('T3_EO0',(None,'T3_EO1',{zs:fp-cdoff}))
 lit('T3_EO1',struct.pack('<IHH',0x06054b50,0,0),'T3_EOc0')
-cur_='T3_EOc0'
-for i_ in range(4):
-    nx_=f'T3_EOc{i_+1}'; e=S(cur_); em_en.lin(e); em_b.add(e,le_bytes(znum,e,2)[i_%2]); on(cur_,(None,nx_,None)); cur_=nx_
-for i_ in range(8):
-    nx_=f'T3_EOd{i_}'; e=S(cur_); em_en.lin(e); em_b.add(e,le_bytes(zs if i_<4 else cdoff,e)[i_%4]); on(cur_,(None,nx_,None)); cur_=nx_
-lit(cur_,b'\0\0','T3_EOe')
+lefield('T3_EOc0',znum+znum*65536,4,'T3_EOd0'); lefield('T3_EOd0',zs,4,'T3_EOd1'); lefield('T3_EOd1',cdoff,4,'T3_EOd2')
+lit('T3_EOd2',b'\0\0','T3_EOe')
 on('T3_EOe',(None,'HALT',{savel:fp}))
 # ---- .docx reader additions ----
 aval=R();nmret=t3ret('T3_NMR')
@@ -472,17 +460,10 @@ for j,c_ in enumerate(crc2):
     if j<16: c2L=c2L+c_*(1<<j)
     else: c2H=c2H+c_*(1<<(j-16))
 c2fL=R();c2fH=R()
-def be_emit(st,val,nx,n=4):
-    cur=st
-    for i_ in reversed(range(n)):
-        nx_=f'{st}_{i_}' if i_ else nx
-        e=S(cur); em_en.lin(e); em_b.add(e,le_bytes(val,e,4)[i_]); on(cur,(None,nx_,None)); cur=nx_
+def be_emit(st,val,nx,n=4): befield(st,val,n,nx)
 def crc_emit(st,nx):
     on(st,(None,st+'a',{c2fL:as_x(65535)-c2L,c2fH:as_x(65535)-c2H}))
-    cur=st+'a'
-    for i_,(v_,b_) in enumerate(((c2fH,1),(c2fH,0),(c2fL,1),(c2fL,0))):
-        nx_=f'{st}b{i_}' if i_<3 else nx
-        e=S(cur); em_en.lin(e); em_b.add(e,le_bytes(v_,e,2)[b_]); on(cur,(None,nx_,None)); cur=nx_
+    befield(st+'a',c2fH*65536+c2fL,4,nx)
 # media member per picture paragraph
 on('T3_M0',(None,'T3_M1',{mq:0,simg:0}))
 e=S('T3_M1')
@@ -511,11 +492,7 @@ on('T3_GPb',(None,'T3_GPc',{mr_:0,as1:1,as2:0,rs_p:pio}))
 e=S('T3_GPc')
 on('T3_GPc',(net.ge(mr_,pih,e),'T3_GPz',None),(net.ge(mr_+1,pih,e),'T3_GPd1',None),(None,'T3_GPd0',None))
 lit('T3_GPd0',bytes([0]),'T3_GPe'); lit('T3_GPd1',bytes([1]),'T3_GPe')
-cur_='T3_GPe'
-for i_,exprs in enumerate(('l0','l1','n0','n1')):
-    nx_=f'T3_GPf{i_}'; e=S(cur_)
-    vv=le_bytes(rw_b,e,2) if exprs[0]=='l' else le_bytes(as_x(65535)-rw_b,e,2)
-    em_en.lin(e); em_b.add(e,vv[int(exprs[1])]); on(cur_,(None,nx_,None)); cur_=nx_
+lefield('T3_GPe',rw_b+(as_x(65535)-rw_b)*65536,4,'T3_GPf3'); cur_='T3_GPf3'
 def adl(e,b_):
     n1=as1+b_; o1=net.ge(n1,65521,e); v1=net.gate(n1,e)-o1*65521
     n2=as2+v1; o2=net.ge(n2,65521,e); v2=net.gate(n2,e)-o2*65521
