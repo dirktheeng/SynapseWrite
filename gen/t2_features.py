@@ -204,7 +204,7 @@ on('T2_ST0',(net.step(ONE-t2df),'T2_SW',{t2si:DEFREC,t2df:1,t2rr.r:t2rr.id('IMP_
 on('IMP_DD1',(None,'IMP_DD3',{r1:as_x(SCR)+PLSP}))
 on('IMP_DD3',(None,'T2_ST0b',{w1:(as_x(STY)+4,R1)}))
 t2chr=R()
-on('T2_ST0b',(None,'T2_ST',{t2skip:1,t2ido:0,t2chr:0,**{m_:0 for m_ in v4m}}))
+on('T2_ST0b',(None,'T2_ST',{t2skip:1,t2ido:0,t2chr:0,ics:(cs,ics.k,ics.n,ics.y),**{m_:0 for m_ in v4m}}))   # p2: a style's extended field starts empty
 on('T2_ST',(None,'T2_ST1',{rl:OA+oi}))
 e=S('T2_ST1')
 on('T2_ST1',(net.eq(W[0],62,e),'T2_ST2',None),(pat('w:type="',e),'T2_ST3',{rl:OA+oi+8}),(pat('w:styleI',e),'T2_ST',{t2ido:oi+11,oi:oi+11}),(None,'T2_ST',{oi:oi+1}))
@@ -226,7 +226,7 @@ on('T2_NA1',(None,'T2_NA2',{r1:OA+oi+t2jj}))
 e=S('T2_NA2'); on('T2_NA2',(net.or_(net.eq(R1,34,e),net.ge(t2jj,17,e)),'PX',{w1:(as_x(STY)+t2si*STYN+28+t2jj,0),oi:oi+t2jj}),(None,'T2_NA1',{w1:(as_x(STY)+t2si*STYN+28+t2jj,R1),t2jj:t2jj+1}))
 # save the scratch record into the table
 on('T2_SW',(None,'T2_SW1',{rl:as_x(SCR)+ALIGN,rp6:as_x(SCR)+PIND}))
-on('V4_SW2',(None,'T2RR',{w1:(as_x(STYX)+t2si*4+1,ics.n),w2:(as_x(STYX)+t2si*4+2,sum((v4m[b_]*(1<<b_) for b_ in range(9)),X()))}))
+on('V4_SW2',(None,'T2RR',{w3:(as_x(STYX)+t2si*4+3,ics.e[0]),w1:(as_x(STYX)+t2si*4+1,ics.n),w2:(as_x(STYX)+t2si*4+2,sum((v4m[b_]*(1<<b_) for b_ in range(9)),X()))}))
 on('T2_SW1',(None,'V4_SW2',{w4:(as_x(STYX)+t2si*4,ics.k),wln:(as_x(STY)+t2si*STYN,cs,rl.out[0],rp6.out[0],rp6.out[1],rp6.out[2],rp6.out[3]),w1:(as_x(STY)+t2si*STYN+6,rp6.out[4]),w2:(as_x(STY)+t2si*STYN+7,rl.out[1]),w3:(as_x(STY)+t2si*STYN+47,t2chr)}))
 on('T2_SC',(None,'PX',{t2skip:0}))
 # a run style reference: the run starts from the character style's properties
@@ -239,9 +239,9 @@ fsm.set(p2bo,S('T2_PS1'),1); fsm.set(p2bo,S('T2_PR'),0)   # p2: only a basedOn o
 on('T2_PS1',(None,'T2_FS',{t2i:0,t2jj:0,t2rr.r:t2rr.id('T2_PS2')}))
 on('T2_PS2',(t2fnd,'T2_AP',None),(None,'PX',None))
 on('T2_PR',(None,'T2_AP',{t2i:G_(a5ts,incell),a5ns:incell,a4rsn:0,a4inb:0,a4inr:0,wvl:(cb+A4K,0,0,0,a4rhc,0,0),wht:(cb+A4T,0,0,0,0,0,0)}))
-on('T2_AP',(None,'T2_AP1',{rl:as_x(STY)+t2i*STYN,r1:as_x(STYX)+t2i*4,r2:as_x(STYX)+t2i*4+1,rU:as_x(STYX)+t2i*4+2}))
+on('T2_AP',(None,'T2_AP1',{rl:as_x(STY)+t2i*STYN,r1:as_x(STYX)+t2i*4,r2:as_x(STYX)+t2i*4+1,rU:as_x(STYX)+t2i*4+2,rV:as_x(STYX)+t2i*4+3}))   # p2: the fourth cell is the style's extended field
 e=S('T2_AP1'); _p2bm=net.bits(rU.out[0],9,net.and_(e,p2bo))   # p2: a style based on a character style also takes the fields its base sets
-on('T2_AP1',(None,'PX',{**{m_:net.or_(m_,b_) for m_,b_ in zip(v4m,_p2bm)},t2il:0,t2ps:W[0],t2pK:R1,t2pN:R2,ics:(W[0],R1,R2,X()),w1:(cb+ALIGN,W[1]),w2:(cb+LIST,W[7]),a5ns:0,wln:(cb+PIND,W[2],W[3],W[4],W[5],W[6],G_(t2i,ONE-a5ns))}))
+on('T2_AP1',(None,'PX',{**{m_:net.or_(m_,b_) for m_,b_ in zip(v4m,_p2bm)},t2il:0,t2ps:W[0],t2pK:R1,t2pN:R2,p2pe:rV.out[0],ics:(W[0],R1,R2,X(),rV.out[0]),w1:(cb+ALIGN,W[1]),w2:(cb+LIST,W[7]),a5ns:0,wln:(cb+PIND,W[2],W[3],W[4],W[5],W[6],G_(t2i,ONE-a5ns))}))
 # PDF list markers, in the page's pixel coordinates
 e=S('T2_PM'); on('T2_PM',(net.and_(net.eq(qs,0,e),net.step(qk)),'T2_PMa',None),(None,'PD_R',None))
 lit('T2_PMa',b'BT /F0 15 Tf 0 0 0 rg 1 0 0 1 ','T2_PMb')

@@ -197,7 +197,7 @@ on('PX2',(net.ge(nextb,SLOTMAX,e),'T2_ZN',None),(net.and_(t2skip,ONE-pat('</w:st
  *F1_PX(e),
  (tag('<w:p',' >'),'PN1',{oi:oi+4}),
  (tag('<w:t',' >'),'TX0',{oi:oi+4}),
- (tag('<w:r',' >'),'PX',{ics:(t2ps,t2pK,t2pN,X(),X(),f1lb,X()),rnop:0,oi:oi+4}),
+ (tag('<w:r',' >'),'PX',{ics:(t2ps,t2pK,t2pN,X(),p2pe,f1lb,X()),rnop:0,oi:oi+4}),
  (tag('<w:b','/ '),'T2_TV',{t2k:0,oi:oi+4}),
  (tag('<w:i','/ '),'T2_TV',{t2k:1,oi:oi+4}),
  (tag('<w:u','/ '),'T2_TV',{t2k:2,oi:oi+4}),

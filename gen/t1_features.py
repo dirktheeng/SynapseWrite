@@ -225,7 +225,7 @@ mrules.append((mc(4,1),'RD0',{t1_fw:ONE-t1_fw,**CSTART,**CM}))
 for r_,v_ in enumerate((3,8,4)): mrules.append((mc(5,r_),'T3_SP0',{tsop:v_,**CM}))
 for r_ in range(4):
     mrules.append((mc(6,r_),'PA0',{pwalk:lo_p,pfld:PLSP,alv:r_ or 6,grp:grp+1,t1_lastk:0,**CM}));mrules.append((mc(8,r_),'PA0',{pwalk:lo_p,pfld:PLSP,alv:r_ or 6,grp:grp+1,t1_lastk:0,**CM}))
-for r_,(st_,a_) in enumerate((('CUT',{rv_rp:1}),('COPY',{rv_rp:1}),('HALT',{wpaste:1,rv_rp:1}),('SELALL',{}),('FMTS',{fm:1}),('FMTS',{fm:2}),('FMTS',{fm:3}),('RD0',{mode:1,field:0,qrep:1,**CSTART}),('V4_PR',{prk:7}))): mrules.append((mc(12,r_),st_,{**a_,**CM}))
+for r_,(st_,a_) in enumerate((('CUT',{rv_rp:1}),('COPY',{rv_rp:1}),('HALT',{wpaste:1,rv_rp:1}),('SELALL',{}),('FMTS',{fm:1}),('FMTS',{fm:2}),('FMTS',{fm:3}),('RD0',{mode:1,field:0,qrep:1,**CSTART}),('V4_PR',{prk:7}),('P2_CA0',{p2m:1}),('P2_CA0',{p2m:2}))): mrules.append((mc(12,r_),st_,{**a_,**CM}))
 mrules+=a4_mrules(mc,CM,e)+a4_mrules2(mc,CM,e)
 for r_ in range(8): mrules.append((mc(20,r_),'A6S_PK',{a6sr:r_,**CM}))
 for r_ in range(10): mrules.append((mc(13,r_),'V5_MP',{t2si:zso+r_,**CM}))

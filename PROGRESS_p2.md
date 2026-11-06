@@ -74,3 +74,8 @@ To make room for key rules (Ctrl+K, Word's Ctrl+Shift+A and Ctrl+Shift+K), repla
 
 ### Hyphenation: pattern table measured
 hyph-en-us (hyph-utf8, openly licensed): 4,953 patterns of letters and dots, a trie of 8,421 nodes. Laid out as the spell table is (27 next-node cells of 2 bytes per node, plus two 3 byte cells of the pattern's digits in base 6): 505,260 bytes raw, 36,769 gzipped. With identical subtrees merged (a pure function of the patterns, as the spell automaton does): 3,955 nodes, 237,300 bytes raw, 24,478 gzipped, about 32.6 KB in the page as base64. The page has about 38 KB left. Walker and line breaker integration not built.
+
+### Run properties row: paragraph styles, and All Caps and Small Caps commands
+Paragraph styles: STYX had a free fourth cell per style; it now holds the style's extended field (caps, small caps, double strike, hidden, spacing), written at the end of each style definition (reset at its start), inherited through basedOn (T2_AP), and given to each run of a paragraph of that style (p2pe at run start). Part pstyle 2/2: a Shout style with caps and a Quiet style based on it adding spacing 40 draw pixel equal to the same done directly, and the runs save with them.
+Commands: All Caps and Small Caps rows in the right-click menu, using the link walk with a mode (p2m) and Word's toggle rule (the first selected character decides). Bug on the way: I offset gated values by M, which defeats the gate (a closed gate passed the value); now a small offset. Part caps 5/5 (saved on the selected run only, reopen pixel identical, toggles off, undo).
+FLOPs: still below baseline on all events but mouse move (equal).

@@ -108,4 +108,26 @@ module.exports=async(ok,only)=>{
   A.type('X');A.settle();
   const x=part(A,'word/document.xml');{const t=x.replace(/<[^>]+>/g,'');ok('Ctrl+click on the link: typing lands at the bookmark, the link text is untouched',t.includes('jump there')&&t.includes('before Xtarget'),t.slice(0,80));}
  }
+
+ if(!only||only=='pstyle'){
+  // a paragraph style that sets caps, small caps or character spacing: its runs take them, as in Word
+  const sty=`<w:styles ${W}><w:docDefaults><w:rPrDefault><w:rPr><w:sz w:val="22"/></w:rPr></w:rPrDefault></w:docDefaults><w:style w:type="paragraph" w:styleId="Shout"><w:name w:val="Shout"/><w:rPr><w:caps/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Quiet"><w:name w:val="Quiet"/><w:basedOn w:val="Shout"/><w:rPr><w:spacing w:val="40"/></w:rPr></w:style></w:styles>`;
+  const P_=(st,t)=>`<w:p><w:pPr><w:pStyle w:val="${st}"/></w:pPr><w:r><w:t>${t}</w:t></w:r></w:p>`;
+  let A=await lib();A.file(9,doc(P_('Shout','make me big')+P_('Quiet','wide words'),{'word/styles.xml':sty}));A.settle();A.click(600,700);A.settle();A.shot('build/p2/pstyle.png');
+  let B=await lib();B.file(9,doc(P_('Shout','MAKE ME BIG')+`<w:p><w:pPr><w:pStyle w:val="Quiet"/></w:pPr><w:r><w:rPr><w:caps/><w:spacing w:val="40"/></w:rPr><w:t>wide words</w:t></w:r></w:p>`,{'word/styles.xml':sty.replace('<w:rPr><w:caps/></w:rPr>','').replace('<w:rPr><w:spacing w:val="40"/></w:rPr>','')}));B.settle();B.click(600,700);B.settle();B.shot('build/p2/pstyle_ref.png');
+  ok('a paragraph style with caps draws its runs in capitals, and a style based on it adds its spacing: pixel equal to direct formatting',A.hash(190,776)===B.hash(190,776));
+  const x=part(A,'word/document.xml');ok('saved runs carry the caps and spacing',/<w:caps\/>[^]*make me big/.test(x)&&/<w:spacing w:val="40"\/>[^]*wide words/.test(x),runs(x).join(' | ').slice(0,300));
+ }
+
+ if(!only||only=='caps'){
+  // All Caps and Small Caps from the right-click menu over a selection, toggled as Word does, with undo
+  const rmenu=(Z,x,y,row)=>{Z.move(x,y);Z.e.inject(Z.h.ev[5],16);Z.raw(3,x,y,9000000);Z.e.inject(Z.h.ev[5],16);Z.raw(4,x,y);Z.settle();Z.click(x+60,y+row*22+11);Z.settle();};
+  let A=await lib();A.type('see the site now');A.settle();A.key(132);for(let i=0;i<4;i++)A.key(130);for(let i=0;i<8;i++)A.key(130,2);A.settle();
+  rmenu(A,362,297,10);A.click(600,700);A.settle();A.shot('build/p2/smc_menu.png');
+  let x=part(A,'word/document.xml');{const rr=runs(x);ok('Small Caps from the menu: saved on the selected run only',rr.some(t=>/smallCaps/.test(t)&&/>the site</.test(t))&&rr.filter(t=>/smallCaps/.test(t)).every(t=>/>the site</.test(t)),rr.join(' | ').slice(0,300));}
+  let B=await lib();B.file(9,A.savedBytes());B.settle();B.click(600,700);B.settle();ok('the saved file reopens pixel identical',B.hash(190,776)===A.hash(190,776));
+  A.key(132);for(let i=0;i<4;i++)A.key(130);for(let i=0;i<8;i++)A.key(130,2);A.settle();rmenu(A,362,297,10);x=part(A,'word/document.xml');ok('Small Caps again takes it off',!/smallCaps/.test(x));
+  A.key(132);for(let i=0;i<4;i++)A.key(130);for(let i=0;i<8;i++)A.key(130,2);A.settle();rmenu(A,362,297,9);x=part(A,'word/document.xml');ok('All Caps from the menu: saved',/<w:caps\/>[^]*?the site/.test(x),runs(x).join(' | ').slice(0,200));
+  A.key(122,1);A.settle();x=part(A,'word/document.xml');ok('undo takes All Caps off',!/<w:caps\/>/.test(x));
+ }
 };

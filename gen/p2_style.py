@@ -33,7 +33,11 @@ net.group(_p2l)
 # printed as any link read from a file.
 _p2k=net.cur[0]; net.group('p2 insert link')
 _nid=net.min_(f1nl+1,F1N); _lb=as_x(F1LT)+p2nid*F1LS
-e=S('P2_LK0'); on('P2_LK0',(net.or_(ONE-has_sel,net.lt(prl,1,e)),'RD0',None),(None,'P2_LK1',{p2nid:_nid,f1nl:_nid,v4i:0,grp:grp+1,p2p:lo_p,p2o:lo_o}))
+e=S('P2_LK0'); on('P2_LK0',(net.or_(ONE-has_sel,net.lt(prl,1,e)),'RD0',None),(None,'P2_LK1',{p2nid:_nid,f1nl:_nid,v4i:0,grp:grp+1,p2p:lo_p,p2o:lo_o,p2m:0}))
+# All Caps and Small Caps from the right-click menu: the same walk sets or clears the extended field's bit; as Word toggles, the first selected character decides
+e=S('P2_CA0'); on('P2_CA0',(ONE-has_sel,'RD0',None),(None,'P2_CA1',{r1:as_x(PT)+lo_p,grp:grp+1,p2p:lo_p,p2o:lo_o}))
+on('P2_CA1',(None,'P2_CA2',{rs:R1+1024+lo_o}))
+e=S('P2_CA2'); _xb=net.bits(RSX,18,e); on('P2_CA2',(None,'P2_LK3',{p2w:ONE-G_(_xb[0],net.eq(p2m,1,e))-G_(_xb[1],net.eq(p2m,2,e))}))
 e=S('P2_LK1'); on('P2_LK1',(net.or_(net.ge(v4i,prl,e),net.ge(v4i,F1LS-3,e)),'P2_LK3',{w1:(_lb+1+v4i,0),w2:(_lb,1)}),(None,'P2_LK2',{r1:as_x(PRB)+v4i}))
 on('P2_LK2',(None,'P2_LK1',{w1:(_lb+1+v4i,R1),v4i:v4i+1}))
 on('P2_LK3',(None,'P2_LK4',{r1:as_x(PT)+p2p}))
@@ -43,8 +47,11 @@ e=S('P2_LK6'); on('P2_LK6',(net.ge(p2p*2048+p2o,Hi,e),'RD0',{lc:1}),(net.ge(p2o,
 e=S('P2_LK7'); fen.lin(e); fin.add(e,RSR); fcl.add(e,RSC)
 _hb=net.bits(RSH,20,e); _nh=as_x(RSH)-sum((_hb[k_]*(1<<k_) for k_ in range(12)),X())+p2nid
 _cr=PAL_F.index(PAL_F[15]); _craw=(_cr&1)*256+((_cr>>1)&1)*512+((_cr>>2)&1)*1024+((_cr>>3)&1)*131072+((_cr>>4)&1)*262144
-_nr=as_x(RSR)-FD['und']*64+64-FD['colraw']+_craw
-ic_en.lin(e); ic_val.add(e,_nr); ic_fb.add(e,RSC-FD['flags']); ic_k.add(e,X(c=0x0563C1+1)*1); ic_n.add(e,RSN); ic_y.add(e,RSY); [b_.add(e,v_) for b_,v_ in zip(ic_e,(RSX,_nh,RSZ))]
+_lm=net.eq(p2m,0,e); _cm=e-_lm; _xb=net.bits(RSX,18,_cm); 
+_nr=as_x(RSR)+G_(as_x(64)-FD['und']*64-FD['colraw']+_craw+(1<<22),_lm)-_lm*(1<<22)   # offset, as gates clamp
+ic_en.lin(e); ic_val.add(e,_nr); ic_fb.add(e,RSC-FD['flags']); ic_k.add(e,G_(as_x(0x0563C1+1),_lm)+G_(RSK,_cm)); ic_n.add(e,RSN); ic_y.add(e,RSY)
+_m1=net.eq(p2m,1,e); _m2=net.eq(p2m,2,e)
+[b_.add(e,v_) for b_,v_ in zip(ic_e,(as_x(RSX)+G_((as_x(p2w)-_xb[0])*X_CAPS+8,_m1)-_m1*8+G_((as_x(p2w)-_xb[1])*X_SMC+8,_m2)-_m2*8,G_(_nh,_lm)+G_(RSH,_cm),RSZ))]
 on('P2_LK7',(None,'P2_LK8',{p2old:RSC,p2fl:FD['flags']}))
 e=S('P2_LK8'); _wn=ROUT+p2fl; log(e,5,p2p,p2o,p2old,_wn)
 on('P2_LK8',(None,'P2_LK6',{w2:(p2b+1024+p2o,_wn),w3:(p2b+DIRTY,1),p2o:p2o+1}))

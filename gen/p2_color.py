@@ -6,3 +6,4 @@ e=S('P2_HLX'); _b=net.bits(ics.e[0],18,e); _old=sum((_b[k_]*(1<<k_) for k_ in ra
 on('P2_HLX',(None,'T2_C',{ics:(cs,ics.k,ics.n,ics.y,as_x(ics.e[0])-_old+p2xh*16384,ics.e[1],ics.e[2])}))
 e=S('T2RP'); _b=net.bits(ins_x,18,e); fsm.set(p2xh,e,sum((_b[k_]*(1<<(k_-14)) for k_ in range(14,18)),X()))
 net.group(_p2c)
+fsm.set(p2pe,S('OP0'),0)   # p2: no paragraph style's extended field carries into a new file

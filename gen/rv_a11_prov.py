@@ -62,7 +62,7 @@ PURPOSE={
  'p2 character style update':'Update on a character style: the caret format becomes its definition and is laid over every run of the style, with undo.',
  'p2 further highlights':'The eight further Word highlight values: read and written by name, stored in the extended field, drawn and printed as exact colors.',
  'p2 list restart':'Restart at 1 and Continue Numbering from the List Style menu: the caret item\'s restart flag, with undo.',
- 'p2 insert link':'Insert Link with Ctrl+K: a new external link entry and the selection relinked, underlined and blue, with undo.',
+ 'p2 insert link':'Insert Link from the right-click menu: a new external link entry and the selection relinked, underlined and blue, with undo; All Caps and Small Caps from the same menu.',
  'p2 follow link':'Ctrl+click on an internal link moves the caret to the bookmark it names.',
  'recent colors':'Recent colors: the last eight exact text colors, drawn under Color Picker and applied again with a click.',
  'column breaks':'Column breaks: typed with Ctrl+Shift+Enter, read and written as w:br of type column, laid out as a move to the second column.',
