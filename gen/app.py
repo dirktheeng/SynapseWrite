@@ -362,7 +362,7 @@ _rv_m=net.bits(evm,5,S('DISP')); fsm.set(rv_eol,net.or_(kh[2],kh[3],kh[8],kh[9],
 on('DISP',*PTR_DISP,(net.and_(kh[3],t1_mopb),'T1_MD',{hx_:eva,hy_:evb}),(net.and_(kh[3],_rv_m[4]),'RVA3_RC0',{hx_:eva,hy_:evb}),(net.and_(kh[2],t1_mopb),'T1_MK',None),(net.and_(kh[4],t1_tdrag),'RD0',{drag:0,t1_tdrag:0}),(kh[11],'T1_HV',{hx_:eva,hy_:evb}),(kh[1],'UI',{clip0:0,clip1:0}),(kh[2],'T2_KM',{shiftk:net.bits(evb,2,S('DISP'))[1]}),(kh[3],'MD',{hx_:eva,hy_:evb}),
    (kh[4],'T3_MU',{drag:0,v8dg:0}),(kh[5],'MV',None),(kh[6],'WH',None),(kh[7],'TM',{blink:ONE-blink,autos:0}),(kh[8],'PASTE',{}),(kh[9],'A12_OV0',{}),(kh[10],'PG_0',{}),(None,'HALT',None))
 on('IDL2',(None,'HALT',None))
-exec(open('imp5_wheel.py').read()); on('MV',(v8dg,'V8_HS0',V8DRAG),(t1_tdrag,'T1_TM0',None),(net.and_(S('MV'),net.step(tdk)),'T3_MV',None),(net.and_(S('MV'),drag),'MD2',{hx_:net.max_(net.min_(eva,zfx0(s_px+s_pw-2)),zfx0(s_px+1)),hy_:net.max_(net.min_(evb,DOCB-6),DOCY+6),shiftk:1}),(None,'HALT',None))
+exec(open('imp5_wheel.py').read()); exec(open('imp5_vr_md.py').read()); on('MV',(v8dg,'V8_HS0',V8DRAG),(t1_tdrag,'T1_TM0',None),(net.and_(S('MV'),net.step(tdk)),'T3_MV',None),(net.and_(S('MV'),drag),'MD2',{hx_:net.max_(net.min_(eva,zfx0(s_px+s_pw-2)),zfx0(s_px+1)),hy_:net.max_(net.min_(evb,DOCB-6),DOCY+6),shiftk:1}),(None,'HALT',None))
 _wi=net.and_(S('WH'),impf); _wn=S('WH')-_wi; on('WH',(net.and_(_wb5[0],net.gt(evc,1000,S('WH'))),'IMP3_ZO',None),(_wb5[0],'IMP3_ZI',None),*WH5,(None,'RD0',{scroll:net.relu(G_(impsc,_wi)+G_(scroll,_wn)+evc-1000),ytot:G_(impyt,_wi)+G_(ytot,_wn),autos:0,a7_jmp:0,impf:0}))   # ev_c carries delta+1000
 e=S('TM'); _a6stale=net.and_(a6hf,ONE-has_sel,ONE-drag,net.eq(mode,0,e),net.step(net.gt(wtot,a6w,e)+net.lt(wtot,a6w,e)+net.gt(pagesT,a6pg,e)+net.lt(pagesT,a6pg,e)))
 _rv_tm=S('TM'); on('TM',(net.and_(_rv_tm,drag,net.or_(net.lt(mp_pty,DOCY+8,_rv_tm),net.ge(mp_pty,DOCB-8,_rv_tm))),'RVA3_AS0',None),(t1_cntp,'T1_C0',{blink:blink}),(bgp,'BG',{blink:blink}),(_a6stale,'T4_FU',{blink:blink,a6fg:1,nolog:1,a6w:wtot,a6pg:pagesT}),(None,'A11_C0',None))
@@ -466,7 +466,7 @@ on('BS_N',(has_sel,'DS0',{dret.r:dret.id('AFTER_ED'),grp:grp+1}),(None,'RD0',Non
 # ---- hit test on the screenshot ----
 net.group('screenshot hit test')
 T1('md')
-e=S('MD'); on('MD',(net.ge(hy_,777,e),'IMP3_ZC',None),(net.and_(zwd,net.ge(hy_,DOCB-12,e),net.lt(hx_,1262,e)),'V8_HC',None),(net.and_(e,t1_ruler,net.ge(hy_,150,e),net.lt(hy_,174,e),ONE-t1_mopb),'A4_RM0',T1_CLICK),(None,'T3_H0',{hdir:0+3,hact:0,drag:1,grp:grp+1,vi:0,t1_lastk:0,**T1_CLICK}))
+e=S('MD'); on('MD',(net.ge(hy_,777,e),'IMP3_ZC',None),(net.and_(zwd,net.ge(hy_,DOCB-12,e),net.lt(hx_,1262,e)),'V8_HC',None),*MD5,(net.and_(e,t1_ruler,net.ge(hy_,150,e),net.lt(hy_,174,e),ONE-t1_mopb),'A4_RM0',T1_CLICK),(None,'T3_H0',{hdir:0+3,hact:0,drag:1,grp:grp+1,vi:0,t1_lastk:0,**T1_CLICK}))
 on('MD2',(None,'HT',{hdir:3,hact:2}))
 on('HT',(None,'HT1',{pix:(hx_,hy_)}))
 A_=pix.out[3]; e1=S('HT1')
@@ -736,7 +736,9 @@ RC=rc.out
 on('RF2',(net.and_(full,net.step(RC[1])),'RF0',{sidx:sidx-RC[1]}),(None,'T3_RS0',{**fload,rowmax:0,cursec:MT[7]}))
 on('T3_RS0',(None,'T3_RS1',{rl:as_x(SECB)+cursec*8}))
 def sload(W_): return {ncol:W_[0],s_pw:W_[1],s_ph:W_[2],s_px:W_[3],s_tx:W_[4],s_tw:W_[5],s_mt:W_[6],s_th:W_[7],s_ps:W_[2]+16}
-on('T3_RS1',(bgm,'R1',sload(RL)),(full,'T3_RS2',sload(RL)),(None,'R1',sload(RL)))
+# imp5: the first paragraph starts at the section's top margin as it is now, not as it was saved with the paragraph, so a top margin change moves it
+e=S('T3_RS1'); _z5=net.and_(e,net.eq(pi,0,e)); _sl5={**sload(RL),yy:G_(yy,e-_z5)+G_(ptop+RL[6],_z5)}
+on('T3_RS1',(bgm,'R1',_sl5),(full,'T3_RS2',_sl5),(None,'R1',_sl5))
 def page_shadow(st,nxt,top,keep=None):
     "A soft shadow from three nested rectangles, then the page. Alpha stays 0."
     a_=dict(keep or {}); a_.update({rA:(s_px-3,top-2,s_pw+7,s_ph+6,(226,226,226),0),rB:(s_px-2,top-1,s_pw+5,s_ph+4,(216,216,216),0),rC:(s_px-1,top,s_pw+3,s_ph+2,(198,198,198),0)})
@@ -1146,7 +1148,7 @@ exec(open('imp4_prompt.py').read())
 exec(open('t4_features.py').read())
 exec(open('t2_features.py').read())
 exec(open('t3_features.py').read())
-exec(open('imp4_style.py').read()); exec(open('imp4_list2.py').read()); exec(open('imp5_breaks.py').read())
+exec(open('imp4_style.py').read()); exec(open('imp4_list2.py').read()); exec(open('imp5_breaks.py').read()); exec(open('imp5_vruler.py').read())
 net.group('late commands')
 exec(open('rv_a2_canvas.py').read())
 exec(open('rv_a4_features.py').read())

@@ -193,13 +193,13 @@ for i_,v_ in enumerate(SWV):
 # change the caret section: read, edit, write, relayout everything
 on('T3_SP0',(None,'T3_SP1',{r1:cb+SSI,grp:grp+1}))
 on('T3_SP1',(None,'T3_SP2',{csc:R1,sv_i:R1,rl:as_x(SECB)+R1*8}))
-e=S('T3_SP2'); op_=net.decode(tsop,11,e)
+e=S('T3_SP2'); op_=net.decode(tsop,13,e)
 base_={sv_nc:RL[0],sv_pw:RL[1],sv_ph:RL[2],sv_ml:RL[4]-RL[3],sv_mr:RL[1]-RL[4]+RL[3]-RL[5],sv_mt:RL[6],sv_mb:RL[2]-RL[6]-RL[7]}
 def ovr(k_,v_):
     d_=dict(base_); d_.update(v_); return (op_[k_],'T3_SP3',d_)
 on('T3_SP2',ovr(1,{sv_pw:net.min_(RL[1],RL[2]),sv_ph:net.max_(RL[1],RL[2])}),ovr(2,{sv_pw:net.max_(RL[1],RL[2]),sv_ph:net.min_(RL[1],RL[2])}),
  ovr(3,{sv_ml:96,sv_mr:96,sv_mt:96,sv_mb:96}),ovr(4,{sv_ml:48,sv_mr:48,sv_mt:48,sv_mb:48}),ovr(5,{sv_ml:144,sv_mr:144,sv_mt:96,sv_mb:96}),
- ovr(9,{sv_ml:net.relu(RL[4]-RL[3]+a4dl-1000)}),ovr(10,{sv_mr:net.relu(RL[1]-RL[4]+RL[3]-RL[5]+1000-a4dl)}),ovr(6,{sv_nc:1}),ovr(7,{sv_nc:2}),ovr(8,{sv_ml:72,sv_mr:72,sv_mt:96,sv_mb:96}),(None,'RD0',None))
+ ovr(9,{sv_ml:net.relu(RL[4]-RL[3]+a4dl-1000)}),ovr(10,{sv_mr:net.relu(RL[1]-RL[4]+RL[3]-RL[5]+1000-a4dl)}),ovr(11,{sv_mt:net.relu(RL[6]+a4dl-1000)}),ovr(12,{sv_mb:net.relu(RL[2]-RL[6]-RL[7]+1000-a4dl)}),ovr(6,{sv_nc:1}),ovr(7,{sv_nc:2}),ovr(8,{sv_ml:72,sv_mr:72,sv_mt:96,sv_mb:96}),(None,'RD0',None))
 on('T3_SP3',(None,'A4_SL',None))
 on('T3_SP4',(None,'DA0',{di_:0}))
 for st_,k_ in (('T3_C_POR',1),('T3_C_LAN',2),('T3_C_MN',3),('T3_C_MS',4),('T3_C_MW',5)):

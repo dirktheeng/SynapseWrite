@@ -28,3 +28,10 @@ Why: Text color row says there is no color picker.
 What: gen/imp5_picker.py. A second extra row "Color Picker..." in the text color grid menu (gmenu takes a second extra row; More Colors stays where it was, so imp4 clicks still land). It opens menu 15, a 64 cell grid (gray plus seven hues across, tints to shades down, from HLS at build time). The pick rule decodes the cell and sends its color, a weighted sum of decoder lines, as v4h into V4_HY, the More Colors hex path, which finds the nearest palette entry and applies the exact color with undo.
 Runs: screenshots build/imp5_p0.png (menu with the new row) and imp5_p1.png (grid) looked right. imp5 pick: first run 5 of 6; the drawn color check demanded exact pixels where imp4 uses a tolerance of 2 (glyph pixels blend); with that tolerance 37 pixels: 6 passed.
 No list of recent colors yet.
+
+## 6. Vertical ruler drag
+Why: Rulers row says the vertical ruler cannot be dragged.
+What: gen/imp5_vr_md.py routes a press on the vertical ruler to IMP5_VR0 (gen/imp5_vruler.py), which starts a ruler drag of kind 35 (top edge) or 36 (bottom edge) within 5 px of the edge as the ruler draws it. Release goes through A4_RU (two rules added there) to T3_SP2 with two new section edits (11 top, 12 bottom; the decoder widened to 13), so the section log gives undo.
+First run: the margin saved right (w:top 2160) but the text did not move. Cause: a relayout from paragraph 0 starts from the y saved with that paragraph, which held the old top margin. Horizontal margins never hit this because x is computed live. Fix in T3_RS1 (app.py): at paragraph 0 the start y is the page top plus the section's top margin as it is now.
+Test fixes: the drawn pointer and the caret blink changed hashes; tests now move the pointer away and judge the band and the saved margins instead of a whole area hash for the no-op case.
+imp5 vruler: 7 passed, 0 failed (top down 0.5 in, undo, snap to 1/16 in, 150 percent travel unzoomed, bottom edge at 50 percent, press inside the band is a no-op).

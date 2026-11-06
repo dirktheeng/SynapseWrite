@@ -88,5 +88,23 @@ const thumb=A=>{const f=A.fb();let a=-1,b=-1;for(let x=0;x<1262;x++){const i=(77
   // Esc closes it with no change
   A=await lib();A.type('none');A.key(97,1);A.settle();A.click(299,102);A.settle();A.click(300,236);A.settle();A.key(27);A.settle();x=part(A,'word/document.xml');ok('Esc leaves the color alone',!/w:color w:val="(?!000000)/.test(x));
  }
+
+ if(!only||only=='vruler'){
+  const band=A=>{const f=A.fb();let a=-1,b=-1;for(let y=174;y<776;y++){const i=(y*1280+10)*4;if(f[i]>=250&&f[i+1]>=250){if(a<0)a=y;b=y;}}return [a,b];};
+  const mar=x=>(x.match(/<w:pgMar [^>]*/)||[''])[0];
+  let A=await lib();A.paste('Margin text here\n'.repeat(3));A.settle();A.move(600,700);A.settle();const b0=band(A),h0=A.hash(174,776);
+  A.raw(3,9,b0[0],1e6);A.settle();A.raw(22,9,b0[0]+48,1);A.settle();A.raw(4,9,b0[0]+48);A.settle();A.move(600,700);A.settle();A.shot('build/imp5_vr1.png');const b1=band(A);
+  let x=part(A,'word/document.xml');ok('dragging the top margin edge down half an inch',/w:top="2160"/.test(mar(x)),mar(x));
+  ok('the ruler band and the text move with it',b1[0]==b0[0]+48&&A.hash(174,776)!==h0,JSON.stringify([b0,b1]));
+  A.key(122,1);A.settle();A.move(600,700);A.settle();x=part(A,'word/document.xml');ok('undo brings the margin back',/w:top="1440"/.test(mar(x))&&A.hash(174,776)===h0,mar(x));
+  // a small move snaps to a sixteenth of an inch
+  A.raw(3,9,b0[0]+2,2e6);A.settle();A.raw(4,9,b0[0]-22);A.settle();x=part(A,'word/document.xml');ok('up a quarter inch, snapped',/w:top="1080"/.test(mar(x)),mar(x));
+  // at 150 percent the travel is unzoomed
+  A=await lib();A.paste('Zoomed\n');A.settle();for(let i=0;i<2;i++){A.click(1232,788);A.settle();}const z0=band(A);A.raw(3,9,z0[0],1e6);A.settle();A.raw(4,9,z0[0]+72);A.settle();x=part(A,'word/document.xml');ok('at 150 percent, 72 px is half an inch',/w:top="2160"/.test(mar(x)),mar(x)+' '+z0);
+  A=await lib();A.paste('Bottom\n');A.settle();for(let i=0;i<2;i++){A.click(1096,788);A.settle();}A.move(600,700);A.settle();const q0=band(A);A.shot('build/imp5_vr5.png');A.raw(3,9,q0[1]+1,1e6);A.settle();A.raw(4,9,q0[1]+1-24);A.settle();A.move(600,700);A.settle();const q1=band(A);x=part(A,'word/document.xml');
+  ok('at 50 percent the bottom margin edge drags up',/w:bottom="2160"/.test(mar(x))&&q1[1]==q0[1]-24,mar(x)+' '+JSON.stringify([q0,q1]));
+  // a press away from the edges does nothing
+  A=await lib();A.paste('x\n');A.settle();A.move(600,700);A.settle();const c0=band(A),hc=A.hash(174,776);A.raw(3,9,c0[0]+100,1e6);A.settle();A.raw(4,9,c0[0]+200);A.settle();A.move(600,700);A.settle();x=part(A,'word/document.xml');ok('a press inside the band changes nothing',/w:top="1440" w:right="1440" w:bottom="1440"/.test(mar(x))&&JSON.stringify(band(A))===JSON.stringify(c0),mar(x));
+ }
  const f=R.filter(x=>!x).length;console.log(`imp5: ${R.length-f} passed, ${f} failed`);process.exit(f?1:0);
 })();

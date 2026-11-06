@@ -250,7 +250,7 @@ _kh=net.decode(net.relu(tdk-30),15,e); _off=net.or_(net.lt(evb,130,e),net.ge(evb
 _u={tdk:0,a4dl:_d,t1_rv:0}
 _tr=[(_kh[10+i_],'A4_RUt',{**_u,pfld:as_x(A4T)+i_,a4tb:net.gt(evb,130,e)-net.ge(evb,190,e)}) for i_ in range(4)]
 on('A4_RU',(_kh[0],'T2_PD',{**_u,pfld:PFIRST,t2d:_d,t2mn:1}),(_kh[1],'T2_PD',{**_u,pfld:PIND,t2d:_d,t2mn:0,a4rc:1}),(_kh[2],'T2_PD',{**_u,pfld:A4R,t2d:as_x(2000)-_d,t2mn:0}),
- (_kh[3],'T3_SP0',{**_u,tsop:9}),(_kh[4],'T3_SP0',{**_u,tsop:10}),*_tr,(None,'RD0',_u))
+ (_kh[3],'T3_SP0',{**_u,tsop:9}),(_kh[4],'T3_SP0',{**_u,tsop:10}),*imp5_vr_ru(_kh,_u,e),*_tr,(None,'RD0',_u))
 e=S('A4_RUt'); on('A4_RUt',(None,'PA0',{pwalk:lo_p,alv:G_(net.relu(a4so+a4dl-1000)+a4sk*4096,a4tb),t1_pdm:0,grp:grp+1,t1_lastk:0}))
 e=S('RE1'); rD.drive(net.and_(e,net.ge(tdk,30,e)),(tmx,DOCY,1,VH,(43,87,154),0))
 # ruler marks for tab stops and the stop kind selector
