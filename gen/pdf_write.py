@@ -34,12 +34,12 @@ qln=R();qxc=R();qiw=R();qih=R();qpo=R();qxx=R();qcx0=R();qop=R();qund=R();qdel=R
 # open a page: page object then content object with a fixed width length
 def pg_open(st,nx):
     n1=st+'a';n2=st+'b';n3=st+'c';n4=st+'d';n5=st+'e';n6=st+'f'
-    on(st,(None,n1,{xw:(as_x(XR)+qobj,fp),qpg:qpg+1}))
+    on(st,(None,n1,{xw:(as_x(XR)+qobj,fp),qpg:qpg+1,f2ln:0,f2tc:100}))
     number(n1,qobj,n2)
     lit(n2,b' 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 ',n2+'x')
     numz(n2+'x',qpw*0.75,n2+'y'); lit(n2+'y',b' ',n2+'z'); numz(n2+'z',qph*0.75,n2+'u'); lit(n2+'u',b']/Contents ',n3)
     number(n3,qobj+1,n4)
-    lit(n4,b' 0 R>>\nendobj\n',n5)
+    lit(n4,b' 0 R/Annots ',n4+'a'); number(n4+'a',qobj+2,n4+'b'); lit(n4+'b',b' 0 R>>\nendobj\n',n5)   # feat2: each page has a third object, its link annotations
     on(n5,(None,n6,{xw:(as_x(XR)+qobj+1,fp)}))
     number(n6,qobj+1,n6+'g')
     lit(n6+'g',b' 0 obj\n<</Length ',n6+'h')
@@ -49,14 +49,15 @@ def pg_open(st,nx):
     on(n6+'k',(None,n6+'l',{qstart:fp}))
     lit(n6+'l',b'.75 0 0 .75 0 0 cm\n',n6+'m')
     on(n6+'m',(None,'T4P_FU',{pfr.r:pfr.id(nx)}))
-def pg_close(st,nx):
+def pg_close(st,nx,ret):
     n1=st+'a'
     on(st,(None,'T4P_NT',{qnr.r:qnr.id(st+'z')}))
     lit(st+'z',b'\nendstream\nendobj\n',n1)
-    on(n1,(None,nx,{qcur:qlenat,qobj:qobj+2,qi:fp-qstart-18}))
+    on(n1,(None,nx,{qcur:qlenat,qobj:qobj+3,qi:fp-qstart-18,f2ar.r:f2ar.id(ret)}))
     # length is patched digit by digit into the reserved field
-pg_close('PD_C','PD_LP')
-pd_patch('PD_LP','PD_LR')
+f2ar=t3ret('F2P_AR');f2ln=R();f2tc=R()
+pg_close('PD_C','PD_LP','PD_LR')
+pd_patch('PD_LP','F2P_A0')
 e=S('PD_LR'); on('PD_LR',(net.ge(qp,npar,e),'PD_E',None),(None,'PD_O',None))
 pg_open('PD_O','PD_L5')
 pg_open('PD_0','PD_1')
@@ -85,8 +86,8 @@ ovf=net.or_(net.and_(net.gt(qyy+Wl[3]+qnx_,qtop+qmt+qth,e),net.gt(qyy,qtop+qmt,e
 lmv={qs:Wl[0],qe:Wl[1],rv_qm:gx7+qml,qx:Wl[2]-48+gx7+qml,qh:Wl[3],qa:Wl[4],qo:Wl[0],qex:Wl[5]}
 col2=net.and_(ovf,net.eq(qnc,2,e),ONE-net.step(qxc))
 on('PD_7',(col2,'PD_8',{**lmv,qyy:qtop+qmt,qxc:(qtw-24)*0.5+24}),(ovf,'PD_C2',{**lmv,qyy:qtop+qps+qmt,qtop:qtop+qps,qxc:0}),(None,'PD_8',lmv))
-pg_close('PD_C2','PD_QH')
-pd_patch('PD_QH','PD_O2')
+pg_close('PD_C2','PD_QH','PD_O2')
+pd_patch('PD_QH','F2P_A0')
 pg_open('PD_O2','PD_8')
 # one text line: positioned chunks of a word and its trailing space, in screen pixels
 qhl=R(); qsty=R(); qyb=qph-(qyy-qtop+qa); qpc=R()
@@ -100,12 +101,14 @@ _qxe=net.ge(R1,UO,e); _qxb=net.bits(R1-UO,16,_qxe); _xpv=X()
 def _qxl(G,ix,pv={p_>>7:i_+1 for i_,p_ in enumerate(rom.EXT_PAGES)}): net.connect(_qxw,G*pv[ix])
 _qxw=net.wire(); chartree(_qxe,_qxb[7:],8,[p_>>7 for p_ in rom.EXT_PAGES],_qxl)
 pdiff=net.step(pdiff+net.step(_qxw-qxp-0.5+e*M-M)+net.step(qxp-_qxw-0.5+e*M-M))
-ladv={qxp:_qxw,v4qk:RSK,ins_ch:F1_CH,ins_st:RSC,ins_rec:RSR,qadv:adv+kern+G_(qex,psp)+rv_tabw(qxx-rv_qm-qxc,net.eq(R1,9,e)),qpc:R1}
+f2smc=R();f2x=R();f2h=R();f2z=R();f2cx=R();f2ch=R();f2cz=R();f2tw=R()
+pdiff=net.step(pdiff+net.step(F1_SMCL-f2smc-0.5+e*M-M)+net.step(f2smc-F1_SMCL-0.5+e*M-M))   # feat2: small capitals print smaller, so they start a chunk
+ladv={f2smc:F1_SMCL,f2x:RSX,f2h:RSH,f2z:RSZ,qxp:_qxw,v4qk:RSK,ins_ch:F1_CH,ins_st:RSC,ins_rec:RSR,qadv:adv+kern+G_(qex,psp)+rv_tabw(qxx-rv_qm-qxc,net.eq(R1,9,e)),qpc:R1}
 on('PD_A',(F1_HID,'PD_9',{qo:qo+1}),(net.and_(net.eq(R1,173,e),net.lt(qo+1,qe,e)),'PD_9',{qo:qo+1}),(net.and_(net.eq(R1,9,e),qop),'T4P_CL',{pfcr.r:pfcr.id('A4_QX0')}),(net.eq(R1,9,e),'A4_QX0',None),(net.and_(net.ge(R1,300,e),net.lt(R1,1000,e)),'A6Q_P0',{qo:qo+1,a6qk:R1-300}),(net.and_(net.ge(R1,1000,e),net.lt(R1,UO,e)),'T4P_MK',{qo:qo+1,qfid:R1-1000}),(net.and_(pdiff,qop),'T4P_CL',{**ladv,pfcr.r:pfcr.id('PD_F')}),(pdiff,'PD_F',ladv),(qop,'PD_Tc',ladv),(None,'T4P_O',ladv))
 sv_en.lin(S('PD_F')); sv_in.add(S('PD_F'),ins_rec); sv_fl.add(S('PD_F'),ins_st)
 e=S('PD_F'); zh=net.decode(SV['si'],rom.NSZ,e); pts=X(); ptv=X()
 for i_,h_ in enumerate(zh): pts=pts+h_*round(rom.SZ[i_]*96/72); ptv=ptv+h_*round(rom.SZ[script_size(i_)]*96/72)
-ptk=net.or_(SV['ins'],SV['dele']); vf_=net.step(SV['sup']+SV['sub'])
+ptk=net.or_(SV['ins'],SV['dele']); vf_=net.step(SV['sup']+SV['sub']+f2smc)   # feat2: a small capital takes the script size, as on the screen
 _pfh=net.decode(SV['font'],len(rom.FAM),e); _pfv=X()
 for ff_,h_ in enumerate(_pfh):
     for bo_,bb_ in enumerate((ONE-SV['bold'],SV['bold'])):
@@ -114,7 +117,7 @@ for ff_,h_ in enumerate(_pfh):
             if k_: _pfv=_pfv+net.and_(h_,bb_,ii_)*k_
 fsm.set(ptk_q,e,ptk)
 _qxh=net.step(qxp); _qxv=net.gate(as_x(NFB_)+(qxp-1)*3+SV['bold']+net.and_(e,ONE-SV['bold'],SV['ital'])*2,_qxh)
-on('PD_F',(None,'PD_Fa',{qsty:ins_st,qfn:net.relu(_pfv-_qxh*M)+_qxv,qsz:G_(pts,ONE-vf_)+G_(ptv,vf_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3,qhl:SV['hl']}))
+on('PD_F',(None,'PD_Fa',{f2cx:f2x,f2ch:f2h,f2cz:f2z,qsty:ins_st,qfn:net.relu(_pfv-_qxh*M)+_qxv,qsz:G_(pts,ONE-vf_)+G_(ptv,vf_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3,qhl:SV['hl']}))
 lit('PD_Fa',b'/F','PD_Fb')
 e=S('PD_Fb'); on('PD_Fb',(None,'PD_Fc',{xw:(as_x(PUS)+qfn,1)}))
 em_en.lin(e); em_b.add(e,48+qfn+net.ge(qfn,10,e)*7+net.ge(qfn,36,e)*6)     # font names /F0 to /F9, /FA and on
@@ -123,7 +126,8 @@ number('PD_Fd',qsz,'PD_Fe')
 lit('PD_Fe',b' Tf ','PD_Ff')
 PCS=[('%.2f %.2f %.2f rg\n'%(c_[0]/255,c_[1]/255,c_[2]/255)).encode() for c_ in PAL_F]; _pcb=rom_str(b''.join(PCS)); _pcl=len(PCS[0])
 on('PD_Ff',(net.and_(net.step(v4qk),ONE-net.step(ptk_q)),'V4_PK0',None),(None,'A10_B0',{la_:as_x(_pcb)+qbase*_pcl,ln_lit:_pcl,lbret.r:lbret.id('T4P_O')}))
-on('T4P_O',(None,'T4P_Oa',{qcx0:qxx,qop:1}))
+e=S('T4P_O'); _f2xb=net.bits(f2cx,14,e); _f2raw=sum((_f2xb[k_]*(1<<(k_-4)) for k_ in range(4,14)),X()); _f2on=net.step(_f2raw); _f2tw=G_(_f2raw,_f2on)+(e-_f2on)*512-512   # feat2: character spacing as Tc, written when it changes
+on('T4P_O',(net.step(net.step(_f2tw*(1/15)+100-f2tc-0.01)+net.step(f2tc-100-_f2tw*(1/15)-0.01)),'F2P_T0',{qcx0:qxx,qop:1,f2tw:_f2tw+512}),(None,'T4P_Oa',{qcx0:qxx,qop:1}))
 lit('T4P_Oa',b'BT 1 0 0 1 ','T4P_Ob'); number('T4P_Ob',qxx,'T4P_Oc'); lit('T4P_Oc',b' ','T4P_Od')
 number('T4P_Od',qyb+qrise-3,'T4P_Oe'); lit('T4P_Oe',b' Tm (','PD_Tc')
 e=S('PD_Tc'); esc=net.or_(net.eq(ins_ch,40,e),net.eq(ins_ch,41,e),net.eq(ins_ch,92,e))
@@ -136,7 +140,7 @@ on('PD_Tg',(net.or_(net.eq(ins_ch,32,e),net.eq(ins_ch,9,e)),'T4P_CL',{pfcr.r:pfc
 # closing a chunk draws its underline or strike line
 on('T4P_CL',(None,'T4P_Ca',{qop:0}))
 lit('T4P_Ca',b')Tj ET\n','T4P_C2')
-on('T4P_C2',(net.step(qhl),'A6P_FH',None),(None,'A6P_U',None))
+on('T4P_C2',(None,'F2P_C0',None)); on('F2P_C3',(net.step(qhl),'A6P_FH',None),(None,'A6P_U',None))   # feat2: shade, double strike and link first
 number('T4P_Ra',qcx0,'T4P_Rb'); lit('T4P_Rb',b' ','T4P_Rc'); number('T4P_Rc',qry,'T4P_Rd'); lit('T4P_Rd',b' ','T4P_Re'); number('T4P_Re',qxx-qcx0,'T4P_Rf'); lit('T4P_Rf',b' 1 re f\n','T4_PFC')
 on('PD_Z',(qop,'T4P_CL',{pfcr.r:pfcr.id('PD_Y')}),(None,'PD_Y',None))
 e=S('PD_Y'); on('PD_Y',(net.and_(net.step(qtoc),net.ge(qlj+1,qnl,e)),'T4P_TD0',None),(None,'PD_6',{qyy:qyy+qh,qlj:qlj+1}))
@@ -218,7 +222,7 @@ lit('PD_E3',b'/Kids[','PD_K0')
 on('PD_K0',(None,'PD_K1',{qi:FIRST}))
 e=S('PD_K1'); on('PD_K1',(net.ge(qi,qobj,e),'PD_K9',None),(None,'PD_K2',None))
 number('PD_K2',qi,'PD_K3'); lit('PD_K3',b' 0 R ','PD_K4')
-on('PD_K4',(None,'PD_K1',{qi:qi+2}))
+on('PD_K4',(None,'PD_K1',{qi:qi+3}))
 lit('PD_K9',b']>>\nendobj\n','A6P_F0')
 on('PD_X0',(None,'PD_X1',{qxr:fp}))
 lit('PD_X1',b'xref\n0 ','PD_X2')
@@ -240,3 +244,4 @@ lit('PD_T4',b'\n%%EOF\n','PD_END')
 pdfl=R(); on('PD_END',(None,'HALT',{pdfl:fp}))
 pdfout=Bus(net); pdfout.add(S('HF'),pdfl); fsm.set(pdfl,S('HF'),0)
 exec(open('rv_a6_pdf.py').read())
+exec(open('feat2_pdf.py').read())
