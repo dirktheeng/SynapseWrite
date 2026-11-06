@@ -1,7 +1,7 @@
 # ---- string ROM and the one literal emitter ----
 # Literal bytes live in memory, not in weights. A literal state loads an address and a count; one small
 # loop reads and emits them. Identical strings and substrings share cells. Above the bank map, loaded at start.
-ROM_RUNS=[]      # [address, values, bytes per value], placed in the bank before the first event
+# ROM_RUNS holds [address, bytes, bytes per value], started by the spell table; placed in the bank before the first event
 LITROM=64000000; LITMAX=1000000; _litb=bytearray()
 def rom_str(data):
     k=_litb.find(data)
