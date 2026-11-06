@@ -3,7 +3,7 @@
 # Bookmarks: one record per heading is taken during the page walk; a forward pass links parents and siblings, then one outline object per record.
 PDBM=1200000; PDST=16
 a6pn=R();a6pi=R();a6pp=R();a6pv=R();a6l1=R();a6l2=R();a6pb=R();a6pt=R();a6pk=R();a6pl=R()
-a6r=[R() for _ in range(9)]
+a6r=[R() for _ in range(9)]; p3bk=R()   # p3: the record is a bookmark, its title the bookmark name
 fsm.set(a6pn,S('PDF'),0)
 e=S('A6P_FH'); hl7=net.decode(qhl,8,e)
 on('A6P_FH',*[(hl7[j],f'A6P_H{j}',None) for j in range(1,8)],(None,'A6P_U',None))
@@ -33,12 +33,12 @@ def _oref(st,key,reg,nx):
     on(st,(net.step(reg),n1,None),(None,nx,None))
     lit(n1,key,n2); number(n2,a6pb+reg-1,n3); lit(n3,b' 0 R',nx)
 e=S('A6P_E0'); on('A6P_E0',(net.ge(a6pk,a6pn,e),'A6P_Z0',{qobj:a6pb+a6pn}),(None,'A6P_E1',{a6pi:a6pk+1,rl:_recq(a6pk+1),rp6:_recq(a6pk+1)+4,xw:(as_x(XR)+a6pb+a6pk,fp)}))
-on('A6P_E1',(None,'A6P_E2',{a6pt:rl.out[0],a6r[0]:rl.out[2],a6r[1]:rl.out[3],a6r[2]:rp6.out[0],a6r[3]:rp6.out[1],a6r[4]:rp6.out[2],a6r[5]:rp6.out[3],a6r[6]:rp6.out[4],a6r[7]:rp6.out[5],r1:rl.out[0]+LEN,a6pl:0}))
-on('A6P_E2',(None,'A6P_E3',{a6r[8]:net.min_(R1,120)}))
+on('A6P_E1',(None,'A6P_E2',{a6pt:rl.out[0],a6r[0]:rl.out[2],a6r[1]:rl.out[3],a6r[2]:rp6.out[0],a6r[3]:rp6.out[1],a6r[4]:rp6.out[2],a6r[5]:rp6.out[3],a6r[6]:rp6.out[4],a6r[7]:rp6.out[5],r1:rl.out[0]+LEN,a6pl:0,p3bk:net.lt(rl.out[0],SLOT0,S('A6P_E1'))}))
+on('A6P_E2',(None,'A6P_E3',{a6r[8]:G_(net.min_(G_(R1,S('A6P_E2')),120),net.and_(S('A6P_E2'),ONE-p3bk))+p3bk*(F1BS-1)}))
 number('A6P_E3',a6pb+a6pk,'A6P_E4'); lit('A6P_E4',b' 0 obj\n<</Title(','A6P_T0')
 e=S('A6P_T0'); on('A6P_T0',(net.ge(a6pl,a6r[8],e),'A6P_Pa',None),(None,'A6P_T1',{r1:a6pt+a6pl,a6pl:a6pl+1}))
 e=S('A6P_T1'); _esc=net.or_(net.eq(R1,40,e),net.eq(R1,41,e),net.eq(R1,92,e)); _ok=net.and_(net.ge(R1,32,e),net.lt(R1,256,e))
-on('A6P_T1',(_esc,'A6P_T2',{qcur:R1}),(_ok,'A6P_T3',{qcur:R1}),(None,'A6P_T0',None))
+on('A6P_T1',(net.and_(p3bk,net.eq(R1,0,e)),'A6P_Pa',None),(_esc,'A6P_T2',{qcur:R1}),(_ok,'A6P_T3',{qcur:R1}),(None,'A6P_T0',None))
 lit('A6P_T2',b'\\','A6P_T3')
 e=S('A6P_T3'); em_en.lin(e); em_b.add(e,qcur); on('A6P_T3',(None,'A6P_T0',None))
 lit('A6P_Pa',b')/Parent ','A6P_Pb')
@@ -54,4 +54,4 @@ on('A6P_Z0',(None,'A6P_Z1',{xw:(as_x(XR)+OROOT,fp),rc:_recq(0)+7,r1:_recq(0)+9})
 on('A6P_Z1',(None,'A6P_Z2',{a6r[5]:rc.out[0],a6r[6]:rc.out[1],a6r[7]:R1}))
 lit('A6P_Z2',b'%d 0 obj\n<</Type/Outlines'%OROOT,'A6P_Z3')
 _oref('A6P_Z3',b'/First ',a6r[5],'A6P_Z4'); _oref('A6P_Z4',b'/Last ',a6r[6],'A6P_Z5')
-lit('A6P_Z5',b'/Count ','A6P_Z6'); number('A6P_Z6',a6r[7],'A6P_Z7'); lit('A6P_Z7',b'>>\nendobj\n','PD_X0')
+lit('A6P_Z5',b'/Count ','A6P_Z6'); number('A6P_Z6',a6r[7],'A6P_Z7'); lit('A6P_Z7',b'>>\nendobj\n','P3_DS0')

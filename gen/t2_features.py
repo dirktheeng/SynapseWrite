@@ -196,7 +196,7 @@ e=S('T2_NI1'); _ib=net.bits(R1,18,e); _il=net.decode(t2il,3,e); _F=sum((_il[j_]*
 for j_ in range(3): _F=_F+G_(sum((_ib[6*j_+b_]*(1<<b_) for b_ in range(6)),X()),_il[j_])
 _fnum=net.step(net.and_(net.ge(_F,1,e),net.lt(_F,13,e))+net.eq(_F,62,e)); kd=e+_fnum+G_(_F,net.lt(_F,20,e))*16
 _p2r=net.and_(e,_fnum,net.step(t2n_),ONE-net.eq(t2n_,p2ln,e))   # p2: a numbered list item with a numId other than the last numbered one restarts, as Word numbers per numId
-on('T2_NI1',(net.step(t2n_),'PX',{w1:(cb+LIST,kd+t2il*4),w2:(cb+PIND,0),w3:(cb+PFIRST,0),w4:(cb+F1PX,f1pc+f1pw*2+_p2r*0.25),p2rsr:_p2r,p2ln:G_(t2n_,_fnum)+G_(p2ln,e-_fnum),t2il:0}),(None,'PX',{w1:(cb+LIST,0),t2il:0}))
+on('T2_NI1',(net.step(t2n_),'PX',{w1:(cb+LIST,kd+t2il*4),w2:(cb+PIND,0),w3:(cb+PFIRST,0),w4:(cb+F1PX,f1pc+f1pw*2+p3ol*(1/32)+_p2r*(1/2048)),p2rsr:_p2r,p2ln:G_(t2n_,_fnum)+G_(p2ln,e-_fnum),t2il:0}),(None,'PX',{w1:(cb+LIST,0),t2il:0}))
 # style part
 t2ido=R();t2oi=R();t2i=R();t2jj=R();t2fnd=R()
 e=S('T2_STQ'); on('T2_STQ',(net.or_(net.eq(W[0],32,e),net.eq(W[0],62,e)),'T2_ST0',{oi:oi+8}),(None,'PX',{oi:oi+8}))

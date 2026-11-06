@@ -3,10 +3,10 @@
 # Most characters have none, so one neuron answers for them and the digits are read only when it fires.
 X_CAPS,X_SMC,X_DST,X_HID,X_SP=1,2,4,8,16
 def x_decode(val,en):
-    v=as_x(val); nz=net.step(v-0.5+(as_x(en)*M-M if en is not None else 0)); b=net.bits(v,18,nz)
+    v=as_x(val); nz=net.step(v-0.5+(as_x(en)*M-M if en is not None else 0)); b=net.bits(v,24,nz)   # p3: bits 14-23 hold the character scale
     sp=sum((b[k_]*(1<<(k_-4)) for k_ in range(4,14)),X())
     g=lambda x_: net.gate(x_,nz)   # a pull reads the one nonzero test first, so the digits are never pulled for plain text
-    return dict(nz=nz,caps=g(b[0]),smc=g(b[1]),dst=g(b[2]),hid=g(b[3]),sp=sp,spn=g(net.step(sp)),xhl=sum((b[k_]*(1<<(k_-14)) for k_ in range(14,18)),X()))   # p2: bits 14 to 17 hold a highlight past the record's seven
+    return dict(nz=nz,caps=g(b[0]),smc=g(b[1]),dst=g(b[2]),hid=g(b[3]),sp=sp,spn=g(net.step(sp)))
 _f1g=net.cur[0]; net.group('feat1 run effects')
 F1G=x_decode(F1_EX,None)   # the bus is driven only beside g_en, so it needs no enable, and a zero field never wakes a neuron
 _f1c=net.gate(g_ch.w,F1G['nz'])   # zero for the usual character, so the tests below are not pushed as the text changes

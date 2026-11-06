@@ -37,7 +37,7 @@ def pf_val(v): return v-net.step(v)*PFO
 STY=40000; STY0=26000; STYN=48; NUMT=25000; MKT=32000; SCR=SLOTMAX; DEFREC=198; STYMAX=196   # style table, its ROM copy, numbering kinds, list marker ROM, scratch record
 # ---- screen geometry ----
 DOCY,DOCB=174,776; VH=DOCB-DOCY; PX=223; TX=319; TW=624; PH=1056; PST=1072; YB=4096
-from app_pal import F as PAL_F,B as PAL_B,HL_NAMES,HL_X
+from app_pal import F as PAL_F,B as PAL_B,HL_NAMES,HL_X,HL_XZ
 # ---- ports ----
 STYT_=1100000; IDXM_=(1<<18)-1; STYW=7   # an interned entry: record, exact color, font name, character style, then feat1's extended flags, link and bookmark ids, run shade
 class RPort:
@@ -356,7 +356,7 @@ def T1(n): exec(T1S[n],globals())
 T1('regs')
 exec(open('rv_a4_regs.py').read())
 exec(open('imp3_regs.py').read()); exec(open('imp4_regs.py').read()); exec(open('imp5_regs.py').read()); exec(open('imp4_list.py').read())
-exec(open('feat1_regs.py').read()); exec(open('p2_regs.py').read())
+exec(open('feat1_regs.py').read()); exec(open('p2_regs.py').read()); exec(open('p3_regs.py').read())
 cbb=R();qrep=R();a7_vw=R();a7_far=R();a7_jmp=R();a7_wb=R();impf=R();impk=R();impc=R();impsc=R();impyt=R();stp=R();stg=R();stw=R();stm=R();tbm=R();A7BUD=15000   # characters of layout one event may do before the rest goes to the background
 # dispatch tables for subroutine returns
 class Ret:
@@ -828,7 +828,7 @@ def list_step(ln_,kind,lvl,e,rs=None):
     n2=G_(net.min_(lc2+net.and_(isnum,deep),127),net.and_(en,deep)-r2)+G_(net.and_(isnum,deep),r2)
     nen=net.gate(e,ONE-inl); pnl=net.ge(ln_,1<<23,nen)   # a paragraph that is not a list item keeps the counters and clears the flag
     return G_(as_x(ln_)-pnl*(1<<23),nen)+G_(n0+n1*256+n2*65536+(1<<23),en), G_(n0,lvh[0])+G_(n1,lvh[1])+G_(n2,deep)
-_p2i3=net.gate(e3,net.step(lb3[0]+lb3[1]*2)); fsm.set(p2rs,_p2i3,net.bits(A4O[7]*4,4,_p2i3)[0])   # p2: the restart flag is a quarter in feat1's paragraph cell, read only for a list item
+_p2i3=net.gate(e3,net.step(lb3[0]+lb3[1]*2)); fsm.set(p2rs,_p2i3,net.bits(A4O[7]*2048,13,_p2i3)[0])   # p2: the restart flag is 1/2048 in feat1's paragraph cell, read only for a list item
 nlist,mk_now=list_step(listn,lsf,plvl,e,p2rs)
 fsm.set(mkn,e,mk_now)
 w3.drive(e_,(pbs+SSI,cursec));wln.drive(e_,(pbs+SAVE,yy,ptop,pages,wsum,listn,xcol));w1.drive(e_,(pbs+FNS,fnn));w2.drive(e_,(pbs+FNS+1,fnp))
@@ -894,8 +894,8 @@ g_en.lin(e);g_ch.add(e,R1);g_st.add(e,RSR);g_fl.add(e,RSC);g_x.add(e,x+kern+0.5)
 ke2=net.and_(e,net.step(kprev));kp_en.lin(ke2);kp_in.add(ke2,kprev)
 _sh0=net.eq(R1,173,_hi8); _shh=net.and_(_sh0,net.or_(net.lt(off+1,le_,_sh0),net.ge(le_,plen_,_sh0))); g_draw.lin(e-isp-isfnc-_shh)
 und_w=net.and_(e,net.or_(SD['und'],SD['ins'])); ske_w=net.and_(e,net.or_(SD['strike'],SD['dele'])); trk_=net.and_(e,net.or_(SD['ins'],SD['dele'])); a2_chg=R(); fsm.set(a2_chg,trk_,1)   # tracked text is drawn in the review color
-_p2xh=net.step(RSX-16383.5); _p2xb=net.bits(RSX,18,_p2xh); _p2xd=net.decode_z(sum((_p2xb[k_]*(1<<(k_-14)) for k_ in range(14,18)),X()),9,_p2xh)   # p2: a further highlight, read only when its bits are set
-_p2z=as_x(RSZ)+net.gate(sum((_p2xd[j_+1]*((c_[0]<<16)+(c_[1]<<8)+c_[2]+1) for j_,(n_,c_) in enumerate(HL_X)),X())-RSZ,_p2xh)
+_p2zn=net.step(RSZ); _p2xd=[None]+[net.eq(RSZ,z_,_p2zn) for z_ in HL_XZ]   # p2: a further highlight is a marked shade value; tested only for a shaded run
+_p2z=RSZ
 colh=net.decode_z(G_(SD['color'],ONE-trk_)+trk_*4,32,e)
 for j in range(32): fg[j].lin(colh[j])
 g_fc.add(e,G_(RSK,ONE-trk_))   # an exact color goes to the glyph unit beside the palette entry nearest it
@@ -985,7 +985,7 @@ advance={kprev:R1,lx:lx+adv+kern-G_(adv+kern,_shy)+_rv_lt,lasc:net.max_(asc,lasc
 _shb=net.and_(_shy,ONE-over); fsm.set(lb,net.and_(_rv_sb,ONE-over),off+1);fsm.set(lbx,net.and_(_rv_sb,ONE-over),lx+kern+_rv_lt);fsm.set(lspb,net.and_(_rv_sb,ONE-over),lsn)
 fsm.set(lb,_shb,off+1);fsm.set(lbx,_shb,lx+adv+kern);fsm.set(lspb,_shb,lsn)   # an optional hyphen has no width unless the line ends at it
 _xuf=net.ge(R1,UO,_hi7); isfl=net.and_(net.ge(R1,1000,_hi7),ONE-_xuf); fsm.set(lfnb,net.and_(_rv_sb,ONE-over),lfn);fsm.set(lfhb,net.and_(_rv_sb,ONE-over),lfh)
-on('L2',(net.eq(R1,9,e),'A4_LT0',{ra4t:pbs+A4T,lasc:net.max_(asc,lasc),lhh:net.max_(lh,lhh)}),(net.and_(net.ge(R1,300,e),ONE-isfl,ONE-_xuf),'A6Q_L0',{a6qk:R1-300,r1:as_x(1330000)+(R1-300)*64+1,r2:as_x(1330000)+(R1-300)*64}),(isfl,'T3_LF0',{r1:as_x(FNB)+(R1-1000)*256+254}),(_rv_vt,'EM',{**advance,prevsp:ONE,lend:off+1,lwid:lx,lspc:lsn,llast:0}),(net.and_(over,hasb),'EM',{lend:lb,lwid:lbx,lspc:lspb,off:lb,llast:0,lfn:lfnb,lfh:lfhb}),
+on('L2',(net.eq(R1,9,e),'A4_LT0',{ra4t:pbs+A4T,lasc:net.max_(asc,lasc),lhh:net.max_(lh,lhh)}),(net.and_(net.ge(R1,300,e),ONE-isfl,ONE-_xuf),'A6Q_L0',{a6qk:R1-300,r1:as_x(1330000)+(R1-300)*64+1,r2:as_x(1330000)+(R1-300)*64,rl:as_x(1330000)+(R1-300)*64}),(isfl,'T3_LF0',{r1:as_x(FNB)+(R1-1000)*256+254}),(_rv_vt,'EM',{**advance,prevsp:ONE,lend:off+1,lwid:lx,lspc:lsn,llast:0}),(net.and_(over,hasb),'EM',{lend:lb,lwid:lbx,lspc:lspb,off:lb,llast:0,lfn:lfnb,lfh:lfhb}),
  (over,'EM',{lend:off,lwid:lx,lspc:lsn,llast:0}),
  (lastc,'EM',{**advance,lend:off+1,lwid:lx+adv+kern-G_(adv+kern,_shy)+_rv_lt,lspc:lsn,llast:1}),
  (None,'L2',{**advance,r1:pbs+off+1,rs:pbs+1024+off+1}))
@@ -1202,7 +1202,7 @@ net.group('late commands')
 exec(open('rv_a2_canvas.py').read())
 exec(open('rv_a4_features.py').read())
 exec(open('rv_a5_docx.py').read())
-exec(open('feat1_docx.py').read()); exec(open('p2_color.py').read())
+exec(open('feat1_docx.py').read()); exec(open('p2_color.py').read()); exec(open('p3_docx.py').read())
 exec(open('rv_a6_spell.py').read())
 # ---- ribbon commands: id plus tab select the command, first rule wins ----
 _L0=[(PIND,-24,0),(PIND,24,0),(PFIRST,-24,1),(PFIRST,24,1),(PSPB,-8,0),(PSPB,8,0),(PSPA,-8,0),(PSPA,8,0)]

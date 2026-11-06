@@ -333,9 +333,20 @@ class FSM:
                 if q_ in reach or q_ in bar: continue
                 reach.add(q_)
                 st_+=[nx for _,nx in s.states[q_][1] if nx is not None]
-            for q_ in reach:
-                for _,nx in s.states[q_][1]:
-                    if nx is not None and (idx[nx]<=idx[q_] or nx in bar) and nx not in ('OPEND','HALT','T3_PF'): guard.add((q_,nx))
+            # Every cycle holds a back edge of a depth first walk from the roots, so those (and edges into the bar) are enough to guard:
+            # fewer guarded edges than taking every edge to an earlier state, so the trap level reaches fewer neurons.
+            ex=('OPEND','HALT','T3_PF'); done=set(); onst=set()
+            for r0 in s.trap_roots:
+                if r0 in done or r0 in bar: continue
+                stk=[(r0,iter([nx for _,nx in s.states[r0][1] if nx is not None]))]; onst.add(r0); done.add(r0)
+                while stk:
+                    q_,it=stk[-1]; nx=next(it,None)
+                    if nx is None: stk.pop(); onst.discard(q_); continue
+                    if nx in bar:
+                        if nx not in ex: guard.add((q_,nx))
+                    elif nx in onst: guard.add((q_,nx))
+                    elif nx not in done:
+                        done.add(nx); onst.add(nx); stk.append((nx,iter([n2 for _,n2 in s.states[nx][1] if n2 is not None])))
             print('trap reach',len(reach),'guarded edges',len(guard),file=__import__('sys').stderr)
         for name,(r,outs) in s.states.items():
             for c,nxt in outs:

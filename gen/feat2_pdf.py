@@ -21,22 +21,22 @@ for j_ in range(3):
     lit(st+'o',b'1 ',nx); lit(st+'d',b'.',st+'e'); _f2num(st+'e',f2c[j_]*(1000/255),3,True,st+'f'); lit(st+'f',b' ',nx)
 lit('F2P_Sr',b'rg ','F2P_Sx')
 number('F2P_Sx',qcx0,'F2P_Sx1'); lit('F2P_Sx1',b' ','F2P_Sx2'); number('F2P_Sx2',qph-(qyy-qtop)-qh,'F2P_Sx3'); lit('F2P_Sx3',b' ','F2P_Sx4'); number('F2P_Sx4',qxx-qcx0,'F2P_Sx5'); lit('F2P_Sx5',b' ','F2P_Sx6'); number('F2P_Sx6',qh,'F2P_Sx7'); lit('F2P_Sx7',b' re f Q\n','F2P_C1')
-e=S('F2P_C1'); on('F2P_C1',(net.bits(f2cx,18,e)[2],'F2P_D0',None),(None,'F2P_C2',None))
+e=S('F2P_C1'); on('F2P_C1',(net.bits(f2cx,24,e)[2],'F2P_D0',None),(None,'F2P_C2',None))
 for i_,dy_ in enumerate((3,7)):
     st=f'F2P_D{i_}'; nx='F2P_D1' if i_==0 else 'F2P_C2'
     number(st,qcx0,st+'a'); lit(st+'a',b' ',st+'b'); number(st+'b',qyb+dy_,st+'c'); lit(st+'c',b' ',st+'d'); number(st+'d',qxx-qcx0,st+'e'); lit(st+'e',b' 1 re f\n',nx)
-e=S('F2P_C2'); _hb=net.bits(f2ch,20,e); _lk=sum((_hb[k_]*(1<<k_) for k_ in range(12)),X())
-on('F2P_C2',(net.and_(net.step(_lk),net.lt(f2ln,F2LKN,e)),'F2P_L0',{r1:as_x(F1LT)+_lk*F1LS,f2a[4]:_lk}),(None,'F2P_C3',None))
+e=S('F2P_C2'); _hb=net.bits(f2ch,24,e); _lk=sum((_hb[k_]*(1<<k_) for k_ in range(8)),X())
+on('F2P_C2',(net.and_(net.step(_lk),net.lt(f2ln,F2LKN,e)),'F2P_L0',{r1:as_x(F1LT)+_lk*F1LS,f2a[4]:_lk}),(None,'P3_B0',None))
 e=S('F2P_L0'); _lb=as_x(F2LKB)+f2ln*5
-on('F2P_L0',(net.eq(R1,1,e),'F2P_C3',{w1:(_lb,qcx0),w2:(_lb+1,qxx),w3:(_lb+2,qph-(qyy-qtop)-qh),w4:(_lb+3,qh),xw:(_lb+4,f2a[4]),f2ln:f2ln+1}),(None,'F2P_C3',None))
+on('F2P_L0',(net.and_(net.ge(R1,1,e),net.lt(R1,3,e)),'P3_B0',{w1:(_lb,qcx0),w2:(_lb+1,qxx),w3:(_lb+2,qph-(qyy-qtop)-qh),w4:(_lb+3,qh),xw:(_lb+4,f2a[4]),f2ln:f2ln+1}),(None,'P3_B0',None))
 # the page's annotations object, after its content stream: external links only, as URI actions; rects in points
 on('F2P_A0',(None,'F2P_A1',{xw:(as_x(XR)+qobj-1,fp),f2li:0}))
 number('F2P_A1',qobj-1,'F2P_A2'); lit('F2P_A2',b' 0 obj\n[','F2P_A3')
 e=S('F2P_A3'); on('F2P_A3',(net.ge(f2li,f2ln,e),'F2P_AZ',None),(None,'F2P_A4',{rl:as_x(F2LKB)+f2li*5}))
 on('F2P_A4',(None,'F2P_A5',{**{f2a[i_]:rl.out[i_] for i_ in range(5)}}))
 lit('F2P_A5',b'<</Type/Annot/Subtype/Link/Border[0 0 0]/Rect[','F2P_R0')
-for i_,(v_,nx_) in enumerate(((f2a[0]*0.75,b' '),(f2a[2]*0.75,b' '),(f2a[1]*0.75,b' '),((f2a[2]+f2a[3])*0.75,b']/A<</S/URI/URI('))):
-    numz(f'F2P_R{i_}',v_,f'F2P_R{i_}x'); lit(f'F2P_R{i_}x',nx_,f'F2P_R{i_+1}' if i_<3 else 'F2P_U')
+for i_,(v_,nx_) in enumerate(((f2a[0]*0.75,b' '),(f2a[2]*0.75,b' '),(f2a[1]*0.75,b' '),((f2a[2]+f2a[3])*0.75,b']'))):
+    numz(f'F2P_R{i_}',v_,f'F2P_R{i_}x'); lit(f'F2P_R{i_}x',nx_,f'F2P_R{i_+1}' if i_<3 else 'P3_K0')
 on('F2P_U',(None,'F2P_U0',{f2up:as_x(F1LT)+f2a[4]*F1LS+1}))
 on('F2P_U0',(None,'F2P_U1',{rl:f2up}))
 e=S('F2P_U1'); _W=rl.out; _amp=net.and_(net.eq(_W[0],38,e),net.eq(_W[1],97,e),net.eq(_W[2],109,e),net.eq(_W[3],112,e),net.eq(_W[4],59,e)); _esc=net.or_(net.eq(_W[0],40,e),net.eq(_W[0],41,e),net.eq(_W[0],92,e))

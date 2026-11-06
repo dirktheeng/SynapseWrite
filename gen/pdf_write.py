@@ -11,7 +11,7 @@ def pd_patch(st,nx):
     number(st+'p',qi,st+'q')
     on(st+'q',(None,nx,{fp:qsvf}))
 import pdf_fonts
-PXV=[(p_,v_) for p_ in rom.EXT_PAGES for v_ in rom.EXT_VARS]; NFB_=len(FACES); NFC=len(FACES)+len(PXV); OROOT=3+3*NFC; FIRST=OROOT+1; PUS=999000; PFT=999100   # faces used by this PDF, and where each face's bytes are in the read only part of the bank
+PXV=[(p_,v_) for p_ in rom.EXT_PAGES for v_ in rom.EXT_VARS]; NFB_=len(FACES); NFC=len(FACES)+len(PXV); OROOT=3+3*NFC; DROOT=OROOT+1; FIRST=OROOT+2; PUS=999000; PFT=999100   # faces used by this PDF, and where each face's bytes are in the read only part of the bank
 PF_ROM=bytearray(); PF_INIT=[]
 for i_,f_ in enumerate(FACES):
     bl_,o1_,o2_=pdf_fonts.face_blob(i_,*f_,3+3*i_)
@@ -21,7 +21,7 @@ for i0_,(p_,v_) in enumerate(PXV):
     i_=NFB_+i0_; bl_,o1_,o2_=pdf_fonts.ext_blob(i_,v_,p_,3+3*i_)
     for j_,v2_ in enumerate((len(PF_ROM)+1,len(bl_),o1_,o2_)): PF_INIT.append([PFT+i_*4+j_,v2_])
     PF_ROM+=bl_
-head=b'%PDF-1.4\n'; cat_=b'1 0 obj\n<</Type/Catalog/Pages 2 0 R/Outlines %d 0 R>>\nendobj\n'%OROOT
+head=b'%PDF-1.4\n'; cat_=b'1 0 obj\n<</Type/Catalog/Pages 2 0 R/Outlines %d 0 R/Dests %d 0 R>>\nendobj\n'%(OROOT,DROOT)
 pfr=Ret('T4_PFR')
 on('PDF',(None,'PD_h',{fp:0,embase:OUTB}))
 lit('PD_h',head+cat_,'PD_x')
@@ -69,7 +69,7 @@ first_p=net.eq(qtop,0,e)
 qyy0=rl.out[0]+G_(rp6.out[3],net.gt(rl.out[0],rl.out[1]+qmt,e))
 qlb=net.bits(R2,9,e); qkind=qlb[0]+qlb[1]*2; qlvl=qlb[2]+qlb[3]*2
 qk=R();ql=R();qmk=R()
-qln_new,qmk_new=list_step(rl.out[4],qkind,qlvl,e,net.bits(rV.out[0]*4,4,net.gate(e,net.step(qkind)))[0])   # p2: the restart flag, read beside the list cell
+qln_new,qmk_new=list_step(rl.out[4],qkind,qlvl,e,net.bits(rV.out[0]*2048,13,net.gate(e,net.step(qkind)))[0])   # p2: the restart flag, read beside the list cell
 pl_={v6qf:sum((qlb[4+k_]*(1<<k_) for k_ in range(5)),X()),qyy:qyy0,qcols:rc.out[0],qci:rc.out[1],qln:rl.out[4],qxc:rl.out[5],qk:qkind,ql:qlvl,qmk:qmk_new,qind:G_(qlvl*48+48,net.step(qkind))+net.eq(qtoc,2,e)*24,qiw:rim.out[0],qih:rim.out[1],qpo:rim.out[2]}
 on('PD_3',(first_p,'PD_4',{**pl_,qtop:rl.out[1]}),
  (net.gt(rl.out[1],qtop,e),'PD_C',{**pl_,qtop:rl.out[1]}),
@@ -117,9 +117,7 @@ for ff_,h_ in enumerate(_pfh):
             if k_: _pfv=_pfv+net.and_(h_,bb_,ii_)*k_
 fsm.set(ptk_q,e,ptk)
 _qxh=net.step(qxp); _qxv=net.gate(as_x(NFB_)+(qxp-1)*3+SV['bold']+net.and_(e,ONE-SV['bold'],SV['ital'])*2,_qxh)
-_p2qh=net.step(f2x-16383.5); _p2qb=net.bits(f2x,18,_p2qh); _p2qd=net.decode_z(sum((_p2qb[k_]*(1<<(k_-14)) for k_ in range(14,18)),X()),9,_p2qh)   # p2: a further highlight prints as an exact shade
-_p2qz=as_x(f2z)+net.gate(sum((_p2qd[j_+1]*((c_[0]<<16)+(c_[1]<<8)+c_[2]+1) for j_,(n_,c_) in enumerate(HL_X)),X())-f2z,_p2qh)
-on('PD_F',(None,'PD_Fa',{f2cx:f2x,f2ch:f2h,f2cz:_p2qz,qsty:ins_st,qfn:net.relu(_pfv-_qxh*M)+_qxv,qsz:G_(pts,ONE-vf_-vc_)+G_(ptv,vf_)+G_(ptc,vc_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3,qhl:SV['hl']}))
+on('PD_F',(None,'PD_Fa',{f2cx:f2x,f2ch:f2h,f2cz:f2z,qsty:ins_st,qfn:net.relu(_pfv-_qxh*M)+_qxv,qsz:G_(pts,ONE-vf_-vc_)+G_(ptv,vf_)+G_(ptc,vc_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3,qhl:SV['hl']}))
 lit('PD_Fa',b'/F','PD_Fb')
 e=S('PD_Fb'); on('PD_Fb',(None,'PD_Fc',{xw:(as_x(PUS)+qfn,1)}))
 em_en.lin(e); em_b.add(e,48+qfn+net.ge(qfn,10,e)*7+net.ge(qfn,36,e)*6)     # font names /F0 to /F9, /FA and on
@@ -128,7 +126,7 @@ number('PD_Fd',qsz,'PD_Fe')
 lit('PD_Fe',b' Tf ','PD_Ff')
 PCS=[('%.2f %.2f %.2f rg\n'%(c_[0]/255,c_[1]/255,c_[2]/255)).encode() for c_ in PAL_F]; _pcb=rom_str(b''.join(PCS)); _pcl=len(PCS[0])
 on('PD_Ff',(net.and_(net.step(v4qk),ONE-net.step(ptk_q)),'V4_PK0',None),(None,'A10_B0',{la_:as_x(_pcb)+qbase*_pcl,ln_lit:_pcl,lbret.r:lbret.id('T4P_O')}))
-e=S('T4P_O'); _f2xb=net.bits(f2cx,18,e); _f2raw=sum((_f2xb[k_]*(1<<(k_-4)) for k_ in range(4,14)),X()); _f2on=net.step(_f2raw); _f2tw=G_(_f2raw,_f2on)+(e-_f2on)*512-512   # feat2: character spacing as Tc, written when it changes
+e=S('T4P_O'); _f2xb=net.bits(f2cx,24,e); _f2raw=sum((_f2xb[k_]*(1<<(k_-4)) for k_ in range(4,14)),X()); _f2on=net.step(_f2raw); _f2tw=G_(_f2raw,_f2on)+(e-_f2on)*512-512   # feat2: character spacing as Tc, written when it changes
 on('T4P_O',(net.step(net.step(_f2tw*(1/15)+100-f2tc-0.01)+net.step(f2tc-100-_f2tw*(1/15)-0.01)),'F2P_T0',{qcx0:qxx,qop:1,f2tw:_f2tw+512}),(None,'T4P_Oa',{qcx0:qxx,qop:1}))
 lit('T4P_Oa',b'BT 1 0 0 1 ','T4P_Ob'); number('T4P_Ob',qxx,'T4P_Oc'); lit('T4P_Oc',b' ','T4P_Od')
 number('T4P_Od',qyb+qrise-3,'T4P_Oe'); lit('T4P_Oe',b' Tm (','PD_Tc')
@@ -247,3 +245,4 @@ pdfl=R(); on('PD_END',(None,'HALT',{pdfl:fp}))
 pdfout=Bus(net); pdfout.add(S('HF'),pdfl); fsm.set(pdfl,S('HF'),0)
 exec(open('rv_a6_pdf.py').read())
 exec(open('feat2_pdf.py').read())
+exec(open('p3_pdf.py').read())

@@ -20,10 +20,10 @@ on('P2_CE',(None,'RD0',{lc:1,p2fon:0,p2fys:0,cp:p2sc,co:p2so,ap:p2sa,ao:p2sb}))
 net.group(_p2g)
 
 # ---- p2: Restart at 1 and Continue Numbering, from the List Style menu ----
-# The caret paragraph's restart flag is a quarter in feat1's paragraph cell (below every threshold its other readers use); alv says set (1) or clear (0).
+# The caret paragraph's restart flag is 1/2048 in feat1's paragraph cell (below p3's outline level steps of 1/32) (below every threshold its other readers use); alv says set (1) or clear (0).
 _p2l=net.cur[0]; net.group('p2 list restart')
 on('P2_RS0',(None,'P2_RS1',{r1:cb+F1PX}))
-e=S('P2_RS1'); _q=net.bits(R1*4,4,e)[0]; _nv=as_x(R1)-_q*0.25+alv*0.25; log(e,6,cp,F1PX,R1,_nv)
+e=S('P2_RS1'); _q=net.bits(R1*2048,13,e)[0]; _nv=as_x(R1)-_q*(1/2048)+alv*(1/2048); log(e,6,cp,F1PX,R1,_nv)
 on('P2_RS1',(None,'RD0',{w1:(cb+F1PX,_nv),w2:(cb+DIRTY,1),lc:1}))
 net.group(_p2l)
 

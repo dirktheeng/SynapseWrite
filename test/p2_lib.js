@@ -37,7 +37,7 @@ module.exports=async(ok,only)=>{
 
  if(!only||only=='hl'){
   // Word's eight further highlight values: drawn in their colors, saved by name, read back the same
-  const X=[['darkBlue',0,0,128],['darkCyan',0,128,128],['darkGreen',0,128,0],['darkMagenta',128,0,128],['darkRed',128,0,0],['darkYellow',128,128,0],['darkGray',128,128,128],['black',0,0,0]];
+  const X=[['darkBlue',0,0,129],['darkCyan',0,128,129],['darkGreen',0,128,1],['darkMagenta',128,0,129],['darkRed',128,0,1],['darkYellow',128,128,1],['darkGray',128,128,129],['black',0,0,1]];   // Word's colors, blue one up: the mark that keeps them apart from a run shade
   const body=X.map(([n])=>`<w:p><w:r><w:t xml:space="preserve">plain </w:t></w:r><w:r><w:rPr><w:highlight w:val="${n}"/></w:rPr><w:t>marked ${n}</w:t></w:r></w:p>`).join('')+'<w:p><w:r><w:rPr><w:highlight w:val="yellow"/></w:rPr><w:t>yellow still</w:t></w:r></w:p>';
   let A=await lib();A.file(9,doc(body));A.settle();A.click(600,700);A.settle();A.shot('build/p2/hl.png');
   for(const [n,r,g,b] of X){const c=count(A,223,1039,174,776,(x,y,z)=>x==r&&y==g&&z==b);ok(`highlight ${n} draws its color (${r},${g},${b})`,c>300,c);}
