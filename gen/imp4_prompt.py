@@ -1,6 +1,6 @@
 # ---- imp4: one prompt bar with many duties. It takes a short text and hands it to the command that asked. ----
 net.group('prompt bar')
-PRL=['','Color (RRGGBB):','','New style name:','Rename style to:','Font name:','Character style:']
+PRL=['','Color (RRGGBB):','','New style name:','Rename style to:','Font name:','Character style:','Link address:']
 on('V4_PR',(None,'RD0',{mode:8,prl:0,field:0}))
 _b_=(160,160,160)
 e=S('V4_B0'); _ph=net.decode(prk,len(PRL),e)
@@ -12,7 +12,7 @@ e=S('V4_B2'); on('V4_B2',(net.ge(fi_,prl,e),'TB0',{rD:(sx,DOCY+6,1,16,(0,0,0),0)
 on('V4_B3',(None,'V4_B2',{gly:(R1,0,sx,DOCY+4,0,0),sx:sx+adv,fi_:fi_+1}))
 # what the text does
 e=S('V4_PX'); _px=net.decode(prk,len(PRL),e)
-on('V4_PX',(_px[1],'V4_HX',{v4h:0,v4i:0,v4j:0}),(_px[3],'V5_NS0',{v4c:0}),(_px[6],'V5_NS0',{v4c:1}),(_px[4],'V5_RN0',None),(_px[5],'V4_FT0',{v4i:0}),(None,'RD0',None))
+on('V4_PX',(_px[1],'V4_HX',{v4h:0,v4i:0,v4j:0}),(_px[3],'V5_NS0',{v4c:0}),(_px[6],'V5_NS0',{v4c:1}),(_px[4],'V5_RN0',None),(_px[5],'V4_FT0',{v4i:0}),(_px[7],'P2_LK0',None),(None,'RD0',None))
 # a color typed as six hex digits, with or without a leading #
 on('V4_HX',(None,'V4_HX1',{r1:as_x(PRB)+v4i}))
 e=S('V4_HX1'); _dg=net.and_(net.ge(R1,48,e),net.lt(R1,58,e)); _up=net.and_(net.ge(R1,65,e),net.lt(R1,71,e)); _lo=net.and_(net.ge(R1,97,e),net.lt(R1,103,e)); _isx=net.step(_dg+_up+_lo)

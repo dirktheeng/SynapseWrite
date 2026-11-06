@@ -10,7 +10,7 @@ _apos=lambda v,en: net.or_(net.eq(v,39,en),net.eq(v,146,en))
 a6cm=R()   # set when a right click asked: a word with no suggestion to offer falls through to the edit menu
 on('A6S_0',(ONE-sp_on,'A6S_NO',None),(None,'A6S_L',{a6ws:co,a6we:co}))
 on('A6S_NO',(a6cm,'RVA3_CMM',None),(None,'A6S_KM',None))
-on('A6S_KM',(None,'T1_M0',{t1_mop:12,t1_mrow:99,t1_mtop:net.min_(scr_cy+chh,DOCB-RH*8-4),t1_mx:net.min_(cx,as_x(1262-170)),clip0:0,clip1:0}))
+on('A6S_KM',(None,'T1_M0',{t1_mop:12,t1_mrow:99,t1_mtop:net.min_(scr_cy+chh,DOCB-RH*9-4),t1_mx:net.min_(cx,as_x(1262-170)),clip0:0,clip1:0}))
 e=S('A6S_L'); on('A6S_L',(net.eq(a6ws,0,e),'A6S_R',None),(None,'A6S_L1',{r1:cb+a6ws-1}))
 e=S('A6S_L1'); on('A6S_L1',(_wchar(R1,e),'A6S_L',{a6ws:a6ws-1}),(None,'A6S_R',None))
 e=S('A6S_R'); on('A6S_R',(net.ge(a6we,clen,e),'A6S_T0',None),(None,'A6S_R1',{r1:cb+a6we}))

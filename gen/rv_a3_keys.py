@@ -43,10 +43,10 @@ e=S('RVA3_CM1'); rv_in=net.and_(rv_sh,net.ge(Kc,rv_sL,e),net.ge(rv_sH,Kc,e))
 on('RVA3_CM1',(rv_in,'MVJ',{jp:rv_scp,jo:rv_sco,jret.r:jret.id('RVA3_CM3')}),(None,'RD0',{ap:cp,ao:co,drag:0,blink:0}))
 on('RVA3_CM3',(None,'RD0',{ap:rv_sap,ao:rv_sao,drag:0,blink:0}))
 e=S('RVA3_CM2'); on('RVA3_CM2',(net.or_(has_sel,net.gt(hx_,cx+4,e)),'RVA3_CMM',{rv_cmq:0,drag:0}),(None,'A6S_0',{rv_cmq:0,drag:0,a6cm:1}))
-on('RVA3_CMM',(None,'T1_M0',{a6cm:0,t1_mop:12,t1_mrow:99,t1_mtop:net.min_(mp_pty,DOCB-RH*8-4),t1_mx:net.min_(mp_ptx,1262-170),clip0:0,clip1:0}))
-RV_MENU=['Cut','Copy','Paste','Select All','Bold','Italic','Underline','Find']
+on('RVA3_CMM',(None,'T1_M0',{a6cm:0,t1_mop:12,t1_mrow:99,t1_mtop:net.min_(mp_pty,DOCB-RH*9-4),t1_mx:net.min_(mp_ptx,1262-170),clip0:0,clip1:0}))
+RV_MENU=['Cut','Copy','Paste','Select All','Bold','Italic','Underline','Find','Link...']   # p2: Link asks for an address for the selection
 cur_='RVA3_MM0'
-on(cur_,(None,'RVA3_MMa',{rA:(t1_mx+2,t1_mtop+2,171,RH*8+1,(200,198,196),0),rB:(t1_mx-1,t1_mtop-1,172,RH*8+2,(150,148,146),0)}))
+on(cur_,(None,'RVA3_MMa',{rA:(t1_mx+2,t1_mtop+2,171,RH*len(RV_MENU)+1,(200,198,196),0),rB:(t1_mx-1,t1_mtop-1,172,RH*len(RV_MENU)+2,(150,148,146),0)}))
 cur_='RVA3_MMa'
 for r_,lb_ in enumerate(RV_MENU):
     e=S(cur_); hv_=net.eq(t1_mrow,r_,e); nx_=f'RVA3_MM{r_}_0'

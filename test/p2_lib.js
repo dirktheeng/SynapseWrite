@@ -80,4 +80,32 @@ module.exports=async(ok,only)=>{
   g2=[0,1,3,5,6].map(k=>ref.indexOf(mk(A,lines(A)[k]))+1);ok('Continue Numbering on the second list goes on from 3',g2.join()=='1,2,3,4,5',g2.join()+' '+[...part(A,'word/document.xml').matchAll(/<w:numId w:val="(\d+)"\/>/g)].map(m=>m[1]).join(' '));
   A.shot('build/p2/lists.png');
  }
+
+ if(!only||only=='link'){
+  // Link... from the right-click menu over a selection: the address becomes an external link, saved with a relationship, drawn underlined in the hyperlink blue; undo takes it off
+  let A=await lib();A.type('see the site now');A.settle();A.key(132);for(let i=0;i<4;i++)A.key(130);for(let i=0;i<8;i++)A.key(130,2);A.settle();
+  // right-click on the selection opens the context menu at the pointer; its last row, Link..., asks for the address
+  A.move(362,297);A.e.inject(A.h.ev[5],16);A.raw(3,362,297,9000000);A.e.inject(A.h.ev[5],16);A.raw(4,362,297);A.settle();A.shot('build/p2/link_menu.png');
+  A.click(420,297+8*22+11);A.settle();A.shot('build/p2/link_prompt.png');A.type('https://example.org/a?b=1');A.key(13);A.settle();A.click(600,700);A.settle();A.shot('build/p2/link.png');
+  const x=part(A,'word/document.xml'),r=part(A,'word/_rels/document.xml.rels');
+  const m=x.match(/<w:hyperlink r:id="([^"]+)"[^>]*>(.*?)<\/w:hyperlink>/s);
+  ok('the selection is saved inside a hyperlink',m&&/the site/.test(m[2])&&!/see|now/.test(m[2]),m?m[2].slice(0,200):x.slice(0,300));
+  ok('its relationship holds the address, external',m&&new RegExp(`Id="${m[1]}"[^>]*Target="https://example.org/a\\?b=1&amp;" TargetMode="External"|Id="${m[1]}"[^>]*Target="https://example.org/a\\?b=1" TargetMode="External"`).test(r),r.slice(-300));
+  ok('the link text is underlined in 0563C1',m&&/<w:color w:val="0563C1"\/>/.test(m[2])&&/<w:u w:val="single"\/>/.test(m[2]));
+  const blue=count(A,223,1039,174,776,(r_,g,b)=>r_==5&&g==99&&b==193);ok('drawn in the hyperlink blue',blue>40,blue);
+  A.key(122,1);A.settle();const y=part(A,'word/document.xml');ok('undo takes the link off',!/<w:hyperlink/.test(y)&&!/0563C1/.test(y));
+  // read back: the saved file opens with the link and draws the same
+  A.key(121,1);A.settle();A.click(600,700);A.settle();const z=part(A,'word/document.xml');ok('redo brings the link back',/<w:hyperlink/.test(z));let B=await lib();B.file(9,A.savedBytes());B.settle();B.click(600,700);B.settle();
+  A.shot('build/p2/link_a.png');B.shot('build/p2/link_b.png');ok('redo, save and reopen: pixel identical',B.hash(190,776)===A.hash(190,776));
+ }
+
+ if(!only||only=='follow'){
+  // Ctrl+click on an internal link puts the caret at the start of its bookmark
+  const body='<w:p><w:hyperlink w:anchor="far"><w:r><w:t>jump there</w:t></w:r></w:hyperlink></w:p>'+'<w:p><w:r><w:t>filler</w:t></w:r></w:p>'.repeat(3)+'<w:p><w:r><w:t xml:space="preserve">before </w:t></w:r><w:bookmarkStart w:id="0" w:name="far"/><w:r><w:t>target</w:t></w:r><w:bookmarkEnd w:id="0"/></w:p>';
+  let A=await lib();A.file(9,doc(body));A.settle();A.click(600,700);A.settle();
+  const f=A.fb();let y0=-1;for(let y=180;y<700&&y0<0;y++)for(let x=300;x<500;x++)if(f[(y*1280+x)*4]<128){y0=y;break;}
+  A.e.inject(A.h.ev[5],1);A.raw(3,330,y0+6,9000000);A.e.inject(A.h.ev[5],1);A.raw(4,330,y0+6);A.settle();   // Ctrl held: bit 0 of the event modifier, as the glue sends it
+  A.type('X');A.settle();
+  const x=part(A,'word/document.xml');{const t=x.replace(/<[^>]+>/g,'');ok('Ctrl+click on the link: typing lands at the bookmark, the link text is untouched',t.includes('jump there')&&t.includes('before Xtarget'),t.slice(0,80));}
+ }
 };
