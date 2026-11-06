@@ -540,12 +540,12 @@ net.group('undo')
 U=rlog.out; uop=R();up=R();uo=R();uch=R();ust=R();ug=R();ub=R()
 on('UNDO',(net.ge(usp,UB+6,S('UNDO')),'U1',{rlog:usp-6,nolog:1}),(None,'HALT',None))
 on('U1',(None,'U2',{uop:U[0],up:U[1],uo:U[2],uch:U[3],ust:U[4],ug:U[5],usp:usp-6}))
-h=net.decode(uop,13,S('U2'))
+h=net.decode(uop,14,S('U2'))
 on('U2',*a7_undo_rules(h),(h[1],'UJ',{jp:up,jo:uo,jret.r:jret.id('DEL'),oret.r:oret.id('UCK')}),
  (h[2],'UJ',{jp:up,jo:uo,jret.r:jret.id('UI2'),oret.r:oret.id('UCK')}),
  (h[3],'UJ',{jp:up+1,jo:0,jret.r:jret.id('MERGE'),oret.r:oret.id('UCK')}),
  (h[4],'UJ',{jp:up,jo:uo,jret.r:jret.id('SPLIT'),oret.r:oret.id('UCK')}),
- (h[5],'UJ',{jp:up,jo:uo,jret.r:jret.id('UST'),oret.r:oret.id('UCK')}),(h[6],'UJ',{jp:up,jo:co,jret.r:jret.id('T1_UP')}),(h[7],'UCK',{w1:(up,uch)}),(h[8],'UJ',{jp:up,jo:2047,jret.r:jret.id('T3_US'),oret.r:oret.id('UCK')}),(None,'UCK',None))
+ (h[5],'UJ',{jp:up,jo:uo,jret.r:jret.id('UST'),oret.r:oret.id('UCK')}),(h[6],'UJ',{jp:up,jo:co,jret.r:jret.id('T1_UP')}),(h[7],'UCK',{w1:(up,uch)}),(h[13],'UCK',{nsty:uch}),(h[8],'UJ',{jp:up,jo:2047,jret.r:jret.id('T3_US'),oret.r:oret.id('UCK')}),(None,'UCK',None))
 on('UJ',(None,'J0',None))
 on('UI2',(None,'INS',{ins_ch:uch,ins_st:ust}))
 mark_d(S('UST'),cp);mark_d(S('VST'),cp)
@@ -555,12 +555,12 @@ on('UCK2',(net.eq(U[5],ug,S('UCK2')),'U1',{rlog:usp-6}),(None,'UEND',None))
 on('UEND',(a4da,'A4_UD',{nolog:0,autos:1,blink:0,lc:1}),(None,'SYNC',{nolog:0,autos:1,blink:0,lc:1}))
 on('REDO',(net.lt(usp,urp,S('REDO')),'V1',{rlog:usp,nolog:1}),(None,'HALT',None))
 on('V1',(None,'V2',{uop:U[0],up:U[1],uo:U[2],uch:U[3],ust:U[4],ug:U[5],usp:usp+6}))
-h=net.decode(uop,13,S('V2'))
+h=net.decode(uop,14,S('V2'))
 on('V2',*a7_redo_rules(h),(h[1],'UJ',{jp:up,jo:uo,jret.r:jret.id('UI2'),oret.r:oret.id('VCK')}),
  (h[2],'UJ',{jp:up,jo:uo,jret.r:jret.id('DEL'),oret.r:oret.id('VCK')}),
  (h[3],'UJ',{jp:up,jo:uo,jret.r:jret.id('SPLIT'),oret.r:oret.id('VCK')}),
  (h[4],'UJ',{jp:up+1,jo:0,jret.r:jret.id('MERGE'),oret.r:oret.id('VCK')}),
- (h[5],'UJ',{jp:up,jo:uo,jret.r:jret.id('VST'),oret.r:oret.id('VCK')}),(h[6],'UJ',{jp:up,jo:co,jret.r:jret.id('T1_VP')}),(h[7],'VCK',{w1:(up,ust)}),(h[8],'UJ',{jp:up,jo:2047,jret.r:jret.id('T3_VS'),oret.r:oret.id('VCK')}),(None,'VCK',None))
+ (h[5],'UJ',{jp:up,jo:uo,jret.r:jret.id('VST'),oret.r:oret.id('VCK')}),(h[6],'UJ',{jp:up,jo:co,jret.r:jret.id('T1_VP')}),(h[7],'VCK',{w1:(up,ust)}),(h[13],'VCK',{nsty:ust}),(h[8],'UJ',{jp:up,jo:2047,jret.r:jret.id('T3_VS'),oret.r:oret.id('VCK')}),(None,'VCK',None))
 on('VST',(None,'VCK',{w1:(cb+1024+co,ust),w2:(cb+DIRTY,1)}))
 on('VCK',(net.lt(usp,urp,S('VCK')),'VCK2',{rlog:usp}),(None,'UEND',None))
 on('VCK2',(net.eq(U[5],ug,S('VCK2')),'V1',{rlog:usp}),(None,'UEND',None))

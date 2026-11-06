@@ -2,11 +2,11 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-532691 neurons, 1110478 edges, 188 layers, 3933 control states.
+532709 neurons, 1110515 edges, 188 layers, 3933 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
-| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1299) | 1299 | 7863 |
+| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1299) | 1299 | 7870 |
 | glyph network | Selects and addresses a character cell for drawing. | gen/app.py (525), gen/imp3_zoom_pre.py (155) | 680 | 9980 |
 | glyph metrics | Character advance and kerning trees. | gen/app.py (20478) | 20478 | 58442 |
 | glyph unit | Draws a character from its edge network into the glyph store, in its own clock domain. | gen/glyphnet.py (10800) | 10800 | 40090 |
@@ -21,7 +21,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | coverage | Adds edge coverage into pixel coverage. | gen/glyphnet.py (1816), gen/imp3_zoom_pre.py (582), gen/app.py (38) | 2436 | 12958 |
 | style interner | Finds or adds a style record in the interned table, in its own clock domain. | gen/app.py (103) | 103 | 232 |
 | glyph patch | Assembles glyph coverage into a color patch for the patch port. | gen/app.py (9) | 9 | 127 |
-| shared control registers | Editor state registers and the selection order comparators. | gen/app.py (242), gen/rv_a4_regs.py (81), gen/imp4_regs.py (55), gen/t1_features.py (45), gen/imp3_regs.py (40), gen/rv_a3_pre.py (38), gen/imp3_zoom_pre.py (13), gen/imp5_regs.py (3), gen/imp4_list.py (3) | 520 | 4959 |
+| shared control registers | Editor state registers and the selection order comparators. | gen/app.py (242), gen/rv_a4_regs.py (81), gen/imp4_regs.py (55), gen/t1_features.py (45), gen/imp3_regs.py (40), gen/rv_a3_pre.py (38), gen/imp3_zoom_pre.py (13), gen/imp5_regs.py (3), gen/imp4_list.py (3) | 520 | 4968 |
 | ribbon display list | One sequencer that plays draw records for the ribbon, menus and labels from read only memory, one item per tick. | gen/rv_a9_dl.py (150) | 150 | 426 |
 | event dispatch | One neuron left from the first dispatcher; routing now lives in raw event interpretation and the state rules. | gen/app.py (1) | 1 | 3 |
 | pointer | Draws the mouse pointer, saves and restores the colors under it, and chooses its shape from the screen. | gen/pointer2.py (55), gen/pointer.py (48), gen/app.py (15) | 118 | 775 |
@@ -31,7 +31,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | key handling | Maps each key and modifier to its editing command. | gen/app.py (453), gen/rv_a3_pre.py (105), gen/imp3_zoom_pre.py (12), gen/t1_features.py (2) | 572 | 5700 |
 | screenshot hit test | Reads object ids from the screen image and maps a click to a document position; also the blink tick check of the screen against the line table. | gen/t1_features.py (151), gen/app.py (116), gen/rv_a7_regs.py (115) | 382 | 1110 |
 | edit primitives | Character and paragraph insert and delete with undo logging. | gen/app.py (194), gen/rv_a7_regs.py (2) | 196 | 578 |
-| undo | Undo and redo walkers over the log. | gen/app.py (107) | 107 | 438 |
+| undo | Undo and redo walkers over the log. | gen/app.py (111) | 111 | 474 |
 | range walker | Walks a selection for copy, cut, delete and formatting. | gen/app.py (362), gen/rv_a4_regs.py (76), gen/t1_features.py (29) | 467 | 2237 |
 | find and replace | Search automaton over the document and replace. | gen/t1_features.py (197), gen/app.py (82) | 279 | 747 |
 | paste | Inserts clipboard text with paragraph splitting. | gen/app.py (208) | 208 | 2643 |
@@ -69,7 +69,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | table of contents | Builds and updates the table of contents. | gen/t3_features.py (175) | 175 | 521 |
 | docx writer tier 3 | Writes section properties, tabs, markers, comments, notes, headers and footers. | gen/t3_features.py (306) | 306 | 662 |
 | docx reader notes | Reads note, comment and header parts. | gen/t3_features.py (819) | 819 | 2442 |
-| style create and rename | New and renamed styles, and applying character styles. | gen/imp4_style.py (169) | 169 | 670 |
+| style create and rename | New and renamed styles, and applying character styles. | gen/imp4_style.py (177) | 177 | 687 |
 | list formats | The list format menu and reading numFmt and lvlText. | gen/imp4_list2.py (151) | 151 | 543 |
 | canvas look | Page shadow and the canvas around the page. | gen/rv_a2_canvas.py (82) | 82 | 197 |
 | a4 commands | Word commands: repeat, format painter, keep rules and others. | gen/rv_a4_features.py (344) | 344 | 1272 |
@@ -84,4 +84,4 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | rv a3 interaction | Editing keys, word and page motion, right click, autoscroll, context menu, and the late tier 1 features. | gen/t1_features.py (1933), gen/rv_a3_keys.py (655), gen/pointer3.py (86), gen/rv_a4_features.py (79), gen/ui.py (42) | 2795 | 24369 |
 | file output command | Selects the length, data base and file name the glue saves. | gen/rv_a11_out.py (5) | 5 | 8 |
 | screen check | Compares one line of the screen id plane against the line table on each blink tick and repairs by repainting. | gen/rv_a11_out.py (23) | 23 | 56 |
-| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (9906) | 9906 | 38189 |
+| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (9912) | 9912 | 38213 |
