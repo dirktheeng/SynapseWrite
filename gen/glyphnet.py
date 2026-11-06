@@ -581,9 +581,8 @@ class GlyphUnit:
             for c_ in ctier: o_.append(net.and_(o_[-1],c_))
             return o_
         ox=latch(OX)
-        w=[X() for _ in range(LW)]; nbank=0; blockfull={a_:net.wire() for a_ in range(0,LW,BLK)}
-        _ct={t_:c_ for t_,c_ in zip(TIERS,ctier)}
-        cbl={a_:_ct[a_] if a_ in _ct else latch(net.step(cells-a_-0.5)) for a_ in range(BLK,LW,BLK)}     # block a_ holds a stored column
+        w=[X() for _ in range(LW)]; nbank=0
+        dB={a_:X() for a_ in range(BLK,LW,BLK)}     # whole blocks: one delta per crossing at the block after its own
         for gp in (slots,aslots):
             for sg,L_ in gp.items():
                 for xk in L_:
@@ -591,10 +590,8 @@ class GlyphUnit:
                     xs=net.relu(xk+ox+en*M-M)
                     # Blocks of columns, found left to right: a block is tested only once the crossing is known to lie at
                     # or right of its start, so the tests stop at the crossing's block, which alone needs its ramps.
-                    # Right of it every column gains the same whole unit, one neuron per block, only while the glyph is that wide.
                     A_=list(range(0,LW,BLK)); gl={0:en}
                     for a_ in A_[1:]: gl[a_]=net.step(gl[a_-BLK]*M-M+xs-(a_+PAD+OFF))
-                    fu={}
                     for a_ in A_:
                         b_=min(a_+BLK,LW)
                         pe=net.step(gl[a_]*M-M-gl[b_]*M+0.5) if b_ in gl else gl[a_]
@@ -604,22 +601,28 @@ class GlyphUnit:
                             R={q:net.relu(e_*M-M+(q+PAD+OFF)-xs) for q in range(c0+1,c1+1)}; nbank+=c1-c0
                             for p_ in range(c0,c1): w[p_]=w[p_]+(R[p_+1]-R.get(p_,X()))*sg
                         for p_ in range(m_,b_): w[p_]=w[p_]+lo*sg
-                        if b_<LW:
-                            fu[b_]=net.step((pe+fu.get(a_,X()))*M-M+cbl[b_]-0.5)
-                            net.connect(blockfull[b_],fu[b_]*sg)     # whole columns meet in one sum per block: edges that cancel there wake no column
-        for a_,f_ in blockfull.items():
-            for p_ in range(a_,min(a_+BLK,LW)): w[p_]=w[p_]+f_
+                        # every block right of it is whole: one unit into the next block's delta, summed across once per row
+                        if b_<LW: dB[b_]=dB[b_]+pe*sg
         g.nbank=nbank
         net.group('coverage')
         ac=[net.reg() for _ in range(LW)]
         out=[net.wire() for _ in range(LW)]
         clrt=tiers(clr)
+        # Whole blocks: per row, a running sum over the block deltas gives each block's whole coverage, and its terms
+        # take the deltas back out. Within one outline the sum is the winding left of the block, never negative.
+        dR={a_:net.reg() for a_ in dB}; F={0:X()}
+        for a_ in dB:
+            F[a_]=net.relu(F[a_-BLK]+dR[a_]+clrt[tier_of(a_+1)]*M-M)
+        for a_ in dB:
+            net.rec(dR[a_],dR[a_]-F[a_]+F[a_-BLK]+dB[a_]*(1.0/K))
         for p_ in range(LW):
             # The winding of a sample line is 0 or 1 inside one outline, so the K lines sum straight into the pixel and
             # only the row's sum is clamped (where two contours overlap the winding reaches 2). The neuron that reads the
             # row's sum also takes it out of the accumulator; the row is written on wr, and clr is wr or the tick after done.
-            a0_=net.relu(ac[p_]+clrt[tier_of(p_+1)]*M-M); a_=a0_-net.relu(a0_-1)
-            net.rec(ac[p_],ac[p_]-a0_+w[p_]*(1.0/K))
+            # A pixel's partial share may be negative (a right edge in a block that is whole from the left), so the
+            # block's whole share is added before the one relu, and the clear gives it back.
+            Fb=F[p_-p_%BLK]; a1_=net.relu(ac[p_]+Fb+clrt[tier_of(p_+1)]*M-M); a_=a1_-net.relu(a1_-1)
+            net.rec(ac[p_],ac[p_]-a1_+Fb+w[p_]*(1.0/K))
             # darkening curve, the same one the old rasterizer used, written as a piecewise linear map of final coverage
             net.connect(out[p_],a_*GAMMA_K[0]-net.relu(a_-0.25)*GAMMA_K[1]-net.relu(a_-0.5)*GAMMA_K[2]-net.relu(a_-0.75)*GAMMA_K[3])
         net.aligned.append([next(iter(w_.t)) for w_ in out])

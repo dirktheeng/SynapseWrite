@@ -2,7 +2,7 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-235500 neurons, 458796 edges, 187 layers, 4040 control states.
+235025 neurons, 457937 edges, 187 layers, 4040 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
@@ -15,11 +15,11 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | snapping layer | Fits outline heights to the pixel grid for a given size. | gen/glyphnet.py (338) | 338 | 1137 |
 | glyph geometry | Scales outline coordinates by the drawn size. | gen/glyphnet.py (235) | 235 | 813 |
 | glyph store | Keeps drawn glyphs in memory and copies them to the screen. | gen/glyphnet.py (17) | 17 | 54 |
-| stem units | Stem position units for the hinting of letters. | gen/glyphnet.py (1) | 1 | 0 |
+| stem units | Stem position units for the hinting of letters. |  | 0 | 0 |
 | row sequencer | Steps the glyph unit through the rows of a character. | gen/glyphnet.py (29) | 29 | 72 |
 | glyph weights (outline edges) | Font outlines as edges in weights, one group per glyph program. | gen/glyphnet.py (130598) | 130598 | 609146 |
-| ramp bank | Coverage ramps for the edge network. | gen/glyphnet.py (5993) | 5993 | 12811 |
-| coverage | Adds edge coverage into pixel coverage. | gen/glyphnet.py (1268), gen/imp3_zoom_pre.py (583), gen/app.py (36) | 1887 | 14103 |
+| ramp bank | Coverage ramps for the edge network. | gen/glyphnet.py (5475) | 5475 | 10959 |
+| coverage | Adds edge coverage into pixel coverage. | gen/glyphnet.py (1312), gen/imp3_zoom_pre.py (583), gen/app.py (36) | 1931 | 14837 |
 | style interner | Finds or adds a style record in the interned table, in its own clock domain. | gen/app.py (151) | 151 | 340 |
 | glyph patch | Assembles glyph coverage into a color patch for the patch port. | gen/app.py (12) | 12 | 185 |
 | shared control registers | Editor state registers and the selection order comparators. | gen/app.py (245), gen/rv_a4_regs.py (81), gen/imp4_regs.py (55), gen/t1_features.py (45), gen/imp3_regs.py (40), gen/rv_a3_pre.py (38), gen/feat1_regs.py (26), gen/imp3_zoom_pre.py (13), gen/imp5_regs.py (12), gen/imp4_list.py (3) | 558 | 5150 |

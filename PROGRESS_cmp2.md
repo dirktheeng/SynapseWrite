@@ -52,3 +52,12 @@ flops.js after 1 to 6 (before, after, ratio): start 7,479,327 6,539,911 0.874; p
 type at end 723,101 718,683; repeat key 69,995 55,193 0.789; select all 0.988; jump 0.982; type at top 0.970; down 0.981;
 enter 0.983; undo 0.982; wheel 0.982; click 0.975; mouse move 0.961; bold 0.982. Every event is cheaper.
 Screenshots again: same 16 pixels as after step 2.
+
+## 7. Whole blocks as deltas summed once per row
+Before, every sample line pushed +1 into every whole block right of a crossing (a chain of block neurons, then 8 edges
+per block into the pixel accumulators), and a right edge pushed the same number of -1 back. Now a crossing adds one unit
+into a per block delta register at the block after its own; at the row's read (clr) a running sum over the block deltas
+gives each block's whole share F, which is added before the pixel's one relu and given back to the accumulator and the
+deltas by the same pushes. First try added F after the relu: a right edge's partial share is negative inside a block that
+is whole from the left, so the relu cut it and bars ran to the right (screenshot showed it); fixed by adding F inside.
+Repeat key 55,193 to 53,992. a01_format open 7,915,329 to 7,705,825 edges. Page 2,928,785. Screenshot: same 16 pixels.
