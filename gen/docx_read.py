@@ -9,8 +9,9 @@ LN=TBL+1200; CLH=TBL+800; LH=TBL; DH=TBL+400; OFFS=TBL+1000
 exec(open('t3_px.py').read())
 exec(open('rv_a5_regs.py').read())
 rtoc=R();rdig=R();tpgv=R();fnc=R();rdsec=R();gcount=R();tcidx=R();gx=R();incell=R()
+exec(open('rv_a6_eqrd.py').read())
 def T3_PX_RULES(e):
-    return [(tag('<w:tbl',' >'),'PX',{gcount:0,tcidx:0,gx:0,pfirst:0,a5ts:0,oi:oi+6}),(pat('<w:gridC',e),'T3_GC',{oi:oi+8}),(tag('<w:tc',' >'),'T3_TC0',{oi:oi+5}),(pat('</w:tc>',e),'A5_TCE',{oi:oi+7}),(pat('</w:tr>',e),'A5_TRE',{oi:oi+7}),(net.and_(a5tcp,pat('<w:shd ',e)),'T3_SHD',{oi:oi+7})]+T3_PX_MORE(e)
+    return [(tag('<w:tbl',' >'),'PX',{gcount:0,tcidx:0,gx:0,pfirst:0,a5ts:0,oi:oi+6}),(pat('<w:gridC',e),'T3_GC',{oi:oi+8}),(tag('<w:tc',' >'),'T3_TC0',{oi:oi+5}),(pat('</w:tc>',e),'A5_TCE',{oi:oi+7}),(pat('</w:tr>',e),'A5_TRE',{oi:oi+7}),(net.and_(net.or_(a5tcp,net.and_(net.eq(ztarget,4,e),ONE-a5tp,ONE-incell)),pat('<w:shd ',e)),'T3_SHD',{oi:oi+7})]+T3_PX_MORE(e)
 # open: reset the document, then walk zip members
 t2cp=R();t2k=R();t2v=R();t2n_=R();t2cb0=R();t2skip=R();t2df=R();t2ps=R()
 on('OP0',(None,'T3_OP',{**{q_:0 for q_ in falias},cursec:0,nsec:1,imgp:0,fnc:0,rdsec:0,rdp:0,hftp:0,hfl[0]:0,hfl[1]:0,hfl[2]:0,hfl[3]:0,rins:0,rdel:0,rfk:0,t2cb0:nextb,t2skip:0,t2ps:0,nsty:6,wln:(nextb+SAVE,112,16,1,0,0,0),w1:(as_x(PT),nextb),w2:(nextb+DIRTY,1),w3:(nextb+LEN,0),cp:0,cb:nextb,co:0,clen:0,ap:0,ao:0,npar:1,nextb:nextb+STRIDE,usp:UB,urp:UB,scroll:0,nolog:1,zp:0,pfirst:1,cs:0,ity:as_x(0),dfrom:0,lc:1,bgp:0}))
@@ -222,7 +223,7 @@ on('PX2',(net.and_(t2skip,ONE-pat('</w:styl',e)),'PX',{oi:oi+1}),
  (pat('<w:lvl ',e),'T2_NM',{oi:oi+7,t2n_:0,t2rr.r:t2rr.id('T2_LV')}),
  (pat('<w:numFm',e),'T2_FM',{rl:OA+oi+17}),
  *A4_PX(e),
- *T3_PX_RULES(e),
+ *A6_PX_RULES(e),*T3_PX_RULES(e),
  (None,'PX',{oi:oi+1}))
 pat=_pat0
 e=S('SZ0')
@@ -235,8 +236,8 @@ e=S('JC0'); j1=net.eq(W[0],99,e);j2=net.or_(net.eq(W[0],114,e),net.eq(W[0],101,e
 on('JC0',(None,'PX',{w1:(cb+ALIGN,j1*1+j2*2+j3*3),oi:oi+13}))
 e=S('PN1')
 fsm.set(a5aft,S('PN1'),0)
-on('PN1',(net.and_(incell,net.step(clen),net.lt(clen,1000,e)),'INS',{ins_ch:32,ins_st:csi+rhi,oret.r:oret.id('A5_PN')}),(incell,'T2_PR',{rins:0,rdel:0,rfk:0}),(pfirst,'T2_PR',{pfirst:0,rins:0,rdel:0,rfk:0}),(None,'SPLIT',{oret.r:oret.id('T3_PN2'),rins:0,rdel:0,rfk:0}))
-on('T3_PN2',(None,'T2_PR',{w3:(cb+CSH,0),w1:(cb+ALIGN,0),w2:(cb+SECN,rdp),rdp:0,rtoc:0,rdig:0}))
+on('PN1',(net.and_(incell,net.step(clen),net.lt(clen,1000,e)),'INS',{ins_ch:32,ins_st:csi+rhi,oret.r:oret.id('A5_PN')}),(incell,'T2_PR',{rins:0,rdel:0,rfk:0}),(pfirst,'T2_PR',{pfirst:0,rins:0,rdel:0,rfk:0}),(None,'SPLIT',{oret.r:oret.id('T3_PN2'),rins:0,rdel:0,rfk:0,a6nc:1}))
+on('T3_PN2',(None,'T2_PR',{a6nc:0,w3:(cb+CSH,0),w1:(cb+ALIGN,0),w2:(cb+SECN,rdp),rdp:0,rtoc:0,rdig:0}))
 # text inside a run
 e=S('TX0')
 on('TX0',(None,'TX1',{rl:OA+oi}))

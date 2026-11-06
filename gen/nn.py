@@ -23,6 +23,14 @@ class X:
     def is_const(s): return not s.t
 def as_x(o): return o if isinstance(o,X) else X(c=o)
 
+_REGIONS={}
+def region(name,start,end,space='bank'):
+    """Declares that a range of cells belongs to name. Overlapping another declared range in the same space fails the build."""
+    assert start<end,name
+    for n_,a_,b_ in _REGIONS.setdefault(space,[]):
+        assert end<=a_ or b_<=start,f'{space} region {name} [{start},{end}) overlaps {n_} [{a_},{b_})'
+    _REGIONS[space].append((name,start,end))
+
 class Net:
     def __init__(s):
         s.act=[];s.bias=[];s.inp=[];s.kind=[];s.init={};s.names={};s.ports=[];s.groups={};s.cur=['core'];s.aligned=[];s.dom=[];s.dm=0

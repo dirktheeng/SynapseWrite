@@ -17,7 +17,7 @@ def A5_PX_EARLY(e):
      (pat('<w:tcPr',e),'PX',{a5tcp:1,oi:oi+7}),(pat('</w:tcPr',e),'PX',{a5tcp:0,oi:oi+8}),(pat('<w:tblPr',e),'PX',{a5tp:1,oi:oi+8}),(pat('</w:tblP',e),'PX',{a5tp:0,oi:oi+8}),
      (net.and_(a5tp,pat('<w:jc ',e)),'PX',{oi:oi+6}),(pat('<w:tblSt',e),'A5_TS',{rl:OA+oi+8}),
      (pat('<w:br/>',e),'A5_BR',{oi:oi+7}),(pat('<w:cr/>',e),'A5_BR',{oi:oi+7}),(pat('<w:noBre',e),'INS',{ins_ch:45,ins_st:cs+rhi,oi:oi+8,oret.r:oret.id('PX')}),
-     (tag('<m:t',' >'),'TX0',{oi:oi+4}),(pat('<w:moveF',e),'A5_MV',{rl:OA+oi+8}),(pat('<w:moveT',e),'A5_MT',{rl:OA+oi+8}),(pat('</w:move',e),'PX',{rins:0,rdel:0,oi:oi+8}),
+     (pat('<w:moveF',e),'A5_MV',{rl:OA+oi+8}),(pat('<w:moveT',e),'A5_MT',{rl:OA+oi+8}),(pat('</w:move',e),'PX',{rins:0,rdel:0,oi:oi+8}),
      (pat('<w:endno',e),'A5_EF',{oi:oi+8}),(net.and_(net.eq(ztarget,7,e),net.step(ONE-t2skip),pat('<w:conte',e)),'PX',{a5cx:1,oi:oi+8,w1:(as_x(STY)+t2si*STYN+46,1)}),
      (net.and_(a5aft,ONE-incell,tag('<w:t',' >')),'SPLIT',{a5aft:0,oret.r:oret.id('A5_TX')}),
      (net.and_(net.or_(a5aft,net.step(clen)),ONE-incell,pat('<a:blip ',e)),'SPLIT',{a5aft:0,oret.r:oret.id('A5_BLP')})]

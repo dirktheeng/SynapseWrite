@@ -17,6 +17,7 @@ e.dom();for(const [i,v] of h.init1)e.inject(i,v);e.dom();
 for(const [a,v] of h.bank_init)e.bset(a,v);
 {const r=blob.subarray(o);for(let i=0;i<r.length;i++)if(r[i])e.bset(h.romb+i,r[i]);}
 window.annMem=()=>mem().byteLength;
+try{const s=JSON.parse(localStorage.getItem('synapse_dict')||'[]');for(let i=0;i<s.length;i++)e.bset(h.dict+i,s[i]);}catch(_){}
 const cv=document.getElementById('screen'),ctx=cv.getContext('2d',{alpha:false,willReadFrequently:true});const img=ctx.createImageData(1280,800);
 let ptr='mouse';let evm=0;let timer=0,pendClip=null,keyCopy=false;
 // Clipboard write: the async API, then the copy event, then a code telling the network that only its own copy holds the text.
@@ -33,6 +34,7 @@ const dispatch=(k,a=0,b=0,c=0)=>{
  const go=()=>{const lim=window.annMax||5000000,m=e.run(h.halt,lim);n+=m;paint();if(m>=lim&&!window.annMax){busy=true;setTimeout(go,0);return;}busy=false;
  const clip=e.val(h.clipout);if(clip){const cs=[];for(let i=0;i<clip-1;i++)cs.push(e.bget(h.cb+i));const txt=String.fromCharCode(...cs);window.annClip=txt;pendClip=txt;if(!keyCopy)writeClip(txt);keyCopy=false;}
  const sv=e.val(h.saveout),pd=e.val(h.pdfout);if(sv||pd){const n=sv||pd,a0=e.val(h.outbase);const u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=e.bget(a0+i);saveFile(u,sv?'Document1.docx':'Document1.pdf');}
+ {const ds=e.val(h.dsave);if(ds)try{const a=[];for(let i=0;i<ds;i++)a.push(e.bget(h.dict+i));localStorage.setItem('synapse_dict',JSON.stringify(a));}catch(_){}}
  if(e.val(h.wpic)){const f=document.createElement('input');f.type='file';f.onchange=()=>f.files[0]&&openPic(f.files[0]);f.click();}
  if(e.val(h.wopen)){const f=document.createElement('input');f.type='file';f.onchange=()=>f.files[0]&&openFile(f.files[0]);f.click();}
  const wp=e.val(h.wantp);
@@ -48,7 +50,7 @@ const openPic=async f=>{const u=new Uint8Array(await f.arrayBuffer());const n=Ma
 const saveFile=async (u,name)=>{let dl=null;try{dl=window.claude?await window.claude.use('downloads'):null;}catch(_){}
  if(dl){try{await dl.save({filename:name,data:u});}catch(_){}return;}
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([u]));a.download=name;a.click();};
-const NAMED={Backspace:8,Tab:9,Enter:13,Escape:27,Delete:127,ArrowLeft:128,ArrowUp:129,ArrowRight:130,ArrowDown:131,Home:132,End:133,PageUp:134,PageDown:135,Insert:136,F3:137,F12:140};
+const NAMED={Backspace:8,Tab:9,Enter:13,Escape:27,Delete:127,ArrowLeft:128,ArrowUp:129,ArrowRight:130,ArrowDown:131,Home:132,End:133,PageUp:134,PageDown:135,Insert:136,F3:137,F12:140,ContextMenu:141};
 const mods=ev=>(ev.ctrlKey||ev.metaKey?1:0)+(ev.shiftKey?2:0);
 window.addEventListener('keydown',ev=>{if(ev.altKey&&!ev.ctrlKey)return;let c=NAMED[ev.key];if(!c&&ev.key.length===1)c=(ev.ctrlKey||ev.metaKey)?ev.key.toLowerCase().charCodeAt(0):ev.key.charCodeAt(0);
  if(!c)return;const cm=ev.ctrlKey||ev.metaKey;

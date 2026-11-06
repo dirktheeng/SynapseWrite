@@ -22,3 +22,4 @@ addi(2,10,60,R0,84,'Portrait','T3_C_POR','port'); addi(2,11,60,R0+22,84,'Landsca
 addi(2,12,146,R0,70,'Normal','T3_C_MN','mnorm'); addi(2,13,146,R0+22,70,'Narrow','T3_C_MS','mnar'); addi(2,14,146,R0+44,70,'Wide','T3_C_MW','mwide')
 addi(3,8,74,R0,102,'Update Table','T3_C_TU','refresh')
 addi(4,8,124,R0,118,'Delete Comment','T3_C_CD','delcmt')
+add(3,9,74,R0+22,102,RH,'Merge Field','A6_MF')

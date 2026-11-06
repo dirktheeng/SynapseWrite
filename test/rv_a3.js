@@ -61,7 +61,7 @@ const lines=n=>Array.from({length:n},(_,i)=>'line '+i).join('\n');
  const RC=(x,y)=>async p=>{await p.mouse.click(x,y,{button:'right'});};
  await diff('right click draws a menu',['abc',RC(400,400)],['abc']);
  await same('escape closes the menu',['abc',RC(400,400),K('Escape')],['abc',click(400,400)]);
- await same('menu select all then bold keeps selection',['abc',RC(330,296),K('ArrowDown'),K('ArrowDown'),K('ArrowDown'),K('ArrowDown'),K('Enter'),K('Delete'),'x'],['x']);
+ await same('menu select all then bold keeps selection',['cat',RC(330,296),K('ArrowDown'),K('ArrowDown'),K('ArrowDown'),K('ArrowDown'),K('Enter'),K('Delete'),'x'],['x']);
  await same('right click inside selection keeps it for bold',['abc def',K('Control+a'),RC(330,296),K('Escape'),K('Delete')],['']);
  // drag autoscroll
  await diff('drag below the page scrolls',[paste(lines(200)),K('Control+Home'),async p=>{await p.mouse.move(400,300);await p.mouse.down();await p.mouse.move(400,795);await p.waitForTimeout(800);await p.mouse.up();}],[paste(lines(200)),K('Control+Home'),async p=>{await p.mouse.move(400,300);await p.mouse.down();await p.mouse.move(400,700);await p.waitForTimeout(800);await p.mouse.up();}]);
