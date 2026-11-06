@@ -1241,7 +1241,7 @@ for p in net.ports:
         net.keep.append(nid(p.en)); net.keep.append(nid(p.done)); net.keep+=[nid(q) for q,_d in p.args]
     if isinstance(p,(RPort,PixPort)): net.keep+=[nid(q) for q in p.out]
 import rv_a8_opt; _a8rep=rv_a8_opt.prune(net,[p.rec(None) for p in net.ports],[next(iter(v_.t)) for v_ in list(globals().values()) if isinstance(v_,X) and len(v_.t)==1])
-c=net.compile(); new=c['new']
+net.rep=_a8rep; c=net.compile(); new=c['new']
 import os
 if os.environ.get('NETDBG'): json.dump(dict(new=new,act=c['act'],bias=c['bias'],lazy=c['lazy'],out=c['out'],pull=net.pullv,line=getattr(net,'line',{})),open('../build/netdbg.json','w'))
 gn_=[''] *c['n']

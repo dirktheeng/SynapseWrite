@@ -2,7 +2,7 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-234758 neurons, 455774 edges, 188 layers, 4040 control states.
+234768 neurons, 456724 edges, 187 layers, 4040 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
@@ -10,14 +10,14 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | glyph network | Selects and addresses a character cell for drawing. | gen/app.py (253), gen/feat1_glyph.py (208), gen/imp3_zoom_pre.py (155) | 616 | 9788 |
 | feat1 run effects | Decodes the extended field of a style entry for the glyph network: caps and small caps draw and measure the capital, small capitals take a smaller size, hidden text takes no width or ink, character spacing joins the advance. | gen/feat1_glyph.py (39) | 39 | 174 |
 | glyph metrics | Character advance and kerning trees. | gen/app.py (20677) | 20677 | 60764 |
-| glyph unit | Draws a character from its edge network into the glyph store, in its own clock domain. | gen/glyphnet.py (10800) | 10800 | 40090 |
+| glyph unit | Draws a character from its edge network into the glyph store, in its own clock domain. | gen/glyphnet.py (10799) | 10799 | 40089 |
 | glyph pixel records | A small glyph drawn black on white is recorded off the row plane, so later draws are one read and one patch. | gen/glyphnet.py (19104) | 19104 | 38324 |
-| snapping layer | Fits outline heights to the pixel grid for a given size. | gen/glyphnet.py (331) | 331 | 1314 |
-| glyph geometry | Scales outline coordinates by the drawn size. | gen/glyphnet.py (231) | 231 | 809 |
+| snapping layer | Fits outline heights to the pixel grid for a given size. | gen/glyphnet.py (338) | 338 | 1137 |
+| glyph geometry | Scales outline coordinates by the drawn size. | gen/glyphnet.py (235) | 235 | 813 |
 | glyph store | Keeps drawn glyphs in memory and copies them to the screen. | gen/glyphnet.py (17) | 17 | 54 |
 | stem units | Stem position units for the hinting of letters. | gen/glyphnet.py (1) | 1 | 0 |
 | row sequencer | Steps the glyph unit through the rows of a character. | gen/glyphnet.py (29) | 29 | 72 |
-| glyph weights (outline edges) | Font outlines as edges in weights, one group per glyph program. | gen/glyphnet.py (130598) | 130598 | 659470 |
+| glyph weights (outline edges) | Font outlines as edges in weights, one group per glyph program. | gen/glyphnet.py (130598) | 130598 | 609146 |
 | ramp bank | Coverage ramps for the edge network. | gen/glyphnet.py (5073) | 5073 | 10971 |
 | coverage | Adds edge coverage into pixel coverage. | gen/glyphnet.py (1456), gen/imp3_zoom_pre.py (583), gen/app.py (36) | 2075 | 13139 |
 | style interner | Finds or adds a style record in the interned table, in its own clock domain. | gen/app.py (151) | 151 | 340 |

@@ -305,7 +305,7 @@ class GlyphUnit:
         # A small glyph drawn black on white before: its pixels were recorded off the row plane, so one read and one patch draw it, with no row loop and no plane.
         recg=net.reg()
         fast_=net.wire(); fnc_=net.wire()
-        fs_=net.wire(); blk=net.and_(hit,rowsz,net.step(fast_+fs_),ONE-fnc_,net.step(H[5]-0.5),net.ge(H[6],recg,hit),net.ge(recg,H[6],hit))
+        fs_=net.wire(); blk=net.and_(hit,rowsz,net.step(hit*M-M+fast_+fs_-0.5),ONE-fnc_,net.step(H[5]-0.5),net.ge(H[6],recg,hit),net.ge(recg,H[6],hit))
         start=net.and_(hit,rowsz,ONE-blk); empty=hit-net.and_(hit,rowsz)
         brun=net.reg(); brows=net.reg(); bcells=L(H[2],start)
         baddr=net.reg(); bpy=net.reg(); bwr=net.reg(); blast=net.reg()
@@ -326,7 +326,7 @@ class GlyphUnit:
         fcu=net.step(Lfc); fgb=net.and_(net.eq(Lfg,1,sg),ONE-fcu)
         fast=L(net.and_(fgb,net.eq(Lbg,1,sg)),sg); fsel=L(net.and_(fgb,net.eq(Lbg,2,sg)),sg)
         bgw=L(net.eq(Lbg,1,sg),sg); net.connect(fast_,fast); net.connect(fs_,fsel); net.connect(fnc_,Lnc)   # selected text takes the same record: on the selection color the darker pixel wins, as it does for overlapping letters
-        slow0=net.and_(s1g,ONE-fast,ONE-empty)
+        slow0=net.step(s1g*M-M+0.5-fast-empty)     # read behind s1g: the latches it reads hold through the whole draw
         def lines(pal,val,en_=None):
             h=net.decode(val-1,len(pal),slow0 if en_ is None else en_); out=[]
             for k in range(3):
@@ -367,7 +367,7 @@ class GlyphUnit:
         net.aligned.append([next(iter(w.t)) for w in data])
         px=net.wire(); py=net.wire()
         net.connect(px,net.gate(bpx,bwr)-bwr*(OFF+XO)); net.connect(py,net.gate(bpy,bwr))
-        p1=g.patch_cls(net.step(bwr-Lnc*2-fast*2-0.5),px,py,data,LW,1); p2=g.sprite_cls(net.step(bwr+Lnc*2-2.5),px,py,data,LW,1); p3=g.patch_cls(net.step(bwr+fast-Lnc*2-1.5),px,py,data,LW,1); p3.kind=11
+        p1=g.patch_cls(net.step(bwr*M-M+0.5-Lnc*2-fast*2),px,py,data,LW,1); p2=g.sprite_cls(net.step(bwr*M-M+Lnc*2-1.5),px,py,data,LW,1); p3=g.patch_cls(net.step(bwr*M-M+fast-Lnc*2-0.5),px,py,data,LW,1); p3.kind=11
         p1.dom=1;p2.dom=1;p3.dom=1
         # ---- pixel records ----
         net.group('glyph pixel records')
@@ -436,7 +436,7 @@ class GlyphUnit:
             for fi,f in list(enumerate(g.faces))+list(PFM.items()):
                 z=face_metrics(*f)[name]
                 e=e+net.gate(I_s*z,fh[fi])
-            return e
+            return net.pushed(e)      # only the drawn face's line is open: it pushes, the rest are never read
         def floor_(v,en,nb=9):
             rem=net.gate(v,en); o=X()
             for k in reversed(range(nb)):
@@ -448,6 +448,7 @@ class GlyphUnit:
         kn=g.kn={}
         v_des=X()
         for fi,f in list(enumerate(g.faces))+list(PFM.items()): v_des=v_des+net.gate(I_s*(-face_metrics(*f)['des']),fh[fi])
+        v_des=net.pushed(v_des)
         kn['D']=latch(floor_(v_des+0.5,sy)+net.gate(v_des,ny))
         kxh,vxh=knot('xh'); kcap,vcap=knot('cap'); kasc,vasc=knot('asc')
         kn['XH']=latch(kxh); kn['CAP']=latch(kcap); kn['ASC']=latch(kasc)
@@ -469,7 +470,7 @@ class GlyphUnit:
         def fx(j):
             e=X()
             for fi in range(NF): e=e+net.gate(I_s*ext[fi][j]+OFF,fh[fi])
-            return e
+            return net.pushed(e)
         T=floor_(fx(3),st)+2; B=floor_(fx(2),st)-1; Lf=floor_(fx(0),st)-2; Rt=floor_(fx(1),st)
         OX=as_x(2*OFF)-Lf
         cells=net.wire(); _c=Rt-Lf+3; net.connect(cells,_c-net.relu(_c-LW))
