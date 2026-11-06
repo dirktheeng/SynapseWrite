@@ -31,3 +31,7 @@ t1_text('A2_NF','Footnote',PX+8,DOCY+6,0,3,'A2_NL')
 t1_text('A2_NC','Comment',PX+8,DOCY+6,0,3,'A2_NL')
 on('A2_NL',(net.ge(a2i,a2n,S('A2_NL')),'TB0',{rD:(sx,DOCY+6,1,16,(0,0,0),0)}),(None,'A2_NR',{r1:a2b+a2i}))
 on('A2_NR',(None,'A2_NL',{gly:(R1,0,sx,DOCY+4,0,0),sx:sx+adv,a2i:a2i+1}))
+# rows of one table share a rule: the next row starts on this row's bottom rule, and text after the table starts below it
+on('A2_TB0',(None,'A2_TB1',{r1:as_x(PT)+pi}))
+on('A2_TB1',(None,'A2_TB2',{r1:R1+2062}))
+on('A2_TB2',(net.step(R1),'R1',{yy:rowmax}),(None,'R1',{yy:rowmax+1}))

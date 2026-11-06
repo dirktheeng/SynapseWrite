@@ -899,7 +899,8 @@ text_chain('PMb',['Press Ctrl+V to paste from other apps'],'T4_ST')
 # find bar
 e=S('FB0')
 fbx=R();fi_=R()
-on('FB6',(net.eq(field,1,S('FB6')),'T1_FZ',{rD:(sx,DOCY+6,1,16,(0,0,0),0)}),(None,'T1_FZ',None))
+_a2s={rA:(PX+503,DOCY+3,1,22,(160,160,160),0),rB:(PX+740,DOCY+3,1,22,(160,160,160),0)}
+on('FB6',(net.eq(field,1,S('FB6')),'T1_FZ',{**_a2s,rD:(sx,DOCY+6,1,16,(0,0,0),0)}),(None,'T1_FZ',_a2s))
 on('FB0',(net.eq(mode,6,e),'T4_MB',None),(net.eq(mode,7,e),'TB0',None),(net.step(net.eq(mode,4,e)+net.eq(mode,5,e)),'A2_NB0',{rA:(PX,DOCY,816,28,PAL_B[3],0),rB:(PX,DOCY+27,816,1,(160,160,160),0),rC:(PX+84,DOCY+4,676,20,WHITE,0)}),(net.eq(mode,3,e),'A2_HB0',{rA:(PX,DOCY,816,28,PAL_B[3],0),rB:(PX,DOCY+27,816,1,(160,160,160),0),rC:(PX+84,DOCY+4,676,20,WHITE,0),fi_:0,sx:PX+88}),(net.step(mode),'FB1',{rA:(PX,DOCY,816,28,PAL_B[3],0),rB:(PX,DOCY+27,816,1,(160,160,160),0),rC:(PX+60,DOCY+4,300,20,WHITE,0)}),(None,'TB0',None))
 on('HB',(net.ge(fi_,hlen,S('HB')),'A2_HBE',{rD:(sx,DOCY+6,1,16,(0,0,0),0)}),(None,'HB2',{r1:hfb+fi_}))
 on('HB2',(None,'HB',{gly:(R1+net.eq(R1,1,S('HB2'))*34,0,sx,DOCY+4,0,0),sx:sx+adv,fi_:fi_+1}))

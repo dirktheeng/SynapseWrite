@@ -138,7 +138,7 @@ on('T3_SH0x',(None,'T3_SH1',{jp:shp,jo:0,jret.r:jret.id('T3_SH2')}))
 # ---- row end: fill the rest of each cell, draw rules, record column border hit zones ----
 on('RB0',(None,'RB1',{tivx:0}))
 e=S('RB1')
-on('RB1',(net.ge(tiv,tcols,e),'R1',{yy:rowmax,pi:pi+1,rB:(s_tx+tivx,by0,1,rowmax-rowtop+1,BC,0)}),(None,'T3_RBa',{r1:as_x(PT)+pi+1-tcols+tiv}))
+on('RB1',(net.ge(tiv,tcols,e),'A2_TB0',{pi:pi+1,rB:(s_tx+tivx,by0,1,rowmax-rowtop+1,BC,0)}),(None,'T3_RBa',{r1:as_x(PT)+pi+1-tcols+tiv}))
 rbb=R()
 on('T3_RBa',(None,'T3_RBb',{rbb:R1,r2:R1+ENDY,rmeta:R1+META}))
 e=S('T3_RBb'); shr=net.decode(MT[2],len(PAL_B),e)
