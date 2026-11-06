@@ -34,4 +34,22 @@ module.exports=async(ok,only)=>{
   ok('the child style is saved with its own and its base\'s fields',/<w:b\/>/.test(d)&&/00A0A0/.test(d),d);
   ok('the run is saved with the base color',/Kid1[^]*00A0A0[^]*child/.test(x),runs(x).join(' | '));
  }
+
+ if(!only||only=='hl'){
+  // Word's eight further highlight values: drawn in their colors, saved by name, read back the same
+  const X=[['darkBlue',0,0,128],['darkCyan',0,128,128],['darkGreen',0,128,0],['darkMagenta',128,0,128],['darkRed',128,0,0],['darkYellow',128,128,0],['darkGray',128,128,128],['black',0,0,0]];
+  const body=X.map(([n])=>`<w:p><w:r><w:t xml:space="preserve">plain </w:t></w:r><w:r><w:rPr><w:highlight w:val="${n}"/></w:rPr><w:t>marked ${n}</w:t></w:r></w:p>`).join('')+'<w:p><w:r><w:rPr><w:highlight w:val="yellow"/></w:rPr><w:t>yellow still</w:t></w:r></w:p>';
+  let A=await lib();A.file(9,doc(body));A.settle();A.click(600,700);A.settle();A.shot('build/p2/hl.png');
+  for(const [n,r,g,b] of X){const c=count(A,223,1039,174,776,(x,y,z)=>x==r&&y==g&&z==b);ok(`highlight ${n} draws its color (${r},${g},${b})`,c>300,c);}
+  ok('yellow still draws',count(A,223,1039,174,776,(x,y,z)=>x==255&&y==255&&z==0)>300);
+  const x=part(A,'word/document.xml');ok('all eight names saved',X.every(([n])=>new RegExp(`<w:highlight w:val="${n}"/>[^]*?marked ${n}`).test(x)),runs(x).filter(t=>/highlight/.test(t)).map(t=>t.match(/w:val="(\w+)"/)[1]).join(' '));
+  ok('yellow saved',/w:val="yellow"\/>[^]*yellow still/.test(x));
+  let B=await lib();B.file(9,A.savedBytes());B.settle();B.click(600,700);B.settle();ok('saved file reopens pixel identical',B.hash(190,776)===A.hash(190,776));
+  // a ribbon highlight over a further one replaces it on screen and in the file: select the first marked run (the ab highlight button applies yellow)
+  A.key(132,1);A.key(133);for(let i=0;i<15;i++)A.key(128,2);A.settle();A.click(314,101);A.settle();A.click(600,700);A.settle();
+  {const z=part(A,'word/document.xml');const r0=runs(z).find(t=>/marked darkBlue/.test(t))||'';ok('a ribbon highlight over a further one is saved once',(r0.match(/<w:highlight/g)||[]).length==1&&!/darkBlue"/.test(r0),r0);}
+  // spacing read before the highlight keeps both
+  let C=await lib();C.file(9,doc('<w:p><w:r><w:rPr><w:caps/><w:spacing w:val="40"/><w:highlight w:val="darkRed"/></w:rPr><w:t>spaced</w:t></w:r></w:p>'));C.settle();const y=part(C,'word/document.xml');
+  ok('caps, spacing and a further highlight together are kept',/<w:caps\/>/.test(y)&&/w:spacing w:val="40"/.test(y)&&/darkRed/.test(y),runs(y).join(' | '));
+ }
 };

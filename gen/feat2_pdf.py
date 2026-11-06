@@ -21,7 +21,7 @@ for j_ in range(3):
     lit(st+'o',b'1 ',nx); lit(st+'d',b'.',st+'e'); _f2num(st+'e',f2c[j_]*(1000/255),3,True,st+'f'); lit(st+'f',b' ',nx)
 lit('F2P_Sr',b'rg ','F2P_Sx')
 number('F2P_Sx',qcx0,'F2P_Sx1'); lit('F2P_Sx1',b' ','F2P_Sx2'); number('F2P_Sx2',qph-(qyy-qtop)-qh,'F2P_Sx3'); lit('F2P_Sx3',b' ','F2P_Sx4'); number('F2P_Sx4',qxx-qcx0,'F2P_Sx5'); lit('F2P_Sx5',b' ','F2P_Sx6'); number('F2P_Sx6',qh,'F2P_Sx7'); lit('F2P_Sx7',b' re f Q\n','F2P_C1')
-e=S('F2P_C1'); on('F2P_C1',(net.bits(f2cx,14,e)[2],'F2P_D0',None),(None,'F2P_C2',None))
+e=S('F2P_C1'); on('F2P_C1',(net.bits(f2cx,18,e)[2],'F2P_D0',None),(None,'F2P_C2',None))
 for i_,dy_ in enumerate((3,7)):
     st=f'F2P_D{i_}'; nx='F2P_D1' if i_==0 else 'F2P_C2'
     number(st,qcx0,st+'a'); lit(st+'a',b' ',st+'b'); number(st+'b',qyb+dy_,st+'c'); lit(st+'c',b' ',st+'d'); number(st+'d',qxx-qcx0,st+'e'); lit(st+'e',b' 1 re f\n',nx)

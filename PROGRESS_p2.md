@@ -18,3 +18,30 @@ Result: FLOPs identical to baseline on all 15 events. Page 2,955,265 (+1,548 byt
 ## 3. Full suite run 2 (final code a43a321 plus PARITY text)
 Two builds byte identical, 2,955,265 bytes. Every suite passed as in run 1; p2 3/3; audit 67/67; flops identical to baseline on all events.
 Not done on this branch, for lack of time, not for a rule: links drawn or followed, highlight colors past 7 (needs a fourth highlight bit; the 24 bit style record is full), styles gaps, list levels past three, column line and third column (the 8 field section record is full), Fonts gaps. Hyphenation: pattern set measured, network not built.
+
+## 4. Continuing after the coordinator's note (keep going; widen records rather than call them blockers)
+
+### Styles: Update on a character style (gen/p2_style.py, p2_regs.py, one-word hook in app.py, filter in rv_a7_bulk.py)
+Why: PARITY said Update Style does not update a character style. Word's Update to Match Selection does.
+What: Update (TB 52) now enters P2_UA, which reads the caret's run; if it has a character style, the caret record becomes the style's record, its exact color and font name go to STYX, and its mask is the fields that differ from the default (as New Char Style computes it), each with an undo record. Then the format walk (FMTS machinery, fm 16, wm 2) runs over the whole document with the selection set to all of it and given back at P2_CE; the bulk walker A7_FW skips runs whose RSY differs from the style (p2fon, p2fys). The skip test is behind net.gate(e,p2fon), so it is never read otherwise.
+Snag: wo is rebound to a write port later in app.py; added the alias p2_wo next to its definition.
+Runs: headless test (test/p2_lib.js part cstyle) 5/5: definition gets b and i, both runs of the style take italic, other runs untouched, page equals a file written that way, one undo takes back definition and the second run. FLOPs identical to baseline on all events.
+
+### Styles: basedOn for a character style takes its base's mask (t2_features.py T2_AP)
+Why: PARITY said a based-on character style took the base's values but not its mask, so a run of the child lost the base's fields.
+What: T2_AP also reads the base's mask (STYX+2) and ORs its bits into v4m.
+Runs: part based 3/3; with the fix stashed, 2 of 3 fail (no base color drawn, run saved without it). FLOPs unchanged.
+
+### Text and highlight color: Word's eight further highlight values (p2_color.py, t2_features.py T2_HL, t2_write.py T2R9, app.py paint, pdf_write.py)
+Why: only seven highlights were read; darkBlue, darkCyan, darkGreen, darkMagenta, darkRed, darkYellow, darkGray and black were dropped.
+Storage: the record's 3 bit field is full; feat1's extended field (entry cell 4) had bits 14 to 23 free, so bits 14 to 17 hold the further highlight. Every decode of that field (x_decode, F1_XB, F1_SPW, feat2 PDF) is widened to 18 bits so the new bits do not spill into the old ones. F1_XB used 4 bits, which would also have misread a field with spacing set; now 18.
+Screen: the exact run shade value is the shade or the highlight's exact color; costs nothing for plain text (push neurons, gates closed). FLOPs identical.
+Tried and dropped, with numbers:
+- white automatic text over dark highlights (Word does this): any new input to the color decode is read for every glyph; +2,538 to +73,548 FLOPs per event. Dropped under the FLOPs rule.
+- 8 new palette background entries for clean glyph edges: +54 to +85,806 FLOPs (buses and palette lines are read on every draw); a gated second decoder was worse. Dropped.
+- Kept: the shade neuron on the selection bus carries the nearest existing background entry in its value, so edge pixels blend into a dark entry instead of the light selection one. Zero FLOPs. Letters are readable; edge pixels take that entry's tint.
+The same light fringe exists on main for a dark run shade (feat1); seen in a comparison screenshot.
+PDF: the chunk's shade value includes the highlight's exact color. White text in PDF is impossible as written: the shade is drawn after the text with Multiply.
+Writer: names written where the record highlight is written; a record highlight (ribbon) wins, so one highlight per run.
+Runs: part hl 14/14 (eight colors drawn exactly, yellow intact, names saved, reopen pixel identical, ribbon yellow over darkBlue saves once, caps and spacing kept with it). p2.js PDF darkBlue exact color pass.
+Gap: ribbon No Color over a further highlight leaves the further one (clearing it in the format walk costs a read per run).

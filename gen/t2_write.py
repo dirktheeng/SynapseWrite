@@ -34,7 +34,9 @@ e=S('T2R7'); h_=net.decode(rv_z,rom.NSZ,e); hp=X()
 for si,h in enumerate(h_): hp=hp+h*(rom.SZ[si]*2)
 vnum('T2R7',hp,'T2R8'); lit('T2R8',b'"/>','T2R9')
 e=S('T2R9'); h_=net.decode(rv_h,8,e)
-on('T2R9',*[(h_[j],f'T2Rh{j}',None) for j in range(1,8)],(None,'T2RA',None))
+_p2wh=net.decode(G_(p2xh,ONE-net.step(rv_h)),9,e);   # a record highlight, set later from the ribbon, wins
+on('T2R9',*[(h_[j],f'T2Rh{j}',None) for j in range(1,8)],*[(_p2wh[j],f'P2_Hx{j}',None) for j in range(1,9)],(None,'T2RA',None))
+for j in range(1,9): lit(f'P2_Hx{j}',('<w:highlight w:val="%s"/>'%HL_X[j-1][0]).encode(),'T2RA')   # p2
 for j in range(1,8): lit(f'T2Rh{j}',('<w:highlight w:val="%s"/>'%HL_NAMES[j-1]).encode(),'T2RA')
 on('T2RA',(rv_u,'T2Ru1',None),(t2full,'T2Ru0',None),(None,'T2RB',None))
 lit('T2Ru1',b'<w:u w:val="single"/>','T2RB'); lit('T2Ru0',b'<w:u w:val="none"/>','T2RB')

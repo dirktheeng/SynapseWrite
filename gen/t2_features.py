@@ -157,7 +157,8 @@ e=S('T2_TV2')
 on('T2_TV2',(net.or_(net.eq(W[0],48,e),net.eq(W[0],102,e),net.eq(W[0],110,e)),'T2_C',{t2v:0}),(None,'T2_C',{t2v:1}))
 e=S('T2_HL'); hv=X()
 for i_,nm_ in enumerate(HL_NAMES): hv=hv+pat(nm_[:8],e)*(i_+1)
-on('T2_HL',(None,'T2_C',{t2k:6,t2v:hv,oi:oi+20}))
+_p2hx=sum((pat(n_[:8],e)*(j_+1) for j_,(n_,c_) in enumerate(HL_X)),X())   # p2: Word's further highlight names
+on('T2_HL',(None,'P2_HLX',{t2k:6,t2v:hv,oi:oi+20,p2xh:_p2hx}))
 e=S('T2_VA'); sup_=pat('sup',e); sub_=pat('sub',e)
 on('T2_VA',(None,'T2_C',{t2k:5,t2v:sup_+sub_*2,oi:oi+20}))
 # spacing and indent attributes

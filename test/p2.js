@@ -46,4 +46,17 @@ print([top(a[0],a[0]+8),bot(a[0],a[0]+8),top(a[0]+18,a[-1]),bot(a[0]+18,a[-1]),a
  const tf=[...Q.matchAll(/\/F\w+ 0*([\d.]+) Tf[^(]*\(([^)]*)\)/g)].map(m=>[+m[1],m[2]]);
  const fS=tf.find(t=>t[1]==='S'),fM=tf.find(t=>t[1]==='MALL');
  ok('PDF prints the small capitals at 0.8 of the size: 19 pt beside 24 pt (32 and 25 px)',fS&&fM&&fS[0]===32&&fM[0]===25,JSON.stringify(tf));
- await A.b.close();const nf=res.filter(r=>!r[1]).length;console.log(`${res.length-nf}/${res.length} passed`);process.exit(nf?1:0);})();
+ // further highlights in PDF: dark blue prints as its exact color, with automatic text in white
+ const hl=mk('hl',P(Rn('plain '),Rn('dark blue words here','<w:highlight w:val="darkBlue"/>')));await open(hl);await pdf(`${O}/hl.pdf`);
+ sh(`pdftoppm -r 96 -f 1 -l 1 -png ${O}/hl.pdf ${O}/hlp`);const HP=`${O}/`+fs.readdirSync(O).find(f=>/^hlp.*png$/.test(f));
+ const hc=JSON.parse(py(`from PIL import Image
+im=Image.open('${HP}').convert('RGB');w,h=im.size;p=im.load()
+b=[(x,y) for y in range(h) for x in range(w) if abs(p[x,y][0]-0)<=3 and abs(p[x,y][1]-0)<=3 and abs(p[x,y][2]-128)<=3]
+xs=[q[0] for q in b];ys=[q[1] for q in b]
+wt=sum(1 for y in range(min(ys),max(ys)+1) for x in range(min(xs),max(xs)+1) if min(p[x,y])>235)
+print([len(b),wt])`));
+ ok('PDF prints the dark blue highlight in its exact color',hc[0]>500,hc);
+ await A.b.close();
+ // the headless parts: character style update, based on styles, further highlights
+ await require('./p2_lib')(ok,process.argv[2]);
+ const nf=res.filter(r=>!r[1]).length;console.log(`${res.length-nf}/${res.length} passed`);process.exit(nf?1:0);})();

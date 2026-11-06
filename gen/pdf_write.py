@@ -117,7 +117,9 @@ for ff_,h_ in enumerate(_pfh):
             if k_: _pfv=_pfv+net.and_(h_,bb_,ii_)*k_
 fsm.set(ptk_q,e,ptk)
 _qxh=net.step(qxp); _qxv=net.gate(as_x(NFB_)+(qxp-1)*3+SV['bold']+net.and_(e,ONE-SV['bold'],SV['ital'])*2,_qxh)
-on('PD_F',(None,'PD_Fa',{f2cx:f2x,f2ch:f2h,f2cz:f2z,qsty:ins_st,qfn:net.relu(_pfv-_qxh*M)+_qxv,qsz:G_(pts,ONE-vf_-vc_)+G_(ptv,vf_)+G_(ptc,vc_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3,qhl:SV['hl']}))
+_p2qh=net.step(f2x-16383.5); _p2qb=net.bits(f2x,18,_p2qh); _p2qd=net.decode_z(sum((_p2qb[k_]*(1<<(k_-14)) for k_ in range(14,18)),X()),9,_p2qh)   # p2: a further highlight prints as an exact shade
+_p2qz=as_x(f2z)+net.gate(sum((_p2qd[j_+1]*((c_[0]<<16)+(c_[1]<<8)+c_[2]+1) for j_,(n_,c_) in enumerate(HL_X)),X())-f2z,_p2qh)
+on('PD_F',(None,'PD_Fa',{f2cx:f2x,f2ch:f2h,f2cz:_p2qz,qsty:ins_st,qfn:net.relu(_pfv-_qxh*M)+_qxv,qsz:G_(pts,ONE-vf_-vc_)+G_(ptv,vf_)+G_(ptc,vc_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3,qhl:SV['hl']}))
 lit('PD_Fa',b'/F','PD_Fb')
 e=S('PD_Fb'); on('PD_Fb',(None,'PD_Fc',{xw:(as_x(PUS)+qfn,1)}))
 em_en.lin(e); em_b.add(e,48+qfn+net.ge(qfn,10,e)*7+net.ge(qfn,36,e)*6)     # font names /F0 to /F9, /FA and on
@@ -126,7 +128,7 @@ number('PD_Fd',qsz,'PD_Fe')
 lit('PD_Fe',b' Tf ','PD_Ff')
 PCS=[('%.2f %.2f %.2f rg\n'%(c_[0]/255,c_[1]/255,c_[2]/255)).encode() for c_ in PAL_F]; _pcb=rom_str(b''.join(PCS)); _pcl=len(PCS[0])
 on('PD_Ff',(net.and_(net.step(v4qk),ONE-net.step(ptk_q)),'V4_PK0',None),(None,'A10_B0',{la_:as_x(_pcb)+qbase*_pcl,ln_lit:_pcl,lbret.r:lbret.id('T4P_O')}))
-e=S('T4P_O'); _f2xb=net.bits(f2cx,14,e); _f2raw=sum((_f2xb[k_]*(1<<(k_-4)) for k_ in range(4,14)),X()); _f2on=net.step(_f2raw); _f2tw=G_(_f2raw,_f2on)+(e-_f2on)*512-512   # feat2: character spacing as Tc, written when it changes
+e=S('T4P_O'); _f2xb=net.bits(f2cx,18,e); _f2raw=sum((_f2xb[k_]*(1<<(k_-4)) for k_ in range(4,14)),X()); _f2on=net.step(_f2raw); _f2tw=G_(_f2raw,_f2on)+(e-_f2on)*512-512   # feat2: character spacing as Tc, written when it changes
 on('T4P_O',(net.step(net.step(_f2tw*(1/15)+100-f2tc-0.01)+net.step(f2tc-100-_f2tw*(1/15)-0.01)),'F2P_T0',{qcx0:qxx,qop:1,f2tw:_f2tw+512}),(None,'T4P_Oa',{qcx0:qxx,qop:1}))
 lit('T4P_Oa',b'BT 1 0 0 1 ','T4P_Ob'); number('T4P_Ob',qxx,'T4P_Oc'); lit('T4P_Oc',b' ','T4P_Od')
 number('T4P_Od',qyb+qrise-3,'T4P_Oe'); lit('T4P_Oe',b' Tm (','PD_Tc')

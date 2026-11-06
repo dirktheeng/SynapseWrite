@@ -8,7 +8,7 @@ def _f1ics(x_=None,h_=None,z_=None):
 on('F1_TV',(None,'F1_TV1',{rl:OA+oi}))
 e=S('F1_TV1'); on('F1_TV1',(net.eq(W[0],47,e),'F1_XB',{t2v:1}),(None,'F1_TV2',{rl:OA+oi+8}))
 e=S('F1_TV2'); on('F1_TV2',(net.or_(net.eq(W[0],48,e),net.eq(W[0],102,e),net.eq(W[0],110,e)),'F1_XB',{t2v:0}),(None,'F1_XB',{t2v:1}))
-e=S('F1_XB'); _xb=net.bits(ics.e[0],4,e); _bh=net.decode(f1bit,9,e); _xn=as_x(ics.e[0])
+e=S('F1_XB'); _xb=net.bits(ics.e[0],18,e); _bh=net.decode(f1bit,9,e); _xn=as_x(ics.e[0])
 for j_ in range(4):
     _xn=_xn+net.and_(_bh[1<<j_],t2v,ONE-_xb[j_])*(1<<j_)-net.and_(_bh[1<<j_],ONE-t2v,_xb[j_])*(1<<j_)
 on('F1_XB',(None,'PX',{ics:_f1ics(x_=_xn)}))
@@ -18,7 +18,7 @@ e=S('F1_SP1'); on('F1_SP1',(net.eq(W[0],62,e),'PX',None),(pat('w:val="',e),'F1_N
 on('F1_N0',(None,'F1_N1',{rl:OA+oi}))
 e=S('F1_N1'); _dg=net.and_(net.ge(W[0],48,e),net.lt(W[0],58,e))
 on('F1_N1',(_dg,'F1_N0',{f1n:net.min_(f1n*10+W[0]-48,99999),oi:oi+1}),(net.eq(W[0],45,e),'F1_N0',{f1neg:1,oi:oi+1}),(None,'F1_SPW',None))
-e=S('F1_SPW'); _v=net.min_(f1n,511); _sb=net.bits(ics.e[0],14,e); _old=sum((_sb[k_]*(1<<k_) for k_ in range(4,14)),X())
+e=S('F1_SPW'); _v=net.min_(f1n,511); _sb=net.bits(ics.e[0],18,e); _old=sum((_sb[k_]*(1<<k_) for k_ in range(4,14)),X())
 on('F1_SPW',(None,'PX',{ics:_f1ics(x_=as_x(ics.e[0])-_old+(G_(_v,ONE-f1neg)-G_(_v,f1neg)+e*512)*X_SP)}))
 # run shading: the fill, exact, plus one; auto is none
 on('F1_SH',(None,'F1_SH1',{rl:OA+oi}))

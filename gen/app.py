@@ -37,7 +37,7 @@ def pf_val(v): return v-net.step(v)*PFO
 STY=40000; STY0=26000; STYN=48; NUMT=25000; MKT=32000; SCR=SLOTMAX; DEFREC=198; STYMAX=196   # style table, its ROM copy, numbering kinds, list marker ROM, scratch record
 # ---- screen geometry ----
 DOCY,DOCB=174,776; VH=DOCB-DOCY; PX=223; TX=319; TW=624; PH=1056; PST=1072; YB=4096
-from app_pal import F as PAL_F,B as PAL_B,HL_NAMES
+from app_pal import F as PAL_F,B as PAL_B,HL_NAMES,HL_X
 # ---- ports ----
 STYT_=1100000; IDXM_=(1<<18)-1; STYW=7   # an interned entry: record, exact color, font name, character style, then feat1's extended flags, link and bookmark ids, run shade
 class RPort:
@@ -884,14 +884,20 @@ g_en.lin(e);g_ch.add(e,R1);g_st.add(e,RSR);g_fl.add(e,RSC);g_x.add(e,x+kern+0.5)
 ke2=net.and_(e,net.step(kprev));kp_en.lin(ke2);kp_in.add(ke2,kprev)
 _sh0=net.eq(R1,173,_hi8); _shh=net.and_(_sh0,net.or_(net.lt(off+1,le_,_sh0),net.ge(le_,plen_,_sh0))); g_draw.lin(e-isp-isfnc-_shh)
 und_w=net.and_(e,net.or_(SD['und'],SD['ins'])); ske_w=net.and_(e,net.or_(SD['strike'],SD['dele'])); trk_=net.and_(e,net.or_(SD['ins'],SD['dele'])); a2_chg=R(); fsm.set(a2_chg,trk_,1)   # tracked text is drawn in the review color
+_p2xh=net.step(RSX-16383.5); _p2xb=net.bits(RSX,18,_p2xh); _p2xd=net.decode_z(sum((_p2xb[k_]*(1<<(k_-14)) for k_ in range(14,18)),X()),9,_p2xh)   # p2: a further highlight, read only when its bits are set
+_p2z=as_x(RSZ)+net.gate(sum((_p2xd[j_+1]*((c_[0]<<16)+(c_[1]<<8)+c_[2]+1) for j_,(n_,c_) in enumerate(HL_X)),X())-RSZ,_p2xh)
 colh=net.decode_z(G_(SD['color'],ONE-trk_)+trk_*4,32,e)
 for j in range(32): fg[j].lin(colh[j])
 g_fc.add(e,G_(RSK,ONE-trk_))   # an exact color goes to the glyph unit beside the palette entry nearest it
 _ckb=net.bits(RSK-1,24,net.and_(net.or_(und_w,ske_w),net.step(RSK),ONE-trk_)); _ck=[sum((_ckb[16-8*k_+b_]*(1<<b_) for b_ in range(8)),X()) for k_ in range(3)]; _cke=net.step(sum(_ckb,X()))
 hlh=net.decode_z(SD['hl'],8,e); nohl=net.and_(nosel,hlh[0])
 fld_=net.and_(nohl,net.or_(SD['f0'],SD['f1']))    # fields get a light shade
-f1sh_=net.gate(nohl-fld_,net.step(RSZ)); _f1zb=net.bits(RSZ-1,24,f1sh_)   # feat1: a run shade, under the darker wins rule as selection is
-bg[1].lin(insel+f1sh_);bg[3].lin(fld_)
+f1sh_=net.gate(nohl-fld_,net.step(_p2z)); _f1zb=net.bits(_p2z-1,24,f1sh_)   # feat1: a run shade, under the darker wins rule as selection is
+# p2: the shade neuron on the selection bus carries, in its value, the background entry nearest a further highlight (bus j adds (j+1) times it),
+# so glyph edges blend into a dark entry, not the light selection; it is opened only for a shaded run, so plain text reads nothing new
+_p2nb=[min(range(len(PAL_B)),key=lambda i_:sum((a_-b_)**2 for a_,b_ in zip(PAL_B[i_],c_))) for n_,c_ in HL_X]
+f1sb_=net.gate(nohl-fld_+sum((_p2xd[j_+1]*((_p2nb[j_]+1)/2-1) for j_ in range(len(HL_X))),X()),net.step(_p2z))
+bg[1].lin(insel+f1sb_);bg[3].lin(fld_)
 nsh_=nohl-fld_-f1sh_; bgh_=net.decode_z(pbg,len(PAL_B),nsh_)   # the plain background is the cell shade
 for j in range(len(PAL_B)): bg[j].lin(bgh_[j])
 hlcol=[insel*SEL[i]+fld_*PAL_B[3][i]+sum((_f1zb[16-8*i+b_]*(1<<b_) for b_ in range(8)),X()) for i in range(3)]
@@ -1186,7 +1192,7 @@ net.group('late commands')
 exec(open('rv_a2_canvas.py').read())
 exec(open('rv_a4_features.py').read())
 exec(open('rv_a5_docx.py').read())
-exec(open('feat1_docx.py').read())
+exec(open('feat1_docx.py').read()); exec(open('p2_color.py').read())
 exec(open('rv_a6_spell.py').read())
 # ---- ribbon commands: id plus tab select the command, first rule wins ----
 _L0=[(PIND,-24,0),(PIND,24,0),(PFIRST,-24,1),(PFIRST,24,1),(PSPB,-8,0),(PSPB,8,0),(PSPA,-8,0),(PSPA,8,0)]
