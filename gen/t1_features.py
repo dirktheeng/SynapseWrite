@@ -189,8 +189,8 @@ t1_menu(8,464,115,70,['1.0','1.15','1.5','2.0'])
 t1_menu(4,PX+362,DOCY+27,130,[0,0],_fop)
 t1_menu(5,6,127,190,['Normal: 1 in sides','Moderate: 0.75 in sides','Narrow: 0.5 in'])
 t1_menu(6,708,127,70,['1.0','1.15','1.5','2.0'])
-e=S('T1_M0'); mh=net.decode(t1_mop,9,e)
-on('T1_M0',*[(mh[k_],f'T1_MM{k_}',None) for k_ in range(1,9)],(None,'T1_END',None))
+e=S('T1_M0'); mh=net.decode(t1_mop,21,e)
+on('T1_M0',*[(mh[k_],f'T1_MM{k_}',None) for k_ in (1,2,3,4,5,6,7,8,20)],(None,'T1_END',None))
 on('T1_END',(t1_nh,'T1_HH',{t1_nh:0,t1_hvo:0,rB:(1265,thumb,12,net.min_(t1_thh,net.relu(as_x(DOCB)-thumb)),tuple(as_x(205)-net.eq(t1_hov,255,S('T1_END'))*65 for _ in range(3)),255)}),(None,'HALT',{t1_hvo:0}))
 on('T1_MD',(None,'T1_MD1',{pix:(hx_,hy_)}))
 e=S('T1_MD1'); nr1=X()
@@ -200,12 +200,12 @@ for k_ in range(1,8): _gc1=_gc1+net.ge(hx_,t1_mx+GC*k_,e)
 on('T1_MD1',(net.eq(A_,254,e),'T1_MR',{t1_mrow:G_(nr1,ONE-_gm1)+G_(nr1*8+_gc1,_gm1)}),(None,'T1_MX',None))
 on('T1_MX',(None,'RD0',{t1_mop:0,t1_uid:1,t1_mrow:99}))
 e=S('T1_MK'); nrw=mh_n=X()
-mk0=net.decode(t1_mop,9,e)
+mk0=net.decode(t1_mop,21,e); nrw=nrw+G_(a6nr,mk0[20])
 for k_,c_ in ((1,2),(2,11),(3,32),(4,2),(5,3),(6,4),(7,8),(8,4)): nrw=nrw+mk0[k_]*c_
 on('T1_MK',(net.eq(eva,27,e),'T1_MX',None),(net.and_(net.eq(eva,13,e),net.lt(t1_mrow,32,e)),'T1_MR',None),(net.eq(eva,13,e),'T1_MX',None),
  (net.and_(net.eq(eva,131,e),net.ge(t1_mrow+1,nrw,e)),'T1_M0',{t1_mrow:0}),(net.eq(eva,131,e),'T1_M0',{t1_mrow:t1_mrow+1}),
  (net.and_(net.eq(eva,129,e),net.or_(net.eq(t1_mrow,0,e),net.eq(t1_mrow,99,e))),'T1_M0',{t1_mrow:nrw-1}),(net.eq(eva,129,e),'T1_M0',{t1_mrow:t1_mrow-1}),(None,'HALT',None))
-e=S('T1_MR'); mr=net.decode(t1_mop,9,e); rr_=net.decode(t1_mrow,32,e); CM={t1_mop:0,t1_uid:1,t1_mrow:99}; mrules=[]
+e=S('T1_MR'); mr=net.decode(t1_mop,21,e); rr_=net.decode(t1_mrow,32,e); CM={t1_mop:0,t1_uid:1,t1_mrow:99}; mrules=[]
 def mc(k_,r_): return net.and_(net.step(mr[k_]),net.step(rr_[r_]))
 for r_ in range(2): mrules.append((mc(1,r_),'FMTS',{fm:10,fcol:r_,**CM}))
 for r_,si_ in enumerate(T1_SZ): mrules.append((mc(2,r_),'FMTS',{fm:9,fsi:si_,**CM}))
@@ -216,4 +216,5 @@ mrules.append((mc(4,1),'RD0',{t1_fw:ONE-t1_fw,**CSTART,**CM}))
 for r_,v_ in enumerate((3,8,4)): mrules.append((mc(5,r_),'T3_SP0',{tsop:v_,**CM}))
 for r_ in range(4):
     mrules.append((mc(6,r_),'PA0',{pwalk:lo_p,pfld:PLSP,alv:r_,grp:grp+1,t1_lastk:0,**CM}));mrules.append((mc(8,r_),'PA0',{pwalk:lo_p,pfld:PLSP,alv:r_,grp:grp+1,t1_lastk:0,**CM}))
+for r_ in range(8): mrules.append((mc(20,r_),'A6S_PK',{a6sr:r_,**CM}))
 on('T1_MR',*mrules,(None,'T1_MX',None))

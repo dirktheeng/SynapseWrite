@@ -15,6 +15,7 @@ e.finish();
 for(const [i,v] of h.init)e.inject(i,v);
 const bank=()=>new Float32Array(mem(),e.p_bank(),h.bank);
 {const b=bank();for(const [a,v] of h.bank_init)b[a]=v;}
+try{const s=JSON.parse(localStorage.getItem('synapse_dict')||'[]');const b=bank();for(let i=0;i<s.length;i++)b[h.dict+i]=s[i];}catch(_){}
 const cv=document.getElementById('screen'),ctx=cv.getContext('2d',{alpha:false,willReadFrequently:true});const img=ctx.createImageData(1280,800);
 let ptr='mouse';let timer=0,pendClip=null,keyCopy=false;
 // Clipboard write: the async API, then the copy event, then a code telling the network that only its own copy holds the text.
@@ -28,6 +29,7 @@ const dispatch=(k,a=0,b=0,c=0)=>{
  {const dr=new Uint8Array(mem(),e.p_drow(),801),f=new Uint32Array(mem(),e.p_fb(),1024000),q=new Uint32Array(img.data.buffer);for(let y=0;y<800;y++)if(dr[y]){let z=y;while(dr[z])dr[z++]=0;for(let i=y*1280,j=z*1280;i<j;i++)q[i]=f[i]|0xff000000;ctx.putImageData(img,0,0,0,y,1280,z-y);y=z;}}
  const clip=e.val(h.clipout);if(clip){const bb=bank();const cs=[];for(let i=0;i<clip-1;i++)cs.push(bb[h.cb+i]);const txt=String.fromCharCode(...cs);window.annClip=txt;pendClip=txt;if(!keyCopy)writeClip(txt);keyCopy=false;}
  const sv=e.val(h.saveout),pd=e.val(h.pdfout);if(sv||pd){const n=sv||pd,bb=bank(),a0=e.val(h.outbase);const u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=bb[a0+i];saveFile(u,sv?'Document1.docx':'Document1.pdf');}
+ {const ds=e.val(h.dsave);if(ds)try{localStorage.setItem('synapse_dict',JSON.stringify(Array.from(bank().subarray(h.dict,h.dict+ds))));}catch(_){}}
  if(e.val(h.wpic)){const f=document.createElement('input');f.type='file';f.onchange=()=>f.files[0]&&openPic(f.files[0]);f.click();}
  if(e.val(h.wopen)){const f=document.createElement('input');f.type='file';f.onchange=()=>f.files[0]&&openFile(f.files[0]);f.click();}
  const wp=e.val(h.wantp);
@@ -42,7 +44,7 @@ const openPic=async f=>{const u=new Uint8Array(await f.arrayBuffer());const bb=b
 const saveFile=async (u,name)=>{let dl=null;try{dl=window.claude?await window.claude.use('downloads'):null;}catch(_){}
  if(dl){try{await dl.save({filename:name,data:u});}catch(_){}return;}
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([u]));a.download=name;a.click();};
-const NAMED={Backspace:8,Tab:9,Enter:13,Escape:27,Delete:127,ArrowLeft:128,ArrowUp:129,ArrowRight:130,ArrowDown:131,Home:132,End:133,PageUp:134,PageDown:135};
+const NAMED={Backspace:8,Tab:9,Enter:13,Escape:27,Delete:127,ArrowLeft:128,ArrowUp:129,ArrowRight:130,ArrowDown:131,Home:132,End:133,PageUp:134,PageDown:135,ContextMenu:136};
 const mods=ev=>(ev.ctrlKey||ev.metaKey?1:0)+(ev.shiftKey?2:0);
 window.addEventListener('keydown',ev=>{let c=NAMED[ev.key];if(!c&&ev.key.length===1)c=(ev.ctrlKey||ev.metaKey)?ev.key.toLowerCase().charCodeAt(0):ev.key.charCodeAt(0);
  if(!c)return;const cm=ev.ctrlKey||ev.metaKey;
@@ -54,6 +56,7 @@ window.addEventListener('paste',ev=>{ev.preventDefault();pasteText(ev.clipboardD
 const pos=ev=>{const r=cv.getBoundingClientRect();return [Math.round((ev.clientX-r.left)*1280/r.width),Math.round((ev.clientY-r.top)*800/r.height)];};
 cv.addEventListener('mousedown',ev=>{cv.focus({preventScroll:true});const [x,y]=pos(ev);dispatch(3,x,y,Math.floor(performance.now()));});
 window.addEventListener('mouseup',ev=>{const [x,y]=pos(ev);dispatch(4,x,y);});
+cv.addEventListener('contextmenu',ev=>{ev.preventDefault();dispatch(2,136,0,Math.floor(performance.now()));});
 let moving=false;cv.addEventListener('mouseleave',()=>dispatch(11));cv.addEventListener('mouseenter',ev=>{if(ptr!=='touch'&&!ev.buttons){const [x,y]=pos(ev);dispatch(11,x,y);}});window.addEventListener('mousemove',ev=>{if(!ev.buttons){const [x,y]=pos(ev);dispatch(11,x,y);return;}if(moving)return;moving=true;requestAnimationFrame(()=>{moving=false;const [x,y]=pos(ev);dispatch(5,x,y);});});
 cv.addEventListener('wheel',ev=>{ev.preventDefault();dispatch(6,0,0,Math.round(ev.deltaY)+1000);},{passive:false});
 // Touch devices: a hidden field summons the on-screen keyboard. Text changes are encoded as key events.

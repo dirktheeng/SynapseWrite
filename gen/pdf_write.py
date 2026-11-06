@@ -22,10 +22,10 @@ for pw_ in (1000000,100000,10000,1000,100,10,1):
 import pdf_fonts
 head=b'%PDF-1.4\n'
 off=len(head); body=b''; offs={}
-offs[1]=off+len(body); body+=b'1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n'
+offs[1]=off+len(body); body+=b'1 0 obj\n<</Type/Catalog/Pages 2 0 R/Outlines 27 0 R>>\nendobj\n'
 for ob_,bb_ in sorted(pdf_fonts.objects(3,11).items()):
     offs[ob_]=off+len(body); body+=bb_
-FIRST=27
+FIRST=28
 pfr=Ret('T4_PFR')
 on('PDF',(None,'PD_h',{fp:0,embase:OUTB}))
 lit('PD_h',head+body,'PD_x')
@@ -118,9 +118,9 @@ for k_,pw_ in enumerate((1000000,100000,10000,1000,100,10,1)):
     on(cur_n,(None,nx_,{fw2:(as_x(OUTB)+qlenat+k_,48+dg)})); cur_n=nx_
 pg_open('PD_O2','PD_8')
 # one text line: positioned chunks of a word and its trailing space, in screen pixels
-qsty=R(); qyb=qph-(qyy-qtop+qa); qpc=R()
+qhl=R(); qsty=R(); qyb=qph-(qyy-qtop+qa); qpc=R()
 e=S('PD_8')
-on('PD_8',(None,'T2_PM',None))
+on('PD_8',(None,'A6P_B0',None))
 on('PD_R',(net.step(qiw),'T4P_IM',None),(None,'PD_9',{qsty:999999,qop:0,qxx:qx+qind+qxc,qpc:0}))
 e=S('PD_9'); on('PD_9',(net.ge(qo,qe,e),'PD_Z',None),(None,'PD_A',{r1:qb+qo,r2:qb+1024+qo}))
 e=S('PD_A'); measure(e,R1,R2); ke3=net.and_(e,net.step(qpc)); kp_en.lin(ke3); kp_in.add(ke3,qpc)
@@ -131,7 +131,7 @@ sv_en.lin(S('PD_F')); sv_in.add(S('PD_F'),ins_st)
 e=S('PD_F'); zh=net.decode(SV['size'],len(rom.PTS),e); pts=X(); ptv=X()
 for i_,h_ in enumerate(zh): pts=pts+h_*round(rom.PTS[i_]*96/72); ptv=ptv+h_*round(rom.PTS[script_size(i_)]*96/72)
 ptk=net.or_(SV['ins'],SV['dele']); vf_=net.step(SV['sup']+SV['sub'])
-on('PD_F',(None,'PD_Fa',{qsty:ins_st,qfn:SV['bold']+SV['ital']*2+SV['font']*4+3,qsz:G_(pts,ONE-vf_)+G_(ptv,vf_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3}))
+on('PD_F',(None,'PD_Fa',{qsty:ins_st,qfn:SV['bold']+SV['ital']*2+SV['font']*4+3,qsz:G_(pts,ONE-vf_)+G_(ptv,vf_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3,qhl:SV['hl']}))
 lit('PD_Fa',b'/F','PD_Fb')
 e=S('PD_Fb'); on('PD_Fb',(None,'PD_Fc',None))
 em_en.lin(e); em_b.add(e,48+qfn-3)
@@ -155,7 +155,7 @@ on('PD_Tg',(net.eq(ins_ch,32,e),'T4P_CL',{pfcr.r:pfcr.id('PD_9')}),(None,'PD_9',
 # closing a chunk draws its underline or strike line
 on('T4P_CL',(None,'T4P_Ca',{qop:0}))
 lit('T4P_Ca',b')Tj ET\n','T4P_C2')
-on('T4P_C2',(qdel,'T4P_Ra',{qry:qyb+5}),(qund,'T4P_Ra',{qry:qyb-2}),(None,'T4_PFC',None))
+on('T4P_C2',(net.step(qhl),'A6P_FH',None),(None,'A6P_U',None))
 number('T4P_Ra',qcx0,'T4P_Rb'); lit('T4P_Rb',b' ','T4P_Rc'); number('T4P_Rc',qry,'T4P_Rd'); lit('T4P_Rd',b' ','T4P_Re'); number('T4P_Re',qxx-qcx0,'T4P_Rf'); lit('T4P_Rf',b' 1 re f\n','T4_PFC')
 on('PD_Z',(qop,'T4P_CL',{pfcr.r:pfcr.id('PD_Y')}),(None,'PD_Y',None))
 e=S('PD_Y'); on('PD_Y',(net.and_(net.step(qtoc),net.ge(qlj+1,qnl,e)),'T4P_TD0',None),(None,'PD_6',{qyy:qyy+qh,qlj:qlj+1}))
@@ -218,14 +218,14 @@ e=S('T4P_Fh'); em_en.lin(e); em_b.add(e,qcur); on('T4P_Fh',(None,'T4P_Fd',{qhi:q
 lit('T4P_Fg',b')Tj ET\n','T4P_FN')
 e=S('T4P_FN'); fp2=net.and_(hftp,net.eq(qpg,1,e))
 on('T4P_FN',(net.step(qfk),'T4_PFR',None),(fp2,'T4P_F1',{qfb:as_x(HFB)+768,qfl:hfl[3],qfy:as_x(60)-A9,qfk:1}),(None,'T4P_F1',{qfb:as_x(HFB)+512,qfl:hfl[2],qfy:as_x(60)-A9,qfk:1}))
-lit('PD_E1',b'2 0 obj\n<</Type/Pages/MediaBox[0 0 612 792]/Resources<</Font<<'+res+b'>>>>/Count ','PD_E2')
+lit('PD_E1',b'2 0 obj\n<</Type/Pages/MediaBox[0 0 612 792]/Resources<</ExtGState<</M<</BM/Multiply>>>>/Font<<'+res+b'>>>>/Count ','PD_E2')
 number('PD_E2',qpg,'PD_E3')
 lit('PD_E3',b'/Kids[','PD_K0')
 on('PD_K0',(None,'PD_K1',{qi:FIRST}))
 e=S('PD_K1'); on('PD_K1',(net.ge(qi,qobj,e),'PD_K9',None),(None,'PD_K2',None))
 number('PD_K2',qi,'PD_K3'); lit('PD_K3',b' 0 R ','PD_K4')
 on('PD_K4',(None,'PD_K1',{qi:qi+2}))
-lit('PD_K9',b']>>\nendobj\n','PD_X0')
+lit('PD_K9',b']>>\nendobj\n','A6P_F0')
 on('PD_X0',(None,'PD_X1',{qxr:fp}))
 lit('PD_X1',b'xref\n0 ','PD_X2')
 number('PD_X2',qobj,'PD_X3')
@@ -244,3 +244,4 @@ number('PD_T3',qxr,'PD_T4')
 lit('PD_T4',b'\n%%EOF\n','PD_END')
 pdfl=R(); on('PD_END',(None,'HALT',{pdfl:fp}))
 pdfout=Bus(net); pdfout.add(S('HF'),pdfl); fsm.set(pdfl,S('HF'),0)
+exec(open('rv_a6_pdf.py').read())

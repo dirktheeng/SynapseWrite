@@ -352,7 +352,7 @@ on('KEY',
  (K('b'),'FMTS',{fm:1}),(K('i'),'FMTS',{fm:2}),(K('u'),'FMTS',{fm:3}),
  (K('e'),'SETAL',{alv:1}),(K('l'),'SETAL',{alv:0}),(K('r'),'SETAL',{alv:2}),(K('j'),'SETAL',{alv:3}),
  (K('f'),'RD0',{mode:1,field:0,**CSTART}),(K('h'),'RD0',{mode:2,field:0,**CSTART}),
- (K(13),'PB0',{grp:grp+1}),(N(8),'BKSP',{grp:grp+net.step(net.step(t1_lastk-2)+net.step(2-t1_lastk)+t1_pzn+has_sel),t1_lastk:2}),(N(127),'DELK',{grp:grp+net.step(net.step(t1_lastk-3)+net.step(3-t1_lastk)+t1_pzn+has_sel),t1_lastk:3}),(N(13),'ENTER',{grp:grp+1}),(N(9),'TABK',{}),
+ (N(136),'A6S_0',{}),(K(13),'PB0',{grp:grp+1}),(N(8),'BKSP',{grp:grp+net.step(net.step(t1_lastk-2)+net.step(2-t1_lastk)+t1_pzn+has_sel),t1_lastk:2}),(N(127),'DELK',{grp:grp+net.step(net.step(t1_lastk-3)+net.step(3-t1_lastk)+t1_pzn+has_sel),t1_lastk:3}),(N(13),'ENTER',{grp:grp+1}),(N(9),'TABK',{}),
  (net.and_(printable,nc),'TYPE',{}),
  (None,'HALT',None))
 # find field typing
@@ -785,13 +785,13 @@ for rr,en_,yv in ((rC,und,sy+lasc+2-rise),(rD,ske,sy+lasc-strk-rise)):
 mk_=net.and_(e,isp,t1_marks,ONE-und); rC.drive(mk_,(x+net.gate(adv*0.5,mk_),sy+lasc-6,2,2,(120,120,160),col))
 exec(open('t4_spell.py').read())
 adv_c={x:x+adv+kern+xtra,col:col+1,off:off+1,kprev:R1}
-on('C1',(isfnc,'T3_CF0',None),(sp_bad,'T4_SQ',{**adv_c,sx:sp_x0,sp_xe:x,sp_r:0}),(net.ge(off+1,le_,e),'CE',adv_c),(None,'C1',{**adv_c,r1:pbs+off+1,r2:pbs+1024+off+1}))
+on('C1',(isfnc,'T3_CF0',None),(sp_bad,'A6D_0',{**adv_c,sx:sp_x0,sp_xe:x,sp_r:0,a6oe:off}),(net.ge(off+1,le_,e),'CE',adv_c),(None,'C1',{**adv_c,r1:pbs+off+1,r2:pbs+1024+off+1}))
 e=S('CE'); chere2=net.and_(net.eq(pi,cp,e),net.eq(off,co,e))
 fsm.set(cx,chere2,x);fsm.set(cacol,chere2,col)
 mk2=net.and_(e,t1_marks,net.eq(le_,plen_,e)); rB.drive(mk2,(x+5,sy+lasc-12,1,14,(120,120,160),col)); rC.drive(mk2,(x+1,sy+lasc-12,4,6,(120,120,160),col))
 on('IM0',(net.ge(irow,pih,S('IM0')),'T3_IH0',None),(None,'IM0',{imr:(x,sy+irow,as_x(IMG0)+pio+iaddr,pim),irow:irow+1,iaddr:iaddr+pim}))
 _ce_fill=(x,sy,lright-x,lhh,(bc0,bc1,bc2),net.min_(col,199))
-on('CE',(sp_bad2,'T4_SQ',{sx:sp_x0,sp_xe:x,sp_r:1,sp_in:0}),(net.and_(net.step(ptoc),net.eq(le_,plen_,e)),'T3_TD0',{rA:_ce_fill}),(net.step(pim),'IM0',{irow:0,iaddr:0,rA:_ce_fill}),(net.and_(net.eq(ls_,0,e),ONE-net.step(tcols)),'CB0',{rA:_ce_fill}),(None,'R9',{rA:_ce_fill}))
+on('CE',(sp_bad2,'A6D_0',{sx:sp_x0,sp_xe:x,sp_r:1,sp_in:0,a6oe:off}),(net.and_(net.step(ptoc),net.eq(le_,plen_,e)),'T3_TD0',{rA:_ce_fill}),(net.step(pim),'IM0',{irow:0,iaddr:0,rA:_ce_fill}),(net.and_(net.eq(ls_,0,e),ONE-net.step(tcols)),'CB0',{rA:_ce_fill}),(None,'R9',{rA:_ce_fill}))
 on('CB0',(None,'CB1',{r1:pbs+CMTL}))
 on('CB1',(net.step(R1),'T3_CB2',{wl_:R1,wb_:pbs+CMT,wdx:1050,wdy:sy+3,wdw:200,wdd:0,wbgf:1,wret_.r:wret_.id('T3_CB3')}),(None,'R9',None))
 on('R9',(None,'R5',{yy:yy+lhh,lj:lj+1}))
@@ -1000,6 +1000,7 @@ exec(open('docx_read.py').read())
 exec(open('t4_features.py').read())
 exec(open('t2_features.py').read())
 exec(open('t3_features.py').read())
+exec(open('rv_a6_spell.py').read())
 # ---- ribbon commands: id plus tab select the command, first rule wins ----
 _L0=[(PIND,-24,0),(PIND,24,0),(PFIRST,-24,1),(PFIRST,24,1),(PSPB,-8,0),(PSPB,8,0),(PSPA,-8,0),(PSPA,8,0)]
 fr_=[(TB(8,0),'RD0',{mode:1,field:0}),(TB(9,0),'RD0',{mode:2,field:0}),(TB(10,0),'FMTS',{fm:12}),(TB(11,0),'FMTS',{fm:13}),(TB(12,0),'FMTS',{fm:14}),
@@ -1037,7 +1038,7 @@ def nid(x):
 wvl_data=[wlog,wln,wvl,w1,w2,w3,w4,fw,fw2,wo,imw,wl_i,xw,wplg,wht]+T3_WPORTS
 for p in wvl_data: net.aligned.append([nid(b.w) for b in p.d])
 for b in (dat_s,dat_l,dat_p): net.aligned.append([nid(w_) for w_ in b])
-net.keep=[nid(q) for q in (halt.w,timer.w,clipout.w,saveout.w,outbase.w,pdfout.w,picout.w,openout.w,wantp.w,ev_kind,ev_a,ev_b,ev_c,ev_t)]
+net.keep=[nid(q) for q in (dsave.w,halt.w,timer.w,clipout.w,saveout.w,outbase.w,pdfout.w,picout.w,openout.w,wantp.w,ev_kind,ev_a,ev_b,ev_c,ev_t)]
 for p in net.ports:
     for q in p.rec(None)[1:]:
         if isinstance(q,X): net.keep.append(nid(q))
@@ -1086,7 +1087,7 @@ def _pack(vals,big):      # small values one byte, others an escape then fixed w
         else: o.append(255); o+=int(v_).to_bytes(big,'little')
     return bytes(o)
 _dz=_pack(dst,4); _wz=_pack([wix[w_] for w_ in ww_],2)
-hdr=dict(fmax=BANK-FILE,outbase=new[nid(outbase.w)],dn=len(_dz),wn=len(_wz),pdfout=new[nid(pdfout.w)],ni=len(isr),nt=len(wtab),wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,e=len(dst),L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
+hdr=dict(dsave=new[nid(dsave.w)],dict=DICTB,fmax=BANK-FILE,outbase=new[nid(outbase.w)],dn=len(_dz),wn=len(_wz),pdfout=new[nid(pdfout.w)],ni=len(isr),nt=len(wtab),wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,e=len(dst),L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
  ev=[new[nid(q)] for q in (ev_kind,ev_a,ev_b,ev_c,ev_t)],cb=CB,cb2=CB2,init=[[new[i],v] for i,v in net.init.items()],
  bank_init=[*[[SECB+i_,v_] for i_,v_ in enumerate((1,816,PH,PX,TX,TW,96,864))],[LEN+SLOT0,0],[DIRTY+SLOT0,1],[PT,SLOT0],[SLOT0+SAVE,112],[SLOT0+SAVE+1,16],[SLOT0+SAVE+2,1],[SLOT0+PSPA,DEFSPA]]+T2_ROM)
 import os

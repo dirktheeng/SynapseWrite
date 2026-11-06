@@ -29,13 +29,14 @@ def _sp_build():
 _nodes,_root=_sp_build()
 _LI={chr(97+i):i for i in range(26)}; _LI["'"]=26
 sp_in=R();sp_dig=R();sp_pa=R();sp_ap=R();sp_x0=R();sp_xe=R();sp_r=R()
-_lo=low0(R1,e)
-sp_alpha=net.and_(net.ge(_lo,97,e),net.lt(_lo,123,e))
+_ew=e+S('A6S_W')   # rv_a6: the suggestion walker drives the same letter wires
+_lo=low0(R1,_ew)
+sp_alpha=net.and_(net.ge(_lo,97,_ew),net.lt(_lo,123,_ew))
 sp_hot=net.decode(_lo-97,26,sp_alpha,hot=True)
 sp_nop=net.and_(e,SD['nop'])
 sp_latin=net.or_(net.and_(net.ge(R1,192,e),ONE-net.eq(R1,215,e),ONE-net.eq(R1,247,e)),net.eq(R1,138,e),net.eq(R1,140,e),net.eq(R1,142,e),net.eq(R1,154,e),net.eq(R1,156,e),net.eq(R1,158,e),net.eq(R1,159,e))   # the word list is ASCII: a word with an accent is left unchecked
 sp_digit=net.or_(net.and_(net.ge(R1,48,e),net.lt(R1,58,e)),net.and_(sp_nop,sp_alpha),sp_latin)
-sp_apos=net.and_(net.or_(net.eq(R1,39,e),net.eq(R1,146,e)),sp_in)
+sp_apos=net.and_(net.or_(net.eq(R1,39,_ew),net.eq(R1,146,_ew)),sp_in)
 sp_bnd=net.and_(e,ONE-sp_alpha,ONE-sp_digit,ONE-sp_apos)
 sp_first=net.and_(sp_alpha,ONE-sp_in)
 sp_acc=net.wire()
@@ -55,6 +56,7 @@ net.group(_sp_group)
 fsm.set(sp_in,net.or_(sp_alpha,sp_digit,sp_apos),1); fsm.set(sp_in,sp_bnd,0); fsm.set(sp_in,S('R8'),0)
 fsm.set(sp_dig,sp_digit,1); fsm.set(sp_dig,sp_bnd,0); fsm.set(sp_dig,S('R8'),0)
 fsm.set(sp_x0,sp_first,x)
+a6oe=R();a6o0=R();a6sr=R();a6nr=R();a6mf=R();a6dm=R();a6dk=R();a6dl=R();a6di=R(); fsm.set(a6o0,sp_first,off)   # rv_a6
 # an accepted word may be followed by an apostrophe and an optional s
 fsm.set(sp_pa,sp_apos,sp_acc); fsm.set(sp_ap,sp_apos,1)
 _alpha_nf=net.and_(sp_alpha,sp_in)
