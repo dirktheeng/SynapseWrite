@@ -1032,6 +1032,7 @@ T1('late')
 ui.build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,t1_hov,t1_hb,t1_hvo,bstg,t1_prs)
 exec(open('pointer3.py').read())
 # ---- finish ----
+pat_finish()
 for r in (jret,oret,dret,wret,bret,gret,hret,cret,iret,nrr,t4r,fvr,t4cr,zret,zdr,pfr,pfcr,t2pr,t2rr,t2pp,t2sr,t2ur,pgret,wret_,lret,lbret)+tuple(T3_RETS): r.gen()
 _undef={nx_ for _,(r_,o_) in fsm.states.items() for _c,nx_ in o_ if nx_ is not None and nx_ not in fsm.states}
 assert not _undef,_undef

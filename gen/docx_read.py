@@ -18,10 +18,7 @@ for i_,v_ in enumerate((1,816,PH,PX,TX,TW,96,864)):
     on('T3_OP2' if i_==0 else f'T3_OP2{i_}',(None,f'T3_OP2{i_+1}' if i_<7 else 'T2_OR0',{w1:(as_x(SECB)+i_,v_)}))
 FA=as_x(FILE)
 W=rl.out
-def pat(st,e,offs=0):
-    c=[]
-    for i,ch in enumerate(st): c.append(net.eq(W[i+offs],ord(ch),e))
-    return net.and_(*c)
+exec(open('rv_a10_pat.py').read())
 ztarget=R();zp0=R();zk=R();ibase=R();obase=R(OUTB);mth=R();csz=R();nm=R();ext=R();cmt=R();loff=R()
 # locate the end record by scanning back, then walk the central directory
 on('OP1',(None,'ZE0',{zp:net.relu(evc-22)}))
@@ -166,9 +163,6 @@ e=S('PX1')
 lt_=net.eq(W[0],60,e)
 on('PX1',(lt_,'PX2',{rl:OA+oi}),(None,'PX',{oi:oi+1}))
 e=S('PX2')
-def tag(n,end):
-    return net.and_(pat(n,e),net.or_(*[net.eq(W[len(n)],ord(q),e) for q in end]))
-def tagA(n,end): return tag(n,end)
 on('PX2',(net.and_(t2skip,ONE-pat('</w:styl',e)),'PX',{oi:oi+1}),
  (pat('</w:styl',e),'T2_SW',{oi:oi+8,t2rr.r:t2rr.id('T2_SC')}),
  (tag('<w:p',' >'),'PN1',{oi:oi+4}),
