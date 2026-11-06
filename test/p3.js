@@ -136,6 +136,7 @@ for a,b in blk:
   out.append({'y':[a,b],'c':[(u+v)/2 for u,v in r]})
 print(json.dumps({'box':[x0,x1],'rows':out}) if True else '')`.replace('from PIL','import json\nfrom PIL')));
   const LINE='M mat(a&bbb)(cc&d)(eee&f) z';
+  await open(mk('blank',P(Rn(''))));   // a fresh document, whatever ran before
   await T(LINE);await C(135,47);await C(725,76);await C(80,47);await K('Control+Home');await K('End');await Wt(200);
   const s0=await eqshot('mat3');const x=xml(await (async()=>{await save(`${O}/m3.docx`);return `${O}/m3.docx`;})());fs.writeFileSync(`${O}/m3.xml`,x);
   const t_=s=>`<m:r><m:t xml:space="preserve">${s}</m:t></m:r>`;

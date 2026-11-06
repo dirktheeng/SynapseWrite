@@ -58,7 +58,7 @@ fsm.set(co,net.and_(S('A6Q_RR'),net.or_(ONE-a6qa,net.step(a6qcv))),clen)
 # layout: taller line, width from the record
 e=S('A6Q_L0'); _lastq=net.ge(a6off+1,plen_,e); _kq=[net.eq(R2,k_,e) for k_ in range(1,8)]   # feat2: ascent and height per kind; a delimiter takes the line's
 _aq=sum((G_(as_x(v_),k_) for v_,k_ in zip((18,17,20,26,18,0,18),_kq)),X()); _hq=sum((G_(as_x(v_),k_) for v_,k_ in zip((28,23,26,46,24,0,28),_kq)),X())
-_p3mr=G_(net.relu(rl.out[6]-2),_kq[6]); _aq=_aq+_p3mr*((rom.metrics(9)[0]+4)//2); _hq=_hq+_p3mr*(rom.metrics(9)[0]+3)   # p3: a matrix of more rows is taller
+_p3mr=net.relu(G_(rl.out[6],_kq[6])-2); _aq=_aq+_p3mr*((rom.metrics(9)[0]+4)//2); _hq=_hq+_p3mr*(rom.metrics(9)[0]+3)   # p3: a matrix of more rows is taller
 _qcom={lasc:net.max_(_aq,lasc),lhh:net.max_(_hq,lhh),a6off:a6off+1}
 on('A6Q_L0',(_lastq,'EM',{**_qcom,lend:a6off+1,lwid:lx+R1,lspc:lsn,llast:1}),(None,'L1',{**_qcom,lx:lx+R1,prevsp:0,kprev:0}))
 # paint
