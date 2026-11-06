@@ -231,21 +231,21 @@ net.group('a4 ruler')
 a4tkind=R();a4so=R();a4sk=R();a4dm=R()
 on('A4_RM0',(None,'A4_RM1',{ra4t:cb+A4T,ra4:cb+A4C,rp6:cb+PIND,rc:cb+2062}))
 e=S('A4_RM1')
-def _near(v,e): return net.and_(net.lt(hx_,as_x(v)+6,e),net.gt(hx_,as_x(v)-6,e))
+def _near(v,e): return net.and_(net.lt(zhx,as_x(v)+6,e),net.gt(zhx,as_x(v)-6,e))
 _Lx=t1_rL+t1_rI; _Fx=_Lx+pf_val(rp6.out[1]); _Rx=t1_rL+t1_rW-A4O[6]; _top=net.lt(hy_,157,e); _low=net.ge(hy_,166,e); _mid=e-_top-_low; _notb=net.and_(e,ONE-net.step(rc.out[0]))
 _kd=[net.ge(A4TO[i_],4096,e)+net.ge(A4TO[i_],8192,e) for i_ in range(4)]; _p=[A4TO[i_]-_kd[i_]*4096 for i_ in range(4)]
 _st=[net.and_(net.step(A4TO[i_]),_near(t1_rL+_p[i_],e),e-_top) for i_ in range(4)]
-_drag=lambda k_:{tdk:k_,tdx:hx_,tmx:hx_,drag:0}
+_drag=lambda k_:{tdk:k_,tdx:zhx,tmx:zhx,drag:0}
 _srules=[(_st[i_],'A4_RMd',{**_drag(40+i_),a4so:_p[i_],a4sk:_kd[i_]}) for i_ in range(4)]
-_inw=net.and_(net.gt(hx_,t1_rL,e),net.lt(hx_,t1_rL+t1_rW,e))
+_inw=net.and_(net.gt(zhx,t1_rL,e),net.lt(zhx,t1_rL+t1_rW,e))
 _empty=X(); _e0=e-net.step(A4TO[0]); _e1=net.and_(e-_e0,ONE-net.step(A4TO[1])); _e2=net.and_(e-_e0-_e1,ONE-net.step(A4TO[2]))
 _slot=_e1*1+_e2*2+(e-_e0-_e1-_e2)*3
-on('A4_RM1',(net.and_(net.ge(hx_,200,e),net.lt(hx_,222,e)),'RD0',{a4tkind:G_(a4tkind+1,net.lt(a4tkind,2,e)),t1_rv:0}),
+on('A4_RM1',(net.and_(net.ge(zhx,200,e),net.lt(zhx,222,e)),'RD0',{a4tkind:G_(a4tkind+1,net.lt(a4tkind,2,e)),t1_rv:0}),
  (net.and_(_top,_near(_Fx,e)),'A4_RMd',_drag(30)),(net.and_(_low,_near(_Rx,e)),'A4_RMd',_drag(32)),(net.and_(_low,_near(_Lx,e)),'A4_RMd',_drag(31)),*_srules,
  (net.and_(_mid,_notb,_near(t1_rL,e)),'A4_RMd',_drag(33)),(net.and_(_mid,_notb,_near(t1_rL+t1_rW,e)),'A4_RMd',_drag(34)),
- (_inw,'PA0',{pwalk:lo_p,pfld:G_(as_x(A4T)+_slot,e),alv:floorv((hx_-t1_rL)*(1.0/6)+0.5,e)*6+a4tkind*4096,t1_pdm:0,grp:grp+1,t1_lastk:0,t1_rv:0}),(None,'HALT',None))
+ (_inw,'PA0',{pwalk:lo_p,pfld:G_(as_x(A4T)+_slot,e),alv:floorv((zhx-t1_rL)*(1.0/6)+0.5,e)*6+a4tkind*4096,t1_pdm:0,grp:grp+1,t1_lastk:0,t1_rv:0}),(None,'HALT',None))
 on('A4_RMd',(None,'HALT',None))
-e=S('A4_RU'); _d=floorv((eva-tdx+1200)*(1.0/6)+0.5,e)*6-200
+e=S('A4_RU'); _d=floorv((zev(eva)-tdx+1200)*(1.0/6)+0.5,e)*6-200
 _kh=net.decode(net.relu(tdk-30),15,e); _off=net.or_(net.lt(evb,130,e),net.ge(evb,190,e))
 _u={tdk:0,a4dl:_d,t1_rv:0}
 _tr=[(_kh[10+i_],'A4_RUt',{**_u,pfld:as_x(A4T)+i_,a4tb:net.gt(evb,130,e)-net.ge(evb,190,e)}) for i_ in range(4)]
@@ -263,7 +263,7 @@ for s_,(ia,ib) in enumerate(((0,1),(2,3))):
     st_=f'A4_RZ{s_}'; e=S(st_); pa_,ka,kb=_sm(ia,e); pb_2,kc_,kd_=_sm(ib,e)
     ca=net.and_(e,net.step(a4m[ia])); cb_=net.and_(e,net.step(a4m[ib]))
     rA.drive(ca,(t1_rL+pa_,160,2,8,rkc,0)); rB.drive(ca,(t1_rL+pa_-kb*5-ka*3,166,6,2,rkc,0)); rC.drive(cb_,(t1_rL+pb_2,160,2,8,rkc,0)); rD.drive(cb_,(t1_rL+pb_2-kd_*5-kc_*3,166,6,2,rkc,0))
-    on(st_,(None,f'A4_RZ{s_+1}',None))
+    on(st_,(None,f'A4_RZ{s_+1}',{zrul:0} if s_==1 else None))
 e=S('A4_RZ2'); hk_=net.decode(a4tkind,3,e)
 on('A4_RZ2',(None,'A4_RZ3',{rA:(200,153,20,18,(255,255,255),0),rB:(200,153,20,1,(150,150,150),0),rC:(200,170,20,1,(150,150,150),0)}))
 e=S('A4_RZ3'); hk_=net.decode(a4tkind,3,e)

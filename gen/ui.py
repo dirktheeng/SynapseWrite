@@ -182,14 +182,10 @@ def common():
     # search box opens the find bar
     u.r(460,5,360,22,_PB[16],225,_PB[17]); u.art(466,8,'srch',225); u.t(488,9,'Search',9,2,16,17)
     # status bar: the left part is live, the right part is static
-    u.r(0,776,1280,1,BD); u.r(640,777,640,23,LG)
+    u.r(0,776,1280,1,BD); u.r(640,777,446,19,LG)
     x=1000
-    for i,ic_ in enumerate(('vread','vprint','vweb')):
-        if i==1: u.r(x+i*26,778,24,21,(221,221,221))
+    for i,ic_ in enumerate(('vread','vprint')):
         u.art(x+i*26+4,780,ic_)
-    u.r(1110,788,110,1,(150,150,150)); u.r(1164,782,3,13,(90,90,90))
-    u.r(1092,788,10,1,(90,90,90)); u.r(1228,788,9,1,(90,90,90)); u.r(1232,784,1,9,(90,90,90))
-    u.t(1244,782,'100%',9,1,3)
     return u,['Home','Insert','Layout','References','Review','View']
 def tabbar(u,names,sel):
     x=8; w=twidth('File')+24
@@ -283,7 +279,7 @@ def view(u):
     for i,(nm,ic) in enumerate((('Ruler','ruler'),('Formatting Marks','marks'))):
         u.r(8,64+i*26,150,24,LG,200+1+i,HVG); u.r(12,69+i*26,14,14,(120,120,120),200+1+i); u.r(13,70+i*26,12,12,WHT,200+1+i)
         u.art(30,68+i*26,ic,200+1+i); u.t(50,68+i*26,nm,9,0,3,True)
-    group_label(u,8,150,'Show')
+    group_label(u,8,150,'Show'); group_label(u,170,180,'Zoom')
 def backstage():
     u=L(); u.tab='bs'
     u.r(0,0,1280,800,WHT); u.r(0,0,180,800,BLUE)

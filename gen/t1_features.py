@@ -59,7 +59,7 @@ on('T1_FW0',(t1_ok,'FJ',{ap:fp,ao:fo,jp:fp,jo:fo+qlen,jret.r:jret.id('FOUND')}),
 e=S('T1_C0'); on('T1_C0',(net.or_(net.eq(mode,0,e),net.eq(mode,3,e),net.ge(mode,4,e),net.eq(qlen,0,e)),'T1_CF',None),(None,'T1_C1',{t1_cb:0}))
 e=S('T1_C1'); on('T1_C1',(net.ge(t1_cw,npar,e),'T1_CF',None),(net.ge(t1_cb,1500,e),'T1_CS',None),(None,'T1_C2',{r1:as_x(PT)+t1_cw}))
 on('T1_C2',(None,'T1_C3',{t1_cB:R1,r2:R1+LEN}))
-on('T1_C3',(None,'T1_C4',{t1_cl:R2,t1_ck:0}))
+on('T1_C3',(qmrk,'IMP3_C0',{t1_cl:R2,t1_ck:0}),(None,'T1_C4',{t1_cl:R2,t1_ck:0}))
 e=S('T1_C4'); on('T1_C4',(net.gt(t1_co_+qlen,t1_cl,e),'T1_C1',{t1_cw:t1_cw+1,t1_co_:0,t1_cb:t1_cb+1}),(net.ge(t1_cb,1500,e),'T1_CS',None),(None,'T1_C5',{r1:t1_cB+t1_co_+t1_ck,r2:as_x(Q)+t1_ck,t1_cb:t1_cb+1}))
 e=S('T1_C5'); m5=net.eq(low(R1,e),low(R2,e),e); done5=net.and_(m5,net.ge(t1_ck+1,qlen,e))
 on('T1_C5',(net.and_(done5,t1_fw),'T1_C6',{r1:t1_cB+net.relu(t1_co_-1),r2:t1_cB+t1_co_+qlen}),(done5,'T1_C7',None),(m5,'T1_C4',{t1_ck:t1_ck+1}),(None,'T1_C4',{t1_co_:t1_co_+1,t1_ck:0}))
@@ -143,8 +143,9 @@ rW9=G_(MT[0],tb9)+G_(s_tw,one9)+G_((s_tw-24)*0.5,two9)
 _lb9=net.bits(R1,4,e); rI9=net.gate(rp6.out[0],e)+net.step(R1)*48+(_lb9[2]+_lb9[3]*2)*48
 on('T1_R1',(net.and_(e,ONE-t1_ruler),'T1_V0',None),
  (net.and_(t1_rv,net.eq(rL9,t1_rL,e),net.eq(rW9,t1_rW,e),net.eq(rI9,t1_rI,e),net.eq(rp6.out[1],a4rF,e),net.eq(A4O[6],a4rR,e),net.eq(A4TO[0]+A4TO[1]*3+A4TO[2]*7+A4TO[3]*13,a4rS,e)),'T1_V0',None),
- (None,'T1_RDa',{t1_rL:rL9,t1_rW:rW9,t1_rI:rI9,t1_rv:1,a4rF:rp6.out[1],a4rR:A4O[6],a4rS:A4TO[0]+A4TO[1]*3+A4TO[2]*7+A4TO[3]*13,a4m[0]:A4TO[0],a4m[1]:A4TO[1],a4m[2]:A4TO[2],a4m[3]:A4TO[3]}))
-on('T1_RDa',(None,'T1_RT',{rA:(0,150,1280,24,(230,230,230),0),rB:(s_px,154,s_pw,16,(198,198,198),0),rC:(t1_rL,154,t1_rW,16,WHITE,0)}))
+ (None,'T1_RDz',{zrul:1,t1_rL:rL9,t1_rW:rW9,t1_rI:rI9,t1_rv:1,a4rF:rp6.out[1],a4rR:A4O[6],a4rS:A4TO[0]+A4TO[1]*3+A4TO[2]*7+A4TO[3]*13,a4m[0]:A4TO[0],a4m[1]:A4TO[1],a4m[2]:A4TO[2],a4m[3]:A4TO[3]}))
+on('T1_RDz',(None,'T1_RDa',{rZ:(0,150,1280,24,(230,230,230),0)}))
+on('T1_RDa',(None,'T1_RT',{rB:(s_px,154,s_pw,16,(198,198,198),0),rC:(t1_rL,154,t1_rW,16,WHITE,0)}))
 exec(open('rv_a1_ruler.py').read())
 MC=(96,94,92)
 for i_ in range(5):
@@ -152,7 +153,7 @@ for i_ in range(5):
       rA:(t1_rL+t1_rI+pf_val(a4rF)-4+i_,150+i_,9-2*i_,1,MC,0),
       rB:(t1_rL+t1_rI-i_,169+i_,1+2*i_,1,MC,0),
       rC:(t1_rL+t1_rW-a4rR-i_,169+i_,1+2*i_,1,MC,0)}))
-e=S('T1_V0'); on('T1_V0',(net.eq(tab,5,e),'T1_V1',None),(None,'T1_M0',None))
+e=S('T1_V0'); on('T1_V0',(rdm,'IMP3_RB',None),(net.eq(tab,5,e),'T1_V1',None),(None,'T1_M0',None))
 e=S('T1_V1'); rA.drive(net.and_(e,t1_ruler),(15,72,8,8,ui.BLUE,201)); rB.drive(net.and_(e,t1_marks),(15,98,8,8,ui.BLUE,202))
 on('T1_V1',(None,'T1_M0',None))
 # ---- menus: rows use alpha 254, the row is computed from the pointer y ----
@@ -189,7 +190,7 @@ t1_menu(4,PX+362,DOCY+27,130,[0,0],_fop)
 t1_menu(5,6,127,190,['Normal: 1 in sides','Moderate: 0.75 in sides','Narrow: 0.5 in'])
 t1_menu(6,708,127,70,['1.0','1.15','1.5','2.0'])
 e=S('T1_M0'); mh=net.decode(t1_mop,21,e)
-on('T1_M0',(mh[12],'RVA3_MM0',None),*[(mh[k_],f'T1_MM{k_}',None) for k_ in (*range(1,12),20)],(None,'T1_END',None))
+on('T1_M0',(mh[12],'RVA3_MM0',None),*[(mh[k_],f'T1_MM{k_}',None) for k_ in (*range(1,12),13,20)],(None,'T1_END',None))
 on('T1_END',(t1_nh,'T1_HH',{t1_nh:0,t1_hvo:0,rB:(1265,thumb,12,net.min_(t1_thh,net.relu(as_x(DOCB)-thumb)),tuple(as_x(205)-net.eq(t1_hov,255,S('T1_END'))*65 for _ in range(3)),255)}),(None,'HALT',{t1_hvo:0}))
 on('T1_MD',(None,'T1_MD1',{pix:(hx_,hy_)}))
 e=S('T1_MD1'); nr1=X()
@@ -200,7 +201,7 @@ on('T1_MD1',(net.eq(A_,254,e),'T1_MR',{t1_mrow:G_(nr1,ONE-_gm1)+G_(nr1*8+_gc1,_g
 on('T1_MX',(None,'RD0',{t1_mop:0,t1_uid:1,t1_mrow:99}))
 e=S('T1_MK'); nrw=mh_n=X()
 mk0=net.decode(t1_mop,21,e); nrw=nrw+G_(a6nr,mk0[20])
-for k_,c_ in ((1,2),(2,11),(3,32),(4,2),(5,3),(6,4),(7,8),(8,4),(9,5),(10,64),(11,7),(12,8)): nrw=nrw+mk0[k_]*c_
+for k_,c_ in ((1,2),(2,11),(3,32),(4,2),(5,3),(6,4),(7,8),(8,4),(9,5),(10,64),(11,7),(12,8),(13,11)): nrw=nrw+mk0[k_]*c_
 on('T1_MK',(net.eq(eva,27,e),'T1_MX',None),(net.and_(net.eq(eva,13,e),net.lt(t1_mrow,64,e)),'T1_MR',None),(net.eq(eva,13,e),'T1_MX',None),
  (net.and_(net.eq(eva,131,e),net.ge(t1_mrow+1,nrw,e)),'T1_M0',{t1_mrow:0}),(net.eq(eva,131,e),'T1_M0',{t1_mrow:t1_mrow+1}),
  (net.and_(net.eq(eva,129,e),net.or_(net.eq(t1_mrow,0,e),net.eq(t1_mrow,99,e))),'T1_M0',{t1_mrow:nrw-1}),(net.eq(eva,129,e),'T1_M0',{t1_mrow:t1_mrow-1}),(None,'HALT',None))
@@ -218,4 +219,6 @@ for r_ in range(4):
 for r_,(st_,a_) in enumerate((('CUT',{rv_rp:1}),('COPY',{rv_rp:1}),('HALT',{wpaste:1,rv_rp:1}),('SELALL',{}),('FMTS',{fm:1}),('FMTS',{fm:2}),('FMTS',{fm:3}),('RD0',{mode:1,field:0,qrep:1,**CSTART}))): mrules.append((mc(12,r_),st_,{**a_,**CM}))
 mrules+=a4_mrules(mc,CM,e)+a4_mrules2(mc,CM,e)
 for r_ in range(8): mrules.append((mc(20,r_),'A6S_PK',{a6sr:r_,**CM}))
+for r_ in range(10): mrules.append((mc(13,r_),'IMP3_SA',{t2si:zso+r_,**CM}))
+mrules.append((mc(13,10),'T1_M0',{zso:zso+10,t1_mrow:99}))
 on('T1_MR',*mrules,(None,'T1_MX',None))

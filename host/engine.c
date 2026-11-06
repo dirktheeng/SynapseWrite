@@ -11,7 +11,7 @@ __attribute__((export_name("alloc"))) void* alloc(i32 n){u8*p=(u8*)(((unsigned l
 static u8*zb; static i32 zn_; static f64*btab; static i32 *stamp,tickno=1; typedef struct{f64 bias,acc;i32 is,os,sp,act;}Nr; typedef struct{i32 n;unsigned w;}Syn; static Nr*nr; static Syn*lz,*eg; static f64 *wtab; static i32 NI;  // what one visit touches sits on one cache line
 static i32 N,E,L,NP,NT; static f64*v,*nacc;
 static i32*lstart,*live,*nlist,*ports,*pen,*pptr,*live2,*nlist2; static u8*nflag; static i32 nlive,nnext,nlive2,nnext2,N1,D; static i32 pb[2][3]; static u64*bits,*sum; static i32 SWORDS,sw0[2],sw1[2];
-static u8*fb,*img; enum{W=1280,H=800,YB=4096,PG=65536,NPG=1024};
+static u8*fb,*img; enum{W=1280,H=800,YB=4096,PG=65536,NPG=1152};
 // The memory bank is paged: wasm memory is taken only when a page is first written, and an untouched page reads as zeros.
 static f32*pages[NPG];
 static inline f32*pg_w(i32 a){unsigned k=(unsigned)a>>16;if(k>=NPG)return 0;if(!pages[k]){unsigned long need=(((unsigned long)hp+15)&~15ul)+PG*4;unsigned long want=(need+65535)/65536,have=__builtin_wasm_memory_size(0);if(want>have&&__builtin_wasm_memory_grow(0,want-have)<0)return 0;pages[k]=alloc(PG*4);}return pages[k];}

@@ -1,0 +1,27 @@
+# The clipboard inside the app. Copy and cut also keep the selection's style cells and, for each paragraph mark, its paragraph record.
+_g0=net.cur[0]
+# A paste whose text equals the network's own copy puts those back; any other text is plain, as it came from elsewhere.
+net.group('clipboard formatting')
+e=S('IMP3_CS0'); on('IMP3_CS0',(net.gt(wn,CBSMAX,e),'IMP3_CSX',{clcn:0}),(None,'IMP3_CS1',{csp:lo_p,cso:lo_o,csn:0,csk:0,clcn:wn}))
+on('IMP3_CS1',(None,'IMP3_CS2',{r1:as_x(PT)+csp}))
+on('IMP3_CS2',(None,'IMP3_CS3',{csb:R1,r2:R1+LEN}))
+e=S('IMP3_CS3'); _last=net.eq(csp,hi_p,e); _n=G_(as_x(hi_o)-cso,_last)+G_(R2-cso,e-_last)
+on('IMP3_CS3',(None,'IMP3_CS4',{csl:_n,csc:_last,rb:(csb+1024+cso,_n)}))
+e=S('IMP3_CS4'); on('IMP3_CS4',(csc,'IMP3_CSX',{wb:(as_x(CBS)+csn,csl)}),(None,'IMP3_CS5',{wb:(as_x(CBS)+csn,csl),r1:csb+ALIGN,r2:csb+LIST,rp6:csb+PIND}))
+on('IMP3_CS5',(None,'IMP3_CS1',{wln:(as_x(CBP)+csk*8,*rp6.out),w1:(as_x(CBP)+csk*8+6,R1),w2:(as_x(CBP)+csk*8+7,R2),csn:csn+csl+1,csk:csk+1,csp:csp+1,cso:0}))
+e=S('IMP3_CSX'); on('IMP3_CSX',(net.eq(csd,1,e),'DS0',{dret.r:dret.id('AFTER_ED'),clipl:wn+1,clipn:wn,clipi:0}),(None,'HALT',{clipl:wn+1,clipn:wn,clipi:0}))
+# paste: same text as the own copy? one tick per character. A carriage return from the system clipboard is skipped
+e=S('IMP3_PC'); on('IMP3_PC',(net.or_(net.eq(clcn,0,e),net.lt(evc,clcn,e)),'PS2',{pi_:0,pfm:0}),(None,'IMP3_PC1',{pfi:0,pfj:0,pfk:0}))
+e=S('IMP3_PC1'); on('IMP3_PC1',(net.ge(pfi,evc,e),'IMP3_PCE',None),(None,'IMP3_PC2',{r1:as_x(CB2)+pfi,r2:as_x(CB)+pfj}))
+e=S('IMP3_PC2'); on('IMP3_PC2',(net.eq(R1,13,e),'IMP3_PC1',{pfi:pfi+1}),(net.or_(net.ge(pfj,clcn,e),ONE-net.eq(R1,R2,e)),'PS2',{pi_:0,pfm:0}),(None,'IMP3_PC1',{pfi:pfi+1,pfj:pfj+1}))
+e=S('IMP3_PCE'); on('IMP3_PCE',(net.eq(pfj,clcn,e),'PS2',{pi_:0,pfm:1,evc:clcn}),(None,'PS2',{pi_:0,pfm:0}))
+fsm.set(pfm,S('AFTER_ED'),0)
+e=S('IMP3_PF'); on('IMP3_PF',(None,'IMP3_PF1',{r1:as_x(CB)+pi_,r2:as_x(CBS)+pi_}))
+e=S('IMP3_PF1'); on('IMP3_PF1',(net.eq(R1,10,e),'SPLIT',{pi_:pi_+1,oret.r:oret.id('IMP3_PM0')}),(net.ge(clen,1000,e),'PS2',{pi_:pi_+1}),(None,'T2_PS',{ins_ch:R1,pfst:R2,pi_:pi_+1}))
+on('IMP3_PM0',(None,'IMP3_PM1',{r1:as_x(PT)+cp-1,pff:0}))
+on('IMP3_PM1',(None,'IMP3_PM2',{pfb:R1}))
+e=S('IMP3_PM2'); _f6=net.lt(pff,6,e); _fld=G_(as_x(PIND)+pff,_f6)+G_(as_x(ALIGN)+pff-6,e-_f6)
+on('IMP3_PM2',(net.ge(pff,8,e),'PS2',{pfk:pfk+1}),(None,'IMP3_PM3',{r1:as_x(CBP)+pfk*8+pff,r2:pfb+_fld,pfj:_fld}))
+e=S('IMP3_PM3'); log(e,6,cp-1,pfj,R2,R1)
+on('IMP3_PM3',(None,'IMP3_PM2',{w1:(pfb+pfj,R1),w2:(pfb+DIRTY,1),pff:pff+1}))
+net.group(_g0)

@@ -2,7 +2,7 @@
 e=S('PT0'); indoc0=net.and_(net.ge(mp_pty,DOCY,e),net.lt(mp_pty,DOCB,e),net.lt(mp_ptx,1262,e),ONE-bstg)
 on('PT0',(net.step(tdk),'PTD',{mp_pta:pix.out[3],mp_ptc:pix.out[0],mp_ptk:tdk}),(net.and_(indoc0,net.step(hitn)),'PTH0',{mp_pta:pix.out[3],mp_ptc:pix.out[0],mp_ptk:0,mp_ptv:0}),(None,'PTD',{mp_pta:pix.out[3],mp_ptc:pix.out[0],mp_ptk:0}))
 e=S('PTH0'); on('PTH0',(net.ge(mp_ptv,hitn,e),'PTD',None),(None,'PTH1',{rl:as_x(HIT)+mp_ptv*6}))
-e=S('PTH1'); mp_phin=net.and_(net.ge(mp_ptx,RL[0],e),net.lt(mp_ptx,RL[2],e),net.ge(mp_pty,RL[1],e),net.lt(mp_pty,RL[3],e),net.or_(net.lt(RL[4],17,e),net.eq(RL[5],cp,e)))
+e=S('PTH1'); mp_phin=net.and_(net.ge(zev(mp_ptx),RL[0],e),net.lt(zev(mp_ptx),RL[2],e),net.ge(zevy(mp_pty),RL[1],e),net.lt(zevy(mp_pty),RL[3],e),net.or_(net.lt(RL[4],17,e),net.eq(RL[5],cp,e)))
 on('PTH1',(mp_phin,'PTD',{mp_ptk:RL[4]}),(None,'PTH0',{mp_ptv:mp_ptv+1}))
 e=S('PTD')
 indoc=net.and_(net.ge(mp_pty,DOCY,e),net.lt(mp_pty,DOCB,e),net.lt(mp_ptx,1262,e),ONE-bstg)
