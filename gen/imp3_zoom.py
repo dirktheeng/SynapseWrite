@@ -1,4 +1,5 @@
 # Zoom commands, status bar controls, read mode, and pictures at other scales.
+_g0=net.cur[0]
 net.group('zoom')
 zu=R();zv=R();zrs=R();zvr=R()
 ZPCT=[50,75,100,125,150]; ZVH=[1204,803,602,482,402]
@@ -28,3 +29,4 @@ _zi=lambda e_:sum((net.gate(as_x(e_),h_)*(1/z_) for h_,z_ in zip(ZLH,ZL)),X())
 on('IMP3_IM0',(None,'IMP3_IM1',{zu:0,zv:0,zrs:0}))
 e=S('IMP3_IM1'); on('IMP3_IM1',(net.ge(zv,_zs(pih),e),'T3_IH0',None),(net.ge(zu,_zs(pim),e),'IMP3_IM2',{zu:0,zv:zv+1}),(None,'IMP3_IM1',{imr:(zfx0(x)+zu,zfyb(sy)+zv,as_x(IMG0)+pio+iaddr+_zi(zu),1,1,1),zu:zu+1}))
 e=S('IMP3_IM2'); on('IMP3_IM2',(net.ge(_zi(zv),zrs+1,e),'IMP3_IM2',{zrs:zrs+1,iaddr:iaddr+pim}),(None,'IMP3_IM1',None))
+net.group(_g0)

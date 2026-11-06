@@ -75,5 +75,13 @@ const yel=(r,g,b)=>r>200&&g>180&&b<170; // match tint
    let A=await lib();A.file(9,mk(sp));A.settle();const p=pitch(A);ok(name+' pitch '+want+' px',Math.abs(p-want)<=1,p);A.shot('build/imp3_ln_'+want+'.png');const x=xml(A);const m=x.match(/w:line="\d+" w:lineRule="\w+"/);ok(name+' saved',m&&m[0].includes(sp.includes('exact')?'exact':'atLeast'),m&&m[0]);
    let B=await lib();B.file(9,A.savedBytes());B.settle();ok(name+' reopens the same',pitch(B)===p);}
  }
+ if(!only||only=='rec'){
+  let L='';for(let i=0;i<30;i++)L+='Quick brown fox '+i+' jumps over the lazy dog, then vexes a sphinx with kerning AV To and accents \u00e9\u00e8.\n';
+  let A=await lib();A.paste(L);A.settle();A.key(132,1);A.settle();const h1=(A.key(133,1),A.settle(),A.key(132,1),A.hash(174,776));const e1=A.key(133,1).ed;A.settle();A.key(132,1);A.key(133,1);
+  let B=await lib();B.paste(L);B.settle();B.key(132,1);const h0=B.hash(174,776);ok('records draw the same pixels as the row plane',h0===h1,h0+' '+h1);
+  A.key(132,1);A.key(13);A.settle();A.key(122,1);A.settle();B.key(13);B.settle();B.key(122,1);B.settle();ok('after Enter and Undo too',A.hash(174,776)===B.hash(174,776));
+  // selected and colored text stays right after a record exists
+  A.key(97,1);A.settle();B.key(97,1);B.settle();ok('selection repaint equal',A.hash(174,776)===B.hash(174,776));A.shot('build/imp3_recsel.png');
+ }
  console.log(R.filter(x=>x).length+'/'+R.length+' passed');process.exit(R.every(x=>x)?0:1);
 })();

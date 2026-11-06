@@ -1,4 +1,5 @@
 # The clipboard inside the app. Copy and cut also keep the selection's style cells and, for each paragraph mark, its paragraph record.
+_g0=net.cur[0]
 # A paste whose text equals the network's own copy puts those back; any other text is plain, as it came from elsewhere.
 net.group('clipboard formatting')
 e=S('IMP3_CS0'); on('IMP3_CS0',(net.gt(wn,CBSMAX,e),'IMP3_CSX',{clcn:0}),(None,'IMP3_CS1',{csp:lo_p,cso:lo_o,csn:0,csk:0,clcn:wn}))
@@ -23,3 +24,4 @@ e=S('IMP3_PM2'); _f6=net.lt(pff,6,e); _fld=G_(as_x(PIND)+pff,_f6)+G_(as_x(ALIGN)
 on('IMP3_PM2',(net.ge(pff,8,e),'PS2',{pfk:pfk+1}),(None,'IMP3_PM3',{r1:as_x(CBP)+pfk*8+pff,r2:pfb+_fld,pfj:_fld}))
 e=S('IMP3_PM3'); log(e,6,cp-1,pfj,R2,R1)
 on('IMP3_PM3',(None,'IMP3_PM2',{w1:(pfb+pfj,R1),w2:(pfb+DIRTY,1),pff:pff+1}))
+net.group(_g0)

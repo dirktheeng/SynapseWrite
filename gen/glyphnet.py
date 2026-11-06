@@ -24,7 +24,8 @@ PAD=64.0      # crossing wires carry x+PAD so that gates (which clamp at zero) c
 YP=256.0      # the height register carries y+YP for the same reason
 DP=8.0        # stem shift registers carry shift+DP
 AO=256.0      # accent shift registers carry shift+AO
-HDR=5         # store block header: key+1, rows, cells, x origin, top
+HDR=7         # store block header: key+1, rows, cells, x origin, top, offset+1 of its pixel record, generation of that record
+RECB=68000000; RECE=75000000; RECW=32; RECH=32     # pixel records of small glyphs drawn black on white
 OFF=64        # offset of header values that may be negative
 GRID_EM=1024  # outline vertices are kept on a grid of 1/1024 em (the same weights recur, and the file compresses)
 TOL_PX,TOL_PPEM=0.15,48   # flatness: 0.15 pixel at 36 pt
@@ -233,7 +234,11 @@ class GlyphUnit:
         miss=net.step(s1-hit-0.5)
         # ---- hit path ----
         rowsz=net.step(net.gate(H[1],hit)-0.5)
-        start=net.and_(hit,rowsz); empty=hit-start
+        # A small glyph drawn black on white before: its pixels were recorded off the row plane, so one read and one patch draw it, with no row loop and no plane.
+        recg=net.reg()
+        fast_=net.wire(); fnc_=net.wire()
+        blk=net.and_(hit,rowsz,fast_,ONE-fnc_,net.step(H[5]-0.5),net.ge(H[6],recg,hit),net.ge(recg,H[6],hit))
+        start=net.and_(hit,rowsz,ONE-blk); empty=hit-net.and_(hit,rowsz)
         brun=net.reg(); brows=net.reg(); bcells=L(H[2],start)
         baddr=net.reg(); bpy=net.reg(); bwr=net.reg(); blast=net.reg()
         lastt=net.step(brun*M-M+1.5-brows)     # one row left
@@ -243,7 +248,8 @@ class GlyphUnit:
         bpx=L(Lx-H[3]+OFF+OFF,start)
         net.rec(bpy,bpy-net.relu(bpy+fin*M-M)+net.gate(Ly-H[4]+OFF,start)+bwr-blast)
         net.rec(bwr,brun); net.rec(blast,lastt)
-        net.connect(fin,net.step(blast+empty))
+        blk1=net.reg(); net.rec(blk1,blk)
+        net.connect(fin,net.step(blast+empty+blk1))
         g.fin=fin
         rowcov=net.input(LW) if LW>1 else [net.input()]
         rr=_RowRead(brun,baddr,rowcov[0],LW,bcells); net.ports.append(rr); rr.dom=1
@@ -251,6 +257,7 @@ class GlyphUnit:
         sg=net.reg(); s1g=net.reg(); net.rec(sg,go); net.rec(s1g,sg)      # first pass only; a retry after a miss loads nothing twice
         fgb=net.eq(Lfg,1,sg)
         fast=L(net.and_(fgb,net.eq(Lbg,1,sg)),sg); fsel=L(net.and_(fgb,net.eq(Lbg,2,sg)),sg)
+        net.connect(fast_,fast); net.connect(fnc_,Lnc)
         slow0=net.and_(s1g,ONE-fast,ONE-empty)
         def lines(pal,val):
             h=net.decode(val-1,len(pal),slow0); out=[]
@@ -283,6 +290,28 @@ class GlyphUnit:
         net.connect(px,net.gate(bpx,bwr)-bwr*OFF); net.connect(py,net.gate(bpy,bwr))
         p1=g.patch_cls(net.step(bwr-Lnc*2-fast*2-0.5),px,py,data,LW,1); p2=g.sprite_cls(net.step(bwr+Lnc*2-2.5),px,py,data,LW,1); p3=g.patch_cls(net.step(bwr+fast-Lnc*2-1.5),px,py,data,LW,1); p3.kind=11
         p1.dom=1;p2.dom=1;p3.dom=1
+        # ---- pixel records ----
+        net.group('glyph pixel records')
+        recin=net.input(4*RECW*RECH)
+        rp=net.reg(init=1.0); net.rec(recg,recg+net.step(blast*M-M+rp-(RECE-RECB-RECW*RECH*4-8)))   # the ring wraps: older records are stale by generation
+        rd4=_RowRead(blk,net.gate(H[5]-1+RECB,blk),recin[0],4*RECW*RECH,net.gate(H[1]*(4*RECW),blk)); net.ports.append(rd4); rd4.dom=1
+        rbx=L(Lx-H[3]+OFF+OFF,blk); rby=L(Ly-H[4]+OFF,blk)
+        qx=net.wire(); qy=net.wire(); net.connect(qx,net.gate(rbx,blk1)-blk1*OFF); net.connect(qy,net.gate(rby,blk1))
+        p4=g.patch_cls(blk1,qx,qy,recin,RECW,RECH); p4.kind=11; p4.dom=1
+        # a first draw records: rows are written from the row plane, then the block's header takes the record's place
+        small=net.and_(start,ONE-net.step(H[1]-RECH-0.5),ONE-net.step(H[2]-RECW-0.5),fast_,ONE-fnc_)
+        rcn=L(small,start); rtag=L(tag+g.STORE,start)
+        rrow=net.reg(); net.rec(rrow,rrow-net.relu(rrow+fin*M-M)+net.gate(rp,start)+bwr*(4*RECW))
+        wren=net.step(bwr+rcn-1.5)
+        ra_=net.wire(); net.connect(ra_,net.gate(rrow+RECB-1,wren))
+        p=_Write(wren,ra_,data[0],4*RECW); net.ports.append(p); p.dom=1
+        rend=net.step(blast+rcn-1.5)
+        rh=[net.wire(),net.wire()]; net.connect(rh[0],net.gate(rp,rend)); net.connect(rh[1],net.gate(recg,rend)); net.aligned.append([next(iter(w.t)) for w in rh])
+        rha=net.wire(); net.connect(rha,net.gate(rtag+5,rend))
+        p=_Write(rend,rha,rh[0],2); net.ports.append(p); p.dom=1
+        rwrap=net.step(blast*M-M+rp-(RECE-RECB-RECW*RECH*4-8))
+        rcount=net.reg(); net.rec(rcount,rcount-net.relu(rcount+fin*M-M)+net.gate(H[1],start))
+        net.rec(rp,rp-net.relu(rp+rwrap*M-M)+rwrap+net.gate(rcount*(4*RECW),rend))
         # ---- miss path: the generator ----
         g._generator(miss,Lch,Lface,Lppem,Lpt,g.key,retry,fin)
     def _generator(g,st,Lch,Lface,Lppem,Lpt,key,retry,fin):

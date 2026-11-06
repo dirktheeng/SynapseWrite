@@ -1,4 +1,5 @@
 # Find across paragraphs. In the query, ^p stands for a paragraph mark, as in Word. A query with a mark can only start where its
+_g0=net.cur[0]
 # first mark lands on the end of a paragraph, so each paragraph has one candidate start: its length minus the characters before the mark.
 # One matcher serves the find walker, the match counter and the paint highlight, with a return table of its own.
 net.group('find across paragraphs')
@@ -42,3 +43,4 @@ on('IMP3_P3',(None,'IMP3_P1',None))
 on('IMP3_RQ',(field,'IMP3_P0',{qrep:0}),(qrep,'IMP3_P0',{qlen:0,qrep:0,**CSTART}),(None,'IMP3_P0',CSTART))
 e=S('RP3'); on('RP3',(net.and_(net.eq(R1,94,e),net.lt(ri+1,rlen,e)),'IMP3_R1',{r1:as_x(RPL)+ri+1}),(None,'INS',{ins_ch:R1,ins_st:TST,ri:ri+1,oret.r:oret.id('RP2')}))
 e=S('IMP3_R1'); on('IMP3_R1',(net.eq(R1,112,e),'SPLIT',{ri:ri+2,oret.r:oret.id('RP2')}),(None,'INS',{ins_ch:94,ins_st:TST,ri:ri+1,oret.r:oret.id('RP2')}))
+net.group(_g0)

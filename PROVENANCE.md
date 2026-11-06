@@ -2,17 +2,18 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-445815 neurons, 945937 edges, 172 layers, 3669 control states.
+449964 neurons, 946005 edges, 172 layers, 3669 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
 | bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1296) | 1296 | 6971 |
 | glyph network | Selects and addresses a character cell for drawing. | gen/app.py (525), gen/imp3_zoom_pre.py (109) | 634 | 9023 |
 | glyph metrics | Character advance and kerning trees. | gen/app.py (17932) | 17932 | 50851 |
-| glyph unit | Draws a character from its edge network into the glyph store, in its own clock domain. | gen/glyphnet.py (19503) | 19503 | 59479 |
+| glyph unit | Draws a character from its edge network into the glyph store, in its own clock domain. | gen/glyphnet.py (7116) | 7116 | 27575 |
+| glyph pixel records | NO PURPOSE RECORDED | gen/glyphnet.py (16534) | 16534 | 32014 |
 | snapping layer | Fits outline coordinates to the pixel grid for a given size. | gen/glyphnet.py (236) | 236 | 915 |
 | glyph geometry | Scales outline coordinates by the drawn size. | gen/glyphnet.py (159) | 159 | 589 |
-| glyph store | Keeps drawn glyphs in memory and copies them to the screen. | gen/glyphnet.py (16) | 16 | 50 |
+| glyph store | Keeps drawn glyphs in memory and copies them to the screen. | gen/glyphnet.py (18) | 18 | 50 |
 | stem units | Stem position units for the hinting of letters. |  | 0 | 0 |
 | row sequencer | Steps the glyph unit through the rows of a character. | gen/glyphnet.py (29) | 29 | 72 |
 | glyph weights (outline edges) | Font outlines as edges in weights, one group per glyph program. | gen/glyphnet.py (360490) | 360490 | 1304004 |
@@ -34,13 +35,13 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | find and replace | Search automaton over the document and replace. | gen/t1_features.py (197), gen/app.py (82) | 279 | 747 |
 | paste | Inserts clipboard text with paragraph splitting. | gen/app.py (204) | 204 | 2630 |
 | bulk edits | Window walkers for bulk formatting, copy, save, paste and find. | gen/rv_a7_bulk.py (656) | 656 | 6750 |
-| find across paragraphs | NO PURPOSE RECORDED | gen/app.py (276), gen/imp3_find.py (203), gen/rv_a3_pre.py (30), gen/imp3_find_paint.py (28), gen/t4_spell.py (26), gen/rv_a4_regs.py (11) | 574 | 1762 |
+| find across paragraphs | NO PURPOSE RECORDED | gen/imp3_find.py (203), gen/imp3_find_paint.py (28) | 231 | 613 |
 | clipboard formatting | NO PURPOSE RECORDED | gen/imp3_clip.py (103) | 103 | 242 |
-| layout and paint | Walks paragraphs, places lines and words, draws text, selection, pictures. | gen/app.py (591), gen/rv_a3_paint.py (96), gen/rv_a4_regs.py (9) | 696 | 2688 |
+| layout and paint | Walks paragraphs, places lines and words, draws text, selection, pictures. | gen/app.py (867), gen/rv_a3_paint.py (96), gen/rv_a3_pre.py (30), gen/t4_spell.py (26), gen/rv_a4_regs.py (20) | 1039 | 3837 |
 | spell dictionary | Word list stored as an automaton in weights, with word marks. | gen/t4_spell.py (67) | 67 | 165 |
 | line breaking | Greedy line breaker and alignment. | gen/app.py (260), gen/rv_a3_pre.py (30) | 290 | 844 |
-| chrome | Autoscroll, caret, scrollbar and status bar. | gen/app.py (1643) | 1643 | 11381 |
-| zoom | NO PURPOSE RECORDED | gen/imp3_zoom.py (378), gen/app.py (206), gen/t1_features.py (44) | 628 | 4178 |
+| chrome | Autoscroll, caret, scrollbar and status bar. | gen/app.py (1849), gen/t1_features.py (44) | 1893 | 12057 |
+| zoom | NO PURPOSE RECORDED | gen/imp3_zoom.py (378) | 378 | 3502 |
 | ribbon actions | Maps button ids to commands. | gen/app.py (152) | 152 | 250 |
 | docx writer | Writes the document XML parts. | gen/t2_write.py (603), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1046 | 8845 |
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2771), gen/app.py (4) | 2775 | 74350 |
