@@ -222,7 +222,7 @@ const cell=(r,c)=>click(880+c*26+8,64+r*22+8);const lay=(r,c)=>click(590+c*26+8,
  await same('page break button matches shortcut',['a',LAY,click(217,90),HOME,'b'],['a',key('Control+Enter'),'b']);
  await diff('margins menu narrows',[...Array(6).fill('some long words here to wrap '),LAY,click(291,90),click(320,170),HOME],[...Array(6).fill('some long words here to wrap ')]);
  await same('margins menu normal returns',[...Array(6).fill('some long words here to wrap '),LAY,click(291,90),click(320,170),click(291,90),click(320,138),HOME],[...Array(6).fill('some long words here to wrap ')]);
- await stay('narrow margin moves text left',true,['abc',LAY,click(291,90),click(320,182),click(377,102),HOME],['abc'],{x:0,y:174,width:1260,height:600});
+ await stay('narrow margin moves text left',true,['abc',LAY,click(291,90),click(320,182),click(377,102),HOME],['abc',async p=>{await p.mouse.move(9,286);await p.mouse.down();await p.mouse.move(9,238);await p.mouse.up();}],{x:0,y:174,width:1260,height:600});   // imp5: Narrow also sets a 0.5 in top margin, which now moves the first line up, so the plain side gets that top margin from the vertical ruler
  await diff('line spacing menu changes layout',['a',key('Enter'),'b',LAY,click(545,90),click(540,192),HOME],['a',key('Enter'),'b']);
  await same('undo of line spacing',['a',LAY,click(545,90),click(540,192),HOME,key('Control+z')],['a']);
  await stay('ruler toggle hides the ruler',false,[VIEW,click(80,76),HOME],[VIEW,HOME],RUL);

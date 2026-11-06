@@ -35,3 +35,11 @@ What: gen/imp5_vr_md.py routes a press on the vertical ruler to IMP5_VR0 (gen/im
 First run: the margin saved right (w:top 2160) but the text did not move. Cause: a relayout from paragraph 0 starts from the y saved with that paragraph, which held the old top margin. Horizontal margins never hit this because x is computed live. Fix in T3_RS1 (app.py): at paragraph 0 the start y is the page top plus the section's top margin as it is now.
 Test fixes: the drawn pointer and the caret blink changed hashes; tests now move the pointer away and judge the band and the saved margins instead of a whole area hash for the no-op case.
 imp5 vruler: 7 passed, 0 failed (top down 0.5 in, undo, snap to 1/16 in, 150 percent travel unzoomed, bottom edge at 50 percent, press inside the band is a no-op).
+
+## e2e check after items 1 to 6
+e2e 209/210. Failure: "narrow margin moves text left". Ran it alone on the base build and on build i1 (after item 1): PASS both, so item 6 caused it. Screenshots with playwright showed why: the test applies Narrow (0.5 in on all sides) plus a 0.5 in left indent and expects the document area to equal plain text. That held only because a top margin change never moved the first line (the bug fixed in item 6). The plain side now also gets a 0.5 in top margin, by dragging the vertical ruler. Test edit, listed in the report.
+
+## 7. Tables in two columns
+Why: Columns row says tables are not column aware. Screenshot of a file with a table in column two: text in column two, rules and shading in column one.
+What: the row rule, shading, cell rule and hit zone rectangles (t3_features RB1, T3_RBb, _rb) and the row edges rleft and rright (app.py R3) now add xcol; the line clear band (lleft, lright) adds the column offset only outside a table, since a table row's edges already hold it. PDF table rects add the paragraph's saved column offset qxc. A table inserted in a two column section takes the column width (T3_TI0).
+Runs: imp5 tcol 5 passed: rules in column two (1073 dark px there, 4 in column one), text inside its rules, a click in cell b2 types there, PDF rows rasterized by pdftoppm show the rules in column two (1183 dark px, 0 in column one), an inserted 2 column table is 2250+2250 twips (the column is 300 px = 4500 twips here, since the gap is 24 px).

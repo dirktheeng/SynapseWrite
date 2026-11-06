@@ -106,5 +106,29 @@ const thumb=A=>{const f=A.fb();let a=-1,b=-1;for(let x=0;x<1262;x++){const i=(77
   // a press away from the edges does nothing
   A=await lib();A.paste('x\n');A.settle();A.move(600,700);A.settle();const c0=band(A),hc=A.hash(174,776);A.raw(3,9,c0[0]+100,1e6);A.settle();A.raw(4,9,c0[0]+200);A.settle();A.move(600,700);A.settle();x=part(A,'word/document.xml');ok('a press inside the band changes nothing',/w:top="1440" w:right="1440" w:bottom="1440"/.test(mar(x))&&JSON.stringify(band(A))===JSON.stringify(c0),mar(x));
  }
+
+ if(!only||only=='tcol'){
+  const sect='<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/><w:cols w:num="2" w:space="720"/></w:sectPr>';
+  const cell=t=>`<w:tc><w:tcPr><w:tcW w:w="2000" w:type="dxa"/></w:tcPr><w:p><w:r><w:t>${t}</w:t></w:r></w:p></w:tc>`;
+  const B4='<w:tblPr><w:tblBorders><w:top w:val="single" w:sz="4"/><w:left w:val="single" w:sz="4"/><w:bottom w:val="single" w:sz="4"/><w:right w:val="single" w:sz="4"/><w:insideH w:val="single" w:sz="4"/><w:insideV w:val="single" w:sz="4"/></w:tblBorders></w:tblPr>';
+  const tbl=`<w:tbl>${B4}<w:tblGrid><w:gridCol w:w="2000"/><w:gridCol w:w="2000"/></w:tblGrid><w:tr>${cell('a1')+cell('b1')}</w:tr><w:tr>${cell('a2')+cell('b2')}</w:tr></w:tbl>`;
+  const rule=(A,x0,x1)=>count(A,x0,x1,300,360,(r,g,b)=>r<40&&g<40&&b<40);
+  let A=await lib();A.file(9,doc('<w:p><w:r><w:t>left</w:t></w:r></w:p><w:p><w:r><w:br w:type="column"/><w:t>right col</w:t></w:r></w:p>'+tbl+'<w:p><w:r><w:t>after</w:t></w:r></w:p>'+sect));A.settle();A.move(1200,700);A.settle();A.shot('build/imp5_tc1.png');
+  ok('a table in the second column draws its rules there',rule(A,630,1000)>300&&rule(A,300,600)<20,[rule(A,300,600),rule(A,630,1000)]);
+  // the cell text and the rule agree: each cell's text sits right of its left rule
+  const f=A.fb();let lx=-1;for(let x=630;x<700;x++){const i=(330*1280+x)*4;if(f[i]<40){lx=x;break;}}let tx=-1;for(let x=lx+2;x<lx+40;x++){let ink=false;for(let y=330;y<348;y++){const i=(y*1280+x)*4;if(f[i]<120)ink=true;}if(ink){tx=x;break;}}
+  ok('cell text is inside its rules',lx>630&&tx>lx&&tx-lx<12,[lx,tx]);
+  // a click in a cell of the second column types there
+  A.click(lx+200,340);A.key(133);A.type('Z');A.settle();let x=part(A,'word/document.xml');ok('a click in the second column cell edits that cell',/<w:t[^>]*>b2Z</.test(x),(x.match(/<w:t[^>]*>b2[^<]*/)||[])[0]);
+  // PDF draws the rules in the second column too
+  A.key(112,1);const pn=A.e.val(A.h.fileout)||0,pa=A.e.val(A.h.outbase);const pb=Buffer.alloc(pn);for(let i=0;i<pn;i++)pb[i]=A.e.bget(pa+i);require('fs').writeFileSync('build/imp5_tc.pdf',pb);
+  require('child_process').execSync('pdftoppm -r 96 -f 1 -l 1 -singlefile build/imp5_tc.pdf build/imp5_tcp');
+  const pp=require('fs').readFileSync('build/imp5_tcp.ppm');const hd=pp.toString('latin1',0,40).split(/\s+/);const W=+hd[1],off=pp.indexOf('255\n')+4;
+  const pdark=(x0,x1,y0,y1)=>{let n=0;for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){const i=off+(y*W+x)*3;if(pp[i]<160&&pp[i+1]<160)n++;}return n;};
+  ok('PDF draws the table rules in the second column',pdark(400,720,110,170)>500&&pdark(90,380,110,170)<60,[pdark(90,380,110,170),pdark(400,720,110,170)]);
+  // a table inserted in a two column section fits the column
+  A=await lib();A.file(9,doc('<w:p><w:r><w:t>two col text</w:t></w:r></w:p>'+sect));A.settle();A.key(133,1);A.key(13);A.ctl('0:230');A.ctl('1:240');A.settle();A.click(600,700);A.settle();A.shot('build/imp5_tc2.png');x=part(A,'word/document.xml');
+  const ws=[...x.matchAll(/<w:gridCol w:w="(\d+)"/g)].map(m=>+m[1]);const tot=ws.reduce((a,b)=>a+b,0);ok('an inserted table fits the column',ws.length>=2&&tot<=4500&&tot>=4400,JSON.stringify(ws));
+ }
  const f=R.filter(x=>!x).length;console.log(`imp5: ${R.length-f} passed, ${f} failed`);process.exit(f?1:0);
 })();

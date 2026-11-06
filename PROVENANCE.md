@@ -2,7 +2,7 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-532992 neurons, 1110860 edges, 188 layers, 3942 control states.
+533000 neurons, 1110860 edges, 188 layers, 3942 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
@@ -38,7 +38,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | bulk edits | Window walkers for bulk formatting, copy, save, paste and find. | gen/rv_a7_bulk.py (659) | 659 | 6762 |
 | find across paragraphs | One matcher for queries holding paragraph marks, used by the walker, the counter and the highlight. | gen/imp3_find.py (205), gen/imp3_find_paint.py (28) | 233 | 649 |
 | clipboard formatting | Keeps style cells and paragraph records of the own copy and puts them back when the pasted text equals it. | gen/imp3_clip.py (103) | 103 | 242 |
-| layout and paint | Walks paragraphs, places lines and words, draws text, selection, pictures. | gen/app.py (975), gen/rv_a3_paint.py (96), gen/imp4_list.py (31), gen/rv_a3_pre.py (30), gen/t4_spell.py (26), gen/rv_a4_regs.py (20) | 1178 | 4702 |
+| layout and paint | Walks paragraphs, places lines and words, draws text, selection, pictures. | gen/app.py (977), gen/rv_a3_paint.py (96), gen/imp4_list.py (31), gen/rv_a3_pre.py (30), gen/t4_spell.py (26), gen/rv_a4_regs.py (20) | 1180 | 4708 |
 | spell dictionary | Walks a word automaton held as a read only table, one read per painted letter, and marks words. | gen/t4_spell.py (67) | 67 | 165 |
 | line breaking | Greedy line breaker and alignment. | gen/app.py (268), gen/rv_a3_pre.py (30) | 298 | 862 |
 | chrome | Autoscroll, caret, scrollbar and status bar. | gen/app.py (1661) | 1661 | 11788 |
@@ -58,7 +58,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | tier 2 | Styles, paragraph commands, lists and typed sizes. | gen/t2_features.py (391) | 391 | 1019 |
 | docx reader tier 2 | Reads styles, numbering, run and paragraph properties. | gen/t2_features.py (813) | 813 | 3003 |
 | tier3 | Remaining tier 3 commands and undo op 8. | gen/t3_features.py (22) | 22 | 46 |
-| tables | Table scan, insert, row and column edits, shading, border hit zones and drag. | gen/t3_features.py (631) | 631 | 1756 |
+| tables | Table scan, insert, row and column edits, shading, border hit zones and drag. | gen/t3_features.py (637) | 637 | 1785 |
 | sections | Section records, breaks and page setup. | gen/t3_features.py (112) | 112 | 326 |
 | zip container | Zip member table, central directory, and table XML for saving. | gen/t3_features.py (210) | 210 | 465 |
 | docx reader tier 3 | Reader additions for parts walking. | gen/t3_features.py (127) | 127 | 411 |
@@ -76,7 +76,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | canvas look | Page shadow and the canvas around the page. | gen/rv_a2_canvas.py (82) | 82 | 197 |
 | a4 commands | Word commands: repeat, format painter, keep rules and others. | gen/rv_a4_features.py (344) | 344 | 1272 |
 | a4 keep | Keep with next and keep lines in pagination. | gen/rv_a4_features.py (56) | 56 | 144 |
-| a4 borders | Paragraph borders and shading on screen and in PDF. | gen/rv_a4_features.py (387) | 387 | 1414 |
+| a4 borders | Paragraph borders and shading on screen and in PDF. | gen/rv_a4_features.py (387) | 387 | 1416 |
 | a4 docx | Reads and writes the a4 paragraph properties. | gen/rv_a4_features.py (271) | 271 | 700 |
 | a4 tabs | Tab stops. | gen/rv_a4_features.py (160) | 160 | 510 |
 | a4 ruler | Ruler display and drag. | gen/rv_a4_features.py (332) | 332 | 1447 |
@@ -86,4 +86,4 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | rv a3 interaction | Editing keys, word and page motion, right click, autoscroll, context menu, and the late tier 1 features. | gen/t1_features.py (2015), gen/rv_a3_keys.py (655), gen/pointer3.py (86), gen/rv_a4_features.py (79), gen/ui.py (42) | 2877 | 24773 |
 | file output command | Selects the length, data base and file name the glue saves. | gen/rv_a11_out.py (5) | 5 | 8 |
 | screen check | Compares one line of the screen id plane against the line table on each blink tick and repairs by repainting. | gen/rv_a11_out.py (23) | 23 | 56 |
-| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (9957) | 9957 | 38508 |
+| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (9957) | 9957 | 38510 |

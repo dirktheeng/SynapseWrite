@@ -46,7 +46,9 @@ for i_,n_ in enumerate((2,3,4)): pass
 on('TI0',(None,'A4_TI',{r1:cb+2062}))
 e=S('A4_TI'); on('A4_TI',(net.step(R1),'RD0',None),(net.and_(net.eq(clen,0,e),net.step(cp)),'T3_TI0',{tip:cp}),(None,'SPLIT',{oret.r:oret.id('T3_TI0'),tip:cp+1}))   # no nested tables
 e=S('T3_TI0'); hti=net.decode(tin,9,e)
-on('T3_TI0',(None,'TI1',{tin_w:floorv(G_(s_tw*0.5,hti[2])+G_(s_tw*(1.0/3),hti[3])+G_(s_tw*0.25,hti[4])+G_(s_tw*0.2,hti[5])+G_(s_tw*(1.0/6),hti[6])+G_(s_tw*(1.0/7),hti[7])+G_(s_tw*0.125,hti[8]),e),run:0}))
+# imp5: in two columns a new table fills the column, not the page
+_c5=net.and_(e,net.eq(ncol,2,e)); _tw5=G_(s_tw,e-_c5)+G_((s_tw-24)*0.5,_c5)
+on('T3_TI0',(None,'TI1',{tin_w:floorv(G_(_tw5*0.5,hti[2])+G_(_tw5*(1.0/3),hti[3])+G_(_tw5*0.25,hti[4])+G_(_tw5*0.2,hti[5])+G_(_tw5*(1.0/6),hti[6])+G_(_tw5*(1.0/7),hti[7])+G_(_tw5*0.125,hti[8]),e),run:0}))
 e=S('TI1'); wr=net.ge(tic+1,tin,e)
 set_chain('TI1',[(2062,tin),(2063,tic),(CWO,tin_w),(CXO,run)],'T3_TI2')
 e=S('T3_TI2'); wr=net.ge(tic+1,tin,e)
@@ -140,13 +142,13 @@ on('T3_SH0x',(None,'T3_SH1',{jp:shp,jo:0,jret.r:jret.id('T3_SH2')}))
 # ---- row end: fill the rest of each cell, draw rules, record column border hit zones ----
 on('RB0',(None,'RB1',{tivx:0}))
 e=S('RB1')
-on('RB1',(net.ge(tiv,tcols,e),'A2_TB0',{pi:pi+1,rB:(s_tx+tivx,by0,1,rowmax-rowtop+1,BC,0)}),(None,'T3_RBa',{r1:as_x(PT)+pi+1-tcols+tiv}))
+on('RB1',(net.ge(tiv,tcols,e),'A2_TB0',{pi:pi+1,rB:(s_tx+xcol+tivx,by0,1,rowmax-rowtop+1,BC,0)}),(None,'T3_RBa',{r1:as_x(PT)+pi+1-tcols+tiv}))
 rbb=R()
 on('T3_RBa',(None,'T3_RBb',{rbb:R1,r2:R1+ENDY,rmeta:R1+META}))
 e=S('T3_RBb'); shr=net.decode(MT[2],len(PAL_B),e)
 def bcr(k): return sum((shr[i_]*PAL_B[i_][k] for i_ in range(len(PAL_B))),X())
-on('T3_RBb',(None,'T3_RBc',{rA:(s_tx+MT[1]+1,R2+DOCY-scroll,net.relu(MT[0]-1),G_(net.relu(rowmax-R2),ONE-a4hw),(bcr(0),bcr(1),bcr(2)),0),rB:(s_tx+MT[1],by0,1,rowmax-rowtop,BC,0),rC:(s_tx+MT[1],by0,MT[0]+1,1,BC,0),fa0:MT[0],fa1:MT[1]}))
-_rb={rA:(s_tx+fa1,rowmax+DOCY-scroll,fa0+1,1,BC,0),wht:(as_x(HIT)+hitn*6,s_tx+fa1+fa0-3,by0,s_tx+fa1+fa0+4,rowmax+DOCY-scroll,tiv+1,pi+1-tcols),hitn:net.min_(hitn+1,215),tiv:tiv+1,tivx:fa1+fa0}
+on('T3_RBb',(None,'T3_RBc',{rA:(s_tx+xcol+MT[1]+1,R2+DOCY-scroll,net.relu(MT[0]-1),G_(net.relu(rowmax-R2),ONE-a4hw),(bcr(0),bcr(1),bcr(2)),0),rB:(s_tx+xcol+MT[1],by0,1,rowmax-rowtop,BC,0),rC:(s_tx+xcol+MT[1],by0,MT[0]+1,1,BC,0),fa0:MT[0],fa1:MT[1]}))
+_rb={rA:(s_tx+xcol+fa1,rowmax+DOCY-scroll,fa0+1,1,BC,0),wht:(as_x(HIT)+hitn*6,s_tx+xcol+fa1+fa0-3,by0,s_tx+xcol+fa1+fa0+4,rowmax+DOCY-scroll,tiv+1,pi+1-tcols),hitn:net.min_(hitn+1,215),tiv:tiv+1,tivx:fa1+fa0}
 on('T3_RBc',(a4hw,'RB1',_rb),(None,'RB1',{**_rb,w1:(rbb+RBOT,rowmax),w2:(rbb+RBOT+1,rowtop)}))
 # ---- mouse: object hit zones are compared in the network before the pixel hit test ----
 tdx=R();tdy=R();tdc=R();tdr=R();tcw=R();tcw2=R()
@@ -355,7 +357,7 @@ on('T3_PT9',(None,'A4_Q0',{ra4:qb+A4C,rmeta:qb+META}))
 _pc=[('%.3f %.3f %.3f rg '%tuple(v_/255 for v_ in c_)).encode() for c_ in PAL_B[1:]]; _pb=rom_str(b''.join(_pc)); _pl=len(_pc[0]); assert all(len(x_)==_pl for x_ in _pc)
 on('T3_PT0',(net.step(qsh),'A10_B0',{la_:as_x(_pb)+(qsh-1)*_pl,ln_lit:_pl,lbret.r:lbret.id('T3_PT1')}),(None,'T3_PT5',None))
 def rect_nums(st,nx):
-    numz(st,qml+qcx,st+'a'); lit(st+'a',b' ',st+'b'); numz(st+'b',net.relu(qph-qrb+qtop),st+'c'); lit(st+'c',b' ',st+'d')
+    numz(st,qml+qcx+qxc,st+'a'); lit(st+'a',b' ',st+'b'); numz(st+'b',net.relu(qph-qrb+qtop),st+'c'); lit(st+'c',b' ',st+'d')
     numz(st+'d',qcw,st+'e'); lit(st+'e',b' ',st+'f'); numz(st+'f',net.relu(qrb-qrt),nx)
 rect_nums('T3_PT1','T3_PT2'); lit('T3_PT2',b' re f\n','T3_PT5')
 lit('T3_PT5',b'.47 .47 .47 RG 1 w ','T3_PT6'); rect_nums('T3_PT6','T3_PT7'); lit('T3_PT7',b' re S 0 0 0 rg\n','T3_PT9')

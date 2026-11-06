@@ -713,8 +713,9 @@ ls_=R();le_=R();lx=R();lhh=R();lasc=R();lex=R();off=R();col=R();x=R();lb=R();lbx
 lend=R();lwid=R();lspc=R();llast=R();pcp=R();cacol=R();thumb=R()
 tpad=net.step(tcols)*6
 xc_=net.step(xcol)
-lleft=rleft+G_(s_tx-s_px+xcol,xc_)
-lright=rright+xcol
+# imp5: a table row's edges already hold the column offset
+_xn5=net.and_(xc_,ONE-net.step(tcols)); lleft=rleft+G_(s_tx-s_px+xcol,_xn5)
+lright=rright+G_(xcol,_xn5)
 GRAY=(230,230,230);WHITE=(255,255,255);SEL=PAL_B[1]
 _rv_r0=S('RD0'); fsm.set(rv_hl,_rv_r0,net.and_(net.ge(mode,1,_rv_r0),net.lt(mode,3,_rv_r0),net.step(qlen))); fsm.set(rv_mhe,S('R4'),0); fsm.set(xbd,S('R4'),0)
 on('RD0',(None,'RD1',{cbb:0,clip0:DOCY,clip1:800-DOCB,full:ONE-net.and_(S('RD0'),fastok,ONE-wassel,ONE-has_sel,ONE-a7_far+impf),fastok:0}))
@@ -768,7 +769,7 @@ two=net.and_(nt3,net.eq(ncol,2,e3)); one3=net.and_(nt3,ONE-two); col2=(s_tw-24)*
 geom_w=G_(MT[0],tb3)+G_(s_tw,one3)+G_(col2,two); geom_x=G_(MT[1],tb3)
 shh=net.decode_z(MT[2],len(PAL_B),e3)
 def bcv(k): return sum((shh[i_]*PAL_B[i_][k] for i_ in range(len(PAL_B))),X())
-meta0={ptoc:MT[4],ptsrc:MT[5],ptpg:MT[6],bc0:bcv(0),bc1:bcv(1),bc2:bcv(2),pbg:MT[2],pim:rim.out[0],pih:rim.out[1],pio:rim.out[2],pfn:rf.out[2],tcols:rc.out[0],tci:rc.out[1],rw:geom_w,rx0:geom_x,rleft:G_(s_px,nt3)+G_(s_tx+1+MT[1],tb3),rright:G_(s_px+s_pw,one3)+G_(s_tx+col2,two)+G_(s_tx+MT[1]+MT[0],tb3)}
+meta0={ptoc:MT[4],ptsrc:MT[5],ptpg:MT[6],bc0:bcv(0),bc1:bcv(1),bc2:bcv(2),pbg:MT[2],pim:rim.out[0],pih:rim.out[1],pio:rim.out[2],pfn:rf.out[2],tcols:rc.out[0],tci:rc.out[1],rw:geom_w,rx0:geom_x,rleft:G_(s_px,nt3)+G_(s_tx+xcol+1+MT[1],tb3),rright:G_(s_px+s_pw,one3)+G_(s_tx+col2,two)+G_(s_tx+xcol+MT[1]+MT[0],tb3)}
 newsec=net.and_(e3,net.step(MT[3]),net.step(net.step(MT[3]-1-cursec-0.5)+net.step(cursec-MT[3]+1-0.5)))
 lb3=net.bits(RL[3],9,e3)
 meta={lfm:sum((lb3[4+k_]*(1<<k_) for k_ in range(5)),X()),**A4_META(e3),**meta0,plen_:RL[0],al:RL[2],lsf:lb3[0]+lb3[1]*2,plvl:lb3[2]+lb3[3]*2,pind:rp6.out[0],pfirst_:rp6.out[1],plsp:rp6.out[2],pspb:rp6.out[3],pspa:rp6.out[4],psty:rp6.out[5],lfi:rp6.out[1],nl:RL[4],wdp:RL[5],oend:RL[6],pbk:RL[7],a6pm:R2}
