@@ -111,7 +111,7 @@ for k_ in range(1,8): _gc=_gc+net.ge(hx_,t1_mx+GC*k_,e)
 newr=G_(nr,net.and_(inrow,ONE-_gm))+G_(nr*8+_gc,net.and_(inrow,_gm))+(e-inrow)*99; rch=net.step(net.gt(newr,t1_mrow,e)+net.lt(newr,t1_mrow,e))
 on('T1_HV1',(net.and_(t1_mopb,rch),'T1_M0',{t1_mrow:newr,t1_nh:1,clip0:0,clip1:0}),(t1_mopb,'T1_HH',None),
  (hch,'UI',{t1_hov:newh,t1_hvo:1,t1_nh:1,clip0:0,clip1:0}),(None,'T1_HH',None))
-on('T1_HH',(mp_ptr_on,'PT0',{mp_ptq:1,mp_pts_x:mp_ptx,mp_pts_y:mp_pty,mp_ptr_dr:1,pix:(mp_ptx,mp_pty),ptsave:(mp_ptx-PTHX,mp_pty-PTHY)}),(None,'T1_HF',None))
+on('T1_HH',(a11busy,'A11_T3',None),(mp_ptr_on,'PT0',{mp_ptq:1,mp_pts_x:mp_ptx,mp_pts_y:mp_pty,mp_ptr_dr:1,pix:(mp_ptx,mp_pty),ptsave:(mp_ptx-PTHX,mp_pty-PTHY)}),(None,'T1_HF',None))
 on('T1_HF',(None,'IDLE',None)); halt.lin(S('T1_HF'))
 # ---- thumb drag: inverse of the thumb position formula, rounded by a bit decomposition ----
 e=S('T1_TM0'); t1_tv=net.relu(evb-t1_grab-(DOCY+4)); ph0=net.decode(pagesT,128,e); sv=X()

@@ -88,7 +88,8 @@ rc=RPort(2); rf=RPort(3); r1=RPort(1); r2=RPort(1); rl=RPort(8); rlog=RPort(6); 
 w1=WPort(1);w2=WPort(1);w3=WPort(1);w4=WPort(1);wlog=WPort(6);wvl=WPort(6);wln=WPort(6)
 rmeta=RPort(8);MT=rmeta.out;wht=WPort(6);imr=ImgPort();rim=RPort(3);rU=RPort(1);rV=RPort(1);rA=RectPort();rB=RectPort();rC=RectPort();rD=RectPort();pix=PixPort()
 R1=r1.out[0];R2=r2.out[0]
-ev_kind,ev_a,ev_b,ev_c=net.input(4); ev_t=net.input(); evt=net.reg()
+ev_kind,ev_a,ev_b,ev_c=net.input(4); ev_t=net.input(); evt=net.reg(); kv=net.input(6); kvl=net.input()
+KBV=1391000; KBL=1392000; KBQ=1393000; NAMEB=1393100; KBMAX=1000; KBSEN=8; NAME_DOCX='Document1.docx'; NAME_PDF='Document1.pdf'   # field text from the glue, last field text, field sentinel, file names
 halt=Bus(net); timer=Bus(net); clipout=Bus(net)
 # ---- glyph network ----
 net.group('glyph network')
@@ -303,11 +304,11 @@ hi_p=G_(cp,lo_a)+G_(ap,ONE-lo_a);hi_o=G_(co,lo_a)+G_(ao,ONE-lo_a)
 at_a=ONE-has_sel
 # ---- event dispatch ----
 net.group('event dispatch')
-on('IDLE',(net.step(ev_kind),'DISP',{evk:ev_kind,eva:ev_a,evb:ev_b,evc:ev_c,evt:ev_t}))
-fsm.states['IDLE'][0]; net.init[next(iter(S('IDLE').t))]=1.0
+a11busy=R()
 exec(open('pointer.py').read())
 kh=net.decode(evk,14,S('DISP'))
 exec(open('pointer2.py').read())
+exec(open('rv_a11_input.py').read())
 on('DISP',*PTR_DISP,(net.and_(kh[3],t1_mopb),'T1_MD',{hx_:eva,hy_:evb}),(net.and_(kh[2],t1_mopb),'T1_MK',None),(net.and_(kh[4],t1_tdrag),'RD0',{drag:0,t1_tdrag:0}),(kh[11],'T1_HV',{hx_:eva,hy_:evb}),(kh[1],'UI',{clip0:0,clip1:0}),(kh[2],'T2_KM',{shiftk:net.bits(evb,2,S('DISP'))[1]}),(kh[3],'MD',{hx_:eva,hy_:evb}),
    (kh[4],'T3_MU',{drag:0}),(kh[5],'MV',None),(kh[6],'WH',None),(kh[7],'TM',{blink:ONE-blink,autos:0}),(kh[8],'PASTE',{}),(kh[9],'OP0',{}),(kh[10],'PG_0',{}),(None,'HALT',None))
 on('IDL2',(None,'HALT',None))
@@ -1024,6 +1025,7 @@ import ui
 T1('late')
 ui.build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,t1_hov,t1_hb,t1_hvo,bstg,t1_prs)
 exec(open('pointer3.py').read())
+exec(open('rv_a11_out.py').read())
 # ---- finish ----
 for r in (jret,oret,dret,wret,bret,gret,hret,cret,iret,nret,t4r,fvr,t4cr,zret,zdr,pfr,pfcr,t2nr,t2pr,t2rr,t2pp,t2sr,t2ur,pgret,wret_)+tuple(T3_RETS): r.gen()
 _undef={nx_ for _,(r_,o_) in fsm.states.items() for _c,nx_ in o_ if nx_ is not None and nx_ not in fsm.states}
@@ -1038,6 +1040,7 @@ wvl_data=[wlog,wln,wvl,w1,w2,w3,w4,fw,fw2,wo,imw,wl_i,xw,wplg,wht]+T3_WPORTS
 for p in wvl_data: net.aligned.append([nid(b.w) for b in p.d])
 for b in (dat_s,dat_l,dat_p): net.aligned.append([nid(w_) for w_ in b])
 net.keep=[nid(q) for q in (halt.w,timer.w,clipout.w,saveout.w,outbase.w,pdfout.w,picout.w,openout.w,wantp.w,ev_kind,ev_a,ev_b,ev_c,ev_t)]
+net.keep+=[nid(q) for q in (*kv,kvl,c_pass.w,c_ff.w,c_fb.w,c_hold.w,c_chold.w,c_kbo.w,c_file.w,c_namea.w,c_namen.w)]
 for p in net.ports:
     for q in p.rec(None)[1:]:
         if isinstance(q,X): net.keep.append(nid(q))
@@ -1089,6 +1092,8 @@ _dz=_pack(dst,4); _wz=_pack([wix[w_] for w_ in ww_],2)
 hdr=dict(fmax=BANK-FILE,outbase=new[nid(outbase.w)],dn=len(_dz),wn=len(_wz),pdfout=new[nid(pdfout.w)],ni=len(isr),nt=len(wtab),wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,e=len(dst),L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
  ev=[new[nid(q)] for q in (ev_kind,ev_a,ev_b,ev_c,ev_t)],cb=CB,cb2=CB2,init=[[new[i],v] for i,v in net.init.items()],
  bank_init=[*[[SECB+i_,v_] for i_,v_ in enumerate((1,816,PH,PX,TX,TW,96,864))],[LEN+SLOT0,0],[DIRTY+SLOT0,1],[PT,SLOT0],[SLOT0+SAVE,112],[SLOT0+SAVE+1,16],[SLOT0+SAVE+2,1],[SLOT0+PSPA,DEFSPA]]+T2_ROM)
+hdr.update(keyv=[new[nid(q)] for q in kv],keyl=new[nid(kvl)],pass_=new[nid(c_pass.w)],ffield=new[nid(c_ff.w)],fback=new[nid(c_fb.w)],hold=new[nid(c_hold.w)],chold=new[nid(c_chold.w)],kbo=new[nid(c_kbo.w)],fileout=new[nid(c_file.w)],namea=new[nid(c_namea.w)],namen=new[nid(c_namen.w)],kbv=KBV,kbq=KBQ,kbmax=KBMAX,cb2max=390000)
+hdr['bank_init']+=[[KBL+i_,126] for i_ in range(KBSEN)]+[[KBQ+i_,126] for i_ in range(KBSEN)]+[[NAMEB+i_,ord(c_)] for i_,c_ in enumerate(NAME_DOCX+NAME_PDF)]
 import os
 dd=np.array(dst,dtype=np.int32)
 raw=b''.join([ist.tobytes(),np.array(isr,dtype=np.int32).tobytes(),np.array([wix[w_] for w_ in iww],dtype=np.uint16).tobytes(),np.array(c['act'],dtype=np.uint8).tobytes(),np.array(c['bias'],dtype=np.float64).tobytes(),ost.tobytes(),_dz,_wz,np.array(c['lstart'],dtype=np.int32).tobytes(),np.array(pr,dtype=np.int32).tobytes(),np.array(wtab,dtype=np.float64).tobytes()])
