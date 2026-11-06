@@ -528,7 +528,7 @@ class GlyphUnit:
         # The heights are sorted and the map keeps their order, so the rest of a group of heights is tested only once its lowest has passed.
         ge={}
         for i_,yk in enumerate(keys):
-            ge[yk]=net.step((gr if i_%8==0 else ge[keys[i_-i_%8]])*M-M+dy[yk])
+            ge[yk]=net.step((gr if i_%16==0 else ge[keys[i_-i_%16]])*M-M+dy[yk])
         sl_=aslots if accp else slots
         for i,e in enumerate(E):
             Y0,X0,Y1,X1,sg=e
