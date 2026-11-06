@@ -19,4 +19,6 @@ const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);}
  execSync('rm -rf build/pclo; timeout 120 soffice --headless --convert-to docx:"MS Word 2007 XML" --outdir build/pclo build/pc.docx >/dev/null 2>&1');
  await open('build/pclo/pc.docx');await K('ArrowDown');await K('ArrowDown');await K('End');await p.waitForTimeout(100);const a4=await sh('pc7');ok('picture open after LibreOffice identical',H(a2)===H(a4));
  await p.mouse.move(400,560);await p.mouse.down();await p.mouse.move(100,300);await p.waitForTimeout(80);await p.mouse.up();await p.waitForTimeout(100);await sh('pc8');
+ // backspace after the picture removes it, undo brings it back
+ await p.mouse.click(600,300);await K('Control+a');await K('Delete');await T('Pic');await K('Enter');await pic('build/p_a.png');await p.mouse.click(600,600);await p.waitForTimeout(40);const g0=await sh('pc9');await K('Backspace');await p.waitForTimeout(80);const g1=await sh('pca');ok('backspace removes picture',H(g0)!==H(g1));await K('Control+z');await p.waitForTimeout(80);await p.mouse.click(600,600);await p.waitForTimeout(40);const g2=await sh('pcb');await p.mouse.click(600,600);ok('undo restores removed picture',H(g2)===H(g0));
  console.log(JSON.stringify(res));await b.close();})();

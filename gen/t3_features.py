@@ -806,12 +806,14 @@ lit('T3_CE4',b'<w:r><w:tab/></w:r><w:r><w:t>','T3_CE5'); numz('T3_CE5',tpv,'T3_C
 e=S('T3_CE6')
 on('T3_CE6',(net.step(ctl),'T3_CE7',None),(None,'T3_CEz',None))
 lit('T3_CE7',b'<w:commentRangeEnd w:id="','T3_CE8'); numz('T3_CE8',pi,'T3_CE9'); lit('T3_CE9',b'"/><w:r><w:commentReference w:id="','T3_CEa'); numz('T3_CEa',pi,'T3_CEb'); lit('T3_CEb',b'"/></w:r>','T3_CEz')
-# footnote reference inside the run stream
+# footnote reference inside the run stream; saved ids run 1,2,3 in text order and index a table of store ids
+sfn=R();FORD2=43000
 e=S('T3_SF0')
 on('T3_SF0',(net.eq(lsf,99999,e),'T3_SF2',None),(None,'T3_SF1',None))
 lit('T3_SF1',docx_tpl.R_CLOSE,'T3_SF2')
-lit('T3_SF2',b'<w:r><w:rPr><w:vertAlign w:val="superscript"/></w:rPr><w:footnoteReference w:id="','T3_SF3'); numz('T3_SF3',ins_ch-1000,'T3_SF4'); lit('T3_SF4',b'"/></w:r>','T3_SF5')
-on('T3_SF5',(None,'SVC',{lsf:99999,off_:off_+1}))
+lit('T3_SF2',b'<w:r><w:rPr><w:vertAlign w:val="superscript"/></w:rPr><w:footnoteReference w:id="','T3_SF3'); numz('T3_SF3',sfn+1,'T3_SF4'); lit('T3_SF4',b'"/></w:r>','T3_SF5')
+on('T3_SF5',(None,'SVC',{lsf:99999,off_:off_+1,w1:(as_x(FORD2)+sfn,ins_ch-1000),sfn:sfn+1}))
+fsm.set(sfn,S('SAVE'),0)
 # literal text run writer
 xb=R();xl=R();xi=R();xret=t3ret('T3_XR')
 TRUN=b'<w:r><w:t xml:space="preserve">'
@@ -830,8 +832,9 @@ zbegin('T3_XM0',b'word/footnotes.xml','T3_XF0')
 lit('T3_XF0',XHEAD+b'<w:footnotes '+WNS+b'><w:footnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:footnote><w:footnote w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>','T3_XF1')
 fsm.set(mq,S('T3_XF0'),1)
 e=S('T3_XF1')
-on('T3_XF1',(net.gt(mq,fnc,e),'T3_XF9',None),(None,'T3_XF2',{r1:as_x(FNB)+mq*256+255}))
-on('T3_XF2',(None,'T3_XF3',{xl:R1,xb:as_x(FNB)+mq*256}))
+on('T3_XF1',(net.gt(mq,sfn,e),'T3_XF9',None),(None,'T3_XF1a',{r1:as_x(FORD2)+mq-1}))
+on('T3_XF1a',(None,'T3_XF2',{xb:as_x(FNB)+R1*256,r2:as_x(FNB)+R1*256+255}))
+on('T3_XF2',(None,'T3_XF3',{xl:R2}))
 lit('T3_XF3',b'<w:footnote w:id="','T3_XF4'); numz('T3_XF4',mq,'T3_XF5')
 lit('T3_XF5',b'"><w:p><w:r><w:rPr><w:vertAlign w:val="superscript"/></w:rPr><w:footnoteRef/></w:r>','T3_XF6')
 on('T3_XF6',(None,'T3_XT',{xret.r:xret.id('T3_XF7')}))
@@ -953,3 +956,13 @@ on('T3_RB0',(None,'T3_RB1',{rl:OA+oi}))
 e=S('T3_RB1')
 on('T3_RB1',(pat('"page"',e),'T3_RB2',None),(net.eq(W[0],62,e),'PX',None),(None,'T3_RB0',{oi:oi+1}))
 on('T3_RB2',(None,'PX',{w1:(cb+PBRK,1)}))
+
+# ---- paragraph merge by the user: metadata goes through the log first, so undo brings it back ----
+MZF=[(IMF,0),(IMF+1,0),(IMF+2,0),(IMN,0),(IMN+1,0),(IMN+2,0),(SECN,0),(TOCF,0),(TSRC,0),(TPG,0),(CMTL,0)]
+set_chain('T3_MZ',MZF,'MERGE')
+# backspace into a picture removes the picture: clear it, come back, merge the empty paragraph away
+on('T3_MP0',(None,'T3_MP1',{jp:cp-1,jo:0,jret.r:jret.id('T3_MP2')}))
+on('T3_MP1',(None,'J0',None))
+set_chain('T3_MP2',MZF[:6],'T3_MP3')
+on('T3_MP3',(None,'T3_MP4',{jp:cp+1,jo:0,jret.r:jret.id('T3_MZ')}))
+on('T3_MP4',(None,'J0',None))

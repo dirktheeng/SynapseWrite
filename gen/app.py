@@ -328,8 +328,8 @@ on('M4',(None,'M5',{wb:(pb+1024+plen,clen),w1:(pb+LEN,plen+clen),w2:(pb+DIRTY,1)
 e=S('M5'); log(e,4,cp-1,plen,0,0)
 on('M5',(None,'OR',{wb:(as_x(PT)+cp,net.relu(npar-cp-1)),cp:cp-1,co:plen,cb:pb,clen:clen+plen,npar:npar-1}))
 on('MG0',(None,'MG1',{r1:as_x(PT)+cp-1}))
-on('MG1',(None,'MG2',{rc:cb+2062,r2:R1+2062}))
-on('MG2',(net.step(rc.out[0]+R2),'MGJ',{jp:cp-1,jo:2047,jret.r:jret.id('OR')}),(None,'MERGE',None))
+on('MG1',(None,'MG2',{rc:cb+2062,r2:R1+2062,rim:R1+IMF}))
+on('MG2',(net.step(rc.out[0]+R2),'MGJ',{jp:cp-1,jo:2047,jret.r:jret.id('OR')}),(net.step(rim.out[0]),'T3_MP0',None),(None,'T3_MZ',None))
 on('MGJ',(None,'J0',None))
 # delete selection
 on('DS0',(None,'DS1',{ap:lo_p,ao:lo_o,jp:hi_p,jo:hi_o,jret.r:jret.id('DSL')}));on('DS1',(None,'J0',None))
@@ -345,7 +345,7 @@ on('U2',(h[1],'UJ',{jp:up,jo:uo,jret.r:jret.id('DEL'),oret.r:oret.id('UCK')}),
  (h[2],'UJ',{jp:up,jo:uo,jret.r:jret.id('UI2'),oret.r:oret.id('UCK')}),
  (h[3],'UJ',{jp:up+1,jo:0,jret.r:jret.id('MERGE'),oret.r:oret.id('UCK')}),
  (h[4],'UJ',{jp:up,jo:uo,jret.r:jret.id('SPLIT'),oret.r:oret.id('UCK')}),
- (h[5],'UJ',{jp:up,jo:uo,jret.r:jret.id('UST'),oret.r:oret.id('UCK')}),(h[6],'UJ',{jp:up,jo:0,jret.r:jret.id('T3_US'),oret.r:oret.id('UCK')}),(None,'UCK',None))
+ (h[5],'UJ',{jp:up,jo:uo,jret.r:jret.id('UST'),oret.r:oret.id('UCK')}),(h[6],'UJ',{jp:up,jo:2047,jret.r:jret.id('T3_US'),oret.r:oret.id('UCK')}),(None,'UCK',None))
 on('UJ',(None,'J0',None))
 on('UI2',(None,'INS',{ins_ch:uch,ins_st:ust}))
 mark_d(S('UST'),cp);mark_d(S('VST'),cp)
@@ -360,7 +360,7 @@ on('V2',(h[1],'UJ',{jp:up,jo:uo,jret.r:jret.id('UI2'),oret.r:oret.id('VCK')}),
  (h[2],'UJ',{jp:up,jo:uo,jret.r:jret.id('DEL'),oret.r:oret.id('VCK')}),
  (h[3],'UJ',{jp:up,jo:uo,jret.r:jret.id('SPLIT'),oret.r:oret.id('VCK')}),
  (h[4],'UJ',{jp:up+1,jo:0,jret.r:jret.id('MERGE'),oret.r:oret.id('VCK')}),
- (h[5],'UJ',{jp:up,jo:uo,jret.r:jret.id('VST'),oret.r:oret.id('VCK')}),(h[6],'UJ',{jp:up,jo:0,jret.r:jret.id('T3_VS'),oret.r:oret.id('VCK')}),(None,'VCK',None))
+ (h[5],'UJ',{jp:up,jo:uo,jret.r:jret.id('VST'),oret.r:oret.id('VCK')}),(h[6],'UJ',{jp:up,jo:2047,jret.r:jret.id('T3_VS'),oret.r:oret.id('VCK')}),(None,'VCK',None))
 on('VST',(None,'VCK',{w1:(cb+1024+co,ust),w2:(cb+DIRTY,1)}))
 on('VCK',(net.lt(usp,urp,S('VCK')),'VCK2',{rlog:usp}),(None,'UEND',None))
 on('VCK2',(net.eq(U[5],ug,S('VCK2')),'V1',{rlog:usp}),(None,'UEND',None))
@@ -890,32 +890,3 @@ open('../build/net.bin.gz','wb').write(gz)
 prov={k:len(v) for k,v in net.groups.items()}
 json.dump(dict(neurons=n,edges=len(dst),layers=c['L'],groups=prov,states=len(fsm.states)),open('../build/provenance.json','w'),indent=1)
 print('lazy',len(isr),'edges',len(dst),'raw',len(blob),'gz',len(gz),file=sys.stderr)
-if os.environ.get('T3_IDLE'):
-    idx=sorted(range(n),key=lambda i:0)
-    newinv=[0]*n
-    for i_,a_ in enumerate(new): newinv[a_]=i_
-    val=[0.0]*n; val0=[0.0]*n
-    for i_,v_ in net.init.items(): val0[i_]=v_
-    inp=net.inp; order=sorted(range(n),key=lambda i:c['layer'][i]); fired={}
-    tot=0
-    for i_ in order:
-        if net.kind[i_]=='reg': val[i_]=val0[i_]; continue
-        x_=net.bias[i_]
-        for j_,w_ in inp[i_]: x_+=w_*val[j_]
-        a_=net.act[i_]
-        val[i_]=x_ if a_==0 else (1.0 if (a_==1 and x_>1e-9) else (0.0 if a_==1 else max(x_,0.0)))
-    gn={k:g for g,v in net.groups.items() for k in v}
-    fan=[0]*n
-    for i_ in range(n):
-        for j_,w_ in inp[i_]: fan[j_]+=1
-    from collections import Counter
-    C_=Counter(); F_=Counter()
-    for i_ in range(n):
-        if val[i_]!=0: C_[gn[i_]]+=1; F_[gn[i_]]+=fan[i_]
-    print('idle fired',C_,'edges',F_,file=sys.stderr)
-    fan=[len(c['out'][new[i_]]) for i_ in range(n)]
-    print('real edges',sum(fan[i_] for i_ in range(n) if val[i_]!=0),file=sys.stderr)
-    top=sorted([(fan[i_],i_,gn[i_],net.kind[i_]) for i_ in range(n) if val[i_]!=0],reverse=True)[:25]
-    nm_={next(iter(v_.t)):k_ for k_,v_ in list(globals().items()) if isinstance(v_,X) and len(v_.t)==1}
-    print([(a_,nm_.get(b_,b_),c_) for a_,b_,c_,d_ in top],file=sys.stderr)
-    print([nm_.get(i_,i_) for i_ in range(n) if val[i_]!=0 and gn[i_]=='tier3'],file=sys.stderr)

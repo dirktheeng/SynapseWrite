@@ -30,22 +30,23 @@ Test evidence: `test/e2e.js` (see `build/e2e.json`; `build/e2e.json`), `test/t4.
 | Pagination | Passed | Automatic and Ctrl+Enter breaks. No widow control. |
 
 ## Tier 3
+Evidence: `test/e2e.js`, `test/t3_table.js`, `test/t3_pic.js`, `test/t3_misc.js`. Files were checked with LibreOffice (open, re-save, reopen pixel identical; PDF conversion viewed) and python-docx. Not verified in real Word.
 | Feature | Status | Gap |
 |---|---|---|
-| Headers and footers | Partial | One plain-text header on all pages and a fixed page number footer. No per-section or first-page variants. |
-| Tables | Partial | Fixed 2x2, 3x3, and 4x4 equal-width grids with wrapping cells, Tab navigation, and undo. No resizing, merged cells, row insert, or shading. |
-| Columns | Partial | One or two equal columns for the whole document. Not per section, and tables are not column aware. |
-| Table of contents | Partial | Inserted once from Heading 1 and 2 paragraphs with page numbers. No dot leaders, no update, no links. |
-| Comments | Partial | One comment per paragraph in a margin balloon, on a single clipped line. No threads, authors, or text ranges, not undoable, not saved to .docx. |
-| Footnotes | Partial | One per paragraph, numbered through the document, drawn at the page foot. Marker sits at paragraph end, four notes per page, single line, not undoable, not saved to .docx. |
-| Images | Partial | PNG insert (8-bit gray, RGB, RGBA, non-interlaced; all five filters) decoded by the network and shown pixel exact (`test/t16.js`). Alpha is ignored, large images are decimated by an integer factor, no resize or text wrap, not saved to .docx, slow: about 6 s for 200x120. |
-| Sections | Missing | Not implemented. Not shown to be infeasible. |
+| Tables | Passed | Insert and delete rows and columns, column width drag, six cell shades, all with undo and redo. Save, open, and LibreOffice re-save are pixel identical. PDF draws rules, shading and text. No merged cells; one paragraph per cell (extra paragraphs in a real file are joined); up to 8 columns; a table at the very start of a real file gets an empty paragraph before it. |
+| Pictures | Passed | Alpha blended on white by a shift and add network, gray alpha and RGBA. Handles on the right, bottom and corner (corner keeps aspect), resampled nearest neighbour by the network, undo and redo. Written as word/media PNG (stored deflate, CRC and Adler in the network), read back through relationships and the zip directory. PNG only; a picture is alone in its paragraph; no text wrap; not drawn in PDF. |
+| Sections | Passed | Section Break button, per section columns (1 or 2), margins (three presets), orientation. Saved as sectPr and read back with any twip values. Break is undoable; changing a section's properties is not. Continuous breaks read as next page. |
+| Headers and footers | Passed | Default and first page variants of each, page number field, saved as header and footer parts with fldSimple; both field forms read back. One set per document; left aligned plain text; the old automatic page number was removed; not drawn in PDF. |
+| Footnotes | Passed | Marker inside the text at the caret, several per paragraph, numbered in text order, wrapped multi-line notes stacked at the page foot with space reserved, undo and redo, saved to footnotes.xml. 250 characters per note, plain text; edit by pressing Insert Footnote with the caret right after a marker; not drawn in PDF. |
+| Comments | Passed | Multi-line wrapped balloon, delete with undo, saved to comments.xml and read back. One per paragraph over the whole paragraph, 199 characters, no threads; balloons of close paragraphs can overlap; not drawn in tables. |
+| Table of contents | Passed | Dot leaders, right aligned live page numbers, Heading 2 indent, Update Table rebuilds the first run of entries, saved as a right tab with dot leader and read back. Saved as text with a tab, not a TOC field; no links; leaders not drawn in PDF. |
+| Columns | Partial | One or two per section. Tables are not column aware. |
 
 ## Tier 4
 | Feature | Status | Evidence or gap |
 |---|---|---|
-| .docx save | Partial | Zip, CRC32, and XML written by the network; passes a zip CRC check and opens in LibreOffice (`test/roundtrip.js`). Not verified in real Word. Tables flatten to paragraphs; lists and headers are not saved; members are stored uncompressed. |
-| .docx open | Partial | Network walks the zip central directory, inflates deflate (fixed and dynamic Huffman, LZ77), and matches XML tags. Reads text, bold, italic, underline, size, palette colors, Caladea, alignment, paragraphs. Save, open, and open after a LibreOffice re-save are pixel identical in the document area. Not tested on files written by real Word. Tables flatten; images, lists, styles, and non-ASCII text are dropped; 400 KB file limit. |
+| .docx save | Partial | Zip, CRC32, and XML written by the network; passes a zip CRC check and opens in LibreOffice (`test/roundtrip.js`). Not verified in real Word. Lists are not saved; members are stored uncompressed. |
+| .docx open | Partial | Network walks the zip central directory, inflates deflate (fixed and dynamic Huffman, LZ77), and matches XML tags. Reads text, bold, italic, underline, size, palette colors, Caladea, alignment, paragraphs. Save, open, and open after a LibreOffice re-save are pixel identical in the document area. Not tested on files written by real Word. Lists, styles, and non-ASCII text are dropped; 8 MB file limit. |
 | Track changes, mail merge, equations, fields, spell check, print to PDF | Missing | Not implemented. Not shown to be infeasible. |
 
 ## Deployment targets

@@ -39,4 +39,13 @@ const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);}
  await open('build/mlo/m.docx');await nz();const a3=await sh('m9');ok('all features after LibreOffice identical',a===a3);
  const x=f=>require('child_process').execSync(`python3 -c "import zipfile;z=zipfile.ZipFile('${f}');print(z.testzip());[print(n) for n in z.namelist()]"`).toString();console.log(x('build/m.docx').split('\n').join(' '));
  const [dl]=await Promise.all([p.waitForEvent('download'),K('Control+p')]);await dl.saveAs('build/m.pdf');
+ // second scenario: two notes numbered in text order, a two column narrow section, shaded table inside the document
+ await K('Control+a');await K('Delete');await go('home');
+ await T('First');await go('ref');await C(190,76);await T('alpha');await K('Enter');await K('Home');await C(190,76);await T('beta');await K('Enter');await go('home');await K('End');const f2=await sh('n1');
+ await go('lay');await C(563,76);await C(132,76);await C(420,76);await go('home');
+ for(let i=0;i<40;i++){await T('Words in a narrow two column section keep flowing down the page. ');}
+ await p.waitForTimeout(80);const f3=await sh('n2');
+ await nz();const f4=await sh('n3');
+ await save('build/n.docx');await open('build/n.docx');await nz();const f5=await sh('n4');ok('two column narrow section save then open identical',f4===f5);
+ execSync('rm -rf build/nlo; timeout 120 soffice --headless --convert-to pdf --outdir build/nlo build/n.docx >/dev/null 2>&1; pdftoppm -r 40 -png build/nlo/n.pdf build/nlo/p');
  console.log(JSON.stringify(res));await b.close();})();
