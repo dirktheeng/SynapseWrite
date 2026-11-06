@@ -32,7 +32,7 @@ const dispatch=(k,a=0,b=0,c=0)=>{
  let n=0;const paint=()=>{const dr=new Uint8Array(mem(),e.p_drow(),801),f=new Uint32Array(mem(),e.p_fb(),1024000),q=new Uint32Array(img.data.buffer);for(let y=0;y<800;y++)if(dr[y]){let z=y;while(dr[z])dr[z++]=0;for(let i=y*1280,j=z*1280;i<j;i++)q[i]=f[i]|0xff000000;ctx.putImageData(img,0,0,0,y,1280,z-y);y=z;}};
  // Inference continues in slices so a long computation never leaves the network stopped half way, and the page stays alive.
  const go=()=>{const lim=window.annMax||5000000,m=e.run(h.halt,lim);n+=m;paint();if(m>=lim&&!window.annMax){busy=true;setTimeout(go,0);return;}busy=false;
- const clip=e.val(h.clipout);if(clip){const cs=[];for(let i=0;i<clip-1;i++)cs.push(e.bget(h.cb+i));const txt=String.fromCharCode(...cs);window.annClip=txt;pendClip=txt;if(!keyCopy)writeClip(txt);keyCopy=false;}
+ const clip=e.val(h.clipout);if(clip){const cs=new Uint16Array(clip-1);for(let i=0;i<clip-1;i++)cs[i]=e.bget(h.cb+i);const txt=new TextDecoder('utf-16le',{ignoreBOM:true}).decode(cs);window.annClip=txt;pendClip=txt;if(!keyCopy)writeClip(txt);keyCopy=false;}
  const sv=e.val(h.saveout),pd=e.val(h.pdfout);if(sv||pd){const n=sv||pd,a0=e.val(h.outbase);const u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=e.bget(a0+i);saveFile(u,sv?'Document1.docx':'Document1.pdf');}
  {const ds=e.val(h.dsave);if(ds)try{const a=[];for(let i=0;i<ds;i++)a.push(e.bget(h.dict+i));localStorage.setItem('synapse_dict',JSON.stringify(a));}catch(_){}}
  if(e.val(h.wpic)){const f=document.createElement('input');f.type='file';f.onchange=()=>f.files[0]&&openPic(f.files[0]);f.click();}

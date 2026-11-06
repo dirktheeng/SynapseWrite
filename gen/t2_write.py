@@ -144,7 +144,7 @@ vnum('T2W6',plvl,'T2W7'); lit('T2W7',b'"/><w:numId w:val="','T2W8')
 e=S('T2W8'); vnum('T2W8',G_(net.min_(t2run,docx_tpl.NUMRUNS)+1,net.eq(lsf,2,e))+net.eq(lsf,1,e),'T2W8b')
 lit('T2W8b',b'"/></w:numPr>','T2W9')
 on('T2W9',(None,'A4_W0',None))
-e=S('SVC'); on('SVC',(net.step(pim),'T3_SD0',None),(net.ge(off,plen_,e),'SVe',None),(None,'SVr',{r1:pbs+off,rs:pbs+1024+off}))
+e=S('SVC'); on('SVC',(net.step(pim),'T3_SD0',None),(net.ge(off,plen_,e),'SVe',None),(None,'A7_SW',{rpw:pbs+off,a7_rw2:pbs+1024+off}))
 a6wk=R();a6wp=R();a6off=off
 e=S('SVr'); chg=net.step(net.step(RSC-t2psv)+net.step(t2psv-RSC))
 a6em=R(); fin.add(e,RSR); fcl.add(e,RSC); fen.lin(e); _a6eq=net.and_(net.lt(R1,1000,e),ONE-net.eq(R1,9,e),net.or_(is_math(FD),net.ge(R1,300,e)))   # rv_a6: equation characters go out as math

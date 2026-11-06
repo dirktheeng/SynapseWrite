@@ -228,7 +228,8 @@ def zdyn(st,name,nxt):
     crci.lin(S(st+'b'))
     on(st+'b',(None,nxt,{zo:fp,t2st:fp,fp:0,embase:OUTB}))
 def zdend(st,nxt):
-    on(st,(None,'T4_Z0',{cfL:as_x(65535)-crcL,cfH:as_x(65535)-crcH,usize:fp,zdr.r:zdr.id(st+'b')}))
+    on(st,(None,'A7_CR',{a7_cra:as_x(OUTB),a7_crn:fp,a7cr.r:a7cr.id(st+'y')}))
+    on(st+'y',(None,'T4_Z0',{cfL:as_x(65535)-crcL,cfH:as_x(65535)-crcH,usize:fp,zdr.r:zdr.id(st+'b')}))
     on(st+'b',(None,'T2Q',{t2pa:as_x(SAVEB)+zhdr+14,t2sr.r:t2sr.id(st+'c')}))
     on(st+'c',(None,nxt,{fp:zo,embase:SAVEB,**zrec(8)}))
 XHEAD=b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'

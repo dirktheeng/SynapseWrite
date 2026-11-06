@@ -13,7 +13,7 @@ PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=14
 # Regions fail the build if they overlap: see region() in nn.py. Bounds are exclusive at the end.
 for r_ in (('undo',14500000,20000000),('STYT interned styles',1100000,1100000+4096),('TAGB glyph tags',61000000,61500000),('GSTORE glyph store',61500000,63000000),('FROMB PDF fonts',63000000,64000000),
  ('a4 PDF numbering table',23800,25000),('a6 PDBM bookmarks',1200000,1264016),('a6 SGB suggestions',1302000,1310000),('a6 DICTB user words',1310000,1320000),('a6 AUTHB authors',1320000,1330000),('a6 EQT math records',1330000,1375000),
- ('a7 reserved',1384000,1389100),('PTRB pointer',1390000,1391000),('a11 reserved',1391000,1393200),('CB clipboard',1400000,1600000),('CB2',1600000,2000000),('slots',2000000,14400000),
+ ('a7 free slots and zero cells',1384000,1389100),('PTRB pointer',1390000,1391000),('a11 reserved',1391000,1393200),('CB clipboard',1400000,1600000),('CB2',1600000,2000000),('slots',2000000,14400000),
  ('MGB mail merge',100000,500000),('FNB',500000,900000),('XR',900000,999000),('PUS and PFT',999000,1000000),('ZT and PDFN',1000000,1020000)): region(*r_)
 for r_ in (('META',3673,3681),('RBOT',3681,3683),('FNHT',3683,3684),('IMN',3684,3687),('a6 revision',3687,3690),('FNS',3690,3693),('paragraph properties',3693,3699),('CMTL',3699,3700),('comment text',3700,4084),('a4 tabs and keeps',4084,4095)): region(*r_,space='slot')
 PDATE,PAUTH,PMK=3687,3688,3689; LEN,DIRTY,ALIGN,LIST,NLINES,WORDS,ENDY,PBRK=2048,2049,2050,2051,2052,2053,2054,2055; SAVE=2056; LINES=2064; IMF=3670; CMTL=3699; CMT=3700; FNS=3690; FNL=3692
@@ -288,6 +288,7 @@ T1S={x.split('\n',1)[0].strip():x.split('\n',1)[1] for x in open('t1_features.py
 def T1(n): exec(T1S[n],globals())
 T1('regs')
 exec(open('rv_a4_regs.py').read())
+a7_vw=R();a7_far=R();a7_jmp=R();a7_wb=R();A7BUD=15000   # characters of layout one event may do before the rest goes to the background
 # dispatch tables for subroutine returns
 class Ret:
     def __init__(s,name): s.r=R(); s.t=[]; s.name=name
@@ -318,7 +319,7 @@ on('DISP',*PTR_DISP,(net.and_(kh[3],t1_mopb),'T1_MD',{hx_:eva,hy_:evb}),(net.and
    (kh[4],'T3_MU',{drag:0}),(kh[5],'MV',None),(kh[6],'WH',None),(kh[7],'TM',{blink:ONE-blink,autos:0}),(kh[8],'PASTE',{}),(kh[9],'OP0',{}),(kh[10],'PG_0',{}),(None,'HALT',None))
 on('IDL2',(None,'HALT',None))
 on('MV',(t1_tdrag,'T1_TM0',None),(net.and_(S('MV'),net.step(tdk)),'T3_MV',None),(net.and_(S('MV'),drag),'MD2',{hx_:net.max_(net.min_(eva,s_px+s_pw-2),s_px+1),hy_:net.max_(net.min_(evb,DOCB-6),DOCY+6),shiftk:1}),(None,'HALT',None))
-on('WH',(None,'RD0',{scroll:net.relu(scroll+evc-1000),autos:0}))   # ev_c carries delta+1000
+on('WH',(None,'RD0',{scroll:net.relu(scroll+evc-1000),autos:0,a7_jmp:0}))   # ev_c carries delta+1000
 e=S('TM'); _a6stale=net.and_(a6hf,ONE-has_sel,ONE-drag,net.eq(mode,0,e),net.step(net.gt(wtot,a6w,e)+net.lt(wtot,a6w,e)+net.gt(pagesT,a6pg,e)+net.lt(pagesT,a6pg,e)))
 _rv_tm=S('TM'); on('TM',(net.and_(_rv_tm,drag,net.or_(net.lt(mp_pty,DOCY+8,_rv_tm),net.ge(mp_pty,DOCB-8,_rv_tm))),'RVA3_AS0',None),(t1_cntp,'T1_C0',{blink:blink}),(bgp,'BG',{blink:blink}),(_a6stale,'T4_FU',{blink:blink,a6fg:1,nolog:1,a6w:wtot,a6pg:pagesT}),(None,'RD0',{fastok:1}))
 on('BG',(None,'T3_RS0',{fnh:bfnh,cursec:bsec,fnn:bfn,fnp:bfp,xcol:bxc,pi:bpi,yy:byy,ptop:bptop,pages:bpg,wsum:bws,listn:bln,full:1,vm:0,bgm:1,bcnt:0,clip0:DOCY,clip1:DOCB}))
@@ -379,7 +380,8 @@ on('TABK',(None,'TK1',{r1:cb+2062,rc:cb+2062}))
 on('TK1',(net.and_(net.step(R1),shiftk,net.step(cp)),'MVJ',{jp:cp-1,jo:0,jret.r:jret.id('MVEND')}),(net.and_(net.step(R1),net.ge(rc.out[1]+1,rc.out[0],S('TK1')),net.lt(cp+1,npar,S('TK1'))),'A4_TK0',{r1:as_x(PT)+cp+1,a4hk2:rc.out[0]}),(net.and_(net.step(R1),net.ge(rc.out[1]+1,rc.out[0],S('TK1'))),'T3_C_RB',None),(net.and_(net.step(R1),net.lt(cp+1,npar,S('TK1'))),'MVJ',{jp:cp+1,jo:0,jret.r:jret.id('A4_TS')}),(net.step(R1),'TAB2',{ins_ch:9,ins_st:TST,oret.r:oret.id('AFTER_ED')}),(None,'T2_TB',{r1:cb+LIST}));on('TAB2',(None,'INS',None))
 tabn=R()
 on('TAB3',(net.ge(tabn,3,S('TAB3')),'AFTER_ED',{tabn:0}),(None,'INS',{tabn:tabn+1,ins_ch:32,ins_st:TST,oret.r:oret.id('TAB3')}))
-on('AFTER_ED',(fastok,'SYNC',{ap:cp,ao:co,autos:1,blink:0}),(None,'SYNC',{ap:cp,ao:co,autos:1,blink:0,lc:1}))
+# while the background has not reached the caret it is below the viewport: an edit there needs no paint, since the background lays it out and then jumps to it
+_a7e=S('AFTER_ED'); on('AFTER_ED',(net.and_(a7_far,bgp,net.ge(cp,bpi,_a7e)),'HALT',{ap:cp,ao:co,autos:0,blink:0,a7_jmp:1,fastok:0}),(net.and_(fastok,ONE-a7_far),'SYNC',{ap:cp,ao:co,autos:1,blink:0}),(None,'SYNC',{ap:cp,ao:co,autos:1,blink:0,lc:1}))
 on('SYNC',(None,'RD0',{ap:cp,ao:co}))
 on('BKSP',(has_sel,'DS0',{dret.r:dret.id('AFTER_ED')}),(trk,'T4_BK',None),(None,'BK1',{oret.r:oret.id('AFTER_ED')}))
 on('BK1',(net.step(co),'DEL',{co:co-1}),(None,'T2_BK',{r1:cb+LIST}))
@@ -444,6 +446,7 @@ on('J0',(None,'J1',{r1:as_x(PT)+jp}))
 on('J1',(None,'J2',{cb:R1,r2:R1+LEN}))
 on('J2',(None,'JR',{clen:R2,cp:jp,co:net.min_(jo,R2)}))
 # ---- edit primitives with undo log ----
+exec(open('rv_a7_regs.py').read())
 net.group('edit primitives')
 def mark_d(c,p): fsm.set(dfrom,c,net.min_(dfrom,net.relu(p-1)))
 def log(c,op,p,o,ch,st):
@@ -461,12 +464,12 @@ on('D1',(None,'D2',{ins_ch:R1,ins_st:R2,rb:(cb+co+1,net.relu(clen-co-1))}))
 on('D2',(None,'D3',{wb:(cb+co,net.relu(clen-co-1)),rb:(cb+1024+co+1,net.relu(clen-co-1))}))
 e=S('D3'); log(e,2,cp,co,ins_ch,ins_st)
 on('D3',(None,'OR',{wb:(cb+1024+co,net.relu(clen-co-1)),w3:(cb+LEN,clen-1),w4:(cb+DIRTY,1),clen:clen-1}))
-on('SPLIT',(net.ge(nextb,SLOTMAX,S('SPLIT')),'OR',None),(None,'S1',{rb:(cb+co,clen-co)}))
+on('SPLIT',*A7_SPLIT,(net.ge(nextb,SLOTMAX,S('SPLIT')),'OR',None),(None,'S1',{rb:(cb+co,clen-co)}))
 on('S1',(None,'S2',{wb:(nextb,clen-co),rb:(cb+1024+co,clen-co),rU:cb+PMK}))
 on('S2',(None,'S3',{ra4:cb+A4C,wb:(nextb+1024,clen-co),w1:(nextb+LEN,clen-co),w2:(nextb+DIRTY,1),w3:(cb+LEN,co),w4:(cb+DIRTY,1),r1:cb+ALIGN,r2:cb+LIST,rp6:cb+PIND,a6pm2:rU.out[0]}))
 on('S3',(None,'S4',{w3:(nextb+PMK,G_(a6pm2,ONE-a6nc)),w4:(cb+PMK,G_(trk,ONE-a6nc)+G_(a6pm2,a6nc)),rmeta:cb+META,rl:cb+A4T,wvl:(nextb+A4K,A4O[2],A4O[3],A4O[4],A4O[5],A4O[6],A4O[7]),w1:(nextb+ALIGN,R1),w2:(nextb+LIST,R2),wln:(nextb+PIND,*rp6.out),rb:(as_x(PT)+cp+1,net.relu(npar-cp-1))}))
 e=S('S4'); log(e,3,cp,co,0,0)
-on('S4',(None,'OR',{wln:(nextb+A4T,*rl.out[:6]),wvl:(nextb+CSH-2,0,0,MT[2],0,0,0),wb:(as_x(PT)+cp+2,net.relu(npar-cp-1)),w1:(as_x(PT)+cp+1,nextb),cp:cp+1,cb:nextb,co:0,clen:clen-co,npar:npar+1,nextb:nextb+STRIDE}))
+on('S4',(None,'OR',{wln:(nextb+A4T,*rl.out[:6]),wvl:(nextb+CSH-2,0,0,MT[2],0,0,0),wb:(as_x(PT)+cp+2,net.relu(npar-cp-1)),w1:(as_x(PT)+cp+1,nextb),cp:cp+1,cb:nextb,co:0,clen:clen-co,npar:npar+1,nextb:G_(nextb+STRIDE,ONE-a7_re)+G_(a7_sv,a7_re),a7_re:0,a7_pre:0}))
 pb=R();plen=R()
 on('MERGE',(None,'M1',{r1:as_x(PT)+cp-1}))
 on('M1',(None,'M2',{pb:R1,r2:R1+LEN,r1:cb+PMK}))
@@ -474,21 +477,22 @@ on('M2',(net.ge(R2+clen,1000,S('M2')),'OR',None),(None,'M3',{plen:R2,rb:(cb,clen
 on('M3',(None,'M4',{wb:(pb+plen,clen),rb:(cb+1024,clen)}))
 on('M4',(None,'M5',{w3:(pb+PMK,a6pm2),wb:(pb+1024+plen,clen),w1:(pb+LEN,plen+clen),w2:(pb+DIRTY,1),rb:(as_x(PT)+cp+1,net.relu(npar-cp-1))}))
 e=S('M5'); log(e,4,cp-1,plen,0,0)
-on('M5',(None,'OR',{wb:(as_x(PT)+cp,net.relu(npar-cp-1)),cp:cp-1,co:plen,cb:pb,clen:clen+plen,npar:npar-1}))
+a7_m5(e)
+on('M5',(net.gt(npar-cp-1,1100,e),'A7_SD0',{wb:(as_x(PT)+cp,net.relu(npar-cp-1)),cp:cp-1,co:plen,cb:pb,clen:clen+plen,npar:npar-1,a7_ss:cp+1101,a7_sd:cp+1100,a7_sk:npar-cp-1101,a7sr.r:a7sr.id('OR')}),(None,'OR',{wb:(as_x(PT)+cp,net.relu(npar-cp-1)),cp:cp-1,co:plen,cb:pb,clen:clen+plen,npar:npar-1}))
 on('MG0',(None,'MG1',{r1:as_x(PT)+cp-1}))
 on('MG1',(None,'MG2',{rc:cb+2062,r2:R1+2062,rim:R1+IMF}))
 on('MG2',(net.step(rc.out[0]+R2),'MGJ',{jp:cp-1,jo:2047,jret.r:jret.id('OR')}),(net.step(rim.out[0]),'T3_MP0',None),(None,'T3_MZ',None))
 on('MGJ',(None,'J0',None))
 # delete selection
 e=S('DSL')
-on('DSL',(net.ge(Ka,Kc,e),'DR',None),(net.step(co),'DEL',{co:co-1,oret.r:oret.id('DSL')}),(None,'MG0',{oret.r:oret.id('DSL')}))
+on('DSL',(net.ge(Ka,Kc,e),'DR',None),(net.step(co-1),'A7_D0',None),(net.step(co),'DEL',{co:co-1,oret.r:oret.id('DSL')}),(net.ge(cp-ap,3,e),'A7_P1',{rc:cb+2062}),(None,'MG0',{oret.r:oret.id('DSL')}))
 # ---- undo and redo ----
 net.group('undo')
 U=rlog.out; uop=R();up=R();uo=R();uch=R();ust=R();ug=R();ub=R()
 on('UNDO',(net.ge(usp,UB+6,S('UNDO')),'U1',{rlog:usp-6,nolog:1}),(None,'HALT',None))
 on('U1',(None,'U2',{uop:U[0],up:U[1],uo:U[2],uch:U[3],ust:U[4],ug:U[5],usp:usp-6}))
-h=net.decode(uop,9,S('U2'))
-on('U2',(h[1],'UJ',{jp:up,jo:uo,jret.r:jret.id('DEL'),oret.r:oret.id('UCK')}),
+h=net.decode(uop,13,S('U2'))
+on('U2',*a7_undo_rules(h),(h[1],'UJ',{jp:up,jo:uo,jret.r:jret.id('DEL'),oret.r:oret.id('UCK')}),
  (h[2],'UJ',{jp:up,jo:uo,jret.r:jret.id('UI2'),oret.r:oret.id('UCK')}),
  (h[3],'UJ',{jp:up+1,jo:0,jret.r:jret.id('MERGE'),oret.r:oret.id('UCK')}),
  (h[4],'UJ',{jp:up,jo:uo,jret.r:jret.id('SPLIT'),oret.r:oret.id('UCK')}),
@@ -502,8 +506,8 @@ on('UCK2',(net.eq(U[5],ug,S('UCK2')),'U1',{rlog:usp-6}),(None,'UEND',None))
 on('UEND',(a4da,'A4_UD',{nolog:0,autos:1,blink:0,lc:1}),(None,'SYNC',{nolog:0,autos:1,blink:0,lc:1}))
 on('REDO',(net.lt(usp,urp,S('REDO')),'V1',{rlog:usp,nolog:1}),(None,'HALT',None))
 on('V1',(None,'V2',{uop:U[0],up:U[1],uo:U[2],uch:U[3],ust:U[4],ug:U[5],usp:usp+6}))
-h=net.decode(uop,9,S('V2'))
-on('V2',(h[1],'UJ',{jp:up,jo:uo,jret.r:jret.id('UI2'),oret.r:oret.id('VCK')}),
+h=net.decode(uop,13,S('V2'))
+on('V2',*a7_redo_rules(h),(h[1],'UJ',{jp:up,jo:uo,jret.r:jret.id('UI2'),oret.r:oret.id('VCK')}),
  (h[2],'UJ',{jp:up,jo:uo,jret.r:jret.id('DEL'),oret.r:oret.id('VCK')}),
  (h[3],'UJ',{jp:up,jo:uo,jret.r:jret.id('SPLIT'),oret.r:oret.id('VCK')}),
  (h[4],'UJ',{jp:up+1,jo:0,jret.r:jret.id('MERGE'),oret.r:oret.id('VCK')}),
@@ -527,7 +531,7 @@ on('W0',(None,'W1',{r1:as_x(PT)+wp}))
 on('W1',(None,'W2',{wbase:R1,r2:R1+LEN}))
 on('W2',(None,'W3',{wlen:R2}))
 e=S('W3')
-on('W3',(net.ge(Kw,Hi,e),'WR',None),(net.ge(wo,wlen,e),'WNL',{}),(None,'W4',{r1:wbase+wo,rs:wbase+1024+wo}))
+on('W3',(net.and_(net.step(a7_rn),net.or_(net.ge(Kw,Hi,e),net.ge(wo,wlen,e))),'A7_FL',None),(net.ge(Kw,Hi,e),'WR',None),(net.ge(wo,wlen,e),'WNL',{}),(net.eq(wm,2,e),'A7_FW',{rpw:wbase+1024+wo,rs:wbase+1024+wo}),(net.eq(wm,1,e),'A7_CW',{rpw:wbase+wo}),(None,'W4',{r1:wbase+wo,rs:wbase+1024+wo}))
 e=S('WNL')
 on('WNL',(None,'WNL2',{wp:wp+1,wo:0,wn:wn+net.eq(wm,1,e)}))
 wnl_c=net.and_(e,net.eq(wm,1,e)); w1.drive(wnl_c,(as_x(CB)+wn,10))
@@ -586,13 +590,13 @@ def low(x,en): return x+net.and_(net.ge(x,65,en),net.lt(x,91,en),ONE-t1_case)*32
 def low0(x,en): return x+net.and_(net.ge(x,65,en),net.lt(x,91,en))*32   # ignores the find option
 e=S('FIND')
 on('FIND',(net.step(net.and_(net.eq(mode,2,e),has_sel)+0),'RP0',{grp:grp+1}),(None,'FN1',{fp:hi_p,fo:hi_o,wrap:0}))
-on('FN1',(net.step(S('FN1')-net.step(qlen)),'RD0',None),(None,'F0',None))
+on('FN1',(net.step(S('FN1')-net.step(qlen)),'RD0',None),(None,'A7_FQ1',{r1:as_x(Q)}))
 e=S('F0')
 on('F0',(net.and_(net.ge(fp,npar,e),wrap),'RD0',{rall:0,**CSTART}),(net.ge(fp,npar,e),'F0',{fp:0,fo:0,wrap:1}),(None,'F1',{r1:as_x(PT)+fp}))
 on('F1',(None,'F2',{fbs:R1,r2:R1+LEN}))
 on('F2',(None,'F3',{fl:R2,fk:0}))
 e=S('F3')
-on('F3',(net.step(fo+qlen-fl),'F0',{fp:fp+1,fo:0}),(None,'F4',{r1:fbs+fo+fk,r2:as_x(Q)+fk}))
+on('F3',(net.step(fo+qlen-fl),'F0',{fp:fp+1,fo:0}),(net.and_(e,ONE-net.step(fk)),'A7_FF',{rpw:fbs+fo}),(None,'F4',{r1:fbs+fo+fk,r2:as_x(Q)+fk}))
 e=S('F4'); m=net.eq(low(R1,e),low(R2,e),e)
 on('F4',(net.and_(m,net.ge(fk+1,qlen,e),t1_fw),'T1_FW0',{r1:fbs+net.relu(fo-1),r2:fbs+fo+qlen}),(net.and_(m,net.ge(fk+1,qlen,e)),'FJ',{ap:fp,ao:fo,jp:fp,jo:fo+qlen,jret.r:jret.id('FOUND')}),(m,'F3',{fk:fk+1}),(None,'F3',{fo:fo+1,fk:0}))
 on('FJ',(None,'J0',None))
@@ -615,10 +619,9 @@ on('PS1',(None,'PS2',{pi_:0}))
 # cells go to the paragraph, the styles and the undo log in a single write. A window that starts
 # with a control character, or a full paragraph, takes the single character path.
 PSN=32
-rpw=RPort(PSN); wpch=WPort(PSN,rpw.out[0],True); wpst=WPort(PSN,None,True); wplg=WPort(6*PSN)
 pn_=R(); PSW_=rpw.out
 e=S('PS2')
-on('PS2',(net.ge(pi_,evc,e),'AFTER_ED',None),(None,'PSW',{rpw:as_x(CB2)+pi_}))
+on('PS2',(net.and_(net.ge(pi_,evc,e),net.step(a7_pn)),'A7_PF',None),(net.ge(pi_,evc,e),'AFTER_ED',None),(net.and_(net.ge(usp,UEND_-2200,e),ONE-net.step(a7_pn)),'PS2',{usp:UB,urp:UB}),(None,'PSW',{rpw:as_x(CB2)+pi_}))
 e=S('PSW')
 _bad=[net.step(as_x(32)-PSW_[i_]-0.5+e*M-M)+net.step(PSW_[i_]-126.5+e*M-M) for i_ in range(PSN)]
 _score=sum((_bad[i_]*float(2**(PSN-1-i_)) for i_ in range(PSN)),X())
@@ -627,22 +630,20 @@ _n1=_lead-net.relu(_lead-(evc-pi_)+e*M-M)
 _cap=net.relu(as_x(1000)-clen+e*M-M)
 _n2=_n1-net.relu(_n1-_cap+e*M-M)
 _tail=clen-co
-on('PSW',(trk,'PS3',{r1:as_x(CB2)+pi_}),(ONE-net.step(_n2),'PS3',{r1:as_x(CB2)+pi_}),(net.step(_tail),'PSS1',{pn_:_n2,rb:(cb+co,_tail)}),(None,'PSY',{pn_:_n2,rpw:as_x(CB2)+pi_}))
+on('PSW',(net.and_(net.step(a7_pn),ONE-net.step(_n2)),'A7_PF',None),(ONE-net.step(_n2),'PS3',{r1:as_x(CB2)+pi_}),(net.step(_tail),'PSS1',{pn_:_n2,rb:(cb+co,_tail)}),(None,'PSY',{pn_:_n2,rpw:as_x(CB2)+pi_}))
 on('PSS1',(None,'PSS2',{wb:(cb+co+pn_,clen-co),rb:(cb+1024+co,clen-co)}))
 on('PSS2',(None,'PSY',{wb:(cb+1024+co+pn_,clen-co),rpw:as_x(CB2)+pi_}))
 e=S('PSY'); mark_d(e,cp)
 _st=[net.wire() for _ in range(PSN)]
-for w_ in _st: net.connect(w_,G_(tyi,e))
+_tyg=G_(TST,e)
+for w_ in _st: net.connect(w_,_tyg)
 wpst.ext=_st[0]; net.aligned.append([next(iter(w_.t)) for w_ in _st])
 cc_=net.and_(e,ONE-nolog)
-_lg=[]
-for i_ in range(PSN): _lg+=[as_x(1),cp,co+i_,PSW_[i_],tyi,grp]
-wplg.drive(cc_,[usp]+_lg)
-wrap_=net.ge(usp,UEND_,cc_); nxtu=net.gate(usp+pn_*6,cc_-wrap_)+wrap_*UB
-fsm.set(usp,cc_,nxtu); fsm.set(urp,cc_,nxtu)
+wplc=WPort(PSN,rpw.out[0],True); wplc.drive(cc_,(usp+6+a7_pn,pn_)); fsm.set(a7_pp,cc_,cp); fsm.set(a7_po,net.and_(cc_,ONE-net.step(a7_pn)),co); fsm.set(a7_pn,cc_,a7_pn+pn_)
 on('PSY',(None,'PS2',{wpch:(cb+co,pn_),wpst:(cb+1024+co,pn_),w3:(cb+LEN,clen+pn_),w4:(cb+DIRTY,1),co:co+pn_,clen:clen+pn_,pi_:pi_+pn_}))
 e=S('PS3')
 on('PS3',(net.eq(R1,10,e),'SPLIT',{pi_:pi_+1,oret.r:oret.id('PS2')}),(net.and_(net.lt(R1,32,e),ONE-net.eq(R1,9,e)),'PS2',{pi_:pi_+1}),(net.ge(clen,1000,e),'PS2',{pi_:pi_+1}),(None,'T2_PS',{ins_ch:R1,pi_:pi_+1}))
+exec(open('rv_a7_bulk.py').read())
 # ---- layout and paint walk ----
 net.group('layout and paint')
 ls_=R();le_=R();lx=R();lhh=R();lasc=R();lex=R();off=R();col=R();x=R();lb=R();lbx=R();lspb=R();lsn=R();xw=R();prevsp=R();wc=R()
@@ -653,7 +654,8 @@ lleft=rleft+G_(s_tx-s_px+xcol,xc_)
 lright=rright+xcol
 GRAY=(230,230,230);WHITE=(255,255,255);SEL=PAL_B[1]
 _rv_r0=S('RD0'); fsm.set(rv_hl,_rv_r0,net.and_(net.ge(mode,1,_rv_r0),net.lt(mode,3,_rv_r0),net.step(qlen))); fsm.set(rv_mhe,S('R4'),0)
-on('RD0',(None,'RD1',{clip0:DOCY,clip1:DOCB,full:ONE-net.and_(S('RD0'),fastok,ONE-wassel,ONE-has_sel),fastok:0}))
+on('RD0',(None,'RD1',{clip0:DOCY,clip1:DOCB,full:ONE-net.and_(S('RD0'),fastok,ONE-wassel,ONE-has_sel,ONE-a7_far),fastok:0}))
+fsm.set(a7_wb,S('RD1'),0); fsm.set(a7_vw,net.and_(S('RD1'),a7_far,bgp,ONE-lc),1); fsm.set(a7_vw,S('RE1'),0)   # a walk of the viewport alone: it leaves the background's saved position alone
 minc=net.min_(cp,oldcp);maxc=net.max_(cp,oldcp)
 e=S('RD1')
 on('RD1',(net.and_(e,ONE-full),'RF0',{sidx:minc,vm:0}),
@@ -684,9 +686,10 @@ for i,st_ in enumerate(steps):
     e=S(f'VSb{st_}')
     on(f'VSb{st_}',(net.ge(scroll,R2+PST,e),nxt,{sidx:sidx+st_}),(None,nxt,None))
 e=S('R1')
+fsm.set(a7_far,net.and_(S('R1'),a7_vw,net.ge(pi,npar,S('R1'))),0)
 saveb={bfnh:fnh,bsec:cursec,bfn:fnn,bfp:fnp,bxc:xcol,bpi:pi,byy:yy,bptop:ptop,bpg:pages,bws:wsum,bln:listn}
-on('R1',(net.and_(a4hw,net.ge(pi,a4he,e)),'A4_HC',None),(a4hw,'R2',{r1:as_x(PT)+pi}),(net.and_(bgm,net.ge(pi,npar,e)),'BGD',None),(net.and_(net.ge(pi,npar,e),full,ONE-vm,net.step(fnp)),'T3_PFE',{pfc:fnp,pff:fnn-fnp,pfh:fnh,pfy:ptop+s_mt+s_th,pfx:s_tx,pfw:s_tw}),(net.and_(net.ge(pi,npar,e),full,vm,net.step(fnp)),'T3_PFE',{pfc:fnp,pff:fnn-fnp,pfh:fnh,pfy:ptop+s_mt+s_th,pfx:s_tx,pfw:s_tw}),(net.ge(pi,npar,e),'RE0',None),
- (net.and_(bgm,net.ge(bcnt,60,e)),'HALT',{**saveb,bgm:0}),
+on('R1',(net.and_(a4hw,net.ge(pi,a4he,e)),'A4_HC',None),(a4hw,'R2',{r1:as_x(PT)+pi}),(net.and_(a7_vw,net.gt(yy,scroll+VH,e),net.gt(pi,cp,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{a7_far:0}),(net.and_(a7_vw,net.gt(yy,scroll+VH,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{autos:0,a7_jmp:net.or_(a7_jmp,autos)}),(net.and_(bgm,net.ge(pi,npar,e)),'BGD',None),(net.and_(net.ge(pi,npar,e),full,ONE-vm,net.step(fnp)),'T3_PFE',{pfc:fnp,pff:fnn-fnp,pfh:fnh,pfy:ptop+s_mt+s_th,pfx:s_tx,pfw:s_tw}),(net.and_(net.ge(pi,npar,e),full,vm,net.step(fnp)),'T3_PFE',{pfc:fnp,pff:fnn-fnp,pfh:fnh,pfy:ptop+s_mt+s_th,pfx:s_tx,pfw:s_tw}),(net.ge(pi,npar,e),'RE0',None),
+ (net.and_(bgm,net.ge(bcnt,60,e)),'HALT',{**saveb,bgm:0}),(net.and_(full,ONE-vm,ONE-bgm,net.ge(a7_wb,A7BUD,e),net.gt(yy,scroll+VH,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1,autos:0,a7_far:ONE-net.gt(pi,cp,e),a7_jmp:autos}),(net.and_(full,ONE-vm,ONE-bgm,net.ge(a7_wb,A7BUD,e)),'RD0',{**saveb,bgp:1,lc:0,a7_far:ONE-net.gt(pi,cp,e),a7_jmp:autos,autos:0}),(net.and_(full,ONE-vm,ONE-bgm,autos,net.gt(pi,cp,e),net.lt(cy,scroll+40,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1}),(net.and_(full,ONE-vm,ONE-bgm,ONE-autos,has_sel,net.gt(yy,scroll+VH,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1}),
  (net.and_(full,ONE-vm,ONE-bgm,net.gt(yy,scroll+VH,e),net.gt(pi,cp,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1}),(net.and_(ONE-full,net.gt(pi,maxc,e)),'RE0',None),(net.and_(vm,net.gt(yy,scroll+VH,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',None),(None,'R2',{r1:as_x(PT)+pi}))
 on('R2',(None,'R3',{r2:R1+PMK,ra4:R1+A4C,rmeta:R1+META,rim:R1+IMF,pbs:R1,rl:R1+LEN,rc:R1+2062,rf:R1+FNS,rp6:R1+PIND}))
 on('R2X',(None,'R3',{r2:pbs+PMK,ra4:pbs+A4C,rmeta:pbs+META,rim:pbs+IMF,rl:pbs+LEN,rc:pbs+2062,rf:pbs+FNS,rp6:pbs+PIND}))
@@ -872,7 +875,7 @@ for i_ in range(1,6):
     lxtra=lxtra+net.gate(t_,lsh_[i_])
 wln.drive(e,(pbs+LINES+lj*8,ls_,lend,x0,lhh+lxtra,lasc+lxtra,ex));w1.drive(e,(pbs+LINES+lj*8+6,lfb));w2.drive(e,(pbs+LINES+lj*8+7,lfh))
 on('EM',(llast,'LF',{lj:lj+1}),(None,'L1',{lj:lj+1,ls_:off,lx:0,lb:off,lbx:0,lsn:0,lspb:0,lasc:0,lhh:0,lfi:0,kprev:0,lfb:lfn,lfh:0,lfnb:lfn,lfhb:0}))
-_lf={w1:(pbs+NLINES,lj),w2:(pbs+DIRTY,0),w3:(pbs+WORDS,wc),wtot:wtot+wc-wdp}
+_lf={w1:(pbs+NLINES,lj),w2:(pbs+DIRTY,0),w3:(pbs+WORDS,wc),wtot:wtot+wc-wdp,bcnt:bcnt+G_(plen_*0.01,bgm),a7_wb:a7_wb+plen_}
 on('LF',(a4la,'A4_KL',_lf),(None,'R2X',_lf))
 # ---- end of walk: autoscroll, caret, scrollbar, status bar ----
 net.group('chrome')
@@ -881,10 +884,10 @@ endw=net.and_(e,full,ONE-vm,ONE-bgp); fsm.set(dfrom,endw,99999); fsm.set(pagesT,
 on('RE0',(net.and_(autos,net.lt(cy,scroll+40,e)),'RD0',{scroll:net.relu(cy-40),autos:0}),
  (net.and_(autos,net.gt(cy+chh,scroll+VH-40,e)),'RD0',{scroll:net.relu(cy+chh-VH+40),autos:0}),
  (net.gt(scroll,net.relu(ytot-VH+20),e),'RD0',{scroll:net.relu(ytot-VH+20)}),(None,'RE1',None))
-e=S('RE1'); showc=net.and_(e,ONE-has_sel,ONE-blink,ONE-net.step(mode))
+e=S('RE1'); showc=net.and_(e,ONE-has_sel,ONE-blink,ONE-net.step(mode),ONE-a7_far)
 rA.drive(showc,(cx,cy+DOCY-scroll,1,chh,(0,0,0),cacol))
 fsm.set(dfrom,net.and_(S('RE1'),ONE-full,ONE-bgp),99999)
-on('BGD',(None,'RD0',{bgp:0,bgm:0,dfrom:99999,pagesT:pages,wtot:wsum,ytot:ptop+s_ps,lc:0}))
+on('BGD',(None,'RD0',{bgp:0,bgm:0,dfrom:99999,pagesT:pages,wtot:wsum,ytot:ptop+s_ps,lc:0,a7_far:0,autos:a7_jmp,a7_jmp:0}))
 on('RE1',(None,'RE2',{oldcp:cp,wassel:has_sel}))
 e=S('RE2'); ph=net.decode(pagesT,128,e); th=X();ty_=X()
 for k_ in range(1,128):
@@ -998,7 +1001,7 @@ fsm.set(fp,em_en.w,fp+1)
 # CRC32 is linear over GF(2): each next bit is the parity of a fixed subset of bits.
 def crc_next(c,b):
     return (zlib.crc32(bytes([b]),c^0xffffffff)^0xffffffff)&0xffffffff
-ens=em_en.w; bb=net.bits(em_b.w,8,ens)
+a7_cen=Bus(net); a7_cby=Bus(net); ens=a7_cen.w; bb=net.bits(a7_cby.w,8,ens)
 crcr=[R(1) for _ in range(32)]
 gc=[net.gate(c_,ens) for c_ in crcr]
 rows=[[] for _ in range(32)]
@@ -1024,6 +1027,7 @@ def lit(name,data,nxt):
         em_en.lin(seq[i]); em_b.lin(seq[i]*b_); net.rec(seq[i+1],seq[i])
     net.rec(S(nxt),seq[-1])
 exec(open('t2_write.py').read())
+exec(open('rv_a7_save.py').read())
 saveout=Bus(net); saveout.add(S('HF'),savel); fsm.set(savel,S('HF'),0)
 outbase=Bus(net); outbase.add(S('HF'),embase)
 exec(open('t3_pre.py').read())
@@ -1067,7 +1071,7 @@ rv_a4_btn.FP=a4fp
 ui.build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,t1_hov,t1_hb,t1_hvo,bstg,t1_prs)
 exec(open('pointer3.py').read())
 # ---- finish ----
-for r in (jret,oret,dret,wret,bret,gret,hret,cret,iret,nret,t4r,fvr,t4cr,zret,zdr,pfr,pfcr,t2nr,t2pr,t2rr,t2pp,t2sr,t2ur,pgret,wret_)+tuple(T3_RETS): r.gen()
+for r in (a7r,a7sr,a7cr,jret,oret,dret,wret,bret,gret,hret,cret,iret,nret,t4r,fvr,t4cr,zret,zdr,pfr,pfcr,t2nr,t2pr,t2rr,t2pp,t2sr,t2ur,pgret,wret_)+tuple(T3_RETS): r.gen()
 _undef={nx_ for _,(r_,o_) in fsm.states.items() for _c,nx_ in o_ if nx_ is not None and nx_ not in fsm.states}
 assert not _undef,_undef
 _dead=[k_ for k_,(r_,o_) in fsm.states.items() if not o_]
@@ -1076,7 +1080,7 @@ fsm.finish()
 def nid(x):
     if isinstance(x,X): return next(iter(x.t))
     return x
-wvl_data=[wlog,wln,wvl,w1,w2,w3,w4,fw,fw2,wo,imw,wl_i,xw,wplg,wht]+T3_WPORTS
+wvl_data=[wlog,wln,wvl,w1,w2,w3,w4,fw,fw2,wo,imw,wl_i,xw,wht]+T3_WPORTS
 for p in wvl_data: net.aligned.append([nid(b.w) for b in p.d])
 net.keep=[nid(q) for q in (dsave.w,halt.w,timer.w,clipout.w,saveout.w,outbase.w,pdfout.w,picout.w,openout.w,wantp.w,ev_kind,ev_a,ev_b,ev_c,ev_t,ev_m)]
 for p in net.ports:

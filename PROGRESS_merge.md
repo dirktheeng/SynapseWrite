@@ -20,3 +20,17 @@ Added region(name,start,end,space='bank') to gen/nn.py; it asserts no two declar
 - a5_docx.js: 72 pt regex now 144 per the brief; math text check strips tags, since math is written one m:r per character.
 ## a6 test runs
 t4_docx 18/18, t4_pdf 7/7, tier2 49/49, rv_a6 6/6, rv_a6_pdf 4/4, rv_a6_track 17/17, rv_a6_eq 7/9 then 9/9 after the test edit, rv_a3 48/49 then 49/49, e2e 210/210 (before the shading fix), a4 49/50 then 50/50 after the shading fix, a5_docx see below.
+a5_docx after edits: one known failure left, `and under 10 M edges` at 19.3 M edges. t3_table no false entries.
+## a7 decisions
+- W3 keeps a7's window routes. Formatting window A7_FW could not write newst, which is a record. It now reads the first cell through rs too, interns once per run, and new state A7_FX fills ROUT plus the flags (fm 11 adds ST_DEL). Op 11 stores raw cells.
+- Copy, save and reader windows hand off to single cell paths through rs. Save window stops on any cell other than t2psv, so math (t2psv 99999), tabs, fields and merge fields go the slow route.
+- Reader window TX3: fills csi+rhi, cap is 950 minus clen so a5's split at a space near 1000 still decides long paragraphs.
+- Paste: a7's TST (keeps tracked insert) and a4's tab rule in PS3. wplg is gone.
+- Glue clip: a7's Uint16Array with e.bget, replacing a spread that overflows on a large copy.
+- region: a7's reservation is now named. rv_a7 bank 1384000-1389100.
+## a7 known regression, fixed in the network
+Before: typing while the background was behind the caret cost 3.6 M edges a key in test/a7_type.js (11 M in a7's longer paragraphs), because each key walked up to 15000 dirty characters.
+After: while a7_far holds and cp >= bpi the caret is below the viewport, so AFTER_ED halts with no paint and sets a7_jmp; the background lays it out and jumps to it. 0.12 M edges a key, image identical to typing after the background finished. Other events in that window walk the viewport only (a7_vw), without overwriting the background's saved position, and clear a7_far if the walk passes the caret. The caret shows as soon as it is reached; typed text below the viewport appears when the background ends.
+New test: test/a7_type.js.
+## a7 test runs
+a7_bulk ALL PASS, a7_save ALL PASS, a7_type ALL PASS, e2e 210/210, t3_table no false, roundtrip no false, rv_a6_eq 9/9, rv_a6_track 17/17, rv_a6 6/6, rv_a3 49/49, t4_docx 18/18; tier2, t4_pdf, a4, a5_docx: see the report.
