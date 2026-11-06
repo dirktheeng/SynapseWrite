@@ -143,8 +143,8 @@ rW9=G_(MT[0],tb9)+G_(s_tw,one9)+G_((s_tw-24)*0.5,two9)
 _lb9=net.bits(R1,4,e); rI9=net.gate(rp6.out[0],e)+net.step(R1)*48+(_lb9[2]+_lb9[3]*2)*48
 on('T1_R1',(net.and_(e,ONE-t1_ruler),'T1_V0',None),
  (net.and_(t1_rv,net.eq(rL9,t1_rL,e),net.eq(rW9,t1_rW,e),net.eq(rI9,t1_rI,e),net.eq(rp6.out[1],a4rF,e),net.eq(A4O[6],a4rR,e),net.eq(A4TO[0]+A4TO[1]*3+A4TO[2]*7+A4TO[3]*13,a4rS,e)),'T1_V0',None),
- (None,'T1_RDa',{t1_rL:rL9,t1_rW:rW9,t1_rI:rI9,t1_rv:1,a4rF:rp6.out[1],a4rR:A4O[6],a4rS:A4TO[0]+A4TO[1]*3+A4TO[2]*7+A4TO[3]*13,a4m[0]:A4TO[0],a4m[1]:A4TO[1],a4m[2]:A4TO[2],a4m[3]:A4TO[3]}))
-on('T1_RDa',(None,'T1_RT',{rA:(0,150,1280,24,(230,230,230),0),rB:(s_px,154,s_pw,16,(198,198,198),0),rC:(t1_rL,154,t1_rW,16,WHITE,0)}))
+ (None,'T1_RDa',{zrul:1,t1_rL:rL9,t1_rW:rW9,t1_rI:rI9,t1_rv:1,a4rF:rp6.out[1],a4rR:A4O[6],a4rS:A4TO[0]+A4TO[1]*3+A4TO[2]*7+A4TO[3]*13,a4m[0]:A4TO[0],a4m[1]:A4TO[1],a4m[2]:A4TO[2],a4m[3]:A4TO[3]}))
+on('T1_RDa',(None,'T1_RT',{rZ:(0,150,1280,24,(230,230,230),0),rB:(s_px,154,s_pw,16,(198,198,198),0),rC:(t1_rL,154,t1_rW,16,WHITE,0)}))
 exec(open('rv_a1_ruler.py').read())
 MC=(96,94,92)
 for i_ in range(5):
@@ -152,7 +152,7 @@ for i_ in range(5):
       rA:(t1_rL+t1_rI+pf_val(a4rF)-4+i_,150+i_,9-2*i_,1,MC,0),
       rB:(t1_rL+t1_rI-i_,169+i_,1+2*i_,1,MC,0),
       rC:(t1_rL+t1_rW-a4rR-i_,169+i_,1+2*i_,1,MC,0)}))
-e=S('T1_V0'); on('T1_V0',(net.eq(tab,5,e),'T1_V1',None),(None,'T1_M0',None))
+e=S('T1_V0'); on('T1_V0',(rdm,'IMP3_RB',None),(net.eq(tab,5,e),'T1_V1',None),(None,'T1_M0',None))
 e=S('T1_V1'); rA.drive(net.and_(e,t1_ruler),(15,72,8,8,ui.BLUE,201)); rB.drive(net.and_(e,t1_marks),(15,98,8,8,ui.BLUE,202))
 on('T1_V1',(None,'T1_M0',None))
 # ---- menus: rows use alpha 254, the row is computed from the pointer y ----

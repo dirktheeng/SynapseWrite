@@ -27,7 +27,7 @@ e=S('RVA3_PD'); on('RVA3_PD',(net.lt(cp+1,npar,e),'MVJ',{jp:cp+1,jo:0,jret.r:jre
 # page moves: scroll a screen, repaint, then find the line under the caret's screen position in the new image
 e=S('RVA3_PG1'); same_=net.eq(scroll,rv_s0,e)
 on('RVA3_PG1',(net.and_(same_,rv_pgd),'MVJ',{jp:net.relu(npar-1),jo:2047,jret.r:jret.id('MVEND')}),(same_,'MVJ',{jp:0,jo:0,jret.r:jret.id('MVEND')}),
- (rv_pgd,'HT',{hx_:cx,hy_:rv_py,hdir:1,hact:1}),(None,'HT',{hx_:cx,hy_:rv_py,hdir:2,hact:1}))
+ (rv_pgd,'HT',{hx_:zfx0(cx),hy_:rv_py,hdir:1,hact:1}),(None,'HT',{hx_:zfx0(cx),hy_:rv_py,hdir:2,hact:1}))
 # overtype: delete the character ahead, then insert as usual
 on('RVA3_OV',(None,'INS',{ins_ch:eva,ins_st:TST,oret.r:oret.id('AF_FAST')}))
 # find next
@@ -35,7 +35,7 @@ e=S('RVA3_F3'); on('RVA3_F3',(net.step(qlen),'FN1',{fp:hi_p,fo:hi_o,wrap:0}),(No
 # drag autoscroll: the timer keeps firing while the pointer rests past the top or bottom of the document
 e=S('RVA3_AS0'); rv_up=net.lt(mp_pty,DOCY+8,e); rv_d=G_(as_x(DOCY+8)-mp_pty,rv_up)+G_(mp_pty-(DOCB-8),e-rv_up); rv_sp=e*16+net.min_(rv_d,120)
 on('RVA3_AS0',(rv_up,'RD0',{scroll:net.relu(scroll-rv_sp),rv_asq:1,autos:0}),(None,'RD0',{scroll:scroll+rv_sp,rv_asq:1,autos:0}))
-on('RVA3_AS1',(None,'MD2',{hx_:net.max_(net.min_(mp_ptx,s_px+s_pw-2),s_px+1),hy_:net.max_(net.min_(mp_pty,DOCB-6),DOCY+6),shiftk:1}))
+on('RVA3_AS1',(None,'MD2',{hx_:net.max_(net.min_(mp_ptx,zfx0(s_px+s_pw-2)),zfx0(s_px+1)),hy_:net.max_(net.min_(mp_pty,DOCB-6),DOCY+6),shiftk:1}))
 # right click: place the caret unless it lands in the selection, then open the menu at the pointer
 e=S('RVA3_RC0'); on('RVA3_RC0',(net.or_(net.lt(hy_,DOCY,e),net.ge(hy_,DOCB,e),net.ge(hx_,1262,e)),'HALT',None),(None,'RVA3_RC1',{pix:(hx_,hy_)}))
 e=S('RVA3_RC1'); on('RVA3_RC1',(net.ge(A_,200,e),'HALT',None),(None,'HT',{hdir:3,hact:0,vi:0,drag:0,shiftk:0,t1_clk:1,rv_cmq:1,rv_sL:Lo,rv_sH:Hi,rv_sh:has_sel,rv_scp:cp,rv_sco:co,rv_sap:ap,rv_sao:ao}))

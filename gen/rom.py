@@ -23,7 +23,7 @@ def tt(fi,bold,ital,sub='latin'):
     if k not in TT: TT[k]=TTFont(io.BytesIO(_bytes(fi,bold,ital,sub)))
     return TT[k]
 def font(fi,bold,ital,px,sub='latin'): return ImageFont.truetype(io.BytesIO(_bytes(fi,bold,ital,sub)),px)
-SZ=list(range(11,73))+[7,8,9,10]            # font sizes a style record can hold; field value 0 is the default 11 pt
+SZ=list(range(11,73))+[7,8,9,10,4,5,6]            # font sizes a style record can hold; field value 0 is the default 11 pt
 NSZ=len(SZ)
 def sz_raw(v): return (v&15)+((v>>4)<<19)    # a size field value placed in the record's bit positions
 def sz_near(pt): return min(range(NSZ),key=lambda i:(abs(SZ[i]-pt),SZ[i]))
