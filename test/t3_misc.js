@@ -18,20 +18,20 @@ const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);}
  await K('Enter');
  // comment
  await go('rev');await C(58,76);await T('A comment long enough that it must wrap to a second line in the balloon for sure');await K('Enter');const c1=await sh('m2');
- await C(169,76);const c2=await sh('m2b');ok('delete comment changes image',c1!==c2);await K('Control+z');const c3=await sh();ok('delete comment undo',c3===c1);
+ await C(58,102);const c2=await sh('m2b');ok('delete comment changes image',c1!==c2);await K('Control+z');const c3=await sh();ok('delete comment undo',c3===c1);
  await T('x');await K('Enter');
  // second heading, TOC above
  await T('Chapter Two');await C(80,47);await K('Shift+Home');await C(660,88);await K('End');await K('Enter');await C(485,88);
  await go('ref');await C(68,76);const t1=await sh('m3');
  await go('home');await T('zz');await K('Backspace');await K('Backspace');
  await K('Control+Enter');await T('After break');await K('Enter');
- await go('ins');await C(275,76);await T('Head ');await C(702,76+26);await K('Enter');
- await C(702,76);await T('Foot P');await C(702,102);await K('Enter');
+ await go('ins');await C(275,76);await T('Head ');await C(1062,102);await K('Enter');
+ await C(1062,76);await T('Foot P');await C(1062,102);await K('Enter');
  const h1=await sh('m4');
- await C(778,76);await T('FIRST');await K('Enter');const h2=await sh('m4b');ok('first page header differs',h1!==h2);
- await go('lay');await T('');await C(563,76);await T('Second section');await C(287,76);const s1=await sh('m5');
+ await C(1138,76);await T('FIRST');await K('Enter');const h2=await sh('m4b');ok('first page header differs',h1!==h2);
+ await go('lay');await T('');await C(1155,76);await T('Second section');await C(1071,76);const s1=await sh('m5');
  await p.mouse.move(600,400);await p.mouse.wheel(0,1100);await p.waitForTimeout(150);const s2=await sh('m5b');
- await go('ref');await C(306,76);const t2=await sh('m6');
+ await go('ref');await C(68,102);const t2=await sh('m6');
  await p.mouse.move(600,400);await p.mouse.wheel(0,-3000);await p.waitForTimeout(150);await sh('m6b');
  const nz=async()=>{await p.mouse.move(600,400);for(let i=0;i<6;i++){await p.mouse.wheel(0,-900);await p.waitForTimeout(60);}await C(600,300);await p.waitForTimeout(50);};await nz();const a=await sh('m7');
  await save('build/m.docx');await open('build/m.docx');await nz();const a2=await sh('m8');ok('all features save then open identical',a===a2);
@@ -42,7 +42,7 @@ const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);}
  // second scenario: two notes numbered in text order, a two column narrow section, shaded table inside the document
  await K('Control+a');await K('Delete');await go('home');
  await T('First');await go('ref');await C(190,76);await T('alpha');await K('Enter');await K('Home');await C(190,76);await T('beta');await K('Enter');await go('home');await K('End');const f2=await sh('n1');
- await go('lay');await C(563,76);await C(132,76);await C(420,76);await go('home');
+ await go('lay');await C(1155,76);await C(132,76);await C(1050,102);await go('home');
  for(let i=0;i<40;i++){await T('Words in a narrow two column section keep flowing down the page. ');}
  await p.waitForTimeout(80);const f3=await sh('n2');
  await nz();const f4=await sh('n3');

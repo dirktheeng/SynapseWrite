@@ -1,8 +1,8 @@
 # ---- .docx writer: zip container, CRC32 and XML are all produced here ----
 # Parts: static members, a dynamic styles.xml written from the style table, a dynamic document.xml.
 t2nr=Ret('T2NR');t2pr=Ret('T2PR');t2rr=Ret('T2RR');t2pp=Ret('T2PP');t2sr=Ret('T2SR')
-zo=R();zdr=Ret('T2ZD');t2u1=R();t2u2=R();usize=R()
-t2n=R();t2run=R();t2pk=R();t2full=R();t2w=R();t2j=R();t2dst=R();t2c1L=R();t2c1H=R();t2c2L=R();t2c2H=R();t2dh=R();t2pa=R();t2st=R();t2psv=R()
+zo=R();zdr=Ret('T2ZD');usize=R();t2ur=Ret('T2UR')
+t2n=R();t2run=R();t2pk=R();t2full=R();t2w=R();t2j=R();t2pa=R();t2st=R();t2psv=R()
 qsty_=R()
 # number printing without leading zeros
 cur_='T2_NV'
@@ -59,12 +59,13 @@ for i,v_ in enumerate((240,276,360,480,600,720)): lv=lv+h_[i]*v_
 vnum('T2P5',lv,'T2P6')
 lit('T2P6',b'" w:lineRule="auto"/>','T2P7')
 e=S('T2P7')
-hasind=net.and_(e,ONE-net.step(lsf),net.or_(net.step(pind),net.step(pfirst_),net.step(-pfirst_)))
+pfv=pf_val(pfirst_)
+hasind=net.and_(e,ONE-net.step(lsf),net.or_(net.step(pind),net.step(pfv),net.step(-pfv)))
 on('T2P7',(hasind,'T2Pi',None),(None,'T2Pj',None))
 lit('T2Pi',b'<w:ind w:left="','T2Pi1'); vnum('T2Pi1',pind*15,'T2Pi2')
-e=S('T2Pi2'); on('T2Pi2',(net.step(pfirst_),'T2Pi3',None),(net.step(-pfirst_),'T2Pi5',None),(None,'T2Pi7',None))
-lit('T2Pi3',b'" w:firstLine="','T2Pi4'); vnum('T2Pi4',pfirst_*15,'T2Pi7')
-lit('T2Pi5',b'" w:hanging="','T2Pi6'); vnum('T2Pi6',pfirst_*(-15),'T2Pi7')
+e=S('T2Pi2'); on('T2Pi2',(net.step(pfv),'T2Pi3',None),(net.step(-pfv),'T2Pi5',None),(None,'T2Pi7',None))
+lit('T2Pi3',b'" w:firstLine="','T2Pi4'); vnum('T2Pi4',pfv*15,'T2Pi7')
+lit('T2Pi5',b'" w:hanging="','T2Pi6'); vnum('T2Pi6',pfv*(-15),'T2Pi7')
 lit('T2Pi7',b'"/>','T2Pj')
 lit('T2Pj',b'<w:jc w:val="','T2Pk')
 e=S('T2Pk'); h_=net.decode(al,4,e)
@@ -75,15 +76,7 @@ lit('T2Pl',b'"/>','T2PP')
 on('T2SS',(None,'T2SS1',{r1:t2w}))
 e=S('T2SS1'); em_en.lin(net.and_(e,net.step(R1))); em_b.add(net.and_(e,net.step(R1)),R1)
 on('T2SS1',(net.step(R1),'T2SS',{t2w:t2w+1}),(None,'T2SR',None))
-# ---- the file ----
-STATIC,HOLE_S=docx_tpl.static_part()
-XMLH,XMLT=docx_tpl.xml_parts()
-on('SAVE',(None,'SV0',{fp:0,embase:SAVEB}))
-lit('SV0',STATIC,'SVB0')
-# each dynamic part is written to the work buffer, then deflated into the file after its header
-on('SVB0',(None,'T2YH',{t2st:fp,zo:fp,fp:0,embase:OUTB}))
-crci.lin(S('T2YH'))
-lit('T2YH',docx_tpl.STY_H,'T2Y0')
+# ---- styles part: written between zdyn and zdend in t3_features ----
 on('T2Y0',(None,'T2Y1',{t2j:0}))
 e=S('T2Y1'); on('T2Y1',(net.ge(t2j,nsty,e),'T2YT',None),(None,'T2Y1b',{r2:as_x(STY)+t2j*STYN+47}))
 on('T2Y1b',(net.step(R2),'T2Y1',{t2j:t2j+1}),(None,'T2Y2',None))   # character styles are not written back
@@ -102,13 +95,13 @@ lit('T2Yb',b'</w:pPr>','T2Yc')
 on('T2Yc',(None,'T2RP',{t2pr.r:t2pr.id('T2Ye')}))
 lit('T2Ye',b'</w:style>','T2Yf')
 on('T2Yf',(None,'T2Y1',{t2j:t2j+1}))
-lit('T2YT',docx_tpl.STY_T,'T2Z0')
+lit('T2YT',docx_tpl.STY_T,'T2YE')
 # freeze crc and size of styles.xml and patch its local header
 crcL=X();crcH=X()
 for j,c_ in enumerate(crcr):
     if j<16: crcL=crcL+c_*(1<<j)
     else: crcH=crcH+c_*(1<<(j-16))
-cfL=R();cfH=R();dsize=R();cdst=R();t2s1=R();t2s2=R()
+cfL=R();cfH=R();dsize=R()
 def le_bytes(val,en,n=4):
     bt=net.bits(val,8*n,en)
     return [sum((bt[8*k+i]*(1<<i) for i in range(8)),X()) for k in range(n)]
@@ -122,19 +115,11 @@ for n_,(kd,ix) in enumerate(vals):
     nx_=f'T2Q{n_}'
     on(cur_,(None,nx_,{fw2:(t2pa+n_,bv_)})); cur_=nx_
 on(cur_,(None,'T2SR',None))
-e=S('T2Z0')
-on('T2Z0',(None,'T4_Z0',{cfL:as_x(65535)-crcL,cfH:as_x(65535)-crcH,t2c1L:as_x(65535)-crcL,t2c1H:as_x(65535)-crcH,usize:fp,t2u1:fp,zdr.r:zdr.id('T2Z0b')}))
-on('T2Z0b',(None,'T2Q',{t2s1:dsize,t2pa:as_x(SAVEB+HOLE_S),t2sr.r:t2sr.id('T2Z1')}))
-on('T2Z1',(None,'T2Z2',{t2dh:zo,fp:zo,embase:SAVEB}))
-lit('T2Z2',docx_tpl.doc_header(),'T2Z3')
-on('T2Z3',(None,'SVB',{t2st:fp,zo:fp,fp:0,embase:OUTB}))
-crci.lin(S('SVB'))
-lit('SVB',XMLH,'SVP')
 fsm.set(pi,S('SAVE'),0); fsm.set(t2run,S('SAVE'),0); fsm.set(t2pk,S('SAVE'),0)
-e=S('SVP'); on('SVP',(net.ge(pi,npar,e),'SVT',None),(net.ge(fp,3900000,e),'SVT',None),(None,'SVa',{r1:as_x(PT)+pi}))
-on('SVa',(None,'SVm',{pbs:R1,rl:R1+LEN,rp6:R1+PIND}))
+e=S('SVP'); on('SVP',(net.ge(pi,npar,e),'T3_SVE',None),(net.ge(fp,3900000,e),'T3_SVE',None),(None,'SVa',{r1:as_x(PT)+pi}))
+on('SVa',(None,'SVm',{pbs:R1,rl:R1+LEN,rp6:R1+PIND,rc:R1+2062,rmeta:R1+META,rim:R1+IMF}))
 e=S('SVm'); lb_=net.bits(rl.out[3],4,e)
-on('SVm',(None,'SVj',{plen_:rl.out[0],al:rl.out[2],lsf:lb_[0]+lb_[1]*2,plvl:lb_[2]+lb_[3]*2,pbk:rl.out[7],off:0,pind:rp6.out[0],pfirst_:rp6.out[1],plsp:rp6.out[2],pspb:rp6.out[3],pspa:rp6.out[4],psty:rp6.out[5],t2psv:99999}))
+on('SVm',(None,'T3_SV0',{scols:rc.out[0],sci:rc.out[1],scw:MT[0],ssh:MT[2],pim:rim.out[0],pih:rim.out[1],pio:rim.out[2],plen_:rl.out[0],al:rl.out[2],lsf:lb_[0]+lb_[1]*2,plvl:lb_[2]+lb_[3]*2,pbk:rl.out[7],off:0,pind:rp6.out[0],pfirst_:rp6.out[1],plsp:rp6.out[2],pspb:rp6.out[3],pspa:rp6.out[4],psty:rp6.out[5],t2psv:99999}))
 lit('SVj',b'<w:p><w:pPr>','SVa2')
 on('SVa2',(net.step(psty),'T2W0',None),(None,'T2W2',None))
 lit('T2W0',b'<w:pStyle w:val="','T2W1')
@@ -149,11 +134,11 @@ lit('T2W5',b'<w:numPr><w:ilvl w:val="','T2W6')
 vnum('T2W6',plvl,'T2W7'); lit('T2W7',b'"/><w:numId w:val="','T2W8')
 e=S('T2W8'); vnum('T2W8',G_(net.min_(t2run,docx_tpl.NUMRUNS)+1,net.eq(lsf,2,e))+net.eq(lsf,1,e),'T2W8b')
 lit('T2W8b',b'"/></w:numPr>','T2W9')
-on('T2W9',(None,'T2PP0',{t2pp.r:t2pp.id('T2Wa')}))
-lit('T2Wa',b'</w:pPr>','SVC')
-e=S('SVC'); on('SVC',(net.ge(off,plen_,e),'SVe',None),(None,'SVr',{r1:pbs+off,r2:pbs+1024+off}))
+on('T2W9',(None,'T3_TA0',None))
+on('T2Wa',(None,'T3_SNA',None))
+e=S('SVC'); on('SVC',(net.step(pim),'T3_SD0',None),(net.ge(off,plen_,e),'SVe',None),(None,'SVr',{r1:pbs+off,r2:pbs+1024+off}))
 e=S('SVr'); chg=net.step(net.step(R2-t2psv)+net.step(t2psv-R2))
-on('SVr',(chg,'SVx',{ins_ch:R1,ins_st:R2}),(None,'SVch',{ins_ch:R1,ins_st:R2}))
+on('SVr',(net.ge(R1,1000,e),'T3_SF0',{ins_ch:R1}),(chg,'SVx',{ins_ch:R1,ins_st:R2}),(None,'SVch',{ins_ch:R1,ins_st:R2}))
 e=S('SVx'); first=net.eq(t2psv,99999,e)
 on('SVx',(first,'T4_SO',None),(None,'T4_SC',{t4cr.r:t4cr.id('T4_SO')}))
 lit('SVo',b'<w:r>','SVo2')
@@ -162,11 +147,11 @@ on('SVrs',(None,'SVch',{t2psv:ins_st}))
 # text bytes, in UTF-8. Latin-1 takes two bytes; the punctuation block has compiled byte sequences.
 e=S('SVch'); amp=net.eq(ins_ch,38,e);ltc=net.eq(ins_ch,60,e);gtc=net.eq(ins_ch,62,e);hi1=net.ge(ins_ch,160,e);pun=net.and_(net.ge(ins_ch,128,e),net.lt(ins_ch,160,e)); other=e-amp-ltc-gtc-hi1-pun
 em_en.lin(other); em_b.add(other,ins_ch)
-on('SVch',(amp,'SVa_',{off:off+1}),(ltc,'SVl_',{off:off+1}),(gtc,'SVg_',{off:off+1}),(hi1,'T2U2',{off:off+1}),(pun,'T2U3',{off:off+1}),(None,'SVC',{off:off+1}))
+on('SVch',(amp,'SVa_',{off:off+1}),(ltc,'SVl_',{off:off+1}),(gtc,'SVg_',{off:off+1}),(hi1,'T2U2',{off:off+1,t2ur.r:t2ur.id('SVC')}),(pun,'T2U3',{off:off+1,t2ur.r:t2ur.id('SVC')}),(None,'SVC',{off:off+1}))
 e=S('T2U2'); c3=net.ge(ins_ch,192,e); em_en.lin(e); em_b.add(e,194+c3)
 on('T2U2',(None,'T2U2b',None))
 e=S('T2U2b'); c3=net.ge(ins_ch,192,e); em_en.lin(e); em_b.add(e,as_x(ins_ch)-c3*64)
-on('T2U2b',(None,'SVC',None))
+on('T2U2b',(None,'T2UR',None))
 def pun_byte(st,nx,ix):
     e=S(st); h_=net.decode(ins_ch-128,32,e); v=X(); more=X()
     for c_ in range(128,160):
@@ -175,33 +160,9 @@ def pun_byte(st,nx,ix):
         if ix+1<len(bs): more=more+h_[c_-128]
     em_en.lin(e); em_b.add(e,v)
     return more
-m0=pun_byte('T2U3','T2U4',0); on('T2U3',(net.step(m0),'T2U4',None),(None,'SVC',None))
-m1=pun_byte('T2U4','T2U5',1); on('T2U4',(net.step(m1),'T2U5',None),(None,'SVC',None))
-m2=pun_byte('T2U5','SVC',2); on('T2U5',(None,'SVC',None))
+m0=pun_byte('T2U3','T2U4',0); on('T2U3',(net.step(m0),'T2U4',None),(None,'T2UR',None))
+m1=pun_byte('T2U4','T2U5',1); on('T2U4',(net.step(m1),'T2U5',None),(None,'T2UR',None))
+m2=pun_byte('T2U5','T2UR',2); on('T2U5',(None,'T2UR',None))
 lit('SVa_',b'&amp;','SVC');lit('SVl_',b'&lt;','SVC');lit('SVg_',b'&gt;','SVC')
 e=S('SVe'); on('SVe',(net.eq(t2psv,99999,e),'SVe2',None),(None,'T4_SC',{t4cr.r:t4cr.id('SVe2')}))
-lit('SVe2',b'</w:p>','SVn')
-on('SVn',(None,'SVP',{pi:pi+1}))
-lit('SVT',XMLT,'SVF')
-e=S('SVF')
-on('SVF',(None,'T4_Z0',{cfL:as_x(65535)-crcL,cfH:as_x(65535)-crcH,t2c2L:as_x(65535)-crcL,t2c2H:as_x(65535)-crcH,usize:fp,t2u2:fp,zdr.r:zdr.id('SVF0')}))
-on('SVF0',(None,'T2Q',{t2s2:dsize,t2pa:as_x(SAVEB)+t2dh+14,t2sr.r:t2sr.id('SVF9')}))
-on('SVF9',(None,'CD0p',{cdst:zo,fp:zo,embase:SAVEB}))
-# central directory
-cdirs=docx_tpl.central()
-on('CD0p',(None,'CD0',None))
-prev='CD0'; cdl=R()
-for n_,part in enumerate(cdirs):
-    nx=f'CDp{n_}'
-    if not isinstance(part,bytes) and part==('end',0):
-        fsm.set(cdl,S(prev),fp-cdst-12); on(prev,(None,prev+'w',None)); prev=prev+'w'
-    if isinstance(part,bytes):
-        lit(prev,part,nx)
-    else:
-        kd,ix=part; ee3=S(prev)
-        src={'c1':t2c1L if ix<2 else t2c1H,'c2':t2c2L if ix<2 else t2c2H}
-        if kd in src: vb=le_bytes(src[kd],ee3,2)[ix%2]
-        else: vb=le_bytes({'s1':t2s1,'s2':t2s2,'u1':t2u1,'u2':t2u2,'o2':t2dh,'o':cdst,'end':cdl}[kd],ee3)[ix]
-        em_en.lin(ee3); em_b.add(ee3,vb); on(prev,(None,nx,None))
-    prev=nx
-on(prev,(None,'HALT',{savel:fp}))
+on('SVe2',(None,'T3_CE0',None))

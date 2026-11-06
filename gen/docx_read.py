@@ -58,12 +58,12 @@ def reversed_(e_):
 def getn(st,n,ret):
     on(st,(None,'GBL',{gbn:n,gbv:0,gbw:1,gbi:0,gret.r:gret.id(ret)}))
 e=S('GBL'); hbit=nextbit(e)
-on('GBL',(net.ge(gbi,gbn,e),'GR',None),(net.eq(nb,0,e),'GBR',{r1:FA+ip,ip:ip+1}),(None,'GBL',{gbv:gbv+G_(gbw,hbit),gbw:gbw*2,gbi:gbi+1,cur:(cur-hbit*128)*2,nb:nb-1}))
+on('GBL',(net.ge(gbi,gbn,e),'GR',None),(net.eq(nb,0,e),'GBR',{r1:ibase+ip,ip:ip+1}),(None,'GBL',{gbv:gbv+G_(gbw,hbit),gbw:gbw*2,gbi:gbi+1,cur:(cur-hbit*128)*2,nb:nb-1}))
 on('GBR',(None,'GBL',{cur:reversed_(S('GBR')),nb:8}))
 # Huffman decode, after puff: count[] at hb, symbols at hb+16
 on('DEC',(None,'X_Dl',{code:0,first:0,index:0,hlen:1}))
 e=S('X_Dl'); hbit=nextbit(e)
-on('X_Dl',(net.eq(nb,0,e),'XDR',{r1:FA+ip,ip:ip+1}),(None,'X_D3',{code:code+hbit,cur:(cur-hbit*128)*2,nb:nb-1,r1:hb+hlen}))
+on('X_Dl',(net.eq(nb,0,e),'XDR',{r1:ibase+ip,ip:ip+1}),(None,'X_D3',{code:code+hbit,cur:(cur-hbit*128)*2,nb:nb-1,r1:hb+hlen}))
 on('XDR',(None,'X_Dl',{cur:reversed_(S('XDR')),nb:8}))
 e=S('X_D3'); hbit=nextbit(e)
 on('X_D3',(net.lt(code,first+R1,e),'D4',{r2:hb+16+index+code-first}),(net.ge(hlen,15,e),'OPEND',None),

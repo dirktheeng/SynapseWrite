@@ -1,7 +1,7 @@
 // Tier 3 tables: event driven, judged on output images. Each step saves a screenshot.
 const d=require('./drive');const fs=require('fs');const crypto=require('crypto');const H=b=>crypto.createHash('md5').update(b).digest('hex');
 let CK=null;const shot=async(p,n)=>{await p.mouse.move(1270,5);if(CK)await CK(n);const b=await p.screenshot({clip:{x:0,y:0,width:1280,height:800}});if(n)fs.writeFileSync('build/'+n+'.png',b);return H(b);};
-const X0=410;const R={ra:[X0+30,76],rb:[X0+90,76],cl:[X0+150,76],cr:[X0+210,76],dr:[X0+30,102],dc:[X0+90,102],s:i=>[X0+132+i*20+9,102]};
+const X0=770;const R={ra:[X0+30,76],rb:[X0+90,76],cl:[X0+150,76],cr:[X0+210,76],dr:[X0+30,102],dc:[X0+90,102],s:i=>[X0+132+i*20+9,102]};
 const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);};
 (async()=>{const {b,p,check}=await d();CK=check;const K=k=>p.keyboard.press(k),T=t=>p.keyboard.type(t);const C=async(x,y)=>{await p.mouse.click(x,y);};
  const ins=()=>C(135,47),home=()=>C(80,47);

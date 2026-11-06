@@ -3,8 +3,8 @@
 RH=22                                   # menu row height
 t1_hov=R();t1_hb=R();t1_hvo=R();t1_nh=R();t1_mop=R();t1_mrow=R(99);t1_mtop=R();t1_uid=R()
 t1_tdrag=R();t1_grab=R();t1_thh=R();t1_clk=R();t1_lx=R();t1_ly=R();t1_lt=R();t1_s=R();t1_e=R();t1_c=R()
-t1_lastk=R();t1_kt=R();t1_pz=R();t1_case=R();t1_fw=R();t1_mo=R();t1_ruler=R(1);t1_marks=R();t1_pb=R();t1_pdm=R();t1_pdd=R();t1_tmp=R()
-t1_mv=R();t1_rv=R();t1_rL=R();t1_rW=R();t1_rI=R();t1_cr=R()
+t1_lastk=R();t1_kt=R();t1_pz=R();t1_case=R();t1_fw=R();t1_ruler=R(1);t1_marks=R();t1_pb=R();t1_pdm=R();t1_pdd=R();t1_tmp=R()
+t1_rv=R();t1_rL=R();t1_rW=R();t1_rI=R();t1_cr=R()
 t1_cntp=R();t1_cw=R();t1_co_=R();t1_cn=R();t1_ci=R();t1_cb=R();t1_cB=R();t1_cl=R();t1_ck=R()
 t1_mopb=net.step(t1_mop)
 CSTART={t1_cntp:1,t1_cw:0,t1_co_:0,t1_cn:0,t1_ci:0}
@@ -45,7 +45,7 @@ e=S('T1_WS2'); on('T1_WS2',(net.eq(R1,32,e),'T1_WS',{t1_e:t1_e+1}),(None,'T1_WD'
 on('T1_WD',(None,'RD0',{ap:cp,ao:t1_s,co:t1_e,drag:0,blink:0}))
 #@@ para
 # a paragraph property change is logged as op 6, so it undoes and joins the group
-e=S('T1_PA'); t1_newv=G_(alv,ONE-t1_pdm)+G_(net.min_(net.relu(R2+t1_pdd),480),t1_pdm)
+e=S('T1_PA'); t1_newv=G_(alv,ONE-t1_pdm)+G_(net.min_(net.relu(R2+t1_pdd-1000),480),t1_pdm)
 log(e,6,pwalk,pfld,R2,t1_newv)
 on('T1_PA',(None,'PA2',{w1:(t1_pb+pfld,t1_newv),w2:(t1_pb+DIRTY,1)}))
 on('PA2',(net.lt(pwalk,hi_p,S('PA2')),'PA0',{pwalk:pwalk+1}),(None,'RD0',{lc:1,t1_pdm:0}))
@@ -90,10 +90,10 @@ rules+=[(B[35],'T1_M0',{t1_mop:4,t1_mrow:99,t1_mtop:DOCY+27,clip0:0,clip1:0}),
  (B[61],'T1_M0',{t1_mop:3,t1_mrow:99,t1_mtop:115,clip0:0,clip1:0}),
  (B[55],'RD0',{t1_tdrag:1,t1_grab:hy_-thumb,autos:0}),
  (B[64],'PB0',{grp:grp+1,t1_lastk:0}),
- (B[65],'PA0',{pwalk:lo_p,pfld:PIND,t1_pdm:1,t1_pdd:-48,grp:grp+1,t1_lastk:0}),
- (B[66],'PA0',{pwalk:lo_p,pfld:PIND,t1_pdm:1,t1_pdd:48,grp:grp+1,t1_lastk:0}),
- (B[67],'PA0',{pwalk:lo_p,pfld:PSPA,t1_pdm:1,t1_pdd:-8,grp:grp+1,t1_lastk:0}),
- (B[68],'PA0',{pwalk:lo_p,pfld:PSPA,t1_pdm:1,t1_pdd:8,grp:grp+1,t1_lastk:0}),
+ (B[65],'PA0',{pwalk:lo_p,pfld:PIND,t1_pdm:1,t1_pdd:1000-48,grp:grp+1,t1_lastk:0}),
+ (B[66],'PA0',{pwalk:lo_p,pfld:PIND,t1_pdm:1,t1_pdd:1000+48,grp:grp+1,t1_lastk:0}),
+ (B[67],'PA0',{pwalk:lo_p,pfld:PSPA,t1_pdm:1,t1_pdd:1000-8,grp:grp+1,t1_lastk:0}),
+ (B[68],'PA0',{pwalk:lo_p,pfld:PSPA,t1_pdm:1,t1_pdd:1000+8,grp:grp+1,t1_lastk:0}),
  (B[69],'T1_M0',{t1_mop:5,t1_mrow:99,t1_mtop:127,clip0:0,clip1:0}),
  (B[70],'T1_M0',{t1_mop:6,t1_mrow:99,t1_mtop:127,clip0:0,clip1:0}),
  (B[72],'UI',{t1_ruler:ONE-t1_ruler,clip0:0,clip1:0}),
@@ -134,19 +134,15 @@ t1_text('T1_FZ','With',PX+470,DOCY+6,0,3,'T1_FZ2')
 t1_text('T1_FZ2','All',PX+770,DOCY+6,0,5,'TB0')
 # ---- post paint: ribbon refresh after a menu closes, ruler, view checks, open menu ----
 on('T1_POST',(t1_uid,'UI',{t1_uid:0,t1_hvo:1,clip0:0,clip1:0}),(None,'T1_R0',None))
-on('T1_R0',(None,'T1_R1',{rc:cb+2062,rl:cb+SAVE,rp6:cb+PIND,r1:cb+LIST}))
-e=S('T1_R1'); h9=net.decode(rc.out[0],9,e); i9=net.decode(rc.out[1],9,e); gw9=X(); gx9=X()
-for cc_ in range(1,9):
-    gw9=gw9+h9[cc_]*(TW//cc_)
-    for ii_ in range(cc_): gx9=gx9+net.and_(net.step(h9[cc_]),net.step(i9[ii_]))*(ii_*(TW//cc_))
-two9=net.and_(net.step(h9[0]),net.eq(ncol,2,e)); tb9=net.step(rc.out[0]); one9=h9[0]-two9
-rL9=as_x(TX)+gx9+tb9*6+net.gate(rl.out[5],e)-net.gate(t1_mo,one9)
-rW9=gw9+one9*TW+two9*300+net.gate(t1_mo*2,one9)
+on('T1_R0',(None,'T1_R1',{rc:cb+2062,rl:cb+SAVE,rp6:cb+PIND,r1:cb+LIST,rmeta:cb+META}))
+e=S('T1_R1'); tb9=net.step(rc.out[0]); two9=net.and_(ONE-tb9,net.eq(ncol,2,e)); one9=net.and_(e,ONE-tb9,ONE-two9)
+rL9=s_tx+G_(MT[1],tb9)+tb9*6+net.gate(rl.out[5],e)
+rW9=G_(MT[0],tb9)+G_(s_tw,one9)+G_((s_tw-24)*0.5,two9)
 _lb9=net.bits(R1,4,e); rI9=net.gate(rp6.out[0],e)+net.step(R1)*48+(_lb9[2]+_lb9[3]*2)*48
 on('T1_R1',(net.and_(e,ONE-t1_ruler),'T1_V0',None),
  (net.and_(t1_rv,net.eq(rL9,t1_rL,e),net.eq(rW9,t1_rW,e),net.eq(rI9,t1_rI,e)),'T1_V0',None),
  (None,'T1_RDa',{t1_rL:rL9,t1_rW:rW9,t1_rI:rI9,t1_rv:1}))
-on('T1_RDa',(None,'T1_RT',{rA:(0,150,1280,24,(240,240,240),0),rB:(223,154,816,16,(200,198,196),0),rC:(t1_rL,154,t1_rW,16,WHITE,0)}))
+on('T1_RDa',(None,'T1_RT',{rA:(0,150,1280,24,(240,240,240),0),rB:(s_px,154,s_pw,16,(200,198,196),0),rC:(t1_rL,154,t1_rW,16,WHITE,0)}))
 t1_chain('T1_RT',ui.ruler(),'T1_RM0')
 MC=(96,94,92)
 for i_ in range(5):
@@ -178,7 +174,7 @@ t1_menu(1,120,87,110,[0,0],_fnt)
 t1_menu(2,194,87,50,[str(rom.PTS[i_]) for i_ in T1_SZ])
 t1_menu(3,200,115,110,T1_CN,_col)
 t1_menu(4,PX+362,DOCY+27,130,[0,0],_fop)
-t1_menu(5,260,127,190,['Normal: 1 in sides','Moderate: 0.75 in sides','Narrow: 0.5 in sides'])
+t1_menu(5,260,127,190,['Normal: 1 in sides','Moderate: 0.75 in sides','Narrow: 0.5 in'])
 t1_menu(6,514,127,70,['1.0','1.15','1.5','2.0'])
 e=S('T1_M0'); mh=net.decode(t1_mop,7,e)
 on('T1_M0',*[(mh[k_],f'T1_MM{k_}',None) for k_ in range(1,7)],(None,'T1_END',None))
@@ -201,6 +197,6 @@ for r_,si_ in enumerate(T1_SZ): mrules.append((mc(2,r_),'FMTS',{fm:9,fsi:si_,**C
 for r_ in range(8): mrules.append((mc(3,r_),'FMTS',{fm:7,fcol:r_,**CM}))
 mrules.append((mc(4,0),'RD0',{t1_case:ONE-t1_case,**CSTART,**CM}))
 mrules.append((mc(4,1),'RD0',{t1_fw:ONE-t1_fw,**CSTART,**CM}))
-for r_,v_ in enumerate((0,24,48)): mrules.append((mc(5,r_),'DA0',{t1_mo:v_,di_:0,**CM}))
+for r_,v_ in enumerate((3,8,4)): mrules.append((mc(5,r_),'T3_SP0',{tsop:v_,**CM}))
 for r_ in range(4): mrules.append((mc(6,r_),'PA0',{pwalk:lo_p,pfld:PLSP,alv:r_,grp:grp+1,t1_lastk:0,**CM}))
 on('T1_MR',*mrules,(None,'T1_MX',None))

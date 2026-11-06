@@ -90,7 +90,7 @@ const cell=(r,c)=>click(880+c*26+8,64+r*22+8);const lay=(r,c)=>click(590+c*26+8,
   const a=await caret('AVAVAVAVAVAV'),b=await caret('AAAAAAVVVVVV');const ok=a<b-2;results.push(['kerning narrows AV pairs',ok]);console.log(ok?'PASS':'FAIL','kerning narrows AV pairs',a,b);}
  // ---- Tier 3 ----
  const INS=click(135,47),HOME=click(80,47),LAY=click(192,47),REF=click(262,47),REV=click(333,47);
- const TBL3=[INS,click(116,76)];const X0=410;
+ const TBL3=[INS,click(116,76)];const X0=770;
  const RA=click(X0+30,76),RB=click(X0+90,76),CL=click(X0+150,76),CR=click(X0+210,76),DR=click(X0+30,102),DC=click(X0+90,102),SH=click(X0+132+29,102);
  const mid=click(400,320);
  await same('row below then undo',[...TBL3,'a',RB,key('Control+z'),mid],[...TBL3,'a',mid]);
@@ -110,22 +110,22 @@ const cell=(r,c)=>click(880+c*26+8,64+r*22+8);const lay=(r,c)=>click(590+c*26+8,
  await same('footnote backspace removes marker',['ab',...FN,'note',key('Enter'),key('Backspace'),HOME],['ab',REF,HOME]);
  await same('footnote redo',['ab',...FN,'note',key('Enter'),key('Control+z'),key('Control+y'),HOME],['ab',...FN,'note',key('Enter'),HOME]);
  await diff('footnote marker is inline, not at paragraph end',['ab',key('ArrowLeft'),...FN,'n',key('Enter'),HOME],['ab',...FN,'n',key('Enter'),HOME]);
- const CM=[REV,click(58,76)],CD=click(169,76);
+ const CM=[REV,click(58,76)],CD=click(58,102);
  await same('comment delete',['ab',...CM,'hello',key('Enter'),CD,HOME],['ab',REV,HOME]);
  await same('comment delete undo',['ab',...CM,'hello',key('Enter'),CD,key('Control+z'),HOME],['ab',...CM,'hello',key('Enter'),HOME]);
- const SB=[LAY,click(563,76)];
+ const SB=[LAY,click(1155,76)];
  await diff('section break differs',['a',...SB,'b'],['a',LAY,key('Enter'),'b']);
  const UP=async p=>{await p.mouse.move(600,400);await p.mouse.wheel(0,-900);await p.waitForTimeout(60);};
  await same('section break undo',['a',...SB,key('Control+z'),HOME,UP],['a',LAY,HOME,UP]);
  await same('section break redo',['a',...SB,key('Control+z'),key('Control+y'),HOME,UP],['a',...SB,HOME,UP]);
- await diff('landscape differs',['a',LAY,click(287,76)],['a',LAY]);
- await diff('narrow margins differ',['a',LAY,click(420,76)],['a',LAY]);
- await same('portrait after landscape returns',['a',LAY,click(287,76),click(215,76)],['a',LAY]);
- await same('wide then normal margins return',['a',LAY,click(478,76),click(362,76)],['a',LAY]);
+ await diff('landscape differs',['a',LAY,click(1071,76)],['a',LAY]);
+ await diff('narrow margins differ',['a',LAY,click(1050,102)],['a',LAY]);
+ await same('portrait after landscape returns',['a',LAY,click(1071,76),click(999,76)],['a',LAY]);
+ await same('wide then normal margins return',['a',LAY,click(1108,102),click(992,102)],['a',LAY]);
  const HD=[click(275,76)];
- await diff('page field shows',[INS,...HD,click(702,102),key('Enter'),HOME],[INS,HOME]);
+ await diff('page field shows',[INS,...HD,click(1062,102),key('Enter'),HOME],[INS,HOME]);
  await same('backspace into a picture free doc is unchanged',['ab',key('Enter'),key('Backspace'),HOME],['ab',REF,HOME]);
- await same('toc update is stable',['Head',click(660,88),key('End'),key('Enter'),click(485,88),REF,click(68,76),click(306,76),HOME],['Head',click(660,88),key('End'),key('Enter'),click(485,88),REF,click(68,76),HOME]);
+ await same('toc update is stable',['Head',click(660,88),key('End'),key('Enter'),click(485,88),REF,click(68,76),click(68,102),HOME],['Head',click(660,88),key('End'),key('Enter'),click(485,88),REF,click(68,76),HOME]);
  // page break by volume
  await diff('pagination grows',[async p=>{await p.evaluate(()=>{let s='';for(let i=0;i<60;i++)s+='line\n';annPaste(s);});}],[async p=>{await p.evaluate(()=>{let s='';for(let i=0;i<20;i++)s+='line\n';annPaste(s);});}]);
  // ---- tier 4 ----
