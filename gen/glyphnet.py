@@ -525,7 +525,10 @@ class GlyphUnit:
             else: ex=y-g._ymap(fm,yk,s,kn)
             net.connect(n,ex); dy[yk]=n-YP
         # one threshold per outline height: an edge is live between the thresholds of its two ends
-        ge={yk:net.step(gr*M-M+dy[yk]) for yk in keys}
+        # The heights are sorted and the map keeps their order, so the rest of a group of heights is tested only once its lowest has passed.
+        ge={}
+        for i_,yk in enumerate(keys):
+            ge[yk]=net.step((gr if i_%8==0 else ge[keys[i_-i_%8]])*M-M+dy[yk])
         sl_=aslots if accp else slots
         for i,e in enumerate(E):
             Y0,X0,Y1,X1,sg=e
