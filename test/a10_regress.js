@@ -8,7 +8,7 @@ require('./load')().then(({e,h,bank})=>{
  const D=(k,a=0,b=0,c=0)=>{e.inject(h.ev[0],k);e.inject(h.ev[4],20000);if(a)e.inject(h.ev[1],a);if(b)e.inject(h.ev[2],b);if(c)e.inject(h.ev[3],c);const n=e.run(h.halt,80000000);totT+=n;return n;};
  const fb=()=>md5(Buffer.from(new Uint8Array(e.memory.buffer,e.p_fb(),1280*800*4)));
  const take=(nm)=>{const sv=e.val(h.saveout),pd=e.val(h.pdfout),n=sv||pd;if(!n)return null;const bb=bank(),a0=e.val(h.outbase),u=Buffer.alloc(n);for(let i=0;i<n;i++)u[i]=bb[a0+i];if(OUT)fs.writeFileSync(OUT+'/'+nm,u);return u;};
- const step=(nm,f)=>{const E0=e.edges();const T0=totT;const u=f();const dE=e.edges()-E0;totE+=dE;lines.push([nm.padEnd(16),fb(),('t '+(totT-T0)).padEnd(12),('e '+dE).padEnd(14),u&&u.length?'file '+u.length+' '+md5(u):''].join(' '));};
+ const step=(nm,f)=>{const W=()=>e.edges()+(e.ops?[0,1,2,3].reduce((a,k)=>a+e.ops(k),0):0);const E0=W();const T0=totT;const u=f();const dE=W()-E0;totE+=dE;lines.push([nm.padEnd(16),fb(),('t '+(totT-T0)).padEnd(12),('e '+dE).padEnd(14),u&&u.length?'file '+u.length+' '+md5(u):''].join(' '));};
  const K=(c,m=0)=>D(2,c,m,1000),T=s=>{for(const ch of s)K(ch==='\n'?13:ch.charCodeAt(0));},C=(x,y)=>{D(3,x,y,1000);D(4,x,y);};
  const P=s=>{const bb=bank();for(let i=0;i<s.length;i++)bb[h.cb2+i]=s.charCodeAt(i);D(8,0,0,s.length);};
  const F=(k,f)=>{const u=fs.readFileSync(f),bb=bank();for(let i=0;i<u.length;i++)bb[h.file+i]=u[i];D(k,0,0,u.length);};

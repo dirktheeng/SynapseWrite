@@ -18,3 +18,10 @@ Baseline: total ticks 4,676,921, edges 1,166,866,562. save 426,728 ticks 135.8M 
 - Literal ROM, numbers, spell, comparator each passed the hash regression (PDF compared with the embedded fonts masked: pdf_fonts.py subsets carry the build time, so two builds differ there regardless).
 - Field writer first failed: the big endian shift used a weight of 2^39 on bit 31, which nn.compile treats as a gate enable, and low bytes were lost. The regression hashes caught it. Fixed with an intermediate gate. Worth knowing for anyone writing large weights.
 - CO0 threshold bank: a 31 input step pushes (over PULLMAX), making the whole bank push. Using the sum directly keeps it lazy.
+
+## Result
+Neurons 419,463 -> 181,179. Edges 2,457,201 -> 1,910,293. FSM states 2410 -> 2133. Weight file smaller as well.
+Regression work (edges plus lazy reads): whole script 9.04G -> 7.36G. PDF 2.58G -> 1.79G. Open foreign docx 111.8M -> 72.0M. Ticks 5.90M -> 5.68M.
+Every screen hash and every docx hash equals baseline. PDF bodies and xrefs are equal apart from embedded fonts, whose subsets carry the build time.
+Under load average near 28, t3_pic timed out waiting for a download on this branch; it passes when the machine is quiet.
+New memory: string ROM 64000000, spell table 65000000, lookup tables 65800000, all above the bank map; the bank size grows to cover them.
