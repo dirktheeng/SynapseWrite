@@ -116,7 +116,7 @@ net.group('docx reader tier 2')
 t2z=R()
 on('T2_OR0',(None,'T2_OR1',{rb:(as_x(STY0),6*STYN)}))
 on('T2_OR1',(None,'T2_OR2',{wb:(as_x(STY),6*STYN),t2z:0,w1:(cb+PSPA,0),w2:(as_x(STY)+6,0)}))
-e=S('T2_OR2'); on('T2_OR2',(net.ge(t2z,512,e),'OP1',{w1:(t2cb0+PSPA,DEFSPA)}),(None,'T2_OR2',{w1:(as_x(NUMT)+t2z,0),t2z:t2z+1}))
+e=S('T2_OR2'); on('T2_OR2',(net.ge(t2z,512,e),'OP1',{w1:(t2cb0+PSPA,DEFSPA)}),(None,'T2_OR2',{w1:(as_x(NUMT)+t2z,0),w2:(as_x(A4PT_)+t2z,0),t2z:t2z+1}))
 # member walk order is in T3_ZN; end of a scanned part moves to the next part
 e=S('T2_ZN')
 on('T2_ZN',(net.eq(ztarget,6,e),'T3_Z6n',None),(net.eq(ztarget,7,e),'T3_Z7n',None),(None,'OPEND',None))
@@ -223,7 +223,7 @@ on('T2_RS3',(None,'PX',{cs:W[0]}))
 # paragraph style reference, also basedOn: apply a table record to the current record
 on('T2_PS1',(None,'T2_FS',{t2i:0,t2jj:0,t2rr.r:t2rr.id('T2_PS2')}))
 on('T2_PS2',(t2fnd,'T2_AP',None),(None,'PX',None))
-on('T2_PR',(None,'T2_AP',{t2i:0,a4rsn:0,a4inb:0,a4inr:0,wvl:(cb+A4K,0,0,0,0,0,0),wht:(cb+A4T,0,0,0,0,0,0)}))
+on('T2_PR',(None,'T2_AP',{t2i:0,a4rsn:0,a4inb:0,a4inr:0,wvl:(cb+A4K,0,0,0,a4rhc,0,0),wht:(cb+A4T,0,0,0,0,0,0)}))
 on('T2_AP',(None,'T2_AP1',{rl:as_x(STY)+t2i*STYN}))
 on('T2_AP1',(None,'PX',{t2il:0,t2ps:W[0],cs:W[0],w1:(cb+ALIGN,W[1]),w2:(cb+LIST,W[7]),wln:(cb+PIND,W[2],W[3],W[4],W[5],W[6],t2i)}))
 # PDF list markers, in the page's pixel coordinates

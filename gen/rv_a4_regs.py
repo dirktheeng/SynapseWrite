@@ -1,9 +1,9 @@
 # ---- reviewer a4: paragraph cells and registers needed before the layout network is written ----
 # Slot cells past the comment text: tab stops 4084-4087 (px + kind*4096, 0 none; kind 0 left, 1 center, 2 right),
 # keep next 4090, keep lines 4091, border bits 4092 (1 top, 2 bottom, 4 left, 8 right), header row 4093, right indent px 4094.
-A4T=4084;A4C=4088;A4K=4090;A4L=4091;A4B=4092;A4H=4093;A4R=4094
+A4PT_=23800;A4T=4084;A4C=4088;A4K=4090;A4L=4091;A4B=4092;A4H=4093;A4R=4094
 ra4=RPort(8);ra4t=RPort(4);A4O=ra4.out;A4TO=ra4t.out
-a4da=R();a4rS=R();a4rR=R();a4rF=R();a4m=[R() for _ in range(4)];a4dl=R();a4lt=R();a4rc=R();a4k=R();a4l=R();a4b=R();a4hf=R();a4rr=R();a4kf=R();a4kd=R();a4kbr=R();a4la=R();a4kp=R()
+a4da=R();a4rS=R();a4rR=R();a4rF=R();a4m=[R() for _ in range(4)];a4hw=R();a4hlast=R();a4hv=R();a4rh=R();a4rhc=R();a4gro=R();a4wh=R();a4dl=R();a4lt=R();a4rc=R();a4k=R();a4l=R();a4b=R();a4hf=R();a4rr=R();a4kf=R();a4kd=R();a4kbr=R();a4la=R();a4kp=R()
 a4fp=R();a4fs=R();a4fpp=R();a4fst=R();a4fps=R();a4ff=[R() for _ in range(7)];a4cw=R();a4cm=R();a4ws=R();a4ss=R();a4cfk=R();a4cfq=R();a4sha=R()
 a4wk=R();a4wl=R();a4wb=R();a4wr=R();a4wt=[R() for _ in range(4)];a4inb=R();a4inr=R();a4rsn=R();a4rbb=R();a4rk=R();a4roi=R();a4rsk=R()
 def A4_META(e):
@@ -33,4 +33,5 @@ def A4_PX(e):
      (pat('<w:pBdr>',e),'PX',{a4inb:1,oi:oi+8}),(pat('</w:pBdr',e),'PX',{a4inb:0,oi:oi+8}),
      (net.and_(a4inb,pat('<w:top ',e)),'A4_RB0',{a4rbb:1,oi:oi+7}),(net.and_(a4inb,pat('<w:botto',e)),'A4_RB0',{a4rbb:2,oi:oi+8}),
      (net.and_(a4inb,pat('<w:left ',e)),'A4_RB0',{a4rbb:4,oi:oi+8}),(net.and_(a4inb,pat('<w:right',e)),'A4_RB0',{a4rbb:8,oi:oi+8}),
+     (pat('<w:pgNum',e),'A4_RN0',{oi:oi+8}),(pat('<w:gridS',e),'T2_VF',{oi:oi+8,t2rr.r:t2rr.id('A4_RG0')}),(pat('<w:tblHe',e),'PX',{a4rh:1,oi:oi+8}),(pat('</w:tr>',e),'PX',{a4rh:0,tcidx:0,gx:0,oi:oi+7}),(pat('</w:tc>',e),'A4_RC0',{incell:0,oi:oi+7}),
      (pat('<w:tab ',e),'A4_RS0',{a4roi:oi+7,oi:oi+7})]

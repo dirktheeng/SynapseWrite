@@ -74,5 +74,25 @@ const only=process.argv[2];const want=n=>!only||only.split(',').includes(n);
   await A.K('Control+End');const c0=await A.shot();await A.open('build/a4_r.docx');await A.K('Control+End');const c1=await A.shot();ok('right indent survives reopen',h(c0)===h(c1));
   const B=await open_();await B.T(para);const b0=await B.shot();await drag(B,319,162,271,162);const b1=await B.shot();fs.writeFileSync('build/a4_r3.png',await B.p.screenshot());await B.save('build/a4_r2.docx');const y=xml('build/a4_r2.docx');ok('left margin drag',y.includes('w:left="720"'),(y.match(/<w:pgMar[^>]*>/)||[''])[0]);
   await B.K('Control+z');const b2=await B.shot();ok('margin drag undoes',h(b2)===h(b0));await A.b.close();await B.b.close();}
+ if(want('merge')){const q={merge:[919,74],split:[919,96],hdr:[919,118]};const A=await open_();await A.tab(1);await A.C(...P.grid);await A.p.mouse.click(826+22*2+5,127+22*1+5);await A.T('one');await A.K('Tab');await A.T('two');await A.K('Tab');await A.T('three');await A.K('Tab');await A.T('r2a');await A.K('Tab');await A.T('r2b');await A.K('Tab');await A.T('r2c');
+  const a0=await A.shot();await A.K('Control+Home');await A.K('Shift+ArrowRight');await A.K('Shift+ArrowRight');await A.K('Shift+ArrowRight');await A.K('Shift+ArrowRight');await A.C(...q.merge);const a1=await A.shot();fs.writeFileSync('build/a4_m1.png',a1);
+  await A.save('build/a4_m.docx');let x=xml('build/a4_m.docx');ok('merge saves gridSpan',x.includes('<w:gridSpan w:val="2"/>')&&(x.match(/<w:tc>/g)||[]).length===5,(x.match(/<w:tc>/g)||[]).length);ok('merged text kept',x.replace(/<[^>]+>/g,'').includes('onetwo'),x.replace(/<[^>]+>/g,'').slice(-30));
+  ok('grid comes from a full row',(x.match(/<w:gridCol/g)||[]).length===3&&!x.includes('<w:gridCol w:w="0"'));
+  await A.K('Control+End');const a2=await A.shot();await A.open('build/a4_m.docx');await A.K('Control+End');const a3=await A.shot();fs.writeFileSync('build/a4_m2.png',a3);ok('merged cell survives reopen',h(a2)===h(a3));
+  const lt=lotxt('build/a4_m.docx');ok('LibreOffice reads the merged table',lt.includes('onetwo'),lt.slice(0,60));
+  await A.K('Control+z');
+  await A.K('Control+Home');await A.C(...q.split);const a4=await A.shot();fs.writeFileSync('build/a4_m3.png',a4);await A.save('build/a4_m3.docx');x=xml('build/a4_m3.docx');ok('split restores the cells',!x.includes('gridSpan')&&(x.match(/<w:tc>/g)||[]).length===6,(x.match(/<w:tc>/g)||[]).length);
+  await A.K('Control+End');await A.C(...q.split);await A.save('build/a4_m4.docx');x=xml('build/a4_m4.docx');ok('split of a plain cell adds one cell',(x.match(/<w:tc>/g)||[]).length===7&&x.includes('gridSpan'),(x.match(/<w:tc>/g)||[]).length);fs.writeFileSync('build/a4_m4.png',await A.shot());
+  await A.K('Control+z');await A.b.close();
+  const B=await open_();await B.tab(1);await B.C(...P.grid);await B.p.mouse.click(826+22*1+5,127+22*0+5);await B.T('HEADER');await B.tab(1);await B.C(...q.hdr);await B.tab(0);await B.K('Tab');await B.T('H2');
+  for(let i=0;i<40;i++){await B.K('Tab');await B.T('row '+i);await B.K('Tab');await B.T('x');}await B.tab(1);await B.K('Tab');
+  let n=0;
+  await B.tab(0);await B.save('build/a4_h.docx');x=xml('build/a4_h.docx');ok('tblHeader saved',x.includes('<w:tblHeader/>'));
+  fs.writeFileSync('build/a4_h.png',await B.p.screenshot());await B.b.close();}
+ if(want('pagenum')){const A=await open_();await A.tab(1);await A.C(420,74);await A.p.keyboard.type('Page ');await A.C(422,118);await A.K('Enter');await A.C(1003,74);await A.C(1000,88+22*1+10);await A.tab(0);await A.T('text');const a=await A.shot();fs.writeFileSync('build/a4_n.png',await A.p.screenshot());
+  await A.save('build/a4_n.docx');const x=xml('build/a4_n.docx');ok('format saved',x.includes('w:fmt="lowerRoman"'),(x.match(/<w:pgNumType[^>]*>/)||[''])[0]);
+  await A.pdf('build/a4_n.pdf');const t=execSync('pdftotext build/a4_n.pdf -').toString();ok('PDF shows roman',/Page i\b/.test(t),t.slice(0,40));
+  await A.open('build/a4_n.docx');await A.K('Control+End');const c=await A.shot();ok('format survives reopen',h(a)===h(c));
+  const lt=lotxt('build/a4_n.docx');ok('LibreOffice shows roman',/Page i\b/.test(lt),lt.slice(0,40));await A.b.close();}
  console.log(R.filter(r=>!r[1]).length,'failed of',R.length);process.exit(0);
 })();
