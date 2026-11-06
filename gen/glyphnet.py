@@ -99,6 +99,61 @@ def edges(cs):
             if a[1]==b[1]: continue
             E.append((a[1],a[0],b[1],b[0],1) if a[1]<b[1] else (b[1],b[0],a[1],a[0],-1))
     return E
+import os
+CHMAX=1000   # longest run of edges one chain neuron carries
+def chains(cs):
+    """Monotone chains: each contour split where its height turns or runs flat. Returns (Y0,X0,Y1,X1,sign,points)
+    with the points in rising height, so one neuron can carry a whole run of edges."""
+    out=[]
+    for c in cs:
+        n=len(c); d=[(1 if c[(i+1)%n][1]>c[i][1] else -1 if c[(i+1)%n][1]<c[i][1] else 0) for i in range(n)]
+        i0=next((i for i in range(n) if d[i]!=d[i-1]),None)
+        if i0 is None: continue
+        i=0
+        while i<n:
+            j=(i0+i)%n; sg=d[j]; ln=1
+            while i+ln<n and d[(i0+i+ln)%n]==sg: ln+=1
+            if sg:
+                pts=[c[(i0+i+q)%n] for q in range(ln+1)]
+                if sg<0: pts=pts[::-1]
+                pts=[(p[1],p[0]) for p in pts]
+                for a_ in range(0,len(pts)-1,CHMAX):
+                    q_=pts[a_:a_+CHMAX+1]; out.append((q_[0][0],q_[0][1],q_[-1][0],q_[-1][1],sg,q_))
+            i+=ln
+    return out
+def ylevels(fm):
+    "The unsnapped heights of the height map's knots, the same list _ymap builds."
+    xh,cap,asc,des,xo,co,bo=fm['xh'],fm['cap'],fm['asc'],fm['des'],fm['xo'],fm['co'],fm['bo']
+    A=[des]+([-bo] if bo>0 else [])+[0.0,xh]+([xh+xo] if xo>0 else [])+[cap]+([cap+co] if co>0 else [])+([asc] if asc>cap+co else [])
+    return [a for i,a in enumerate(A) if i==0 or a>A[i-1]]
+def yq(fm,Y):
+    "A height moved onto the 1/256 steps the height map uses between its knots, so a chain's vertices sit where its thresholds are."
+    A=ylevels(fm)
+    if Y<=A[0] or Y>=A[-1]: return Y
+    for a,b in zip(A,A[1:]):
+        if a<=Y<=b: return a+(b-a)*round((Y-a)/(b-a)*256)/256
+def qchains(cs,fm):
+    if fm is None: return chains(cs)
+    o=[]
+    for c in cs:
+        q=[]
+        for x_,y_ in c:
+            p_=(x_,yq(fm,y_))
+            if not q or q[-1]!=p_: q.append(p_)
+        if len(q)>1 and q[0]==q[-1]: q.pop()
+        if len(q)>=3: o.append(q)
+    # a chain is split where it crosses a knot of the height map: the snapped map stretches each band by its own
+    # factor, so a chain carried across a band would drift sideways by that factor times its travel
+    out=[]; A=[0.0,fm['xh'],fm['cap']]    # the bases of the overshoot bands, whose stretch can be large
+    for ch in chains(o):
+        pts=list(ch[5]); cur=[pts[0]]; sg_=ch[4]
+        for a,b in zip(pts,pts[1:]):
+            for L_ in A:
+                if a[0]<L_<b[0]:
+                    m_=(L_,a[1]+(b[1]-a[1])*(L_-a[0])/(b[0]-a[0])); cur.append(m_); out.append((cur,sg_)); cur=[m_]
+            cur.append(b)
+        out.append((cur,sg_))
+    return [(c[0][0],c[0][1],c[-1][0],c[-1][1],sg_,c) for c,sg_ in out]
 EXTTAG=(1<<30,0); PFM={}; XO=4096    # glyph x arrives lifted by XO: a page wider than the window draws to the left of it
 def _ymax(fi,bo,it,ch):
     cs=contours(fi,bo,it,ord(ch)); ys=[p[1] for c in cs for p in c]; return (max(ys),min(ys)) if ys else (0.0,0.0)
@@ -208,7 +263,7 @@ class GlyphUnit:
         "Interval colouring: sweep by lower height, take the lowest free slot of the edge's direction."
         res=[None]*len(E); free={1:[],-1:[]}
         for i in sorted(range(len(E)),key=lambda i:(E[i][0],E[i][1])):
-            Y0,_,Y1,_,sg=E[i]; L=free[sg]
+            Y0,_,Y1,_,sg=E[i][:5]; L=free[sg]
             for k,end in enumerate(L):
                 if end<=Y0: L[k]=Y1; res[i]=k; break
             else: L.append(Y1); res[i]=len(L)-1
@@ -467,7 +522,7 @@ class GlyphUnit:
                 for (pk,_dx,_dy) in parts:
                     k=(fi,)+pk
                     if k not in prog:
-                        cs=named(*f,*pk); E=edges(cs); sl,nu,nd=g._slots(E)
+                        cs=named(*f,*pk); E=chains(cs) if pk in acc else qchains(cs,face_metrics(*f)); sl,nu,nd=g._slots(E)
                         prog[k]=dict(cs=cs,E=E,sl=sl,nup=nu,ndn=nd,acc=pk in acc,raw=False,st=stems(*f,cs) if rom.x_snap_face(*f) and pk not in acc else [],fm=face_metrics(*f),lf=net.wire())
         _same={(f,str(p_['cs'])):k_ for k_,p_ in prog.items() for f in [g.faces[k_[0]]] if not p_['acc'] and p_['cs']}
         for fi,d in g.pseudo.items():
@@ -476,7 +531,7 @@ class GlyphUnit:
                 if fi in PFM and cs:
                     q_=_same.get((PFM[fi],str(cs)))
                     if q_: comp[fi,c]=[(('alias',q_),0.0,0.0)]; continue
-                k=(fi,'pseudo',c); E=edges(cs); sl,nu,nd=g._slots(E)
+                k=(fi,'pseudo',c); _fm=None if raw else (face_metrics(*g.faces[fi]) if fi<len(g.faces) else (face_metrics(*PFM[fi]) if fi in PFM else None)); E=qchains(cs,_fm); sl,nu,nd=g._slots(E)
                 if fi in PFM and cs: _same[PFM[fi],str(cs)]=k
                 fm=face_metrics(*g.faces[fi]) if fi<len(g.faces) else (face_metrics(*PFM[fi]) if fi in PFM else None)
                 prog[k]=dict(cs=cs,E=E,sl=sl,nup=nu,ndn=nd,acc=False,raw=raw,st=[],fm=fm,lf=net.wire()); comp[fi,c]=[(('pseudo',c),0.0,0.0)]
@@ -569,7 +624,7 @@ class GlyphUnit:
                 net.connect(uen[u],lfs); net.connect(bc[u],net.gate(g._sin*((l+r)/2),lfs)); net.connect(bh[u],net.gate(g._sin*((r-l)/2),lfs))
             g.stats['stems']+=len(st)
         gr=net.reg(); net.boolreg=getattr(net,'boolreg',set()); net.boolreg.add(next(iter(gr.t))); net.rec(gr,gr-net.and_(gr,g._doneb)+lf)   # the live program wakes its own clear, so done has no fan out to every program
-        keys=sorted(set(e[0] for e in E)|set(e[2] for e in E))
+        keys=sorted(set(e[0] for e in E)|set(e[2] for e in E)|set(p_[0] for e in E for p_ in e[5]))
         dy={}
         for yk in keys:
             n=net.wire()
@@ -579,21 +634,29 @@ class GlyphUnit:
             net.connect(n,ex); dy[yk]=n-YP
         # one threshold per outline height: an edge is live between the thresholds of its two ends
         # The heights are sorted and the map keeps their order, so the rest of a group of heights is tested only once its lowest has passed.
-        ge={}
-        for i_,yk in enumerate(keys):
-            ge[yk]=net.step((gr if i_%16==0 else ge[keys[i_-i_%16]])*M-M+dy[yk])
+        ge={}; gk=sorted(set(e[0] for e in E)|set(e[2] for e in E))
+        for i_,yk in enumerate(gk):
+            ge[yk]=net.step((gr if i_%16==0 else ge[gk[i_-i_%16]])*M-M+dy[yk])
         sl_=aslots if accp else slots
+        ramp={}
+        def rp(yk):
+            if yk not in ramp: ramp[yk]=net.relu(dy[yk])
+            return ramp[yk]
         for i,e in enumerate(E):
-            Y0,X0,Y1,X1,sg=e
-            m=q_slope((X1-X0)/(Y1-Y0))
-            ex=s*(round(X0*GRID_X)/GRID_X)+dy[Y0]*m
+            Y0,X0,Y1,X1,sg,pts=e
+            # a chain of edges is one neuron: x = X0*s + m0*dy(Y0) + sum over inner vertices of the slope change times relu(dy(Yk))
+            ms=[q_slope((b[1]-a[1])/(b[0]-a[0])) for a,b in zip(pts,pts[1:])]
+            ex=s*(round(X0*GRID_X)/GRID_X)+dy[Y0]*ms[0]
+            for k_ in range(1,len(ms)):
+                if ms[k_]!=ms[k_-1]: ex=ex+rp(pts[k_][0])*(ms[k_]-ms[k_-1])
             if accp: ex=ex+ax-AO
             for u,side,wt in _shift_weights((X0+X1)/2,st):
                 r_=(g.dL if side==0 else g.dR)[u]
                 ex=ex+(r_-DP)*wt
             ex=ex+PAD
             net.connect(sl_[sg][P['sl'][i]],net.relu(ex+(ge[Y0]-ge[Y1])*M-M))
-        g.stats['edges']+=len(E); g.stats['knots']+=len(keys); g.stats['programs']+=1; g.stats['accent_programs']+=1 if accp else 0
+        g.stats['chains']=g.stats.get('chains',0)+len(E); E=[0]*sum(len(e[5])-1 for e in E)
+        g.stats['edges']+=len(E); g.stats['knots']+=len(gk); g.stats['programs']+=1; g.stats['accent_programs']+=1 if accp else 0
 GAMMA_K=(1.32,0.35,0.09,0.06)
 GRIDW=(136,68,34,17,5)
 def gridbits(v):
