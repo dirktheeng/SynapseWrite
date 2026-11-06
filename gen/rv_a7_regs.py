@@ -23,4 +23,3 @@ def a7_redo_rules(h):
 PSN=32; rpw=RPort(PSN); wpch=WPort(PSN,rpw.out[0],True); wpst=WPort(PSN,None,True)
 a7_rs=R();a7_nd=R()
 a7_png=R(); a7_rw2=RPort(PSN)
-a7_far=R();a7_jmp=R();a7_wb=R();A7BUD=15000   # characters of layout one event may do before the rest goes to the background
