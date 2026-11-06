@@ -72,11 +72,11 @@ on('T2_SA2',(None,'J0',{jp:t2hi,jo:2047,jret.r:jret.id('FMTS')}))
 on('T2_SP0',(None,'T2_SP1',{pwalk:t2lo}))
 on('T2_SP1',(None,'T2_SP2',{r1:as_x(PT)+pwalk}))
 on('T2_SP2',(None,'T2_SF',{t2b:R1,t2i_:0}))
-e=S('T2_SF'); hf=net.decode(t2i_,7,e); FLD=[ALIGN,PIND,PFIRST,PLSP,PSPB,PSPA,PSTY]; off_=X(); val_=X()
+e=S('T2_SF'); hf=net.decode(t2i_,7,e); FLD=[ALIGN,PIND,PFIRST,PLSP,PSPB,PSPA,PSTY]; t2of_=X(); val_=X()
 for i_,f_ in enumerate(FLD):
-    off_=off_+hf[i_]*f_
+    t2of_=t2of_+hf[i_]*f_
     val_=val_+(G_(t2si,hf[i_]) if f_==PSTY else G_(t2f[i_+1],hf[i_]))
-on('T2_SF',(None,'T2_SG',{t2o:off_,t2val:val_,r2:t2b+off_}))
+on('T2_SF',(None,'T2_SG',{t2o:t2of_,t2val:val_,r2:t2b+t2of_}))
 e=S('T2_SG'); log(e,6,pwalk,t2o,R2,t2val)
 on('T2_SG',(net.lt(t2i_,6,e),'T2_SF',{t2i_:t2i_+1,w1:(t2b+t2o,t2val),w2:(t2b+DIRTY,1)}),
  (t2um,'T2_UC0',{w1:(t2b+t2o,t2val),w2:(t2b+DIRTY,1)}),
@@ -106,8 +106,8 @@ t2d=R();t2mn=R()
 on('T2_PD',(None,'T2_PD0',{pwalk:lo_p,grp:grp+1}))
 on('T2_PD0',(None,'T2_PD1',{r1:as_x(PT)+pwalk}))
 on('T2_PD1',(None,'T2_PD2',{t2b:R1,r2:R1+pfld,r1:R1+PIND}))
-e=S('T2_PD2'); nv2=G_(net.max_(R2+t2d,as_x(0)-R1),t2mn)+G_(net.relu(R2+t2d),e-net.and_(e,t2mn))
-on('T2_PD2',(None,'T2_PD3',{t2val:nv2,t2o:R2}))
+e=S('T2_PD2'); t2dd=t2d-1000; t2nvv=G_(net.max_(pf_val(R2)+t2dd,as_x(0)-R1)+PFO,t2mn)+G_(net.relu(R2+t2dd),e-net.and_(e,t2mn))
+on('T2_PD2',(None,'T2_PD3',{t2val:t2nvv,t2o:R2}))
 e=S('T2_PD3'); log(e,6,pwalk,pfld,t2o,t2val)
 on('T2_PD3',(net.lt(pwalk,hi_p,e),'T2_PD0',{pwalk:pwalk+1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}),(None,'RD0',{lc:1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}))
 # ribbon cells found by position: one object id covers a whole grid of commands
@@ -120,7 +120,7 @@ row_=X()
 for i_ in range(1,3): row_=row_+net.ge(hy_-64,i_*_ui.CH,e)
 hb2=net.decode(net.eq(tab,2,e)*45+row_*15+col_,90,e)
 rules2=[(hb2[0],'FMTS',{fm:12}),(hb2[1],'FMTS',{fm:13}),(hb2[2],'FMTS',{fm:14}),
- (hb2[3],'T2_PD',{pfld:PIND,t2d:-24,t2mn:0}),(hb2[4],'T2_PD',{pfld:PIND,t2d:24,t2mn:0})]
+ (hb2[3],'T2_PD',{pfld:PIND,t2d:1000-24,t2mn:0}),(hb2[4],'T2_PD',{pfld:PIND,t2d:1000+24,t2mn:0})]
 for i_ in range(8): rules2.append((hb2[5+i_],'FMTS',{fm:15,fhl:i_}))
 rules2+=[(hb2[13],'T2_SA0',{t2si:4}),(hb2[14],'T2_SA0',{t2si:5})]
 for i_ in range(15): rules2.append((hb2[15+i_],'FMTS',{fm:7,fcol:8+i_}))
@@ -128,7 +128,7 @@ for i_ in range(9): rules2.append((hb2[30+i_],'FMTS',{fm:7,fcol:23+i_}))
 for i_ in range(3): rules2.append((hb2[39+i_],'T2_UM0',None))
 L0=45
 for i_,(fld,dv,mn) in enumerate(((PIND,-24,0),(PIND,24,0),(PFIRST,-24,1),(PFIRST,24,1),(PSPB,-8,0),(PSPB,8,0),(PSPA,-8,0),(PSPA,8,0))):
-    rules2.append((hb2[L0+i_],'T2_PD',{pfld:fld,t2d:dv,t2mn:mn}))
+    rules2.append((hb2[L0+i_],'T2_PD',{pfld:fld,t2d:1000+dv,t2mn:mn}))
 for i_ in range(6): rules2.append((hb2[L0+8+i_],'PA0',{pwalk:lo_p,pfld:PLSP,alv:i_,grp:grp+1}))
 on('T2_HIT',*rules2,(None,'HALT',None))
 # ---- .docx reader helpers ----
@@ -138,11 +138,11 @@ t2z=R()
 on('T2_OR0',(None,'T2_OR1',{rb:(as_x(STY0),6*STYN)}))
 on('T2_OR1',(None,'T2_OR2',{wb:(as_x(STY),6*STYN),t2z:0,w1:(cb+PSPA,0),w2:(as_x(STY)+6,0)}))
 e=S('T2_OR2'); on('T2_OR2',(net.ge(t2z,512,e),'OP1',{w1:(t2cb0+PSPA,DEFSPA)}),(None,'T2_OR2',{w1:(as_x(NUMT)+t2z,0),t2z:t2z+1}))
-# member walk: numbering, then styles, then the document
+# member walk order is in T3_ZN; end of a scanned part moves to the next part
 e=S('T2_ZN')
-on('T2_ZN',(net.eq(xm,2,e),'X_C0',{xm:1,zp:t2cd,cb:SCR,cs:0,t2df:0,t2ps:0,w1:(as_x(SCR)+ALIGN,0),w2:(as_x(SCR)+LIST,0),wln:(as_x(SCR)+PIND,0,0,0,0,0,0)}),
- (net.eq(xm,1,e),'X_C0',{xm:0,zp:t2cd,cb:t2cb0,t2skip:0}),
- (None,'OPEND',None))
+on('T2_ZN',(net.eq(ztarget,6,e),'T3_Z6n',None),(net.eq(ztarget,7,e),'T3_Z7n',None),(None,'OPEND',None))
+on('T3_Z6n',(None,'X_C0',{ztarget:7,zp:zp0,ob:0,obase:OUTB,cb:SCR,cs:0,t2df:0,t2ps:0,w1:(as_x(SCR)+ALIGN,0),w2:(as_x(SCR)+LIST,0),wln:(as_x(SCR)+PIND,0,0,0,0,0,0)}))
+on('T3_Z7n',(None,'X_C0',{ztarget:4,zp:zp0,ob:0,obase:OUTB,cb:t2cb0,t2skip:0}))
 # attribute search: moves oi to the first value after w:val=" in this tag
 e=S('T2_VF1')
 on('T2_VF',(None,'T2_VF1',{rl:OA+oi}))
@@ -182,12 +182,14 @@ on('T2_AT',(None,'T2_AT1',{rl:OA+oi}))
 e=S('T2_AT1')
 def att(p_,fld,nxt='T2_A0'): return (pat(p_,e),'T2_NM',{oi:oi+len(p_)-(1 if p_.endswith('"') else 0),t2fld:fld,t2n_:0,t2rr.r:t2rr.id(nxt)})
 on('T2_AT1',(net.eq(W[0],62,e),'PX',None),
- att('w:before',PSPB),att('w:after=',PSPA),att('w:left="',PIND),att('w:start=',PIND),att('w:firstL',PFIRST),att('w:hangin',PFIRST,'T2_A2'),att('w:line="',PLSP,'T2_A4'),
+ att('w:before',PSPB),att('w:after=',PSPA),att('w:left="',PIND),att('w:start=',PIND),att('w:firstL',PFIRST,'T2_A2b'),att('w:hangin',PFIRST,'T2_A2'),att('w:line="',PLSP,'T2_A4'),
  (pat('w:lineRu',e),'T2_A6',{rl:OA+oi+12}),(None,'T2_AT',{oi:oi+1}))
 on('T2_A0',(None,'T2_DV',{t2q:0,t2sr.r:t2sr.id('T2_A1')}))
 on('T2_A1',(None,'T2_AT',{w1:(cb+t2fld,t2q)}))
 on('T2_A2',(None,'T2_DV',{t2q:0,t2sr.r:t2sr.id('T2_A3')}))
-on('T2_A3',(None,'T2_AT',{w1:(cb+t2fld,as_x(0)-t2q)}))
+on('T2_A3',(None,'T2_AT',{w1:(cb+t2fld,as_x(PFO)-t2q)}))
+on('T2_A2b',(None,'T2_DV',{t2q:0,t2sr.r:t2sr.id('T2_A3b')}))
+on('T2_A3b',(None,'T2_AT',{w1:(cb+t2fld,as_x(PFO)+t2q)}))
 e=S('T2_A4'); lv_=net.gt(t2n_,250,e)+net.gt(t2n_,300,e)+net.gt(t2n_,420,e)+net.gt(t2n_,540,e)+net.gt(t2n_,660,e)
 on('T2_A4',(None,'T2_AT',{w1:(cb+PLSP,lv_)}))
 e=S('T2_A6'); notauto=net.or_(net.eq(W[0],101,e),net.and_(net.eq(W[0],97,e),net.eq(W[1],116,e)))

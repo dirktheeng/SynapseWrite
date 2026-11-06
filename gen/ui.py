@@ -1,6 +1,7 @@
 """Ribbon display list. Each draw item becomes outgoing weights of one token neuron.
 All icons are original pixel art written below as text rows; each run becomes a rectangle."""
 import rom
+import t3_btn
 from nn import X
 from app_pal import B as _PB
 BLUE=_PB[4];LG=_PB[3];BD=(204,204,204);WHT=(255,255,255);HVG=_PB[5];HVB=(51,119,204);INK=(51,51,51)
@@ -221,6 +222,13 @@ def build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,hov,hb,hvo):
         (home,insert,layout,refs,review,view)[k](u)
         if k==0: home2(u)
         if k==2: layout2(u)
+        for bt in t3_btn.BTNS:
+            if bt[0]==k:
+                u.r(bt[1],bt[2],bt[3],bt[4],LG,200+t3_btn.RAW)
+                if bt[7] is not None: u.r(bt[1]+2,bt[2]+2,bt[3]-4,bt[4]-4,bt[7],200+t3_btn.RAW)
+                elif bt[5]: u.t(bt[1]+(bt[3]-twidth(bt[5]))//2,bt[2]+(bt[4]-rom.metrics(9)[1])//2,bt[5])
+        for gl in t3_btn.GROUPS:
+            if gl[0]==k: group_label(u,gl[1],gl[2],gl[3])
         last=emit(net,fsm,rA,bus,YB,u.i,f'UI_{k}',hov,hb,bg)
         c=net.and_(last,hvo)   # a hover redraw skips the document walk
         net.rec(fsm.state('RD0'),last-c); net.rec(fsm.state('TB0'),c)

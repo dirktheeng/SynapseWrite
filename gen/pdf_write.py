@@ -1,8 +1,9 @@
 # ---- PDF writer: objects, content streams and the xref table are all produced here ----
 net.group('pdf writer')
 XR=900000; nv=R(); nret=Ret('NR'); qp=R();qb=R();qyy=R();qtop=R();qlj=R();qnl=R();qcols=R();qci=R();qx=R();qh=R();qa=R();qs=R();qe=R();qo=R();qst=R();qpg=R();qstart=R();qlenat=R();qobj=R();qi=R();qxr=R();qcur=R()
-qsz=R();qfn=R();qbase=R()
-pfc=Ret('T4_PFC')
+qph=R();qpw=R();qml=R();qmt=R();qth=R();qps=R();qcx=R();qnc=R();qtw=R();qsz=R();qfn=R();qbase=R()
+A9=rom.metrics(9)[0]
+pfcr=Ret('T4_PFC');qnr=t3ret('T4P_NR');qfc=R();qf0=R();qfh=R();qfi=R();qfid=R();qtoc=R();qsrc=R();qtpg=R();qtpv=R();qtxe=R();PDFN=1018000
 def number(st,val,nx):
     on(st,(None,'NUM7',{nv:val,nret.r:nret.id(nx)}))
 cur_n='NUM7'
@@ -34,14 +35,15 @@ cur_n='PD_x'
 for i_,(ob_,of_) in enumerate(seq):
     nx_=f'PD_x{i_}'
     on(cur_n,(None,nx_,{xw:(as_x(XR)+ob_,of_)})); cur_n=nx_
-on(cur_n,(None,'PD_0',{qp:0,qpg:0,qtop:0,qobj:FIRST}))
-qln=R();qxc=R();qpw=R();qph=R();qpo=R();qxx=R();qcx0=R();qop=R();qund=R();qdel=R();qrise=R();qadv=R();qex=R();qind=R();qry=R();qrc=R();qpa=R();qpv=R();qri=R();qhi=R()
+on(cur_n,(None,'T3_PQ0',{qp:0,qpg:0,qtop:0,qobj:FIRST,qfc:0,qf0:0,qfh:0}))
+qln=R();qxc=R();qiw=R();qih=R();qpo=R();qxx=R();qcx0=R();qop=R();qund=R();qdel=R();qrise=R();qadv=R();qex=R();qind=R();qry=R();qrc=R();qpa=R();qpv=R();qri=R();qhi=R()
 # open a page: page object then content object with a fixed width length
 def pg_open(st,nx):
     n1=st+'a';n2=st+'b';n3=st+'c';n4=st+'d';n5=st+'e';n6=st+'f'
     on(st,(None,n1,{xw:(as_x(XR)+qobj,fp),qpg:qpg+1}))
     number(n1,qobj,n2)
-    lit(n2,b' 0 obj\n<</Type/Page/Parent 2 0 R/Contents ',n3)
+    lit(n2,b' 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 ',n2+'x')
+    numz(n2+'x',qpw*0.75,n2+'y'); lit(n2+'y',b' ',n2+'z'); numz(n2+'z',qph*0.75,n2+'u'); lit(n2+'u',b']/Contents ',n3)
     number(n3,qobj+1,n4)
     lit(n4,b' 0 R>>\nendobj\n',n5)
     on(n5,(None,n6,{xw:(as_x(XR)+qobj+1,fp)}))
@@ -55,7 +57,8 @@ def pg_open(st,nx):
     on(n6+'m',(None,'T4P_FU',{pfr.r:pfr.id(nx)}))
 def pg_close(st,nx):
     n1=st+'a'
-    lit(st,b'\nendstream\nendobj\n',n1)
+    on(st,(None,'T4P_NT',{qnr.r:qnr.id(st+'z')}))
+    lit(st+'z',b'\nendstream\nendobj\n',n1)
     on(n1,(None,nx,{qcur:qlenat,nv:0,qobj:qobj+2,qi:fp-qstart-18}))
     # length is patched digit by digit into the reserved field
 pg_close('PD_C','PD_LP')
@@ -77,30 +80,29 @@ pg_open('PD_O','PD_L5')
 pg_open('PD_0','PD_1')
 # walk paragraphs using the saved layout
 e=S('PD_1'); on('PD_1',(net.ge(qp,npar,e),'PD_C',None),(net.ge(fp,3800000,e),'PD_C',{qp:npar}),(None,'PD_2',{r1:as_x(PT)+qp}))
-on('PD_2',(None,'PD_3',{qb:R1,rl:R1+SAVE,rc:R1+2062,rim:R1+IMF,r2:R1+LIST,rp6:R1+PIND}))
+on('PD_2',(None,'T3_PQ2',{qb:R1,rmeta:R1+META}))
 e=S('PD_3')
 first_p=net.eq(qtop,0,e)
-qyy0=rl.out[0]+G_(rp6.out[3],net.gt(rl.out[0],rl.out[1]+96,e))
+qyy0=rl.out[0]+G_(rp6.out[3],net.gt(rl.out[0],rl.out[1]+qmt,e))
 qlb=net.bits(R2,4,e); qkind=qlb[0]+qlb[1]*2; qlvl=qlb[2]+qlb[3]*2
 qk=R();ql=R();qmk=R()
 qln_new,qmk_new=list_step(rl.out[4],qkind,qlvl,e)
-pl_={qyy:qyy0,qcols:rc.out[0],qci:rc.out[1],qln:rl.out[4],qxc:rl.out[5],qk:qkind,ql:qlvl,qmk:qmk_new,qind:G_(qlvl*48+48,net.step(qkind)),qpw:rim.out[0],qph:rim.out[1],qpo:rim.out[2]}
+pl_={qyy:qyy0,qcols:rc.out[0],qci:rc.out[1],qln:rl.out[4],qxc:rl.out[5],qk:qkind,ql:qlvl,qmk:qmk_new,qind:G_(qlvl*48+48,net.step(qkind))+net.eq(qtoc,2,e)*24,qiw:rim.out[0],qih:rim.out[1],qpo:rim.out[2]}
 on('PD_3',(first_p,'PD_4',{**pl_,qtop:rl.out[1]}),
  (net.gt(rl.out[1],qtop,e),'PD_C',{**pl_,qtop:rl.out[1]}),
  (None,'PD_4',pl_))
 on('PD_L5',(None,'PD_4',None))
-on('PD_4',(None,'PD_5',{r1:qb+NLINES}))
 on('PD_5',(None,'PD_6',{qnl:R1,qlj:0}))
 e=S('PD_6'); on('PD_6',(net.ge(qlj,qnl,e),'PD_N',None),(None,'PD_7',{rl:qb+LINES+qlj*8,rc:qb+2062,r2:qb+LINES+qlj*8+11}))
 e=S('PD_7'); e7=e
 Wl=rl.out
-tb7=net.step(rc.out[0]); hc7=net.decode(rc.out[0],9,e7); hi7=net.decode(rc.out[1],9,e7); gx7=X()
-for cc_ in range(1,9):
-    for ii_ in range(cc_): gx7=gx7+net.and_(net.step(hc7[cc_]),net.step(hi7[ii_]))*(ii_*(TW//cc_)+6)
-ovf=net.or_(net.and_(net.gt(qyy+Wl[3],qtop+960,e),net.gt(qyy,qtop+96,e)),net.and_(ONE-tb7,keep_lines(e,qyy,qtop,Wl[3],R2,qlj,qnl)))
-lmv={qs:Wl[0],qe:Wl[1],qx:Wl[2]-48+gx7+96,qh:Wl[3],qa:Wl[4],qo:Wl[0],qex:Wl[5]}
-col2=net.and_(ovf,net.eq(ncol,2,e),ONE-net.step(qxc))
-on('PD_7',(col2,'PD_8',{**lmv,qyy:qtop+96,qxc:324}),(ovf,'PD_C2',{**lmv,qyy:qtop+PST+96,qtop:qtop+PST,qxc:0}),(None,'PD_8',lmv))
+gx7=G_(qcx+6,net.step(qcols))
+tb7=net.step(qcols)
+qnx_=qfh+Wl[7]+net.step(qfh+Wl[7])*14
+ovf=net.or_(net.and_(net.gt(qyy+Wl[3]+qnx_,qtop+qmt+qth,e),net.gt(qyy,qtop+qmt,e)),net.and_(ONE-tb7,keep_lines(e,qyy,qtop,Wl[3],R2,qlj,qnl,qmt,qth,qnx_)))
+lmv={qs:Wl[0],qe:Wl[1],qx:Wl[2]-48+gx7+qml,qh:Wl[3],qa:Wl[4],qo:Wl[0],qex:Wl[5]}
+col2=net.and_(ovf,net.eq(qnc,2,e),ONE-net.step(qxc))
+on('PD_7',(col2,'PD_8',{**lmv,qyy:qtop+qmt,qxc:(qtw-24)*0.5+24}),(ovf,'PD_C2',{**lmv,qyy:qtop+qps+qmt,qtop:qtop+qps,qxc:0}),(None,'PD_8',lmv))
 pg_close('PD_C2','PD_QH')
 cur_n='PD_QH'
 for k_,pw_ in enumerate((1000000,100000,10000,1000,100,10,1)):
@@ -116,15 +118,15 @@ for k_,pw_ in enumerate((1000000,100000,10000,1000,100,10,1)):
     on(cur_n,(None,nx_,{fw2:(as_x(OUTB)+qlenat+k_,48+dg)})); cur_n=nx_
 pg_open('PD_O2','PD_8')
 # one text line: positioned chunks of a word and its trailing space, in screen pixels
-qsty=R(); qyb=as_x(1056)-(qyy-qtop+qa); qpc=R()
+qsty=R(); qyb=qph-(qyy-qtop+qa); qpc=R()
 e=S('PD_8')
 on('PD_8',(None,'T2_PM',None))
-on('PD_R',(net.step(qpw),'T4P_IM',None),(None,'PD_9',{qsty:999999,qop:0,qxx:qx+qind+qxc,qpc:0}))
+on('PD_R',(net.step(qiw),'T4P_IM',None),(None,'PD_9',{qsty:999999,qop:0,qxx:qx+qind+qxc,qpc:0}))
 e=S('PD_9'); on('PD_9',(net.ge(qo,qe,e),'PD_Z',None),(None,'PD_A',{r1:qb+qo,r2:qb+1024+qo}))
 e=S('PD_A'); measure(e,R1,R2); ke3=net.and_(e,net.step(qpc)); kp_en.lin(ke3); kp_in.add(ke3,qpc)
 pdiff=net.step(net.step(R2-qsty)+net.step(qsty-R2)); psp=net.eq(R1,32,e)
 ladv={ins_ch:R1,ins_st:R2,qadv:adv+kern+G_(qex,psp),qpc:R1}
-on('PD_A',(net.and_(pdiff,qop),'T4P_CL',{**ladv,pfc.r:pfc.id('PD_F')}),(pdiff,'PD_F',ladv),(qop,'PD_Tc',ladv),(None,'T4P_O',ladv))
+on('PD_A',(net.ge(R1,1000,e),'T4P_MK',{qo:qo+1,qfid:R1-1000}),(net.and_(pdiff,qop),'T4P_CL',{**ladv,pfcr.r:pfcr.id('PD_F')}),(pdiff,'PD_F',ladv),(qop,'PD_Tc',ladv),(None,'T4P_O',ladv))
 sv_en.lin(S('PD_F')); sv_in.add(S('PD_F'),ins_st)
 e=S('PD_F'); zh=net.decode(SV['size'],len(rom.PTS),e); pts=X(); ptv=X()
 for i_,h_ in enumerate(zh): pts=pts+h_*round(rom.PTS[i_]*96/72); ptv=ptv+h_*round(rom.PTS[script_size(i_)]*96/72)
@@ -149,21 +151,44 @@ lit('PD_Te',b'\\','PD_Td')
 e=S('PD_Td'); em_en.lin(e); em_b.add(e,ins_ch)
 on('PD_Td',(None,'PD_Tg',{qo:qo+1,qxx:qxx+qadv}))
 e=S('PD_Tg')
-on('PD_Tg',(net.eq(ins_ch,32,e),'T4P_CL',{pfc.r:pfc.id('PD_9')}),(None,'PD_9',None))
+on('PD_Tg',(net.eq(ins_ch,32,e),'T4P_CL',{pfcr.r:pfcr.id('PD_9')}),(None,'PD_9',None))
 # closing a chunk draws its underline or strike line
 on('T4P_CL',(None,'T4P_Ca',{qop:0}))
 lit('T4P_Ca',b')Tj ET\n','T4P_C2')
 on('T4P_C2',(qdel,'T4P_Ra',{qry:qyb+5}),(qund,'T4P_Ra',{qry:qyb-2}),(None,'T4_PFC',None))
 number('T4P_Ra',qcx0,'T4P_Rb'); lit('T4P_Rb',b' ','T4P_Rc'); number('T4P_Rc',qry,'T4P_Rd'); lit('T4P_Rd',b' ','T4P_Re'); number('T4P_Re',qxx-qcx0,'T4P_Rf'); lit('T4P_Rf',b' 1 re f\n','T4_PFC')
-on('PD_Z',(qop,'T4P_CL',{pfc.r:pfc.id('PD_Y')}),(None,'PD_Y',None))
-on('PD_Y',(None,'PD_6',{qyy:qyy+qh,qlj:qlj+1}))
+on('PD_Z',(qop,'T4P_CL',{pfcr.r:pfcr.id('PD_Y')}),(None,'PD_Y',None))
+e=S('PD_Y'); on('PD_Y',(net.and_(net.step(qtoc),net.ge(qlj+1,qnl,e)),'T4P_TD0',None),(None,'PD_6',{qyy:qyy+qh,qlj:qlj+1}))
+# a table of contents entry: dot leader and the live page number, as on the screen
+on('T4P_TD0',(None,'T4P_TD1',{r1:qsrc+SAVE+2}))
+e=S('T4P_TD1'); hs_=net.step(qsrc); tv_=G_(R1,hs_)+G_(qtpg,ONE-hs_); DW0_=rom.glyph(0,0,0,0,48)[0]; DOTW_=rom.glyph(0,0,0,0,46)[0]+2
+on('T4P_TD1',(None,'T4P_TD2',{qtpv:tv_,qtxe:qml+qtw-(net.ge(tv_,10,e)+net.ge(tv_,100,e)+1)*DW0_-4}))
+e=S('T4P_TD2'); on('T4P_TD2',(net.ge(qxx+DOTW_,qtxe,e),'T4P_TN',None),(None,'T4P_TD3',None))
+lit('T4P_TD3',b'BT /F0 15 Tf 0 0 0 rg 1 0 0 1 ','T4P_TD4'); number('T4P_TD4',qxx,'T4P_TD5'); lit('T4P_TD5',b' ','T4P_TD6'); number('T4P_TD6',qyb,'T4P_TD7'); lit('T4P_TD7',b' Tm (.)Tj ET\n','T4P_TD8')
+on('T4P_TD8',(None,'T4P_TD2',{qxx:qxx+DOTW_}))
+lit('T4P_TN',b'BT /F0 15 Tf 0 0 0 rg 1 0 0 1 ','T4P_TN1'); number('T4P_TN1',qtxe+4,'T4P_TN2'); lit('T4P_TN2',b' ','T4P_TN3'); number('T4P_TN3',qyb,'T4P_TN4'); lit('T4P_TN4',b' Tm (','T4P_TN5'); numz('T4P_TN5',qtpv,'T4P_TN6'); lit('T4P_TN6',b')Tj ET\n','T4P_TN7')
+on('T4P_TN7',(None,'PD_6',{qyy:qyy+qh,qlj:qlj+1}))
+# a footnote marker: note the id for the page foot, close the chunk, set the number raised
+on('T4P_MK',(qop,'T4P_CL',{pfcr.r:pfcr.id('T4P_M1')}),(None,'T4P_M1',None))
+on('T4P_M1',(None,'T4P_M2',{w1:(as_x(PDFN)+qfc,qfid),qfc:qfc+1,r2:as_x(FNB)+qfid*256+254}))
+on('T4P_M2',(None,'T4P_M3',{qfh:qfh+R2}))
+lit('T4P_M3',b'BT /F0 10 Tf 0 0 0 rg 1 0 0 1 ','T4P_M4'); number('T4P_M4',qxx,'T4P_M5'); lit('T4P_M5',b' ','T4P_M6'); number('T4P_M6',qyb+6,'T4P_M7'); lit('T4P_M7',b' Tm (','T4P_M8'); numz('T4P_M8',qfc,'T4P_M9'); lit('T4P_M9',b')Tj ET\n','T4P_Ma')
+on('T4P_Ma',(None,'PD_9',{qxx:qxx+8,qsty:999999,qop:0}))
+# page foot: a rule, then the notes of this page wrapped as on the screen
+e=S('T4P_NT'); on('T4P_NT',(net.lt(qf0,qfc,e),'T4P_N0',{wdy:qmt+qth-qfh,qfi:qf0}),(None,'T4P_NR',None))
+lit('T4P_N0',b'0 0 0 rg ','T4P_N1'); number('T4P_N1',qml,'T4P_N2'); lit('T4P_N2',b' ','T4P_N3'); number('T4P_N3',qph-(wdy-6),'T4P_N4'); lit('T4P_N4',b' 200 1 re f\n','T4P_NL')
+e=S('T4P_NL'); on('T4P_NL',(net.ge(qfi,qfc,e),'T4P_NR',{qf0:qfc,qfh:0}),(None,'T4P_NA',{r1:as_x(PDFN)+qfi}))
+on('T4P_NA',(None,'T4P_NB',{wb_:as_x(FNB)+R1*256,r2:as_x(FNB)+R1*256+255}))
+on('T4P_NB',(None,'T4P_NC',{wl_:R2}))
+lit('T4P_NC',b'BT /F0 15 Tf 0 0 0 rg 1 0 0 1 ','T4P_ND'); number('T4P_ND',qml,'T4P_NE'); lit('T4P_NE',b' ','T4P_NF'); number('T4P_NF',qph-wdy-A9,'T4P_NG'); lit('T4P_NG',b' Tm (','T4P_NH'); numz('T4P_NH',qfi+1,'T4P_NI'); lit('T4P_NI',b')Tj ET\n','T4P_NJ')
+on('T4P_NJ',(None,'T3_W',{wdx:qml+20,wdw:qtw-22,wdd:2,wbgf:0,qfi:qfi+1,wret_.r:wret_.id('T4P_NL')}))
 # a picture as an inline image with hex filter; the cells hold packed RGB
-lit('T4P_IM',b'q ','T4P_I1'); number('T4P_I1',qpw,'T4P_I2'); lit('T4P_I2',b' 0 0 ','T4P_I3'); number('T4P_I3',qph,'T4P_I4'); lit('T4P_I4',b' ','T4P_I5')
-number('T4P_I5',qx+qind+qxc,'T4P_I6'); lit('T4P_I6',b' ','T4P_I7'); number('T4P_I7',as_x(1056)-(qyy-qtop)-qph,'T4P_I8'); lit('T4P_I8',b' cm\nBI /W ','T4P_I9')
-number('T4P_I9',qpw,'T4P_Ia'); lit('T4P_Ia',b' /H ','T4P_Ib'); number('T4P_Ib',qph,'T4P_Ic'); lit('T4P_Ic',b' /CS /RGB /BPC 8 /F /AHx ID\n','T4P_Id')
+lit('T4P_IM',b'q ','T4P_I1'); number('T4P_I1',qiw,'T4P_I2'); lit('T4P_I2',b' 0 0 ','T4P_I3'); number('T4P_I3',qih,'T4P_I4'); lit('T4P_I4',b' ','T4P_I5')
+number('T4P_I5',qx+qind+qxc,'T4P_I6'); lit('T4P_I6',b' ','T4P_I7'); number('T4P_I7',qph-(qyy-qtop)-qih,'T4P_I8'); lit('T4P_I8',b' cm\nBI /W ','T4P_I9')
+number('T4P_I9',qiw,'T4P_Ia'); lit('T4P_Ia',b' /H ','T4P_Ib'); number('T4P_Ib',qih,'T4P_Ic'); lit('T4P_Ic',b' /CS /RGB /BPC 8 /F /AHx ID\n','T4P_Id')
 on('T4P_Id',(None,'T4P_P0',{qri:0,qrc:0,qpa:as_x(IMG0)+qpo}))
 e=S('T4P_P0')
-on('T4P_P0',(net.or_(net.ge(qrc,qph,e),net.ge(fp,3980000,e)),'T4P_PE',None),(net.ge(qri,qpw,e),'T4P_P0',{qri:0,qrc:qrc+1}),(None,'T4P_P1',{r1:qpa}))
+on('T4P_P0',(net.or_(net.ge(qrc,qih,e),net.ge(fp,3980000,e)),'T4P_PE',None),(net.ge(qri,qiw,e),'T4P_P0',{qri:0,qrc:qrc+1}),(None,'T4P_P1',{r1:qpa}))
 on('T4P_P1',(None,'T4P_H0',{qpv:R1,qpa:qpa+1,qri:qri+1}))
 for i_ in range(6):
     st=f'T4P_H{i_}'; e=S(st); bt=net.bits(qpv,24,e); sh=20-4*i_
@@ -178,27 +203,21 @@ on('PD_E',(None,'PD_E1',{xw:(as_x(XR)+2,fp)}))
 res=b''.join(('/F%d %d 0 R'%(i_,3+i_)).encode() for i_ in range(8))
 # page furniture: header text and footer page number, same places as the screen
 A9=rom.metrics(9)[0]
-lit('T4P_FU',b'BT /F0 12 Tf .35 .35 .35 rg 1 0 0 1 96 ','T4P_Fa'); number('T4P_Fa',as_x(1056-48-A9),'T4P_Fb'); lit('T4P_Fb',b' Tm (','T4P_Fc')
-on('T4P_Fc',(None,'T4P_Fd',{qhi:0}))
-e=S('T4P_Fd'); on('T4P_Fd',(net.ge(qhi,hlen,e),'T4P_Fg',None),(None,'T4P_Fe',{r1:as_x(HD)+qhi}))
+qfb=R();qfl=R();qfy=R();qfk=R()
+e=S('T4P_FU'); fp1=net.and_(hftp,net.eq(qpg,1,e))
+on('T4P_FU',(fp1,'T4P_F1',{qfb:as_x(HFB)+256,qfl:hfl[1],qfy:qph-48-A9,qfk:0}),(None,'T4P_F1',{qfb:as_x(HFB),qfl:hfl[0],qfy:qph-48-A9,qfk:0}))
+e=S('T4P_F1'); on('T4P_F1',(net.eq(qfl,0,e),'T4P_FN',None),(None,'T4P_Fa',None))
+lit('T4P_Fa',b'BT /F0 15 Tf .33 .33 .33 rg 1 0 0 1 ','T4P_Fb'); number('T4P_Fb',qml,'T4P_Fx0'); lit('T4P_Fx0',b' ','T4P_Fc'); number('T4P_Fc',qfy,'T4P_Fx1'); lit('T4P_Fx1',b' Tm (','T4P_Fd0')
+on('T4P_Fd0',(None,'T4P_Fd',{qhi:0}))
+e=S('T4P_Fd'); on('T4P_Fd',(net.ge(qhi,qfl,e),'T4P_Fg',None),(None,'T4P_Fe',{r1:qfb+qhi}))
 e=S('T4P_Fe'); esc2=net.or_(net.eq(R1,40,e),net.eq(R1,41,e),net.eq(R1,92,e))
-on('T4P_Fe',(esc2,'T4P_Ff',{qcur:R1}),(None,'T4P_Fx',{qcur:R1}))
-lit('T4P_Ff',b'\\','T4P_Fx')
-e=S('T4P_Fx'); em_en.lin(e); em_b.add(e,qcur); on('T4P_Fx',(None,'T4P_Fd',{qhi:qhi+1}))
-lit('T4P_Fg',b')Tj ET\nBT /F0 12 Tf 1 0 0 1 ','T4P_Fh')
-e=S('T4P_Fh'); fx=as_x(400)+net.lt(qpg,10,e)*8
-number('T4P_Fh',fx,'T4P_Fi')
-lit('T4P_Fi',b' ','T4P_Fj'); number('T4P_Fj',as_x(1056-(PH-60)-A9),'T4P_Fk'); lit('T4P_Fk',b' Tm (','T4P_Fl')
-e=S('T4P_Fl'); tp=X()
-for t in range(1,13): tp=tp+net.ge(qpg,t*10,e)
-on('T4P_Fl',(net.ge(qpg,10,e),'T4P_Fm',None),(None,'T4P_Fn',None))
-em_en.lin(net.and_(e,net.ge(qpg,10,e))); em_b.add(net.and_(e,net.ge(qpg,10,e)),48+tp)
-on('T4P_Fm',(None,'T4P_Fn',None))
-e=S('T4P_Fn'); tp2=X()
-for t in range(1,13): tp2=tp2+net.ge(qpg,t*10,e)
-em_en.lin(e); em_b.add(e,48+qpg-tp2*10)
-on('T4P_Fn',(None,'T4P_Fo',None))
-lit('T4P_Fo',b')Tj ET\n','T4_PFR')
+on('T4P_Fe',(net.eq(R1,1,e),'T4P_Fp',{qhi:qhi+1}),(esc2,'T4P_Ff',{qcur:R1}),(None,'T4P_Fh',{qcur:R1}))
+numz('T4P_Fp',qpg,'T4P_Fd')
+lit('T4P_Ff',b'\\','T4P_Fh')
+e=S('T4P_Fh'); em_en.lin(e); em_b.add(e,qcur); on('T4P_Fh',(None,'T4P_Fd',{qhi:qhi+1}))
+lit('T4P_Fg',b')Tj ET\n','T4P_FN')
+e=S('T4P_FN'); fp2=net.and_(hftp,net.eq(qpg,1,e))
+on('T4P_FN',(net.step(qfk),'T4_PFR',None),(fp2,'T4P_F1',{qfb:as_x(HFB)+768,qfl:hfl[3],qfy:as_x(60)-A9,qfk:1}),(None,'T4P_F1',{qfb:as_x(HFB)+512,qfl:hfl[2],qfy:as_x(60)-A9,qfk:1}))
 lit('PD_E1',b'2 0 obj\n<</Type/Pages/MediaBox[0 0 612 792]/Resources<</Font<<'+res+b'>>>>/Count ','PD_E2')
 number('PD_E2',qpg,'PD_E3')
 lit('PD_E3',b'/Kids[','PD_K0')

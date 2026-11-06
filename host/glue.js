@@ -33,8 +33,8 @@ const dispatch=(k,a=0,b=0,c=0)=>{
 };
 const pasteText=t=>{const bb=bank();const n=Math.min(t.length,390000);for(let i=0;i<n;i++)bb[h.cb2+i]=t.charCodeAt(i);dispatch(8,0,0,n);};
 window.annPaste=pasteText;
-const openFile=async f=>{const u=new Uint8Array(await f.arrayBuffer());const bb=bank();const n=Math.min(u.length,400000);for(let i=0;i<n;i++)bb[h.file+i]=u[i];dispatch(9,0,0,n);};
-const openPic=async f=>{const u=new Uint8Array(await f.arrayBuffer());const bb=bank();const n=Math.min(u.length,400000);for(let i=0;i<n;i++)bb[h.file+i]=u[i];dispatch(10,0,0,n);};window.annPic=openPic;window.annOpen=openFile;window.addEventListener('dragover',ev=>ev.preventDefault());window.addEventListener('drop',ev=>{ev.preventDefault();if(ev.dataTransfer.files[0])openFile(ev.dataTransfer.files[0]);});
+const openFile=async f=>{const u=new Uint8Array(await f.arrayBuffer());const bb=bank();const n=Math.min(u.length,h.fmax);for(let i=0;i<n;i++)bb[h.file+i]=u[i];dispatch(9,0,0,n);};
+const openPic=async f=>{const u=new Uint8Array(await f.arrayBuffer());const bb=bank();const n=Math.min(u.length,h.fmax);for(let i=0;i<n;i++)bb[h.file+i]=u[i];dispatch(10,0,0,n);};window.annPic=openPic;window.annOpen=openFile;window.addEventListener('dragover',ev=>ev.preventDefault());window.addEventListener('drop',ev=>{ev.preventDefault();if(ev.dataTransfer.files[0])openFile(ev.dataTransfer.files[0]);});
 const saveFile=async (u,name)=>{let dl=null;try{dl=window.claude?await window.claude.use('downloads'):null;}catch(_){}
  if(dl){try{await dl.save({filename:name,data:u});}catch(_){}return;}
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([u]));a.download=name;a.click();};

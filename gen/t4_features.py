@@ -138,12 +138,15 @@ e=S('T4_M6')
 on('T4_M6',(net.ge(mr,mnr,e),'T4_MZ',{mi2:0}),(None,'T4_M7',{mp:0}))
 e=S('T4_M7')
 on('T4_M7',(net.ge(mp,mn0,e),'T4_M6',{mr:mr+1,mrba:mrba+64}),(net.ge(nextb,SLOTMAX,e),'T4_MZ',{mi2:0}),(None,'T4_M8',{r1:as_x(PT)+mp}))
-on('T4_M8',(None,'T4_M9',{msb:R1,rl:R1+LEN,rc:R1+2062,rim:R1+IMF,rp6:R1+PIND}))
+mcw=R();mcx=R();msh=R();mnw=R();mnh=R();mno=R()
+on('T4_M8',(None,'T4_M8b',{msb:R1,r1:R1+3684,r2:R1+3685,rc:R1+3686}))
+on('T4_M8b',(None,'T4_M9',{mnw:R1,mnh:R2,mno:rc.out[0],rl:msb+LEN,rc:msb+2062,rim:msb+IMF,rp6:msb+PIND,rmeta:msb+META}))
 e=S('T4_M9'); WL=rl.out
-on('T4_M9',(None,'T4_MA',{mlen:WL[0],w1:(nextb+ALIGN,WL[2]),w2:(nextb+LIST,WL[3]),w3:(nextb+2062,rc.out[0]),w4:(nextb+2063,rc.out[1]),mimw:rim.out[0],mimh:rim.out[1],mimo:rim.out[2],**{mpp[i_]:rp6.out[i_] for i_ in range(6)},mpb:net.step(WL[7]+net.and_(net.eq(mp,0,e),net.gt(mr,1,e)))}))
+on('T4_M9',(None,'T4_MA',{mcw:MT[0],mcx:MT[1],msh:MT[2],mlen:WL[0],w1:(nextb+ALIGN,WL[2]),w2:(nextb+LIST,WL[3]),w3:(nextb+2062,rc.out[0]),w4:(nextb+2063,rc.out[1]),mimw:rim.out[0],mimh:rim.out[1],mimo:rim.out[2],**{mpp[i_]:rp6.out[i_] for i_ in range(6)},mpb:net.step(WL[7]+net.and_(net.eq(mp,0,e),net.gt(mr,1,e)))}))
 on('T4_MA',(None,'T4_MA2',{w1:(nextb+IMF,mimw),w2:(nextb+IMF+1,mimh),w3:(nextb+IMF+2,mimo),w4:(nextb+PBRK,mpb)}))
 on('T4_MA2',(None,'T4_MA3',{w1:(as_x(PT)+npar,nextb),wln:(nextb+SAVE,112,16,1,0,0,0),mso:0,mol:0}))
-on('T4_MA3',(None,'T4_MC',{wln:(nextb+PIND,*mpp)}))
+on('T4_MA3',(None,'T4_MA4',{wln:(nextb+PIND,*mpp),w1:(nextb+CWO,mcw),w2:(nextb+CXO,mcx),w3:(nextb+CSH,msh),w4:(nextb+3684,mnw)}))
+on('T4_MA4',(None,'T4_MC',{w1:(nextb+3685,mnh),w2:(nextb+3686,mno)}))
 e=S('T4_MC')
 on('T4_MC',(net.ge(mso,mlen,e),'T4_MP',None),(net.ge(mol,1000,e),'T4_MP',None),(None,'T4_MD',{r1:msb+mso,r2:msb+1024+mso}))
 e=S('T4_MD')
@@ -238,14 +241,14 @@ e=S('T4_ZLIT'); lh_=net.decode(zb0,256,e); lv=X();ln_=X()
 for i_ in range(256):
     c_,n_=fixed(i_); lv=lv+lh_[i_]*c_; ln_=ln_+lh_[i_]*n_
 on('T4_ZLIT',(None,'T4_ZP',{zc:lv,zk:ln_,zi:zi+1,zret.r:zret.id('T4_Z1')}))
-e=S('T4_ZL'); mh_=net.decode(zm-3,256,e); lv=X();ln_=X();lx=X();lxn=X()
+e=S('T4_ZL'); mh_=net.decode(zm-3,256,e); lv=X();ln_=X();zlx_=X();lxn=X()
 def lensym(m):
     for i_ in range(len(LB)-1,-1,-1):
         if m>=LB[i_]: return i_
 for i_ in range(256):
     k_=lensym(i_+3); c_,n_=fixed(257+k_)
-    lv=lv+mh_[i_]*c_; ln_=ln_+mh_[i_]*n_; lx=lx+mh_[i_]*(i_+3-LB[k_]); lxn=lxn+mh_[i_]*LE[k_]
-on('T4_ZL',(None,'T4_ZP',{zc:lv,zk:ln_,zx:lx,zxn:lxn,zret.r:zret.id('T4_ZL2')}))
+    lv=lv+mh_[i_]*c_; ln_=ln_+mh_[i_]*n_; zlx_=zlx_+mh_[i_]*(i_+3-LB[k_]); lxn=lxn+mh_[i_]*LE[k_]
+on('T4_ZL',(None,'T4_ZP',{zc:lv,zk:ln_,zx:zlx_,zxn:lxn,zret.r:zret.id('T4_ZL2')}))
 on('T4_ZL2',(None,'T4_ZP',{zc:zx,zk:zxn,zret.r:zret.id('T4_ZL3')}))
 e=S('T4_ZL3'); dist_=zi-zcs; idx_=X()
 for i_ in range(1,30): idx_=idx_+net.ge(dist_,DB[i_],e)

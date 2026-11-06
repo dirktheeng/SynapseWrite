@@ -7,7 +7,7 @@ typedef unsigned char u8; typedef unsigned short u16; typedef int i32; typedef f
 extern u8 __heap_base; static u8* hp=&__heap_base;
 __attribute__((export_name("alloc"))) void* alloc(i32 n){u8*p=(u8*)(((unsigned long)hp+15)&~15ul);hp=p+n;
   unsigned long need=((unsigned long)hp+65535)/65536, have=__builtin_wasm_memory_size(0);
-  if(need>have)__builtin_wasm_memory_grow(0,need-have); __builtin_memset(p,0,n); return p;}
+  if(need>have)__builtin_wasm_memory_grow(0,need-have); return p;}
 static u8*dz,*wz; static i32 *stamp,tickno=1; static i32 *istart,*isrc; static u16 *iwi,*wi; static f64 *wtab; static i32 NI;
 static i32 N,E,L,NP,NT; static u8*act; static f64*bias,*v,*acc,*nacc; static i32*ostart,*osplit,*dst;
 static i32*lstart,*live,*nlist,*ports,*pen,*pptr; static u8*nflag; static i32 nlive,nnext,nwp,nrp; static u64*bits,*sum; static i32 SWORDS;
