@@ -12,8 +12,8 @@ const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);}
  await K('Control+y');const hy=await shot(p,'tb1b');
  await C(...R.dr);const h2=await shot(p,'tb2');
  await C(...R.cr);await T('X');const h3=await shot(p,'tb3');ok('col right changes image',h3!==h2);
- await C(...R.dc);await p.mouse.click(400,320);await p.waitForTimeout(40);const h4=await shot(p,'tb4');
- await C(...R.s(1));const CL=async()=>{await p.mouse.click(400,320);await p.waitForTimeout(40);};await CL();const h5=await shot(p,'tb5');ok('shading changes image',h5!==h4);
+ await C(...R.dc);await p.mouse.click(400,335);await p.waitForTimeout(40);const h4=await shot(p,'tb4');
+ await C(...R.s(1));const CL=async()=>{await p.mouse.click(400,335);await p.waitForTimeout(40);};await CL();const h5=await shot(p,'tb5');ok('shading changes image',h5!==h4);
  await K('Control+z');await CL();const h5u=await shot(p);ok('shading undo restores',h5u===h4);
  await K('Control+y');await CL();const h5r=await shot(p);ok('shading redo',h5r===h5);
  // column width drag on the first inner border: x=319+208
@@ -22,13 +22,13 @@ const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);}
  await K('Control+z');await CL();const h6u=await shot(p);ok('column drag undo restores',h6u===h5);
  await K('Control+y');await p.waitForTimeout(40);require('fs');
  const sh=async()=>{await p.mouse.move(1270,5);return await p.screenshot({clip:{x:0,y:174,width:1262,height:600}});};
- await p.mouse.click(400,320);await p.waitForTimeout(40);const a=await sh();fs.writeFileSync('build/tb_a.png',a);
+ await p.mouse.click(400,335);await p.waitForTimeout(40);const a=await sh();fs.writeFileSync('build/tb_a.png',a);
  const save=async f=>{const [dl]=await Promise.all([p.waitForEvent('download'),K('Control+s')]);await dl.saveAs(f);};
  const open=async f=>{await p.evaluate(u=>annOpen(new Blob([new Uint8Array(u)])),[...fs.readFileSync(f)]);await p.waitForTimeout(500);await check('open');};
- await save('build/tb.docx');await open('build/tb.docx');await p.mouse.click(400,320);await p.waitForTimeout(40);
+ await save('build/tb.docx');await open('build/tb.docx');await p.mouse.click(400,335);await p.waitForTimeout(40);
  const a2=await sh();fs.writeFileSync('build/tb_b.png',a2);ok('table save then open',H(a)===H(a2));
  require('child_process').execSync('rm -rf build/tblo; timeout 120 soffice --headless --convert-to pdf --outdir build/tblo build/tb.docx >/dev/null 2>&1; timeout 120 soffice --headless --convert-to docx:"MS Word 2007 XML" --outdir build/tblo build/tb.docx >/dev/null 2>&1; pdftoppm -r 50 -png build/tblo/tb.pdf build/tblo/lo');
- await open('build/tblo/tb.docx');await p.mouse.click(400,320);await p.waitForTimeout(40);const a3=await sh();fs.writeFileSync('build/tb_c.png',a3);ok('table after LibreOffice',H(a)===H(a3));
+ await open('build/tblo/tb.docx');await p.mouse.click(400,335);await p.waitForTimeout(40);const a3=await sh();fs.writeFileSync('build/tb_c.png',a3);ok('table after LibreOffice',H(a)===H(a3));
  const [dl]=await Promise.all([p.waitForEvent('download'),K('Control+p')]);await dl.saveAs('build/tb.pdf');
  require('child_process').execSync('pdftoppm -r 60 -png build/tb.pdf build/tbpdf');
  await p.waitForTimeout(100);
