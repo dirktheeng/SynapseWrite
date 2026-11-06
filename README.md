@@ -15,7 +15,7 @@
 | **Deployment** | one static HTML file, about 3.2 MB |
 | **Training code** | none: no data, loss, gradient, search or fitting |
 
-SynapseWrite is an example of [Weight-Space Programming](https://rikiyat.github.io/blog/weight-space-programming/): reason about what each layer must compute, then write the weights that compute it. The author here is a language model, using a deterministic Python generator it wrote as its tool for setting the values. See [How do we classify what this is?](#how-do-we-classify-what-this-is) After that, Python is gone. The browser runs inference, plus the small glue described below.
+SynapseWrite was built in the spirit of [Weight-Space Programming](https://rikiyat.github.io/blog/weight-space-programming/): reason about what each layer must compute, then write the weights that compute it. Here, a language model wrote a deterministic Python generator, and the generator writes the weights. See [How do we classify what this is?](#how-do-we-classify-what-this-is) for how far that label fits. After that, Python is gone. The browser runs inference, plus the small glue described below.
 
 It is an independent project with its own name and icons, modeled on the features and look of Microsoft Word. It is not affiliated with or endorsed by Microsoft and contains no Microsoft assets.
 
@@ -507,7 +507,7 @@ Actual values show the same mix. In a short session of typing, clicking, formatt
 
 ## How do we classify what this is?
 
-The short answer is a **neural program written by Weight-Space Programming**: a fixed-function recurrent threshold-linear network whose weights implement a complete interactive application.
+The short answer is a **neural program, written at the generator level**: a fixed-function recurrent threshold-linear network whose weights implement a complete interactive application. Those weights are mostly the compiled output of a program that a language model wrote.
 
 | Term | Does it fit? | Why |
 |---|---|---|
@@ -515,14 +515,35 @@ The short answer is a **neural program written by Weight-Space Programming**: a 
 | **Neural program** | Yes | The weights are the program. In much of the research, though, the phrase means a program a network learned, so it helps to say this one was written. |
 | **Circuit** | Yes in structure | See [Is it a circuit?](#is-it-a-circuit). Most of it is mixed-signal in style, and only a small part is pure logic. |
 | **Neural computer** | Partly | It has a program counter, registers, addressed memory and input and output. But the program is the wiring. It has no instruction set and cannot load other software, so it is a fixed-function machine, closer to a chip that only does one job than to a CPU. |
-| **Weight-Space Programming** | Yes, with a generator as the tool | [The original post](https://rikiyat.github.io/blog/weight-space-programming/) describes a language model reading and writing weights directly. Here, the same model decided what each layer computes and which values to use, and it wrote those values through a generator program rather than one by one. |
+| **Weight-Space Programming** | Arguably, at the generator level | [The original post](https://rikiyat.github.io/blog/weight-space-programming/) describes a language model reading and writing weights directly. Here, a language model authored the design and the weights, but through a generator. It rarely read them. See below. |
 | **Machine learning** | No | There is no data, loss, gradient or search. |
 
-### Why this counts as Weight-Space Programming
+### Is this Weight-Space Programming?
 
-The original post separates this method from compiling formal programs, so the generator raises a fair question. The view taken here is that the generator is a tool, and that the author of the weights is what matters. No separate compiler or person decided the weights: one language model designed the layers, wrote the generator, and then debugged by inspecting behavior and values. Writing values through a program is a difference of scale, not of kind, in the same way that a macro is still the programmer's own code. A network of 450,000 neurons could not practically be typed one value at a time.
+Reasonable people could answer either way. Here is the case on each side.
 
-The difference is still real in one respect. Most of the work happened at the level of the generator's source code and of test results, and direct reading of individual weights came later, through decoding scripts. So this sits at the far end of the method from a model editing a small network by hand, and others may draw the line differently.
+**For:** No independent person or formal program decided what the weights do. One language model, across several agents, designed the layers, wrote the primitives, wrote the generator and debugged the result, under a rule against training or search. A generator can be seen as a tool for setting values, since a network of 450,000 neurons could not practically be typed one value at a time.
+
+**Against:** The original post lists compiling from formal programs as a separate approach. The primitives in `gen/nn.py` work much like a hardware description library, the optimizer changes neurons in ways nobody designed one by one, and the fonts are converted mechanically. The post's experiments also feature a model reading raw weights, which this project barely did.
+
+This is how the work actually happened, based on the project's progress logs:
+
+| Level of work | How often | Example |
+|---|---|---|
+| Generator source code | Nearly all design and debugging | Writing state rules with `on(...)` |
+| Screens and saved files | All the time | Comparing images, and opening saved files |
+| Neuron activity and counts | Often, for speed | Which neurons fired, linked to generator lines |
+| Reasoning about the form of weights | Occasionally | A weight of 2^39 being treated as a gate enable, and a rule that prunes gates that cannot open |
+| Reading single neurons from the file and interpreting them | Rarely, and only after the app was built | Neuron 366,977 looks like an outline edge |
+
+Where the weights come from also varies:
+
+- **Chosen for a reason:** thresholds and constants, from a specific design decision.
+- **Set by a primitive:** `±2^40`, `±1` and most biases follow automatically when the generator calls `gate` or `and_`.
+- **Taken from data:** nearly all the fractional weights come from font outlines.
+- **Changed by the optimizer:** merging combines neurons with no one designing each result.
+
+So this is strong on writing weights and weak on reading them. A fair summary is that the generator was the program, and the weights are mostly its compiled output. Reading a neuron here also relied on knowing the generator: an unfamiliar weight file would be much harder to interpret. The label "Weight-Space Programming at the generator level" is the closest this project claims.
 
 ### Earlier work it relates to
 
