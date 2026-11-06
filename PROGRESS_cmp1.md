@@ -62,3 +62,8 @@ Page 3,059,481.
 - FLOPs: typing repeat 80,866 to 69,995 (0.87); select all 9.74 M to 6.48 M; jump 10.28 to 6.29; Enter 10.42 to 6.35;
   undo 10.95 to 6.66; wheel 12.23 to 7.44; click 12.48 to 7.68; background layout 1.07 G to 0.56 G.
 - a01_format open 9,912,561 to 8,928,039 edges (target 7 M not reached).
+
+## Full run after merge (head before this log commit)
+All exit 0: e2e 210/210, tier2 49/49, look 31/31, t3_table, t3_pic, t3_misc (no false), t4_docx 18/18, t4_pdf 7/7,
+roundtrip, touch, a4 0 failed of 50, a5_docx no FAIL (a01 open 8,928,041 edges), fonts 23/23, imp2 all, imp3 49/49,
+imp4 101/101, imp5 49, imp6 20, feat1 24/24, t4; audit 67/67.
