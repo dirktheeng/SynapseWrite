@@ -138,6 +138,14 @@ A layer here is a group of neurons at the same depth, so layers are not designed
 
 Layer 0 has no `F` inputs at all: it reads only the last tick and outside input. The long run of very small layers in the middle is mostly step neurons making chains of decisions. Layer 156 is the largest layer, and it is nearly all ReLU. Its size is close to the number of outline edges the build reports, so it appears to hold the font edge neurons.
 
+### Real neurons, and where they live
+
+This animation visits ten sub-networks. On the left, amber marks where that unit's incoming weights sit in the full matrices. On the right is a real neuron from the weight file, with its bias, activation and each weight coming in.
+
+<p align="center"><img src="docs/figures/subunits.gif" width="900" alt="Tour of ten sub-networks showing their place in the matrices and real neurons with their weights"></p>
+
+Look for weights of `2^40` paired with a bias near `-2^40`: that is the gate described in the next section. The font neurons also carry fractional weights, which fit the line coefficients of an outline edge. The examples were chosen to be easy to read, with 2 to 6 inputs each, so they are not a random sample. A sub-network's label can also look unexpected on an input, partly because merged neurons are credited to just one sub-network.
+
 ### A logic gate from one row
 
 This shows how arithmetic becomes decisions. Say neuron `y` should pass a value `v` only when a control neuron `en` is 1. Give it these entries:
