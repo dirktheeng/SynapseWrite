@@ -31,7 +31,7 @@ falias=[R() for _ in rom.FAM]
 _fh=net.decode(rv_f,len(rom.FAM),S('T2RP1')); _fr=[]
 for j_,n_ in enumerate(rom.FAM_NAMES):
     if rom.FAM_ALIAS[j_]:
-        _fr.append((net.and_(_fh[j_],net.step(rv_f+t2full),falias[j_]),f'T2Rfa{j_}',None))
+        _fr.append((net.and_(_fh[j_],falias[j_]),f'T2Rfa{j_}',None))
         lit(f'T2Rfa{j_}',('<w:rFonts w:ascii="%s" w:hAnsi="%s"/>'%(rom.FAM_ALIAS[j_],rom.FAM_ALIAS[j_])).encode(),'T2R2')
     if j_: _fr.append((_fh[j_],f'T2Rf{j_}',None))
     lit(f'T2Rf{j_}',('<w:rFonts w:ascii="%s" w:hAnsi="%s"/>'%(n_,n_)).encode(),'T2R2')

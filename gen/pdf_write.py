@@ -24,7 +24,7 @@ NFC=len(FACES); FIRST=3+3*NFC; PUS=999000; PFT=999100   # faces used by this PDF
 PF_ROM=bytearray(); PF_INIT=[]
 for i_,f_ in enumerate(FACES):
     bl_,o1_,o2_=pdf_fonts.face_blob(i_,*f_,3+3*i_)
-    for j_,v_ in enumerate((FROMB+len(PF_ROM),len(bl_),o1_,o2_)): PF_INIT.append([PFT+i_*4+j_,v_])
+    for j_,v_ in enumerate((len(PF_ROM)+1,len(bl_),o1_,o2_)): PF_INIT.append([PFT+i_*4+j_,v_])
     PF_ROM+=bl_
 head=b'%PDF-1.4\n'; cat_=b'1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n'
 pfr=Ret('T4_PFR')
@@ -209,7 +209,7 @@ qaddr=R();qrem=R();qn_=R()
 on('PD_E',(None,'PF_0',{qi:0}))
 e=S('PF_0'); on('PF_0',(net.ge(qi,NFC,e),'PF_E',None),(None,'PF_1',{r1:as_x(PUS)+qi}))
 e=S('PF_1'); on('PF_1',(net.step(R1),'PF_2',{rl:as_x(PFT)+qi*4}),(None,'PF_0',{qi:qi+1}))
-on('PF_2',(None,'PF_3',{qaddr:RL[0],qrem:RL[1],xw:(as_x(XR)+qi*3+3,fp),w1:(as_x(XR)+qi*3+4,fp+RL[2]),w2:(as_x(XR)+qi*3+5,fp+RL[3])}))
+on('PF_2',(None,'PF_3',{qaddr:as_x(FROMB-1)+RL[0],qrem:RL[1],xw:(as_x(XR)+qi*3+3,fp),w1:(as_x(XR)+qi*3+4,fp+RL[2]),w2:(as_x(XR)+qi*3+5,fp+RL[3])}))
 e=S('PF_3'); on('PF_3',(net.step(qrem),'PF_4',{rb:(qaddr,net.min_(qrem,1000)),qn_:net.min_(qrem,1000)}),(None,'PF_0',{qi:qi+1}))
 on('PF_4',(None,'PF_3',{wb:(as_x(OUTB)+fp,qn_),fp:fp+qn_,qaddr:qaddr+qn_,qrem:qrem-qn_}))
 on('PF_E',(None,'PD_E1',{xw:(as_x(XR)+2,fp)}))

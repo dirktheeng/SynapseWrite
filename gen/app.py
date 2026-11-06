@@ -614,11 +614,11 @@ on('PSS1',(None,'PSS2',{wb:(cb+co+pn_,clen-co),rb:(cb+1024+co,clen-co)}))
 on('PSS2',(None,'PSY',{wb:(cb+1024+co+pn_,clen-co),rpw:as_x(CB2)+pi_}))
 e=S('PSY'); mark_d(e,cp)
 _st=[net.wire() for _ in range(PSN)]
-for w_ in _st: net.connect(w_,G_(ty,e))
+for w_ in _st: net.connect(w_,G_(tyi,e))
 wpst.ext=_st[0]; net.aligned.append([next(iter(w_.t)) for w_ in _st])
 cc_=net.and_(e,ONE-nolog)
 _lg=[]
-for i_ in range(PSN): _lg+=[as_x(1),cp,co+i_,PSW_[i_],ty,grp]
+for i_ in range(PSN): _lg+=[as_x(1),cp,co+i_,PSW_[i_],tyi,grp]
 wplg.drive(cc_,[usp]+_lg)
 wrap_=net.ge(usp,UEND_,cc_); nxtu=net.gate(usp+pn_*6,cc_-wrap_)+wrap_*UB
 fsm.set(usp,cc_,nxtu); fsm.set(urp,cc_,nxtu)

@@ -4,8 +4,8 @@ import numpy as np
 from fontTools.ttLib import TTFont
 from PIL import ImageFont
 PTS=[11,12,14,16,18,20,24,28,36,9,10,8,7]   # size index 0 is the default 11 pt
-FAM=['carlito','caladea','arimo','tinos','cousine','open-sans','oswald','dancing-script']
-FAM_NAMES=['Carlito','Caladea','Arimo','Tinos','Cousine','Open Sans','Oswald','Dancing Script']
+FAM=['carlito','caladea','arimo','tinos','cousine','open-sans','oswald','caveat']
+FAM_NAMES=['Carlito','Caladea','Arimo','Tinos','Cousine','Open Sans','Oswald','Caveat']
 FAM_FACES=[(1,1),(1,1),(1,1),(1,1),(1,1),(1,1),(1,0),(1,0)]     # has a bold, has an italic
 FAM_ALIAS=['Calibri','Cambria','Arial','Times New Roman','Courier New',None,None,None]   # the commercial family each one stands in for, by metrics
 _root=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

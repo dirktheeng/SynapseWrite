@@ -5,7 +5,7 @@ let fails=0,n=0;const ok=(name,c,x)=>{n++;if(!c)fails++;console.log(c?'PASS':'FA
 const sh=c=>execSync(c,{stdio:['ignore','pipe','pipe']}).toString();
 const url='file://'+path.resolve(__dirname,'../build/index.html');
 const ids=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../build/provenance.json')));
-const NF=8,NAMES=['Carlito','Caladea','Arimo','Tinos','Cousine','Open Sans','Oswald','Dancing Script'];
+const NF=8,NAMES=['Carlito','Caladea','Arimo','Tinos','Cousine','Open Sans','Oswald','Caveat'];
 (async()=>{const b=await chromium.launch();
  const open=async()=>{const p=await b.newPage({viewport:{width:1280,height:800}});p.on('pageerror',e=>console.log('PAGEERR',e.message));await p.goto(url);await p.waitForFunction('window.annReady',{timeout:120000});await p.evaluate(()=>{window.annMax=60000000});return p;};
  const shot=async(p,clip)=>{await p.mouse.move(1270,5);await p.waitForTimeout(30);return await p.screenshot(clip?{clip}:{});};
@@ -41,7 +41,7 @@ PY`);
   const dl=p.waitForEvent('download');await p.keyboard.press('Control+s');const sv=await (await dl).path();fs.copyFileSync(sv,'build/fonts_saved.docx');const x=sh('unzip -p build/fonts_saved.docx word/document.xml');
   for(const nm of ['Arial','Times New Roman','Courier New','Calibri','Cambria'])ok('saved under its original name: '+nm,x.includes('w:ascii="'+nm+'"'));
   const pdf=p.waitForEvent('download');await p.keyboard.press('Control+p');const pv=await (await pdf).path();fs.copyFileSync(pv,'build/fonts.pdf');const pf=sh('pdffonts build/fonts.pdf');
-  for(const nm of ['Arimo','Tinos','Cousine','Carlito','Caladea'])ok('PDF embeds '+nm,pf.includes(nm));ok('PDF leaves out faces it does not use',!pf.includes('Oswald')&&!pf.includes('Dancing'));ok('PDF fonts are all embedded subsets',!/\bno +(yes|no) +(yes|no) /.test(pf.split('\n').slice(2).join('\n').replace(/^.*TrueType\s+WinAnsi\s+yes.*$/gm,'')),pf.split('\n').length);
+  for(const nm of ['Arimo','Tinos','Cousine','Carlito','Caladea'])ok('PDF embeds '+nm,pf.includes(nm));ok('PDF leaves out faces it does not use',!pf.includes('Oswald')&&!pf.includes('Caveat'));ok('PDF fonts are all embedded subsets',!/\bno +(yes|no) +(yes|no) /.test(pf.split('\n').slice(2).join('\n').replace(/^.*TrueType\s+WinAnsi\s+yes.*$/gm,'')),pf.split('\n').length);
   await p.close();}
  // the style table: fill it with distinct records by input events, then check what overflow does
  {const p=await open();await p.keyboard.type('anchor');await p.keyboard.press('Control+a');

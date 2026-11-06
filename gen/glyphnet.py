@@ -288,7 +288,8 @@ class GlyphUnit:
     def _generator(g,st,Lch,Lface,Lppem,Lpt,key,retry,fin):
         net=g.net; ONE=net.ONE; LW=g.LW
         done=net.wire()
-        def latch(val,load=st,clear=done):
+        haswire=net.wire(); has=net.step(haswire); run_=net.and_(st,has); nog=st-run_     # a code with no outline runs nothing
+        def latch(val,load=run_,clear=done):
             r=net.reg(); net.rec(r,r-net.relu(r+clear*M-M)+net.gate(val,load)); return r
         I_s=g._sin=Lppem
         s=g.s=latch(I_s); yr=g.yr=net.reg(); rows=net.reg(); addr=net.reg(); 
@@ -359,12 +360,9 @@ class GlyphUnit:
             for fi in range(NF): e=e+net.gate(I_s*ext[fi][j]+OFF,fh[fi])
             return e
         T=floor_(fx(3),st)+2; B=floor_(fx(2),st)-1; Lf=floor_(fx(0),st)-2; Rt=floor_(fx(1),st)
-        # code exists in the face: a program fires. Filled below.
-        haswire=net.wire(); has=net.step(haswire)
         OX=as_x(2*OFF)-Lf
         cells=net.wire(); _c=Rt-Lf+3; net.connect(cells,_c-net.relu(_c-LW))
         rowsv=net.gate(T-B,has)
-        run_=net.and_(st,has); nog=st-run_
         # ---- store: bump allocation, flushed when a largest block might not fit ----
         net.group('glyph store')
         bp=net.reg(init=g.STORE+8)
@@ -407,7 +405,7 @@ class GlyphUnit:
         net.rec(yr,(runr-dn)*(-1.0/K))
         d2=net.reg(); net.rec(d2,dn)
         clr=net.step(wr+d2)
-        cl=latch(cells,st)
+        cl=latch(cells)
         net.rec(addr,addr-net.relu(addr+done*M-M)+net.gate(a0+HDR,run_)+net.gate(cl,wr-dn))
         net.rec(bp,bp-net.relu(bp+(dn+nog)*M-M)+net.gate(addr+cl,dn)+net.gate(a0+HDR,nog))
         # ---- programs ----
@@ -455,8 +453,8 @@ class GlyphUnit:
             g._glyph(k,P,slots,aslots,kn,s,y,bc,bh,uen,sx,done,ax,ay,net.step(P['lf']))
         # ---- ramp bank, shared by all glyphs and written once ----
         net.group('ramp bank')
-        c28=latch(net.step(cells-28.5),st); c64=latch(net.step(cells-64.5),st)
-        ox=latch(OX,st)
+        c28=latch(net.step(cells-28.5)); c64=latch(net.step(cells-64.5))
+        ox=latch(OX)
         w=[X() for _ in range(LW)]; nbank=0
         for gp in (slots,aslots):
             for sg,L_ in gp.items():

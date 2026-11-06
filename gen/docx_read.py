@@ -12,7 +12,7 @@ def T3_PX_RULES(e):
     return [(tag('<w:tbl',' >'),'PX',{gcount:0,tcidx:0,gx:0,pfirst:0,oi:oi+6}),(pat('<w:gridC',e),'T3_GC',{oi:oi+8}),(tag('<w:tc',' >'),'T3_TC0',{oi:oi+5}),(pat('</w:tc>',e),'PX',{incell:0,tcidx:tcidx+1,oi:oi+7}),(pat('</w:tr>',e),'PX',{tcidx:0,gx:0,oi:oi+7}),(pat('<w:shd ',e),'T3_SHD',{oi:oi+7})]+T3_PX_MORE(e)
 # open: reset the document, then walk zip members
 t2cp=R();t2k=R();t2v=R();t2n_=R();t2cb0=R();t2skip=R();t2df=R();t2ps=R()
-on('OP0',(None,'T3_OP',{**{q_:0 for q_ in falias},cursec:0,nsec:1,imgp:0,fnc:0,rdsec:0,rdp:0,hftp:0,hfl[0]:0,hfl[1]:0,hfl[2]:0,hfl[3]:0,rins:0,rdel:0,rfk:0,t2cb0:nextb,t2skip:0,t2ps:0,nsty:6,wln:(nextb+SAVE,112,16,1,0,0,0),w1:(as_x(PT),nextb),w2:(nextb+DIRTY,1),w3:(nextb+LEN,0),cp:0,cb:nextb,co:0,clen:0,ap:0,ao:0,npar:1,nextb:nextb+STRIDE,usp:UB,urp:UB,scroll:0,nolog:1,zp:0,pfirst:1,cs:0,ty:0,dfrom:0,lc:1,bgp:0}))
+on('OP0',(None,'T3_OP',{**{q_:0 for q_ in falias},cursec:0,nsec:1,imgp:0,fnc:0,rdsec:0,rdp:0,hftp:0,hfl[0]:0,hfl[1]:0,hfl[2]:0,hfl[3]:0,rins:0,rdel:0,rfk:0,t2cb0:nextb,t2skip:0,t2ps:0,nsty:6,wln:(nextb+SAVE,112,16,1,0,0,0),w1:(as_x(PT),nextb),w2:(nextb+DIRTY,1),w3:(nextb+LEN,0),cp:0,cb:nextb,co:0,clen:0,ap:0,ao:0,npar:1,nextb:nextb+STRIDE,usp:UB,urp:UB,scroll:0,nolog:1,zp:0,pfirst:1,cs:0,ity:as_x(0),dfrom:0,lc:1,bgp:0}))
 on('T3_OP',(None,'T3_OP2',None))
 for i_,v_ in enumerate((1,816,PH,PX,TX,TW,96,864)):
     on('T3_OP2' if i_==0 else f'T3_OP2{i_}',(None,f'T3_OP2{i_+1}' if i_<7 else 'T2_OR0',{w1:(as_x(SECB)+i_,v_)}))
@@ -243,7 +243,7 @@ on('TX3',(ltx,'PX',None),(net.and_(rdig,isdg_),'TX2',{tpgv:tpgv*10+W[0]-48,oi:oi
  (net.or_(net.gt(W[0],126,e),net.lt(W[0],32,e),net.ge(clen,1000,e)),'TX2',{oi:oi+1}),
  (None,'INS',{ins_ch:W[0],ins_st:csi+rhi,oi:oi+1,oret.r:oret.id('TX2')}))
 e=S('RF9')
-_RF=[('Caladea',1,0),('Cambria',1,1),('Arimo',2,0),('Arial',2,1),('Helvetic',2,0),('Tinos',3,0),('Times',3,1),('Georgia',3,0),('Garamond',3,0),('Cousine',4,0),('Courier',4,1),('Consolas',4,0),('Open San',5,0),('Verdana',5,0),('Tahoma',5,0),('Oswald',6,0),('Dancing',7,0),('Carlito',0,0),('Calibri',0,1)]
+_RF=[('Caladea',1,0),('Cambria',1,1),('Arimo',2,0),('Arial',2,1),('Helvetic',2,0),('Tinos',3,0),('Times',3,1),('Georgia',3,0),('Garamond',3,0),('Cousine',4,0),('Courier',4,1),('Consolas',4,0),('Open San',5,0),('Verdana',5,0),('Tahoma',5,0),('Oswald',6,0),('Caveat',7,0),('Carlito',0,0),('Calibri',0,1)]
 on('RF9',*[(pat(n_,e),'T2_C',{t2k:3,t2v:f_,oi:oi+8,**({falias[f_]:1} if a_ else {})}) for n_,f_,a_ in _RF],(None,'T2_C',{t2k:3,t2v:0,oi:oi+8}))
 e=S('CO0'); cvv=X(); exact=X()
 for j_ in range(1,32):
