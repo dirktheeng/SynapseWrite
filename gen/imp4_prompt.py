@@ -43,7 +43,7 @@ v4nb=[R() for _ in range(6)]; e=S('V4_RK1'); _kb=net.bits(ins_k-1,24,e)
 on('V4_RK1',(None,'V4_RKh0',{v4nb[j_]:_kb[20-4*j_]+_kb[21-4*j_]*2+_kb[22-4*j_]*4+_kb[23-4*j_]*8 for j_ in range(6)}))
 for j_ in range(6):
     e=S(f'V4_RKh{j_}'); em_en.lin(e); em_b.add(e,48+v4nb[j_]+net.ge(v4nb[j_],10,e)*7); on(f'V4_RKh{j_}',(None,f'V4_RKh{j_+1}' if j_<5 else 'V4_RKz',None))
-lit('V4_RKz',b'"/>','T2R6')
+lit('V4_RKz',b'"/>','V4_R60')
 # PDF: an exact color as three decimals
 e=S('V4_PK0'); _qb=net.bits(v4qk-1,24,e); v4pc=[R() for _ in range(3)]
 on('V4_PK0',(None,'V4_PK1_0',{v4pc[k_]:sum((_qb[16-8*k_+b_]*(1<<b_) for b_ in range(8)),X()) for k_ in range(3)}))
