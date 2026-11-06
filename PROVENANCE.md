@@ -2,7 +2,7 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-239446 neurons, 464425 edges, 192 layers, 4558 control states.
+239508 neurons, 464425 edges, 192 layers, 4558 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
@@ -26,8 +26,8 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | ribbon display list | One sequencer that plays draw records for the ribbon, menus and labels from read only memory, one item per tick. | gen/rv_a9_dl.py (150) | 150 | 431 |
 | event dispatch | One neuron left from the first dispatcher; routing now lives in raw event interpretation and the state rules. | gen/app.py (1) | 1 | 3 |
 | pointer | Draws the mouse pointer, saves and restores the colors under it, and chooses its shape from the screen. | gen/pointer2.py (55), gen/pointer.py (48), gen/app.py (15) | 118 | 808 |
-| raw event interpretation | Turns raw browser events (key name code units, button masks, pointer types, field text, touch positions) into cooked events and browser commands. | gen/rv_a11_input.py (222), gen/app.py (91), gen/imp3_zoom_pre.py (22), gen/imp5_vr_md.py (5) | 340 | 1379 |
-| view: wheel and thumb drag | Shift+wheel and sideways wheel deltas slide a wide page; the thumb of the bar at the foot drags at its drawn scale. | gen/imp5_wheel.py (26) | 26 | 82 |
+| raw event interpretation | Turns raw browser events (key name code units, button masks, pointer types, field text, touch positions) into cooked events and browser commands. | gen/rv_a11_input.py (222), gen/app.py (90), gen/imp3_zoom_pre.py (22), gen/imp5_vr_md.py (5) | 339 | 1378 |
+| view: wheel and thumb drag | Shift+wheel and sideways wheel deltas slide a wide page; the thumb of the bar at the foot drags at its drawn scale. | gen/imp5_wheel.py (58) | 58 | 175 |
 | character maps | Unicode to internal code tables and back (Windows-1252 block). | gen/app.py (94) | 94 | 220 |
 | key handling | Maps each key and modifier to its editing command. | gen/app.py (471), gen/rv_a3_pre.py (123), gen/imp3_zoom_pre.py (22), gen/t1_features.py (2) | 618 | 6693 |
 | screenshot hit test | Reads object ids from the screen image and maps a click to a document position; also the blink tick check of the screen against the line table. | gen/t1_features.py (150), gen/app.py (117), gen/rv_a7_regs.py (115) | 382 | 1068 |
@@ -45,7 +45,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | line breaking | Greedy line breaker and alignment. | gen/app.py (268), gen/rv_a3_pre.py (31) | 299 | 863 |
 | chrome | Autoscroll, caret, scrollbar and status bar. | gen/app.py (1661) | 1661 | 11758 |
 | zoom | Zoom levels and read mode commands, status bar controls, and pictures at other scales. | gen/imp3_zoom.py (499) | 499 | 3816 |
-| view: side scroll and vertical ruler | Slides a page wider than the window, its bar, and draws the vertical ruler. | gen/imp4_view.py (322), gen/app.py (212), gen/t1_features.py (44) | 578 | 3276 |
+| view: side scroll and vertical ruler | Slides a page wider than the window, its bar, and draws the vertical ruler. | gen/imp4_view.py (353), gen/app.py (212), gen/t1_features.py (44) | 609 | 3358 |
 | ribbon actions | Maps button ids to commands. | gen/app.py (155) | 155 | 256 |
 | docx writer | Writes the document XML parts. | gen/t2_write.py (652), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1095 | 11224 |
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2707), gen/app.py (4) | 2711 | 41587 |

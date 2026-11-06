@@ -9,7 +9,9 @@ WH5=[(net.and_(_wb5[1],zwd),'V8_HS0',{hsv:net.relu(hsv+evc-1000),v8u:0,autos:0})
 # ---- imp5: dragging the thumb of the side bar ----
 # A press on the thumb holds it (v8dg) with the press x and the slide at that moment. While held, a move sets the slide to
 # the slide at the press plus the pointer's travel over the thumb's scale k, the same scale that draws the thumb. 3000 is an offset so the gated travel stays positive.
-_tk5=[1262/(816*z_+40) for z_ in ZL]
-_tr5=sum((net.gate(eva-v8x0+3000,h_)*(1/k_)-h_*(3000/k_) for h_,k_ in zip(ZLH,_tk5)),X())
+# p1: per level and orientation, the same scales as the drawn thumb (gen/imp4_view.py): over 900 px wide is a landscape page
+_ld5=net.gt(s_pw,900,S('MV')); _tk5=[1262/(816*z_+40) for z_ in ZL]+[1262/(1056*z_+40) for z_ in ZL]
+_h5=[net.and_(h_,ONE-_ld5) for h_ in ZLH]+[net.and_(h_,_ld5) for h_ in ZLH]
+_tr5=sum((net.gate(eva-v8x0+3000,h_)*(1/k_)-h_*(3000/k_) for h_,k_ in zip(_h5,_tk5)),X())
 V8DRAG={hsv:net.relu(v8h0+_tr5),v8u:0,autos:0}
 net.group(_g5)

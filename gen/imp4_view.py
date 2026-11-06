@@ -6,7 +6,10 @@ e=S('V8_HS1'); on('V8_HS1',(None,'V8_HS2',{hsv:net.min_(hsv,hsmax),zwd:net.step(
 e=S('V8_HS2'); on('V8_HS2',(v8u,'UI',{zsf:as_x(4096)+G_(as_x(20)-_xl-hsv+3000,zwd)-zwd*3000,v8u:0}),(None,'RD0',{zsf:as_x(4096)+G_(as_x(20)-_xl-hsv+3000,zwd)-zwd*3000,fastok:0,autos:0}))
 # the bar along the foot of the document area. A click beside the thumb moves by a window's part.
 _tk=[1262/(816*z_+40) for z_ in ZL]; _lg=(243,242,241)
-on('V8_E0',(zwd,'V8_V0',{rA:(0,DOCB-12,1262,12,_lg,250),rB:(sum((net.gate(hsv,h_)*k_ for h_,k_ in zip(ZLH,_tk)),X()),DOCB-9,sum((h_*round(1262*k_) for h_,k_ in zip(ZLH,_tk)),X()),8,(205,205,205),250),v8tx:sum((net.gate(hsv,h_)*k_ for h_,k_ in zip(ZLH,_tk)),X()),v8tw:sum((h_*round(1262*k_) for h_,k_ in zip(ZLH,_tk)),X())}),(None,'V8_V0',None))
+# p1: the thumb's scale per level and orientation: a page wider than 900 px is drawn at the landscape scale (1056 px)
+p1_land=net.gt(s_pw,900,S('V8_E0')); p1_tkh=[net.and_(h_,ONE-p1_land) for h_ in ZLH]+[net.and_(h_,p1_land) for h_ in ZLH]
+_tk=_tk+[1262/(1056*z_+40) for z_ in ZL]; ZLH2=p1_tkh
+on('V8_E0',(zwd,'V8_V0',{rA:(0,DOCB-12,1262,12,_lg,250),rB:(sum((net.gate(hsv,h_)*k_ for h_,k_ in zip(ZLH2,_tk)),X()),DOCB-9,sum((h_*round(1262*k_) for h_,k_ in zip(ZLH2,_tk)),X()),8,(205,205,205),250),v8tx:sum((net.gate(hsv,h_)*k_ for h_,k_ in zip(ZLH2,_tk)),X()),v8tw:sum((h_*round(1262*k_) for h_,k_ in zip(ZLH2,_tk)),X())}),(None,'V8_V0',None))
 e=S('V8_HC'); on('V8_HC',(net.lt(hx_,v8tx,e),'V8_HS0',{hsv:net.relu(hsv-400),v8u:0,drag:0}),(net.ge(hx_,v8tx+v8tw,e),'V8_HS0',{hsv:hsv+400,v8u:0,drag:0}),(None,'RD0',{drag:0,v8dg:1,v8x0:hx_,v8h0:hsv}))
 # vertical ruler: scale of the first page in view, at the window's left. Each mark is one token.
 _vc=(138,136,134); _zs_=(ONE-zany)+sum((h_*z_ for h_,z_ in zip(ZLH,ZL)),X())

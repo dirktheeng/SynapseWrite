@@ -65,5 +65,14 @@ const yel=(r,g,b)=>r>200&&g>180&&b<170; // match tint
   // the View tab steps up to 500 too
   let C=await lib();C.type('Zoom Hello');C.click(372,47);C.settle();for(let i=0;i<8;i++){C.click(210,74);C.settle();}C.key(128);C.key(130);C.settle();C.shot('build/p1_z500v.png');ok('View > Zoom In reaches 500',Math.abs(ink(C)/h1-5)<0.8,ink(C));
  }
+
+ if(!only||only=='land'){
+  // a landscape page at 150 percent: the thumb is the window's share of the page, and it drags with the pointer
+  const thumb=A=>{const f=A.fb();let a=-1,b=-1;for(let x=0;x<1262;x++){const i=(770*1280+x)*4;if(f[i]==205&&f[i+1]==205&&f[i+2]==205){if(a<0)a=x;b=x;}}return [a,b];};
+  let A=await lib();A.type('Wide page');A.click(182,47);A.settle();A.click(100,96);A.settle();A.click(75,47);A.settle();A.click(1232,788);A.settle();A.click(1232,788);A.settle();A.shot('build/p1_land.png');
+  const t0=thumb(A),w=t0[1]-t0[0]+1,want=Math.round(1262*1262/(1056*1.5+40));ok('landscape thumb is the window share of the page',Math.abs(w-want)<=2,[t0,want]);
+  const cx=(t0[0]+t0[1])>>1;A.raw(3,cx,770,1e6);A.settle();A.raw(22,cx+60,770,1);A.settle();A.raw(22,cx+150,770,1);A.settle();const t1=thumb(A);A.raw(4,cx+150,770);A.settle();
+  ok('the landscape thumb drags with the pointer',Math.abs(t1[0]-t0[0]-150)<=2,[t0,t1]);
+ }
  const f=R.filter(x=>!x).length;console.log(R.length-f,'passed',f,'failed');process.exit(f?1:0);
 })();
