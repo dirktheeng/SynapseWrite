@@ -10,8 +10,7 @@ on('V8_E0',(zwd,'V8_V0',{rA:(0,DOCB-12,1262,12,_lg,250),rB:(sum((net.gate(hsv,h_
 e=S('V8_HC'); on('V8_HC',(net.lt(hx_,v8tx,e),'V8_HS0',{hsv:net.relu(hsv-400),v8u:0,drag:0}),(net.ge(hx_,v8tx+v8tw,e),'V8_HS0',{hsv:hsv+400,v8u:0,drag:0}),(None,'RD0',{drag:0}))
 # vertical ruler: scale of the first page in view, at the window's left. Each mark is one token.
 _vc=(138,136,134); _zs_=(ONE-zany)+sum((h_*z_ for h_,z_ in zip(ZLH,ZL)),X())
-_vb=net.wire(); net.connect(_vb,zfy0(as_x(vrt)-scroll+DOCY+vrm)+4096)
-_vb0=_vb-4096
+_vb0=zfy0(as_x(vrt)-scroll+DOCY+vrm)
 e=S('V8_V0')
 _vh=sum((net.gate(vrh,h_)*z_ for h_,z_ in zip(ZLH,ZL)),X())+net.gate(vrh,ONE-zany)
 _vt=net.max_(_vb0,as_x(DOCY)); _ve=net.min_(_vb0+_vh,as_x(DOCB))

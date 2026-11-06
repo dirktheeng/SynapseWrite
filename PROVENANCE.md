@@ -2,14 +2,14 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-555989 neurons, 1162191 edges, 188 layers, 3933 control states.
+555990 neurons, 1162194 edges, 188 layers, 3933 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
 | bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1299) | 1299 | 7863 |
 | glyph network | Selects and addresses a character cell for drawing. | gen/app.py (525), gen/imp3_zoom_pre.py (155) | 680 | 9980 |
 | glyph metrics | Character advance and kerning trees. | gen/app.py (20478) | 20478 | 58442 |
-| glyph unit | Draws a character from its edge network into the glyph store, in its own clock domain. | gen/glyphnet.py (11542) | 11542 | 45342 |
+| glyph unit | Draws a character from its edge network into the glyph store, in its own clock domain. | gen/glyphnet.py (11544) | 11544 | 45345 |
 | glyph pixel records | A small glyph drawn black on white is recorded off the row plane, so later draws are one read and one patch. | gen/glyphnet.py (19077) | 19077 | 38268 |
 | snapping layer | Fits outline coordinates to the pixel grid for a given size. | gen/glyphnet.py (331) | 331 | 1314 |
 | glyph geometry | Scales outline coordinates by the drawn size. | gen/glyphnet.py (231) | 231 | 809 |
@@ -42,7 +42,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | line breaking | Greedy line breaker and alignment. | gen/app.py (267), gen/rv_a3_pre.py (30) | 297 | 860 |
 | chrome | Autoscroll, caret, scrollbar and status bar. | gen/app.py (1661) | 1661 | 11788 |
 | zoom | Zoom levels and read mode commands, status bar controls, and pictures at other scales. | gen/imp3_zoom.py (457) | 457 | 3691 |
-| view: side scroll and vertical ruler | Slides a page wider than the window, its bar, and draws the vertical ruler. | gen/imp4_view.py (302), gen/app.py (212), gen/t1_features.py (44) | 558 | 2220 |
+| view: side scroll and vertical ruler | Slides a page wider than the window, its bar, and draws the vertical ruler. | gen/imp4_view.py (301), gen/app.py (212), gen/t1_features.py (44) | 557 | 3206 |
 | ribbon actions | Maps button ids to commands. | gen/app.py (155) | 155 | 256 |
 | docx writer | Writes the document XML parts. | gen/t2_write.py (648), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1091 | 9255 |
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2771), gen/app.py (4) | 2775 | 74350 |

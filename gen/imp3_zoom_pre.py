@@ -31,7 +31,7 @@ def _zgl():
         p_=ONE-net.step(g_fx.w)     # the pointer is a glyph and stays on the screen's own pixels
         _zgh['x']=[net.and_(h_,p_) for h_ in _zx]; _zgh['y']=[net.and_(h_,p_) for h_ in _zy]
     return _zgh
-def zgx(e): return _zwire(_zmap(e,_zgl()['x'],lambda z_:z_,ZCX)+zsl(net.and_(zwd,net.or_(zdoc,zrul),ONE-net.step(g_fx.w)))+glyphnet.XO)
+def zgx(e): return _zwire(_zmap(e,_zgl()['x'],lambda z_:z_,ZCX)+zsl(net.and_(zwd,net.or_(zdoc,zrul),ONE-net.step(g_fx.w)))+net.step(g_draw.w)*glyphnet.XO)
 def zgy(e): return _zwire(_zmap(e,_zgl()['y'],lambda z_:z_,DOCY+YB))
 def zfyb(e): return _zmap(as_x(e)+YB,ZLH,lambda z_:z_,DOCY+YB)-YB
 def zoom_sizes(size_hot):
