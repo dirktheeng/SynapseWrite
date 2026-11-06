@@ -991,6 +991,8 @@ ui.build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,t1_hov,t1_hb,t1
 for r in (jret,oret,dret,wret,bret,gret,hret,cret,iret,nret,t4r,fvr,t4cr,zret,zdr,pfr,pfcr,t2nr,t2pr,t2rr,t2pp,t2sr,t2ur,pgret,wret_)+tuple(T3_RETS): r.gen()
 _undef={nx_ for _,(r_,o_) in fsm.states.items() for _c,nx_ in o_ if nx_ is not None and nx_ not in fsm.states}
 assert not _undef,_undef
+_dead=[k_ for k_,(r_,o_) in fsm.states.items() if not o_]
+assert not _dead,_dead
 fsm.finish()
 def nid(x):
     if isinstance(x,X): return next(iter(x.t))

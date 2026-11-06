@@ -798,6 +798,7 @@ e=S('T3_SNH')
 on('T3_SNH',(net.step(R1),'T3_SNI',{ctl:R1}),(None,'SVC',{ctl:0}))
 lit('T3_SNI',b'<w:commentRangeStart w:id="','T3_SNJ'); numz('T3_SNJ',pi,'T3_SNK'); lit('T3_SNK',b'"/>','SVC')
 # end of paragraph: TOC tab and number, comment reference
+lit('T3_CEz',b'</w:p>','T3_SVN')
 e=S('T3_CE0')
 on('T3_CE0',(None,'T3_CE1',{r1:pbs+TOCF,r2:pbs+TSRC}))
 e=S('T3_CE1')
