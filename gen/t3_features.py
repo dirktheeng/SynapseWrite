@@ -144,7 +144,7 @@ rbb=R()
 on('T3_RBa',(None,'T3_RBb',{rbb:R1,r2:R1+ENDY,rmeta:R1+META}))
 e=S('T3_RBb'); shr=net.decode(MT[2],len(PAL_B),e)
 def bcr(k): return sum((shr[i_]*PAL_B[i_][k] for i_ in range(len(PAL_B))),X())
-on('T3_RBb',(None,'T3_RBc',{rA:(s_tx+MT[1]+1,R2+DOCY-scroll,net.relu(MT[0]-1),net.relu(rowmax-R2),(bcr(0),bcr(1),bcr(2)),0),rB:(s_tx+MT[1],by0,1,rowmax-rowtop,BC,0),rC:(s_tx+MT[1],by0,MT[0]+1,1,BC,0),fa0:MT[0],fa1:MT[1]}))
+on('T3_RBb',(None,'T3_RBc',{rA:(s_tx+MT[1]+1,R2+DOCY-scroll,net.relu(MT[0]-1),G_(net.relu(rowmax-R2),ONE-a4hw),(bcr(0),bcr(1),bcr(2)),0),rB:(s_tx+MT[1],by0,1,rowmax-rowtop,BC,0),rC:(s_tx+MT[1],by0,MT[0]+1,1,BC,0),fa0:MT[0],fa1:MT[1]}))
 _rb={rA:(s_tx+fa1,rowmax+DOCY-scroll,fa0+1,1,BC,0),wht:(as_x(HIT)+hitn*6,s_tx+fa1+fa0-3,by0,s_tx+fa1+fa0+4,rowmax+DOCY-scroll,tiv+1,pi+1-tcols),hitn:net.min_(hitn+1,215),tiv:tiv+1,tivx:fa1+fa0}
 on('T3_RBc',(a4hw,'RB1',_rb),(None,'RB1',{**_rb,w1:(rbb+RBOT,rowmax),w2:(rbb+RBOT+1,rowtop)}))
 # ---- mouse: object hit zones are compared in the network before the pixel hit test ----
