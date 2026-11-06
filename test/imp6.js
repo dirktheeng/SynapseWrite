@@ -23,5 +23,19 @@ exports.zip=zip;
   // a longer main part, to see the cost of the check
   let A=await lib();const r=A.file(9,zip({'word/document.xml':plain(400)}));A.settle();ok('a 400 paragraph file opens with the check',(part(A,'word/document.xml').match(/Plain words/g)||[]).length===400);
  }
+
+ if(!only||only=='f4'){
+  // a character format: bold on the first word, then F4 on the last word
+  let A=await lib();A.type('one mid two');A.settle();A.key(132);for(let i=0;i<3;i++)A.key(130,2);A.key('b',1);A.settle();
+  A.key(133);for(let i=0;i<3;i++)A.key(128,2);A.key(139);A.settle();A.shot('build/imp6_f4.png');let x=part(A,'word/document.xml');
+  const bold=w=>new RegExp('<w:b/>(?:(?!</w:r>).)*<w:t[^>]*>'+w).test(x);
+  ok('F4 repeats bold on a new selection',bold('one')&&bold('two')&&!bold(' mid'),x.match(/<w:body>.*<\/w:p>/)[0].slice(0,600));
+  A.key('z',1);A.settle();x=part(A,'word/document.xml');ok('one undo takes the repeat back',bold('one')&&!bold('two'));
+  // alignment: center the first paragraph, F4 in the second
+  let B=await lib();B.type('first');B.key(13);B.type('second');B.key(13);B.type('third');B.settle();B.key(132,1);B.key('e',1);B.settle();B.key(131);B.key(139);B.settle();x=part(B,'word/document.xml');
+  const jc=(x.match(/<w:p>.*?<\/w:p>/g)||[]).map(p=>(p.match(/w:jc w:val="(\w+)"/)||[])[1]);ok('F4 repeats centering in the next paragraph',jc[0]=='center'&&jc[1]=='center'&&jc[2]!='center',JSON.stringify(jc));
+  // with nothing to repeat, F4 changes nothing
+  let C=await lib();C.type('nothing');C.settle();const x0=part(C,'word/document.xml');C.key(139);C.settle();C.key('!');C.settle();ok('F4 with nothing to repeat changes nothing',part(C,'word/document.xml')===x0.replace('nothing<','nothing!<'));
+ }
  console.log(R.filter(x=>x).length,'passed,',R.filter(x=>!x).length,'failed');process.exit(R.every(x=>x)?0:1);
 })();
