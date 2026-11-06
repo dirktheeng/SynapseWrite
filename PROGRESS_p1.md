@@ -41,3 +41,6 @@ Run: a test opening `<w:br w:type="textWrapping"/>` failed: a w:br with a type o
 
 ## 8. PARITY
 Find and replace, Tabs and breaks, Other shortcuts and Rulers marked Passed with evidence in test/p1.js (rulers: existing a4, imp4, imp5 evidence; drag off removes a stop; the vertical ruler is at the window edge as in Word). Zoom and views and Ribbon stay Partial with what is still missing named (web layout, draft view, 72 pt glyph ceiling; many ribbon commands). Clipboard is Partial (blocked) with the blocker stated.
+
+## Full run at 214238b
+All exit 0: p1 27/27, e2e 210/210, tier2 49/49, look 31/31, t3_table 9, t3_pic 9, t3_misc 13, t4_docx 18/18, t4_pdf 7/7, roundtrip, touch, a4 50/50, a5_docx 37/37 (open 6,783,556 edges; base 6,784,308), fonts 23/23, imp2 45, imp3 49/49, imp4 101/101, imp5 49/49, imp6 20/20, feat1 24/24, feat2 35/35, t4, flops (every event at or below base), audit 67/67. Two builds byte identical. Page 2,958,405 bytes (base 2,953,717).
