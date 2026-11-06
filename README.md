@@ -21,7 +21,7 @@ It is an independent project with its own name and icons, modeled on the feature
 
 ## Contents
 
-[One tick](#the-whole-program-is-one-function) · [Neurons](#from-neurons-to-logic) · [Control flow](#control-flow-a-token-in-the-weights) · [Sparsity](#why-half-a-million-neurons-can-feel-instant) · [Memory](#memory-the-network-holds-the-pointers) · [The screen](#the-screen-is-also-an-input) · [Text](#how-a-letter-gets-drawn) · [File formats](#file-formats-are-networks-too) · [Connections](#how-everything-is-connected) · [Every sub-network](#every-sub-network-and-why-it-exists) · [Boundaries](#what-is-not-the-network) · [Building](#build-it) · [Verification](#how-it-is-checked) · [Status](#status)
+[One tick](#the-whole-program-is-one-function) · [The equation](#the-equation-explained) · [Neurons](#from-neurons-to-logic) · [Control flow](#control-flow-a-token-in-the-weights) · [Sparsity](#why-half-a-million-neurons-can-feel-instant) · [Memory](#memory-the-network-holds-the-pointers) · [The screen](#the-screen-is-also-an-input) · [Text](#how-a-letter-gets-drawn) · [File formats](#file-formats-are-networks-too) · [Connections](#how-everything-is-connected) · [Every sub-network](#every-sub-network-and-why-it-exists) · [Boundaries](#what-is-not-the-network) · [Building](#build-it) · [Verification](#how-it-is-checked) · [Status](#status)
 
 ## The whole program is one function
 
@@ -42,6 +42,105 @@ The engine evaluates this rule, and nothing more:
 v_i(t) = act_i( bias_i + sum over earlier layers  w_ji * v_j(t)
                        + sum over recurrent edges w_ji * v_j(t-1) )
 ```
+
+## The equation, explained
+
+Everything the app does comes from repeating one equation. You do not need a machine learning background to follow it, only the idea of a list of numbers and a table of numbers.
+
+```
+v(t) = σ( b + F·v(t) + R·v(t-1) + u(t) )
+```
+
+<p align="center"><img src="docs/figures/ann_structure.png" width="900" alt="The equation drawn with the real vector, matrices and activations from the weight file"></p>
+
+*This figure is drawn from the shipped weight file. Each dot in a square is a group of real connections.*
+
+### The pieces
+
+**A neuron is one number, plus a simple rule for updating it.** The app has 450,104 of them. One holds the caret's position, for example, and another is 1 only while a particular step of the program is running.
+
+| Symbol | In plain words | Size |
+|---|---|---|
+| `v(t)` | The state vector: a list of every neuron's value at tick `t`. Almost all of them are 0 at any moment. | 450,104 numbers |
+| `t` | The tick count. One tick is one update of the whole list. A key press takes roughly 65 to 150 ticks. | |
+| `F` | The same-tick table. The entry at row `i`, column `j` says how strongly neuron `j` feeds neuron `i` within this tick. | 450,104 by 450,104, with 1,656,356 entries that are not 0 |
+| `R` | The last-tick table. It works the same way, but reads neuron values from the previous tick. | The same size, with 45,845 entries that are not 0 |
+| `b` | A fixed offset for each neuron, called its bias. | 450,104 numbers |
+| `u(t)` | What arrives from outside this tick: an event from the glue, or data read from memory. | Mostly 0 |
+| `σ` | Each neuron's activation: a simple rule applied to its total. | One rule per neuron |
+
+The two tables are programmed, not learned. Each of their entries was written by the generator for a reason. Their entries that are not 0 fill less than 0.001 percent of each table, and they only ever use about 10,000 different values.
+
+### Reading it from the inside out
+
+To update one neuron, do three things:
+
+1. **Add up what it receives.** That is its bias, plus each input neuron's value times its weight, plus anything arriving from outside.
+2. **Apply its rule.** Most neurons use one of the first two below.
+3. **Store the result** as that neuron's new value.
+
+| Rule | Output | Neurons | Used for |
+|---|---|---:|---|
+| Step | 1 if the total is above 0, otherwise 0 | 218,815 | Yes or no decisions |
+| ReLU | The total if it is above 0, otherwise 0 | 205,715 | Passing a number through a gate |
+| Identity | The total, unchanged | 23,904 | Adding numbers |
+| Hold | Keeps its value, and adds any total to it | 1,670 | Registers that only remember |
+
+The fourth rule is an engine detail. The generator writes three kinds of neuron, and the optimizer converts registers that do nothing but hold their value into this cheaper form.
+
+### Why `v(t)` is on both sides
+
+This looks circular, but it is not. The neurons are numbered so that each one reads only from neurons before it, which puts every entry of `F` below the diagonal of the table. So the first neuron can be calculated from outside inputs alone. The second can then use the first, and so on to the end.
+
+<p align="center"><img src="docs/figures/equation_sweep.svg" alt="Animated three neuron example of filling in the vector from the top down"></p>
+
+Here is that example written out, with an input of 5:
+
+```
+a = 5             a is 5
+b = 10 × a        b is 50
+c = a + b         c is 55
+```
+
+After the sweep, multiplying the table by the finished vector gives that same vector back. That is all the equation claims. It is like a spreadsheet, where a cell can use cells calculated before it, as long as no formula refers back to itself.
+
+If you have seen numerical methods, this is forward substitution on a lower triangular system. Nothing is iterated, and there is no matrix to invert. Although the equation looks implicit, it is an explicit calculation.
+
+### How the two tables differ
+
+- **`F` is for computing.** It carries signals within a tick, through as many as 175 layers. Most of a neuron's work happens here. A layer is just a group of neurons at the same depth, so layer sizes vary widely.
+- **`R` is for remembering.** It carries values from one tick to the next. A register is a neuron that feeds itself through `R`, which is how the network holds a number over time. It is also how control moves from one program step to the next.
+
+Together, they make a recurrent network. Each tick takes the last state and the new input, then produces the next state:
+
+```
+v(t) = G( v(t-1), u(t) )
+```
+
+Here `G` is the feed-forward network formed by `b`, `F` and `σ`. Each tick is one direct step forward, and the ticks do not converge toward an answer. They are the steps of a program, and they end when one particular neuron, the halt neuron, becomes nonzero.
+
+### A logic gate from one row
+
+This shows how arithmetic becomes decisions. Say neuron `y` should pass a value `v` only when a control neuron `en` is 1. Give it these entries:
+
+```
+y = relu( v + en × 2^40 − 2^40 )
+```
+
+| `en` | Total | Output `y` |
+|---:|---|---|
+| 1 | `v + 2^40 − 2^40`, which is `v` | `v` |
+| 0 | `v − 2^40`, which is far below 0 | 0 |
+
+That is one row of `F`: a weight of 1 from `v`, a weight of 2^40 from `en`, a bias of −2^40, and a ReLU rule. With gates like this, the generator builds registers, comparisons, memory addressing and program flow.
+
+### What is not in the equation
+
+The equation updates neurons and nothing else. Three things sit around it:
+
+- **Memory and the screen.** The document is stored in a separate memory bank. There are ports that treat particular neurons as an enable, an address and data. When an enable is nonzero, the engine carries out that read or write. Data that is read comes back through `u` on the next tick.
+- **The glue.** It writes events into `u`, runs ticks until the halt neuron fires, and shows the screen.
+- **A second clock.** Neurons for drawing text and for managing styles run as a separate block with no connections to the main block, shown by the amber lines in the figure. A call port pauses the main block, passes values over, runs the second block to completion and passes the results back.
 
 ## From neurons to logic
 
