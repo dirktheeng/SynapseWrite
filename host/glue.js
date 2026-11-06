@@ -68,7 +68,7 @@ window.addEventListener('mouseup',ev=>{const [x,y]=pos(ev);dispatch(4,x,y);});
 // Mouse moves carry the raw button mask. When the network asks to hold, later moves wait for the next frame and only the latest runs.
 let waiting=false,queued=null;const frame=f=>{if(waiting){queued=f;return;}f();if(e.val(h.hold)){waiting=true;requestAnimationFrame(()=>{waiting=false;const g=queued;queued=null;g&&frame(g);});}};
 cv.addEventListener('mouseleave',()=>dispatch(11));cv.addEventListener('mouseenter',ev=>{const [x,y]=pos(ev);dispatch(23,x,y,ev.buttons);});window.addEventListener('mousemove',ev=>frame(()=>{const [x,y]=pos(ev);dispatch(22,x,y,ev.buttons);}));
-cv.addEventListener('wheel',ev=>{ev.preventDefault();evm=+ev.ctrlKey;dispatch(6,0,0,Math.round(ev.deltaY)+1000);},{passive:false});
+cv.addEventListener('wheel',ev=>{ev.preventDefault();evm=ev.ctrlKey+2*ev.shiftKey;dispatch(6,Math.round(ev.deltaX)+1000,0,Math.round(ev.deltaY)+1000);},{passive:false});
 // The hidden field summons the on-screen keyboard. Its whole text goes to the network, with 1 at composition start and 2 at composition end.
 const ti=document.getElementById('kb');const field=phase=>{const v=ti.value,n=Math.min(v.length,h.kbmax);units(h.kbv,v,n);dispatch(27,phase,0,n);};
 ti.addEventListener('input',()=>field(0));ti.addEventListener('compositionstart',()=>field(1));ti.addEventListener('compositionend',()=>field(2));
