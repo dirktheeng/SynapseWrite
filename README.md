@@ -9,7 +9,7 @@
 |---|---|
 | **Neurons** | 450,104, in 73 named sub-networks (one is currently empty) |
 | **Connections** | 1,702,201: 946,543 that push values and 755,658 that are read lazily |
-| **Depth** | 175 layers within one tick |
+| **Depth** | 175 layers: 152 in the main clock domain and 23 in the second |
 | **Control states** | 3,690 one-hot state neurons |
 | **Non-network code at run time** | 81 lines of glue, 140 lines of inference engine |
 | **Deployment** | one static HTML file, about 3.2 MB |
@@ -108,7 +108,7 @@ If you have seen numerical methods, this is forward substitution on a lower tria
 
 ### How the two tables differ
 
-- **`F` is for computing.** It carries signals within a tick, through as many as 175 layers. Most of a neuron's work happens here. A layer is just a group of neurons at the same depth, so layer sizes vary widely.
+- **`F` is for computing.** It carries signals within a tick, through as many as 152 layers in the main clock domain and 23 in the second. Most of a neuron's work happens here. A layer is just a group of neurons at the same depth, so layer sizes vary widely.
 - **`R` is for remembering.** It carries values from one tick to the next. A register is a neuron that feeds itself through `R`, which is how the network holds a number over time. It is also how control moves from one program step to the next.
 
 Together, they make a recurrent network. Each tick takes the last state and the new input, then produces the next state:
