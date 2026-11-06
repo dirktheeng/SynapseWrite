@@ -87,7 +87,7 @@ About 3,000 paragraphs, 1,000 characters per paragraph, 200 characters per line,
 - **Lazy gates:** the engine reads a gated neuron's value inputs only after its enable fires. This is an evaluation order choice; the neuron computes the same function.
 - **Real Word:** no copy is available here, so pixel comparisons and .docx verification against Word were not run. Those verification items are open.
 - **Screenshot use:** the network reads the last output image for hit testing, using the hidden alpha channel as an object ID. It does not compare the whole screen against document state.
-- **Compiled logic:** this is a circuit-style network (about 3,700 control states) written by a generator. It is not a CPU emulator, but it is much closer to compiled hardware than to a conventional learned model.
+- **Compiled logic:** this is a circuit-style network (3,933 control states) written by a generator. It is not a CPU emulator, but it is much closer to compiled hardware than to a conventional learned model.
 - **Ribbon ids:** alpha ids stop at 255, so raw ids are reused per tab; the network uses the tab and id together. Color menus find the cell from the pointer position.
 - **Ports:** memory block copy and rectangle fill run inside the engine as ports the network commands. The network supplies every address, length, color, and enable signal. A stricter reading could count the copy loops as non-ANN work.
 

@@ -30,3 +30,6 @@ Open of a01_format is 10.14 M edges, 9.90 M at imp3, bound 10 M. Tried: rare cha
 
 ## Full run 2 at fb823ae
 All exit 0 and pass except: a5_docx edge bound (above), tier2 same after a LibreOffice re-save: now it truly opens that file, and its private use level 2 bullet drew round. A symbol font bullet now takes the level's own look. t4: select all 911 K edges, wheel 847 K (779 K at imp3).
+
+## Full run 3 at a30475e
+Every listed suite and audit run. Results in the report; the only failure is the a5_docx edge bound, 10.14 M against 10 M.
