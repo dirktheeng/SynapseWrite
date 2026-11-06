@@ -2,13 +2,13 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-247309 neurons, 490060 edges, 188 layers, 3947 control states.
+247135 neurons, 490060 edges, 188 layers, 3947 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
 | bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1299) | 1299 | 7957 |
-| glyph network | Selects and addresses a character cell for drawing. | gen/app.py (525), gen/imp3_zoom_pre.py (155) | 680 | 9980 |
-| glyph metrics | Character advance and kerning trees. | gen/app.py (20493) | 20493 | 58478 |
+| glyph network | Selects and addresses a character cell for drawing. | gen/app.py (391), gen/imp3_zoom_pre.py (155) | 546 | 9650 |
+| glyph metrics | Character advance and kerning trees. | gen/app.py (20453) | 20453 | 58638 |
 | glyph unit | Draws a character from its edge network into the glyph store, in its own clock domain. | gen/glyphnet.py (10800) | 10800 | 40090 |
 | glyph pixel records | A small glyph drawn black on white is recorded off the row plane, so later draws are one read and one patch. | gen/glyphnet.py (19104) | 19104 | 38324 |
 | snapping layer | Fits outline heights to the pixel grid for a given size. | gen/glyphnet.py (331) | 331 | 1314 |

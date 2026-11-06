@@ -176,9 +176,20 @@ vflag=net.step(SD['sup']+SD['sub'])
 size_hot=[X() for _ in range(NS)]
 for i_ in range(NS):
     n_,s_=tsplit(raw_hot[i_],vflag); size_hot[i_]=size_hot[i_]+n_; size_hot[script_size(i_)]=size_hot[script_size(i_)]+s_
+def sel_sum(pairs,G=8):
+    "Sum of one hot selected values (each at least zero), read through groups: a closed group gate ends its reads at once."
+    o=X()
+    for a_ in range(0,len(pairs),G):
+        grp=pairs[a_:a_+G]; hw_=net.wire(); vw_=net.wire()
+        for h_,v_ in grp: net.connect(hw_,h_); net.connect(vw_,net.gate(v_,h_))
+        o=o+net.gate(vw_,hw_)
+    return o
+# a raised or lowered run is rare, so its height is read behind its flag
+_rsup=net.wire(); _rsub=net.wire()
 for si,h in enumerate(raw_hot):
     px=round(rom.SZ[si]*96/72); net.connect(strk,h*round(px*0.28))
-    net.connect(rise,net.and_(h,SD['sup'])*round(px*0.36)); net.connect(rise,net.and_(h,SD['sub'])*(-round(px*0.16)))
+    net.connect(_rsup,h*round(px*0.36)); net.connect(_rsub,h*round(px*0.16))
+net.connect(rise,net.gate(_rsup,SD['sup'])-net.gate(_rsub,SD['sub']))
 GLW=rom.GLW; FACES=rom.FACES; SQUIG=129     # code with no character: one period of the spelling squiggle
 # metrics: one tree per face gives the advance in ems, then the drawn size scales it. No ink is touched.
 net.group('glyph metrics')
@@ -218,7 +229,7 @@ for p_ in rom.EXT_PAGES:
         chartree(ln_,_xb[:7],6,list(d_),_xal)
 _xhb=net.step(_xhit); _xno=net.step(_xuk-_xhb-0.5); net.connect(aem,_xno*0.6)
 _xlow=sum((_xb[b_]*(1<<b_) for b_ in range(7)),X())
-for si,h in enumerate(size_hot): net.connect(adv,net.gate(aem*round(rom.SZ[si]*96/72),h))
+net.connect(adv,sel_sum([(h,aem*round(rom.SZ[si]*96/72)) for si,h in enumerate(size_hot)]))
 # kerning: a tree over the previous character, then over the current one. A pair that exists fires kany.
 kp_en=Bus(net); kp_in=Bus(net)
 kp_ok=net.and_(kp_en.w,net.lt(kp_in.w,127,kp_en.w))
@@ -237,10 +248,11 @@ chartree(kp_ok,_kb,6,_left,_kl)
 kanyb=net.step(kany)
 k1=X()
 for f_ in FACES: k1=k1+net.gate(kf[f_]+1,tnode(FH[f_],kanyb))
-kern=net.wire()
+kern=net.wire(); _kin=net.wire(); KOFF=4096    # a kerned pair is read behind kanyb; the offset keeps the gated sum positive
 for si,h in enumerate(size_hot):
-    px=round(rom.SZ[si]*96/72); h_k=tnode(h,kanyb)
-    net.connect(kern,net.gate(k1*px,h_k)-h_k*px)
+    px=round(rom.SZ[si]*96/72)
+    net.connect(_kin,net.gate(k1*px,h)-h*px)
+net.connect(kern,net.gate(_kin+KOFF,kanyb)-kanyb*KOFF)
 print('metric trees',time.time()-t0,'s',len(KP),'kern pairs',file=sys.stderr)
 # the drawing unit: its own clock domain, entered through a call port, so the paint state stalls while it runs
 net.group('glyph unit')

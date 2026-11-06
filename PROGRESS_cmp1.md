@@ -24,3 +24,13 @@ Runs:
   band drifts by that factor times its travel. Splitting at every knot: correct, 3.22 MB, 88 K chains. Splitting
   only at the bases of the overshoot bands (0, x height, cap): 3,059,077 bytes, 247 K neurons; screenshots
   side by side with the base (digits, o, gbdpqs, @&%, OQCGS at 11 pt) match.
+
+## 2. FLOPs (coordinator's new measure, test/flops.js)
+Per char of a repaint, three pulled wires read a lazy list as long as the size table (69 sizes): rise (2 per size,
+269,660 work in select all), kern (269,660) and adv (140,700).
+- rise: the size sums are plain wires read behind the sup and sub flags.
+- kern: the per size gates now read behind kanyb, with an offset so the gated sum stays positive.
+- adv: sel_sum(), groups of 8 sizes, each behind a gate on the group's one hot sum.
+Run: select all 9.74 M to 7.34 M FLOPs, jump 10.28 to 7.34, enter 10.42 to 7.46, undo 10.95 to 7.82,
+wheel 12.23 to 8.70, click 12.48 to 8.95, typing repeat 80,866 to 70,499, background layout 1.07 G to 0.76 G.
+Page 3,059,481.
