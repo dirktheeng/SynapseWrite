@@ -52,6 +52,7 @@ PURPOSE={
  'style create and rename':'New and renamed styles, and applying character styles.',
  'list formats':'The list format menu and reading numFmt and lvlText.',
  'view: wheel and thumb drag':'Shift+wheel and sideways wheel deltas slide a wide page; the thumb of the bar at the foot drags at its drawn scale.',
+ 'zip crc check':'Zip CRC check on open: the inflated main part runs through the save CRC network and must match the central directory.',
  'column breaks':'Column breaks: typed with Ctrl+Shift+Enter, read and written as w:br of type column, laid out as a move to the second column.',
  'vertical ruler drag':'Top and bottom margin drags on the vertical ruler, released through the section edit with undo.',
  'find across paragraphs':'One matcher for queries holding paragraph marks, used by the walker, the counter and the highlight.',

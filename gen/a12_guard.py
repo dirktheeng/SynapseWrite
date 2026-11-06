@@ -11,7 +11,7 @@ e=S('A12_OV2'); _sig=net.and_(net.eq(W[0],80,e),net.eq(W[1],75,e),net.eq(W[2],5,
 on('A12_OV2',(_sig,'IMP_V0',{rl:FA+ovp+16}),(net.or_(net.eq(ovp,0,e),net.ge(ovn,65535,e)),'RD0',{pfile:PMSG}),(None,'A12_OV1',{ovp:ovp-1,ovn:ovn+1}))
 # The main part is inflated before anything of the current document is touched. If it fails, or does not come to the size the directory states, the file is refused and the document stays. The output stays in place for the read proper.
 on('IMP_V0',(None,'X_C0',{vdry:1,zp0:W[0]+W[1]*256+W[2]*65536,zp:W[0]+W[1]*256+W[2]*65536,ztarget:4,obase:OUTB,ob:0}))
-on('IMP_V1',(None,'OP0',{vdry:0,vob:ob}))
+exec(open('imp6_crc.py').read())
 on('IMP_VF',(None,'RD0',{vdry:0,obase:OUTB,pfile:PMSG}))
 fsm.set(obase,S('OP0'),OUTB); fsm.set(rdmode,S('OP0'),1); fsm.set(rddoc,S('OP0'),1); fsm.set(rdmode,S('IMP_V0'),1); fsm.set(rddoc,S('IMP_V0'),1)
 fsm.set(rdmode,S('PG_0'),1); fsm.set(rddoc,S('PG_0'),0)
