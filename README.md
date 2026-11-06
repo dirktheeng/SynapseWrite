@@ -21,7 +21,7 @@ It is an independent project with its own name and icons, modeled on the feature
 
 ## Contents
 
-[One tick](#the-whole-program-is-one-function) · [The equation](#the-equation-explained) · [Neurons](#from-neurons-to-logic) · [Control flow](#control-flow-a-token-in-the-weights) · [Sparsity](#why-half-a-million-neurons-can-feel-instant) · [Memory](#memory-the-network-holds-the-pointers) · [The screen](#the-screen-is-also-an-input) · [Text](#how-a-letter-gets-drawn) · [File formats](#file-formats-are-networks-too) · [Connections](#how-everything-is-connected) · [Every sub-network](#every-sub-network-and-why-it-exists) · [Determinism](#determinism-and-hallucinations) · [Boundaries](#what-is-not-the-network) · [Building](#build-it) · [Verification](#how-it-is-checked) · [Status](#status)
+[One tick](#the-whole-program-is-one-function) · [The equation](#the-equation-explained) · [Neurons](#from-neurons-to-logic) · [Control flow](#control-flow-a-token-in-the-weights) · [Sparsity](#why-half-a-million-neurons-can-feel-instant) · [Memory](#memory-the-network-holds-the-pointers) · [The screen](#the-screen-is-also-an-input) · [Text](#how-a-letter-gets-drawn) · [File formats](#file-formats-are-networks-too) · [Connections](#how-everything-is-connected) · [Every sub-network](#every-sub-network-and-why-it-exists) · [Circuits](#is-it-a-circuit) · [Determinism](#determinism-and-hallucinations) · [Boundaries](#what-is-not-the-network) · [Building](#build-it) · [Verification](#how-it-is-checked) · [Status](#status)
 
 ## The whole program is one function
 
@@ -452,6 +452,58 @@ Saving runs the same idea in reverse. The network produces every byte, and the g
 | `file output command` | 5 | Selects the length, data start and file name that the glue saves. | The glue must not decide what to save, or under what name. It reads these neurons and acts. |
 
 <!-- networks:end -->
+
+## Is it a circuit?
+
+Largely, yes. The generator works more like a hardware compiler than a machine learning tool. Every neuron acts as a circuit part, and a matrix row is that part's wiring. All of the network has this structure. But only part of it is digital logic, and some of the system is not a circuit at all.
+
+| Circuit | This network |
+|---|---|
+| Netlist, listing what connects to what | `F` and `R`, with weights as the connections |
+| Combinational logic | One sweep through `F` |
+| Gate depth | Number of layers: up to 152 in the main block |
+| Flip-flops and registers | Values carried through `R` to the next tick |
+| Clock cycle | One tick |
+| Control unit | One-hot state neurons |
+
+<p align="center"><img src="docs/figures/circuit_parts.svg" alt="Circuit symbols for AND, OR, comparator, switch, adder and register, beside the neuron and matrix row for each"></p>
+
+The idea has a long history: McCulloch and Pitts described neurons as threshold logic in 1943. A matrix-vector product `F·v` here is a circuit's input totals. One sweep through the layers is the signals settling.
+
+### What behaves like what
+
+I classified every neuron from its activation, bias and incoming weights:
+
+<p align="center"><img src="docs/figures/circuit_mix.svg" alt="Stacked bars showing the mix of circuit parts for each family"></p>
+
+| Behavior | Neurons | Where it matters most |
+|---|---:|---|
+| **Digital logic:** plain gates with weights of ±1 | 20,169 (4.5%) | Reading files, events, control |
+| **Digital decisions from numbers:** comparators, and thresholds with an enable | 198,646 (44.1%) | Mostly `Drawing text`, plus layout and files |
+| **Numbers switched on and off** | 204,589 (45.5%) | Mostly `Drawing text`, and also registers |
+| **Number arithmetic:** adders, wires, ramps and clamps | 19,415 (4.3%) | Layout, and text coverage |
+| **Holding values:** registers with no other work | 1,670 (0.4%) | Everywhere |
+| **Constants and inputs** | 5,615 (1.2%) | Control, and text |
+
+Only a small share is pure Boolean logic. Most of the network is mixed-signal in style: 0 or 1 signals control wires that carry whole numbers. The classification comes from the form of each neuron, so a few may do something else, such as a weighted step that is not really a comparison.
+
+Actual values show the same mix. In a short session of typing, clicking, formatting and find, on the main clock block only, 3,570 neurons fired over 5,928 ticks. Of those, 2,139 (60%) only ever held 0 or 1, and 1,431 (40%) held other numbers.
+
+### Where the comparison holds, and where it does not
+
+**It holds for the whole network's structure.** All of the neurons, including the fonts, are fixed parts wired together, clocked by ticks. No part is computing anything other than a weighted sum and a simple rule.
+
+**It is only loose for number-carrying parts.** In digital hardware, a 32-bit value needs 32 wires, and addition needs an adder circuit. Here one neuron holds a whole number, and a sum takes one neuron. That is closer to an analog circuit, but it is not really analog, because the values are exact 64-bit floats with no noise. The font edges are the clearest case: the geometry is ordinary arithmetic, with gates selecting which edges are active.
+
+**It does not apply to these:**
+
+- **Multiplying two variables.** Weights are fixed, so a neuron can only multiply by a constant. Multiplying two changing values would have to be built from switches, as it is in a hardware multiplier.
+- **Memory and the screen.** These are stored outside the network, in the engine. Hardware has RAM too, but here no gates implement it. The rectangle, patch and copy ports are also loops in the engine, not neurons, although the network controls them.
+- **Timing.** A real circuit has wire delays, glitches and a clock limit. Here a sweep is simply calculated in order, so these issues do not arise.
+- **The engine's shortcuts.** Skipping zeros and closed gates is a property of how this software simulates the circuit. It changes the speed, not the design.
+- **The glue and the browser.** These are ordinary code around the circuit, limited as described below.
+
+**Clock domains have a hardware parallel.** Pausing the main block while the second one runs resembles clock gating. As a call that runs to completion, it is also like a software subroutine.
 
 ## Determinism and hallucinations
 
