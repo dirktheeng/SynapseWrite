@@ -96,8 +96,12 @@ const xml=(f,m='word/document.xml')=>execSync(`python3 -c "import zipfile;print(
  const v=execSync(`python3 test/a5_validate.py ${O}/s1.docx || true`).toString();ok('save passes schema, content type and relationship checks',/ OK\n/.test(v),v.slice(0,300));
  await open(`${O}/s1.docx`);const s2=await shot();fs.writeFileSync(`${O}/s2.png`,s2);ok('save and reopen is pixel identical',h(s2)===h(sm));
  await save(`${O}/s2.docx`);ok('second save XML identical',xml(`${O}/s2.docx`)===x1);
- // the properties live through editing: bold over the caps run keeps caps
- await open(main);
+ // PDF: caps print as capitals, hidden text is left out
+ await open(main);const [dp]=await Promise.all([p.waitForEvent('download'),K('Control+p')]);await dp.saveAs(`${O}/m.pdf`);
+ const pt=execSync(`pdftotext -layout ${O}/m.pdf -`).toString();ok('PDF prints caps as capitals and leaves hidden text out',/CAPS TEXT/.test(pt)&&!/HIDDEN/.test(pt)&&/ab/.test(pt),JSON.stringify(pt.slice(0,160)));
+ // the properties live through editing: bold over the whole caps line keeps caps, and the file keeps both
+ await K('Control+Home');await K('Shift+End');await K('Control+b');await save(`${O}/s3.docx`);const x3=xml(`${O}/s3.docx`);
+ const cr=(x3.match(/<w:r><w:rPr>((?!<\/w:r>).)*caps text/)||[''])[0];ok('bold applied over caps text keeps caps',cr.includes('<w:b/>')&&cr.includes('<w:caps/>'),cr);
  await b.close();
  // LibreOffice as a stand-in reader: it reads the file and keeps the properties through its own save
  execSync(`rm -rf ${O}/lo; timeout 120 soffice --headless --convert-to docx:"MS Word 2007 XML" --outdir ${O}/lo ${O}/s1.docx >/dev/null 2>&1`);
