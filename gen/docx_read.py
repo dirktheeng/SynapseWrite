@@ -25,7 +25,7 @@ def pat(st,e,offs=0):
     return net.and_(*c)
 ztarget=R();zp0=R();zk=R();ibase=R();obase=R(OUTB);mth=R();csz=R();nm=R();ext=R();cmt=R();loff=R()
 # locate the end record by scanning back, then walk the central directory
-on('OP1',(None,'ZE0',{zp:net.relu(evc-22)}))
+on('OP1',(None,'ZE0',{zp:net.relu(evc-22),a5fs0:evc+8}))
 on('ZE0',(None,'ZE1',{rl:FA+zp}))
 e=S('ZE1')
 sig=net.and_(net.eq(W[0],80,e),net.eq(W[1],75,e),net.eq(W[2],5,e),net.eq(W[3],6,e))
@@ -44,7 +44,7 @@ ztg=net.decode(ztarget,9,e)
 on('C6',(net.or_(net.and_(ztg[4],pat('ment.xml',e),net.eq(nm,17,e)),net.and_(ztg[1],pat('xml.rels',e),net.eq(nm,28,e)),net.and_(ztg[2],pat('otes.xml',e),net.eq(nm,18,e)),net.and_(ztg[3],pat('ents.xml',e),net.eq(nm,17,e)),net.and_(ztg[7],pat('yles.xml',e),net.eq(nm,15,e)),net.and_(ztg[6],pat('ring.xml',e),net.eq(nm,18,e)),net.and_(ztg[0],pat('eme1.xml',e)),net.and_(ztg[8],pat('otes.xml',e),net.eq(nm,17,e))),'C7',{rl:FA+loff+26}),(ztg[5],'T3_ZC',{zk:0}),(None,'X_C0',{zp:zp+46+nm+ext+cmt}))
 on('C7',(None,'Z7',{ip:loff+30+W[0]+W[1]*256+W[2]+W[3]*256,ob:0,nb:0,cur:0}))
 e=S('Z7')
-on('Z7',(net.eq(mth,8,e),'BH',{ibase:FA,iret.r:iret.id('T3_ZX')}),(None,'ZS',{oi:0,ibase:FA}))
+on('Z7',(net.eq(mth,8,e),'BH',{ibase:FA,a5fsz:a5fs0,a5lim:3990000,iret.r:iret.id('T3_ZX')}),(None,'ZS',{oi:0,ibase:FA}))
 # stored member
 OA=obase
 e=S('ZS'); on('ZS',(net.ge(oi,csz,e),'T3_ZX',{oi:0}),(None,'ZS1',{r1:FA+ip+oi}))
@@ -143,7 +143,7 @@ DB=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,30
 DE=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13]
 e=S('CS')
 lit_=net.lt(sym,256,e); eob=net.eq(sym,256,e)
-on('CS',(lit_,'CODES',{wo:(OA+ob,sym),ob:ob+1}),(eob,'BEND',None),(None,'CL0',None))
+on('CS',(net.or_(net.ge(ob,a5lim,e),net.gt(ip,a5fsz,e)),'IR',{oi:0}),(lit_,'CODES',{wo:(OA+ob,sym),ob:ob+1}),(eob,'BEND',None),(None,'CL0',None))
 e=S('CL0'); sh=net.decode(sym-257,29,e); bs=X();ex_=X()
 for i_ in range(29): bs=bs+sh[i_]*LB[i_]; ex_=ex_+sh[i_]*LE[i_]
 on('CL0',(None,'CL1',{lc_:bs,gbn:ex_,gbv:0,gbw:1,gbi:0,gret.r:gret.id('CL2')}))
@@ -260,7 +260,8 @@ on('TX3',(ltx,'PX',None),(net.and_(rdig,isdg_),'TX2',{tpgv:tpgv*10+W[0]-48,oi:oi
  (net.and_(net.ge(W[0],224,e),net.lt(W[0],240,e)),'T2_U8',{t2cp:(W[0]-224)*4096+(W[1]-128)*64+(W[2]-128),oi:oi+3}),
  (net.ge(W[0],240,e),'T2_U8',{t2cp:63,oi:oi+4}),
  (net.or_(net.gt(W[0],126,e),net.lt(W[0],32,e),net.ge(clen,1000,e)),'TX2',{oi:oi+1}),
- (None,'INS',{ins_ch:W[0],ins_st:cs+rhi,oi:oi+1,oret.r:oret.id('TX2')}))
+ # plain text always lands at the end of the paragraph being read, so it is written here and the next byte is already on its way
+ (None,'TX3',{w1:(cb+co,W[0]),w2:(cb+1024+co,cs+rhi),w3:(cb+LEN,clen+1),co:co+1,clen:clen+1,oi:oi+1,rl:OA+oi+1}))
 e=S('RF9'); on('RF9',(a5_serif(e),'T2_C',{t2k:3,t2v:1}),(pat('Liberati',e),'A5_LIB',{rl:OA+oi+11}),(None,'T2_C',{t2k:3,t2v:0}))
 e=S('CO0'); cvv=X(); exact=X()
 for j_ in range(1,32):
@@ -295,7 +296,7 @@ on('PG_H2',(ok,'PG_C',{pct:W[1],pbp:net.eq(W[1],0,e)+net.eq(W[1],2,e)*3+net.eq(W
 e=S('PG_I'); nc2=cl2-net.relu(cl2-1100); on('PG_I',(net.step(cl2),'PG_J',{rb:(pbase+ip,nc2),ncp:nc2}),(None,'PG_C',{ip:ip+4}))
 on('PG_J',(None,'PG_I',{wb:(pbase+dst,ncp),dst:dst+ncp,ip:ip+ncp,cl2:cl2-ncp}))
 # inflate the concatenated stream after its two byte header
-on('PG_Z',(None,'PG_Y',{ibase:pbase,obase:OUTP,ip:2,ob:0,nb:0,cur:0,iret.r:iret.id('PG_U')}))
+on('PG_Z',(None,'PG_Y',{ibase:pbase,obase:OUTP,ip:2,ob:0,nb:0,cur:0,a5lim:5990000,a5fsz:8000000,iret.r:iret.id('PG_U')}))
 on('PG_Y',(None,'BH',None))
 # stride by repeated addition
 on('PG_U',(None,'PG_U1',{pst:0,dcnt:0}))

@@ -14,3 +14,8 @@ Findings by viewing against the LibreOffice PDF, and by test/a5_validate.py and 
 - a15: mc:Fallback text duplicated, math text dropped.
 - Every open leaves caret and view at the end of the document.
 - Saved packages have no word/settings.xml.
+## Second pass
+Run results on the rebuilt network: every saved file checked so far passes the ISO 29500 schemas. Viewed against LibreOffice: tables tight, serif body, nested tables flattened into the outer cell, 72 pt large.
+a23 (corrupt deflate) was a real hang: zero bits past the input decode forever. Inflate now stops at the end of the file or the end of its buffer and scans what it has.
+a16 profile: 44 percent of work was the ribbon display list reached through the shared OR return, once per character read. Plain text now writes directly in TX3, one tick per byte.
+Machine is out of memory at times, so Chromium tabs crash ("Target crashed"); those runs are not results. test/a5_node.js opens files with no browser for tick counts.
