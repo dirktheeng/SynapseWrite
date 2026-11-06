@@ -516,7 +516,7 @@ This is the largest family. It is what replaces a font engine. The method is des
 
 | Sub-network | Neurons | What it does | Why it exists |
 |---|---:|---|---|
-| `glyph weights (outline edges)` | 143,996 | Holds the font outlines as chain neurons, one small program per glyph. | This is the font itself, written as weights. It accounts for most of the neurons, since eight families with their faces hold many edges. |
+| `glyph weights (outline edges)` | 130,598 | Holds the font outlines as chain neurons, one small program per glyph. | This is the font itself, written as weights. It accounts for most of the neurons, since eight families with their faces hold many edges. |
 | `glyph metrics` | 20,493 | Holds advance widths and kerning as decision trees. | Layout needs widths for each character, and it should not have to draw a glyph to learn one. |
 | `glyph pixel records` | 19,104 | Records a small glyph drawn black on white, so that later draws take one read and one patch. | Most repaint cost was glyph rows. Replaying a record is much cheaper for the common case of plain text. |
 | `glyph unit` | 10,800 | Runs the drawing of one glyph, in its own clock domain. | Paint can stall while a glyph is generated, and that keeps the paint loop simple. |
