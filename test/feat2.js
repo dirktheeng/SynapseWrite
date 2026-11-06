@@ -88,5 +88,54 @@ d.save('${O}/f.docx')`);
  ok('foreign text around the math is kept',/>Let <\/w:t>/.test(fx)&&/> done<\/w:t>/.test(fx)&&wellformed(`${O}/f2.docx`));
  await open(`${O}/f2.docx`);await W(200);const f1=await shot();ok('foreign math saved and opened again is pixel identical',same(f0,f1));
  }
+ if(!only||only==='pdf'){
+ await start();
+ const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+ const Rn=(t,pr='')=>`<w:r>${pr?'<w:rPr>'+pr+'</w:rPr>':''}<w:t xml:space="preserve">${t}</w:t></w:r>`,P=(...r)=>`<w:p>${r.join('')}</w:p>`;
+ const body=P(Rn('Plain '),Rn('Small Caps','<w:smallCaps/>'),Rn(' end'))+P(Rn('double struck','<w:dstrike/>'),Rn(' plain'))+P(Rn('spaced','<w:spacing w:val="60"/>'),Rn(' spaced '),Rn('tight','<w:spacing w:val="-10"/>'),Rn(' tight'))+
+  P(Rn('shaded words','<w:shd w:val="clear" w:color="auto" w:fill="FFD966"/>'),Rn(' then '),`<w:hyperlink r:id="rId7">${Rn('alink','<w:u w:val="single"/>')}</w:hyperlink>`,Rn(' after'));
+ fs.writeFileSync(`${O}/p.xml`,`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${NS}><w:body>${body}<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr></w:body></w:document>`);
+ py(`import zipfile
+z=zipfile.ZipFile('${O}/p.docx','w',zipfile.ZIP_DEFLATED)
+z.writestr('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>')
+z.writestr('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>')
+z.writestr('word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://example.com/a?b=1&amp;c=(2)" TargetMode="External"/></Relationships>')
+z.writestr('word/document.xml',open('${O}/p.xml').read())
+z.close()`);
+ await open(`${O}/p.docx`);await W(200);await A.p.screenshot({clip,path:`${O}/pscreen.png`});
+ await pdf(`${O}/p.pdf`);let qc;try{qc=sh(`qpdf --check ${O}/p.pdf 2>&1`);}catch(e){qc=e.stdout.toString();}
+ ok('PDF with run effects is clean',/No syntax/.test(qc)&&!/WARNING/.test(qc),qc.slice(0,200));
+ sh(`qpdf --qdf --object-streams=disable ${O}/p.pdf ${O}/pq.pdf`);const Q=fs.readFileSync(`${O}/pq.pdf`,'latin1');
+ sh(`pdftoppm -r 96 -f 1 -l 1 -png ${O}/p.pdf ${O}/pp`);const PP=`${O}/`+fs.readdirSync(O).find(f=>/^pp.*png$/.test(f));fs.copyFileSync(PP,`${O}/effects_pdf.png`);
+ const bb=sh(`pdftotext -bbox ${O}/p.pdf -`);const words=[...bb.matchAll(/xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">([^<]*)</g)].map(m=>({x0:+m[1],y0:+m[2],x1:+m[3],y1:+m[4],t:m[5]}));
+ const wd=t=>words.filter(w=>w.t===t);
+ const S_=wd('S').concat(wd('Small')),M_=words.filter(w=>/^MALL$|^mall$/i.test(w.t));
+ const sz=[...Q.matchAll(/\/F\w+ 0*(\d+) Tf[^\n]*\n?[^(]*\(MALL\)/g)].map(m=>+m[1]);const sz0=[...Q.matchAll(/\/F\w+ 0*(\d+) Tf[^\n]*\n?[^(]*\(S\)/g)].map(m=>+m[1]);
+ ok('small capitals print at the smaller size, capitals at full size',sz.length&&sz0.length&&sz[0]<sz0[0],[sz0,sz]);
+ ok('small capitals are shorter in the printed page',M_.length&&S_.length&&(M_[0].y1-M_[0].y0)<(S_[0].y1-S_[0].y0),[S_[0],M_[0]]);
+ const dsw=wd('double')[0];const lines=dsw?+py(`from PIL import Image
+im=Image.open('${PP}').convert('L');p=im.load();k=96/72
+x0,x1,y0,y1=int(${dsw.x0}*k)+1,int(${dsw.x1}*k)-1,int(${dsw.y0}*k),int(${dsw.y1}*k)+1
+full=[y for y in range(y0,y1) if sum(1 for x in range(x0,x1) if p[x,y]<160)>=(x1-x0)*0.9]
+g=0;prev=-9
+for y in full:
+  if y-prev>1: g+=1
+  prev=y
+print(g)`):0;
+ ok('double strike prints two lines through the word',lines===2,lines);
+ ok('character spacing is written as Tc, wide and tight',/4\.00 Tc/.test(Q)&&/-0\.67 Tc/.test(Q)&&/0\.00 Tc/.test(Q));
+ const sp=wd('spaced')[0];const gap=sp?sp.x0-72-(sp.x1-sp.x0):0;   // pdftotext splits the spaced letters, so the spaced word is measured from the line start to the plain one, less one space
+ ok('spaced word prints wider than the plain one by six gaps of 3 pt',gap>=18&&gap<=23,gap.toFixed(2));
+ const shw=wd('shaded')[0];const shc=shw?py(`from PIL import Image
+im=Image.open('${PP}').convert('RGB');p=im.load();k=96/72
+from collections import Counter
+c=Counter(p[x,y] for x in range(int(${shw.x0}*k),int(${shw.x1}*k)) for y in range(int(${shw.y0}*k),int(${shw.y1}*k)))
+print(','.join(map(str,c.most_common(1)[0][0])))`):'';
+ ok('run shade prints in its exact color under the text',shc.split(',').map(Number).every((v,i)=>Math.abs(v-[255,217,102][i])<=3),shc);
+ const ann=[...Q.matchAll(/\/Rect \[\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\]/g)].map(m=>m.slice(1).map(Number));const lw=wd('alink')[0];
+ ok('the external link is a URI link annotation with the target unescaped',/\/S \/URI\s*\/URI \(http:\/\/example\.com\/a\?b=1&c=\\\(2\\\)\)/.test(Q),(Q.match(/\/URI \([^\n]*/)||[''])[0]);
+ const ph=792;ok('its box covers the linked word',ann.length>=1&&lw&&ann.some(r=>r[0]<=lw.x0+1&&r[2]>=lw.x1-1&&r[1]<=ph-lw.y1+1&&r[3]>=ph-lw.y0-1),[ann,lw]);
+ ok('pages tree and every page reference its annotations',/\/Annots \d+ 0 R/.test(Q)&&!/WARNING/.test(qc));
+ }
  await A.b.close();const np=res.filter(r=>r[1]).length;console.log(np+'/'+res.length+' passed');process.exitCode=np===res.length?0:1;
 })();

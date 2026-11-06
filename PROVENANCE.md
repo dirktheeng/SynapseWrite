@@ -2,11 +2,11 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-537314 neurons, 1086715 edges, 188 layers, 4469 control states.
+537833 neurons, 1087716 edges, 188 layers, 4549 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
-| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1302) | 1302 | 8517 |
+| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1302) | 1302 | 8536 |
 | glyph network | Selects and addresses a character cell for drawing. | gen/app.py (387), gen/feat1_glyph.py (208), gen/imp3_zoom_pre.py (155) | 750 | 10284 |
 | feat1 run effects | Decodes the extended field of a style entry for the glyph network: caps and small caps draw and measure the capital, small capitals take a smaller size, hidden text takes no width or ink, character spacing joins the advance. | gen/feat1_glyph.py (39) | 39 | 174 |
 | glyph metrics | Character advance and kerning trees. | gen/app.py (20493) | 20493 | 58478 |
@@ -25,7 +25,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | shared control registers | Editor state registers and the selection order comparators. | gen/app.py (245), gen/rv_a4_regs.py (81), gen/imp4_regs.py (55), gen/t1_features.py (45), gen/imp3_regs.py (40), gen/rv_a3_pre.py (38), gen/feat1_regs.py (26), gen/imp3_zoom_pre.py (13), gen/imp5_regs.py (12), gen/imp4_list.py (3) | 558 | 5174 |
 | ribbon display list | One sequencer that plays draw records for the ribbon, menus and labels from read only memory, one item per tick. | gen/rv_a9_dl.py (150) | 150 | 431 |
 | event dispatch | One neuron left from the first dispatcher; routing now lives in raw event interpretation and the state rules. | gen/app.py (1) | 1 | 3 |
-| pointer | Draws the mouse pointer, saves and restores the colors under it, and chooses its shape from the screen. | gen/pointer2.py (55), gen/pointer.py (48), gen/app.py (15) | 118 | 791 |
+| pointer | Draws the mouse pointer, saves and restores the colors under it, and chooses its shape from the screen. | gen/pointer2.py (55), gen/pointer.py (48), gen/app.py (15) | 118 | 793 |
 | raw event interpretation | Turns raw browser events (key name code units, button masks, pointer types, field text, touch positions) into cooked events and browser commands. | gen/rv_a11_input.py (221), gen/app.py (91), gen/imp3_zoom_pre.py (12), gen/imp5_vr_md.py (5) | 329 | 1334 |
 | view: wheel and thumb drag | Shift+wheel and sideways wheel deltas slide a wide page; the thumb of the bar at the foot drags at its drawn scale. | gen/imp5_wheel.py (22) | 22 | 62 |
 | character maps | Unicode to internal code tables and back (Windows-1252 block). | gen/app.py (94) | 94 | 220 |
@@ -46,11 +46,12 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | zoom | Zoom levels and read mode commands, status bar controls, and pictures at other scales. | gen/imp3_zoom.py (457) | 457 | 3692 |
 | view: side scroll and vertical ruler | Slides a page wider than the window, its bar, and draws the vertical ruler. | gen/imp4_view.py (301), gen/app.py (212), gen/t1_features.py (44) | 557 | 3209 |
 | ribbon actions | Maps button ids to commands. | gen/app.py (155) | 155 | 256 |
-| docx writer | Writes the document XML parts. | gen/t2_write.py (652), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1095 | 10981 |
+| docx writer | Writes the document XML parts. | gen/t2_write.py (652), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1095 | 11224 |
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2707), gen/app.py (4) | 2711 | 41587 |
-| pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1396) | 1396 | 4442 |
+| pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1434) | 1434 | 4627 |
+| feat2 pdf run effects | NO PURPOSE RECORDED | gen/pdf_write.py (290) | 290 | 1106 |
 | docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (2837) | 2837 | 16733 |
-| png reader | Decodes PNG files to pixel words. | gen/docx_read.py (311), gen/a12_guard.py (61) | 372 | 4687 |
+| png reader | Decodes PNG files to pixel words. | gen/docx_read.py (311), gen/a12_guard.py (61) | 372 | 4750 |
 | zip crc check | Zip CRC check on open: the inflated main part runs through the save CRC network and must match the central directory. | gen/a12_guard.py (18) | 18 | 104 |
 | prompt bar | One bar that takes a short text for a color, a style name or a font name. | gen/imp4_prompt.py (524) | 524 | 2033 |
 | extended characters | UTF-8 and code units for characters past Latin-1. | gen/imp4_prompt.py (131) | 131 | 881 |
@@ -93,4 +94,4 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | rv a3 interaction | Editing keys, word and page motion, right click, autoscroll, context menu, and the late tier 1 features. | gen/t1_features.py (2039), gen/rv_a3_keys.py (655), gen/pointer3.py (86), gen/rv_a4_features.py (79), gen/ui.py (42) | 2901 | 25112 |
 | file output command | Selects the length, data base and file name the glue saves. | gen/rv_a11_out.py (5) | 5 | 8 |
 | screen check | Compares one line of the screen id plane against the line table on each blink tick and repairs by repainting. | gen/rv_a11_out.py (23) | 23 | 56 |
-| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (11079) | 11079 | 59523 |
+| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (11270) | 11270 | 60282 |
