@@ -536,7 +536,7 @@ on('W0',(None,'W1',{r1:as_x(PT)+wp}))
 on('W1',(None,'W2',{wbase:R1,r2:R1+LEN}))
 on('W2',(None,'W3',{wlen:R2}))
 e=S('W3')
-on('W3',(net.and_(net.step(a7_rn),net.or_(net.ge(Kw,Hi,e),net.ge(wo,wlen,e))),'A7_FL',None),(net.ge(Kw,Hi,e),'WR',None),(net.and_(net.eq(wm,1,e),net.ge(wn,590000,e)),'WR',None),(net.ge(wo,wlen,e),'WNL',{}),(net.eq(wm,2,e),'A7_FW',{rpw:wbase+1024+wo,rs:wbase+1024+wo}),(net.eq(wm,1,e),'A7_CW',{rpw:wbase+wo}),(None,'W4',{r1:wbase+wo,rs:wbase+1024+wo}))
+on('W3',(net.and_(net.step(a7_rn),net.or_(net.ge(Kw,Hi,e),net.ge(wo,wlen,e))),'A7_FL',None),(net.ge(Kw,Hi,e),'WR',None),(net.and_(net.eq(wm,1,e),net.ge(wn,589900,e)),'WR',None),(net.ge(wo,wlen,e),'WNL',{}),(net.eq(wm,2,e),'A7_FW',{rpw:wbase+1024+wo,rs:wbase+1024+wo}),(net.eq(wm,1,e),'A7_CW',{rpw:wbase+wo}),(None,'W4',{r1:wbase+wo,rs:wbase+1024+wo}))
 e=S('WNL')
 on('WNL',(None,'WNL2',{wp:wp+1,wo:0,wn:wn+net.eq(wm,1,e)}))
 wnl_c=net.and_(e,net.eq(wm,1,e)); w1.drive(wnl_c,(as_x(CB)+wn,10))
@@ -1104,16 +1104,18 @@ for p in net.ports:
     if isinstance(p,CallPort):
         net.keep.append(nid(p.en)); net.keep.append(nid(p.done)); net.keep+=[nid(q) for q,_d in p.args]
     if isinstance(p,(RPort,PixPort)): net.keep+=[nid(q) for q in p.out]
+import rv_a8_opt; _a8rep=rv_a8_opt.prune(net,[p.rec(None) for p in net.ports],[next(iter(v_.t)) for v_ in list(globals().values()) if isinstance(v_,X) and len(v_.t)==1])
 c=net.compile(); new=c['new']
 gn_=[''] *c['n']
 for g_,ids_ in net.groups.items():
-    for i_ in ids_: gn_[new[i_]]=g_
+    for i_ in ids_:
+        if new[i_]>=0: gn_[new[i_]]=g_
 json.dump(gn_,open('../build/ngroups.json','w'))
 print('neurons',c['n'],'layers',c['L'],file=sys.stderr)
-names={new[next(iter(v_.t))]:k_ for k_,v_ in list(globals().items()) if isinstance(v_,X) and len(v_.t)==1}
+names={new[next(iter(v_.t))]:k_ for k_,v_ in list(globals().items()) if isinstance(v_,X) and len(v_.t)==1 and new[next(iter(v_.t))]>=0}
 print('named regs in AND inputs',sorted(names[new[j]] for j in net.bool_regs_seen if new[j] in names),file=sys.stderr)
 json.dump(names,open('../build/names.json','w'))
-json.dump({str(new[next(iter(r_.t))]):k_ for k_,(r_,_) in fsm.states.items()},open('../build/states.json','w'))
+json.dump({str(new[next(iter(r_.t))]):k_ for k_,(r_,_) in fsm.states.items() if new[next(iter(r_.t))]>=0},open('../build/states.json','w'))
 pr=[]
 _ports=[p for p in net.ports if not getattr(p,'dom',0)]+[None]+[p for p in net.ports if getattr(p,'dom',0)]
 for p in _ports:
@@ -1166,6 +1168,7 @@ h=json.dumps(hdr,separators=(',',':')).encode()
 blob=struct.pack('<I',len(h))+h+b'\0'*((4-(len(h)+4)%4)%4)+raw
 gz=gzip.compress(blob,9)
 if os.environ.get('NETSTAT'):
+    import rv_a8_fmt; _a8b,_=rv_a8_fmt.encode(c,pr); print('a8 encoder gz',len(gzip.compress(_a8b,9)),'fonts encoder gz',len(gzip.compress(raw[:len(raw)-sum(len(d) for a,d,w in [[0,bytes(PF_ROM),1],[0,bytes(_litb),1]]+ROM_RUNS)],9)),file=sys.stderr)
     print({k_:(len(v_),len(gzip.compress(v_,6))) for k_,v_ in zip('ist ost act bias i0 i1 i2 i3 iw d1 d2 wz'.split(),_streams)},'wtab',len(wtab),'btab',len(btab),'hdr',len(h),file=sys.stderr)
 exec(open('a12_dbg.py').read())
 open('../build/net.bin.gz','wb').write(gz)

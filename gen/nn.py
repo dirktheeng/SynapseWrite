@@ -161,12 +161,13 @@ class Net:
         for i in range(n):
             if s.dom[i]: layer[i]+=L0       # domain 1 is numbered after domain 0, so each domain scans only its own bitmap
         L=max(layer)+1
-        idxs=sorted(range(n),key=lambda i:(layer[i],key[i])); new=[0]*n
+        alive=getattr(s,'alive',None) or [True]*n     # rv_a8_opt.prune: duplicates and dead neurons get no number
+        idxs=sorted((i for i in range(n) if alive[i]),key=lambda i:(layer[i],key[i])); new=[-1]*n
         for a,i in enumerate(idxs): new[i]=a
         lstart=[0]*(L+1)
-        for i in range(n): lstart[layer[i]+1]+=1
+        for i in idxs: lstart[layer[i]+1]+=1
         for l in range(L): lstart[l+1]+=lstart[l]
-        out=[[] for _ in range(n)]; lazy=[[] for _ in range(n)]
+        out=[[] for _ in idxs]; lazy=[[] for _ in idxs]
         # Evaluation modes. Every one computes the same function as visiting all inputs.
         # gated: with the enable off the output is zero whatever the values are, so the value
         #   inputs are read only after the enable fires.
@@ -230,6 +231,7 @@ class Net:
             if s.kind[i]=='reg' and ins[i].get(i)==1.0 and npush[i]==1:
                 push[i].discard(i); del ins[i][i]; act[i]=3; nsticky+=1
         for i in range(n):
+            if new[i]<0: continue
             rd=[]
             for j,w in ins[i].items():
                 if j in push[i]: out[new[j]].append((new[i],w))
@@ -242,7 +244,7 @@ class Net:
         import sys as _s
         print('pull',sum(pull),'sticky',nsticky,file=_s.stderr)
         s.pullv=[pull[i] for i in idxs]
-        return dict(n1=sum(1 for d_ in s.dom if not d_),lazy=lazy,n=n,L=L,new=new,lstart=lstart,out=out,act=[act[i] for i in idxs],bias=[s.bias[i] for i in idxs],layer=layer)
+        return dict(n1=sum(1 for i in idxs if not s.dom[i]),lazy=lazy,n=len(idxs),L=L,new=new,lstart=lstart,out=out,act=[act[i] for i in idxs],bias=[s.bias[i] for i in idxs],layer=layer)
 
 class Bus:
     """A shared vector signal. Each source is gated by the condition that selects it."""

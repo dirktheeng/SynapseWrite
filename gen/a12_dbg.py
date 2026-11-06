@@ -4,13 +4,15 @@ boolean by construction; the others (linear combinations, data registers) are li
 _dbg_args=[]
 _bset=getattr(net,'boolreg',set())
 for _r,_a in net.and_args:
+    if new[_a8rep[_r]]<0: continue
     for _x in _a:
-        _x=as_x(_x)
+        _x=as_x(_x); _x=X({_a8rep[_k]:_w for _k,_w in _x.t.items()},_x.c)
+        if any(new[_k]<0 for _k in _x.t): continue
         if len(_x.t)==1 and not _x.c:
             (_k,_w),=_x.t.items()
             if _w==1 and (net.act[_k]==STEP or _k in _bset or _k==net.ONE_id): continue
         if not _x.t: continue
-        _dbg_args.append((new[_r],_x))
+        _dbg_args.append((new[_a8rep[_r]],_x))
 _pv=net.pullv
 _ast=[0];_asr=[];_aw=[];_ac=[];_aand=[];_inv={}
 for _g,(_r,_x) in enumerate(_dbg_args):

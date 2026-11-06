@@ -64,3 +64,14 @@ Decisions:
 New writers: a4, a5, a6, a12 call lit, number and numz, which are now a10's, so they are routed. Also done by hand: pad3 uses the number writer; PDF only literals A4_Q and A6P_ use the block copy, with no CRC involved.
 Regress after vs before: every screen hash equal, every docx hash equal. PDF bodies equal up to the embedded font streams (subset carries the build time, a10's note), same length, same xref. Total 5,063,060 ticks, 561.7 M edges. Neurons 729,781 to 611,401; synapses 1,194,346 to 1,018,588 push plus lazy 1,273,767 to 1,129,725; weights gz 2,461,663 to 2,382,999. Open of a small docx 13.6 M to 17.3 M edges, from the comparator bank.
 Runs: t4_docx 18/18, t4_pdf 7/7, e2e 210/210, rv_a6 6/6, rv_a6_pdf 4/4, rv_a6_eq 9/9, rv_math_mark 6/6.
+fuzz_caps on the a12 merge: 47 of 48; the failure was a7's copy window overshooting a12's 590000 limit by 18 cells. Limit is now tested at 589900, so a window cannot pass it (after the fix the case passes, see below).
+## Step 4: a8 (b7e29a9)
+Merged by hand (git merge -s ours, then pieces), because the weight format and engine conflict with fonts and a10.
+Before: page 3,215,094 bytes, weights gz 2,382,999, x1 428 ms, x4 1807 ms, x6 2486 ms, 611,401 neurons, wasm 77.5 MB after the regress script.
+Encoder: on the same net, a8's encoder 2,599,269 gz, fonts' streams 1,750,631 gz (excluding the ROM). Fonts' encoder stays.
+Taken: base64 plain loop or fromBase64; payload in data attributes instead of a JS string; prune (dead 161 K, duplicates 161 K); engine records per neuron and per synapse; display copy in the engine, the ImageData is remade when memory growth detaches it (a paged bank can grow memory).
+Not taken: numbering by creation order. a8 measures it as 180 KB bigger on the glyph planes, and the rule here is the smaller page. Not measured on this net.
+Pruning is not free: first paint work 8.6 M to 17.2 M, since a shared neuron loses laziness when one consumer pushes. Other common events unchanged within 1 percent (bench, work counts). Kept for 161 K fewer neurons.
+After: page 3185129 bytes, weights gz 2,360,456, x1 273 ms, x4 1039 ms, x6 1600 ms, 449,671 neurons, 73.3 MB after the regress script.
+Runs: regress hashes equal to the pre a10 baseline except PDF font streams; e2e 210/210, t4_pdf 7/7, fonts 23/23, fuzz regress 5/5, fuzz_selftest 4/4.
+Test tool edit: nprof, prof, prof2 read e.ostart(i), since p_ostart is gone.

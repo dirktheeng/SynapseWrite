@@ -1,12 +1,12 @@
 // Glue: runs ANN inference, encodes events and bytes as vectors, displays the output
 // tensor, and executes what the network commands. It never inspects document data.
 (async()=>{
-const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const b64=s=>{if(Uint8Array.fromBase64)return Uint8Array.fromBase64(s);const t=atob(s),n=t.length,u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=t.charCodeAt(i);return u;};
 const gunzip=async u=>new Uint8Array(await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
-const blob=await gunzip(b64(window.NET_B64));
+const blob=await gunzip(b64(document.getElementById('net').dataset.b));
 const hl=new DataView(blob.buffer).getUint32(0,true);const h=JSON.parse(new TextDecoder().decode(blob.subarray(4,4+hl)));
 let o=4+hl;o+=(4-o%4)%4;
-const {instance:{exports:e}}=await WebAssembly.instantiate(b64(window.ENG_B64),{});
+const {instance:{exports:e}}=await WebAssembly.instantiate(b64(document.getElementById('eng').dataset.b),{});
 e.setup(h.n,h.e,h.L,h.nports,h.bank,h.ni,h.nt,h.nb,h.zn,h.n1);
 const mem=()=>e.memory.buffer;
 const put=(ptr,bytes)=>{new Uint8Array(mem(),ptr,bytes).set(blob.subarray(o,o+bytes));o+=bytes;};
@@ -18,7 +18,7 @@ for(const [a,v] of h.bank_init)e.bset(a,v);
 for(const [a,n,w] of h.rom)for(let i=0;i<n;i++,o+=w){const x=w==1?blob[o]:blob[o]+256*blob[o+1]+(w>2?65536*blob[o+2]:0);if(x)e.bset(a+i,x);}
 window.annMem=()=>mem().byteLength;
 try{const s=JSON.parse(localStorage.getItem('synapse_dict')||'[]');for(let i=0;i<s.length;i++)e.bset(h.dict+i,s[i]);}catch(_){}
-const cv=document.getElementById('screen'),ctx=cv.getContext('2d',{alpha:false,willReadFrequently:true});const img=ctx.createImageData(1280,800);
+const cv=document.getElementById('screen'),ctx=cv.getContext('2d',{alpha:false,willReadFrequently:true});let img=null;const frame=()=>{if(!img||!img.data.length)img=new ImageData(new Uint8ClampedArray(mem(),e.p_img(),1280*800*4),1280,800);return img;};
 let ptr='mouse';let evm=0;let timer=0,pendClip=null,keyCopy=false;
 // Clipboard write: the async API, then the copy event, then a code telling the network that only its own copy holds the text.
 const writeClip=t=>{const fail=()=>{let ok=false;try{ok=document.execCommand('copy');}catch(_){}if(!ok)dispatch(13,2);};try{navigator.clipboard.writeText(t).catch(fail);}catch(_){fail();}};
@@ -29,7 +29,7 @@ const dispatch=(k,a=0,b=0,c=0)=>{
  if(busy){if(k!==11)pendq.push([k,a,b,c]);return;}
  const t0=performance.now();const E0=e.edges();
  e.inject(h.ev[0],k);e.inject(h.ev[4],Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/864e5));if(evm){e.inject(h.ev[5],evm);evm=0;}if(a)e.inject(h.ev[1],a);if(b)e.inject(h.ev[2],b);if(c)e.inject(h.ev[3],c);
- let n=0;const paint=()=>{const dr=new Uint8Array(mem(),e.p_drow(),801),f=new Uint32Array(mem(),e.p_fb(),1024000),q=new Uint32Array(img.data.buffer);for(let y=0;y<800;y++)if(dr[y]){let z=y;while(dr[z])dr[z++]=0;for(let i=y*1280,j=z*1280;i<j;i++)q[i]=f[i]|0xff000000;ctx.putImageData(img,0,0,0,y,1280,z-y);y=z;}};
+ let n=0;const paint=()=>{for(let y=e.show(0);y>=0;y=e.show(y)){const z=e.showz();ctx.putImageData(frame(),0,0,0,y,1280,z-y);y=z;}};
  // Inference continues in slices so a long computation never leaves the network stopped half way, and the page stays alive.
  const go=()=>{const lim=window.annMax||5000000,m=e.run(h.halt,lim);n+=m;paint();if(m>=lim&&!window.annMax){busy=true;setTimeout(go,0);return;}busy=false;
  const clip=e.val(h.clipout);if(clip){const cs=new Uint16Array(clip-1);for(let i=0;i<clip-1;i++)cs[i]=e.bget(h.cb+i);const txt=new TextDecoder('utf-16le',{ignoreBOM:true}).decode(cs);window.annClip=txt;pendClip=txt;if(!keyCopy)writeClip(txt);keyCopy=false;}
