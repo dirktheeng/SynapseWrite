@@ -82,5 +82,5 @@ FLOPs: still below baseline on all events but mouse move (equal).
 
 ## 5. Final full run (head 93ab909)
 Two builds byte identical: 2,963,233 bytes (baseline 2,953,717; +9,516).
-e2e 210/210, tier2 49/49, look 31/31, t3_table 9/9, t3_pic 9/9, t3_misc 13/13, t4_docx 18/18, t4_pdf 7/7, roundtrip and touch all true, a4 50/50, a5_docx 37 PASS (6,784,308 edges), fonts 23/23, imp2 45, imp3 49/49, imp4 101/101, imp5 49, imp6 20, feat1 24/24, feat2 35/35, t4 ran, p2 49/49, audit 67/67, flops below or equal to baseline on every event.
+e2e 210/210, tier2 49/49, look 31/31, t3_table 9/9, t3_pic 9/9, t3_misc 13/13, t4_docx 18/18, t4_pdf 7/7, roundtrip and touch all true, a4 50/50, a5_docx 37 PASS (6,808,741 edges, up from 6,784,308 at run 1: the style and list reader additions), fonts 23/23, imp2 45, imp3 49/49, imp4 101/101, imp5 49, imp6 20, feat1 24/24, feat2 35/35, t4 ran, p2 49/49, audit 67/67, flops below or equal to baseline on every event.
 Not reached: Columns (third column, column line), style name and id lengths, the hyphenation walker.
