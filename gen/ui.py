@@ -108,7 +108,8 @@ ICON['proof']=["................","..DDDDDDDDD.....","..DWWWWWWWDD....","..DWggg
 ICON['vread']=["................","................",".DDDDDD.DDDDDD..",".DWWWWD.DWWWWD..",".DWggWD.DWggWD..",".DWWWWD.DWWWWD..",".DWggWD.DWggWD..",".DWWWWD.DWWWWD..",".DWggWD.DWggWD..",".DWWWWD.DWWWWD..",".DDDDDD.DDDDDD..","................","................","................","................","................"]
 ICON['vprint']=["................","....DDDDDDDD....","....DWWWWWWD....","....DWggggWD....","....DWWWWWWD....","....DWggggWD....","....DWWWWWWD....","....DWggggWD....","....DWWWWWWD....","....DWggggWD....","....DWWWWWWD....","....DDDDDDDD....","................","................","................","................"]
 ICON['vweb']=["................","................","..DDDDDDDDDDDD..","..DbbbbbbbbbbD..","..DWWWWWWWWWWD..","..DWggggggggWD..","..DWWWWWWWWWWD..","..DWggggggggWD..","..DWWWWWWWWWWD..","..DDDDDDDDDDDD..","................","................","................","................","................","................"]
-ICON['painter']=ICON['col1']
+ICON['tick']=["................","................","............t...","...........tt...","..........tt....",".........tt.....","..t.....tt......","..tt...tt.......","...tt.tt........","....ttt.........",".....t..........","................","................","................","................","................"]
+ICON['cross']=["................","................","...r.......r....","..rrr.....rrr...","...rrr...rrr....","....rrr.rrr.....",".....rrrrr......","......rrr.......",".....rrrrr......","....rrr.rrr.....","...rrr...rrr....","..rrr.....rrr...","...r.......r....","................","................","................"]
 class L:
     def __init__(s): s.i=[];s.tab=None
     def r(s,x,y,w,h,c,a=0,hc=None,key=None):
@@ -245,7 +246,7 @@ def _tw(s,st):
 GRIDC=22
 def insert(u):
     for i,(lb,id_) in enumerate((('2 x 2',40),('3 x 3',41),('4 x 4',42))): u.ibtn(6,ROW[i],70,21,lb,id_,'table')
-    group_label(u,84,172,'Tables'); u.big(314,64,54,62,'Picture',52,'pic'); group_label(u,314,54,'Pictures')
+    group_label(u,6,276,'Tables'); u.big(314,64,54,62,'Picture',52,'pic'); group_label(u,314,54,'Pictures')
     u.ibtn(380,64,84,21,'Header',46,'head'); group_label(u,380,186,'Header and Footer')
     x=576
     u.btn(x,64,84,21,'Page Field',3); u.btn(x,86,84,21,'Date',4); u.btn(x+86,64,84,21,'Word Count',5); u.btn(x+86,86,84,21,'Update All',1); group_label(u,x,170,'Fields')
@@ -270,7 +271,7 @@ def refs(u):
 def review(u):
     u.big(6,64,54,62,'Spelling',2,'spell'); group_label(u,6,54,'Proofing')
     u.big(68,64,50,62,'Comment',49,'cmt'); group_label(u,68,156,'Comments')
-    u.big(232,64,56,62,'Track',3,'track'); u.ibtn(290,64,76,21,'Accept',4,'col1'); u.ibtn(290,86,76,21,'Reject',1,'col1'); group_label(u,232,134,'Tracking')
+    u.big(232,64,56,62,'Track',3,'track'); u.ibtn(290,64,76,21,'Accept',4,'tick'); u.ibtn(290,86,76,21,'Reject',1,'cross'); group_label(u,232,134,'Tracking')
 def view(u):
     for i,(nm,ic) in enumerate((('Ruler','ruler'),('Formatting Marks','marks'))):
         u.r(8,64+i*26,150,24,LG,200+1+i,HVG); u.r(12,69+i*26,14,14,(120,120,120),200+1+i); u.r(13,70+i*26,12,12,WHT,200+1+i)

@@ -14,14 +14,14 @@ const like=(a,b)=>{let c=0;for(const k of a.s)if(b.s.has(k))c++;return c/Math.ma
  {const {p}=await open();
   ok('native cursor hidden on canvas',await p.evaluate(()=>getComputedStyle(document.getElementById('screen')).cursor)==='none');
   await p.keyboard.type('Sample text for the pointer');
-  const ribbon=await sig(p,700,140),gray=await sig(p,100,500),status=await sig(p,500,790),scroll=await sig(p,1270,500),page=await sig(p,700,600),text=await sig(p,340,296),margin=await sig(p,260,500),btn=await sig(p,125,102),box=await sig(p,160,75);
+  const ribbon=await sig(p,700,140),gray=await sig(p,100,500),status=await sig(p,500,778),scroll=await sig(p,1270,500),page=await sig(p,700,600),text=await sig(p,340,296),margin=await sig(p,260,500),btn=await sig(p,125,102),box=await sig(p,160,75);
   ok('arrow has ink',ribbon.cnt>40,ribbon.cnt);ok('same arrow on ribbon and gray',like(ribbon,gray));ok('same arrow on status bar',like(ribbon,status));ok('same arrow on scrollbar',like(ribbon,scroll));ok('arrow over a button',like(btn,ribbon));
   ok('I-beam differs from arrow',!like(page,ribbon)&&page.cnt>10,page.cnt);ok('I-beam over text same as page',like(text,page));ok('I-beam in the font box',like(box,page));ok('left margin arrow differs',!like(margin,ribbon)&&!like(margin,page)&&margin.cnt>10);
   // no trails, and the exact image comes back
-  await p.evaluate(()=>annDispatch(12));const A=await fb(p);
-  for(let i=0;i<40;i++)await p.mouse.move(40+i*30,20+i*19);await p.mouse.move(600,500);
+  await p.evaluate(()=>annDispatch(12));await p.keyboard.press('End');const A=await fb(p);
+  for(let i=0;i<40;i++)await p.mouse.move(40+i*30,20+i*19);await p.mouse.move(600,500);await p.keyboard.press('End');
   const M=await fb(p);let out=0;for(let j=0;j<800;j++)for(let i=0;i<1280;i++){if(i>=588&&i<616&&j>=490&&j<520)continue;const k=3*(j*1280+i);if(M[k]!==A[k]||M[k+1]!==A[k+1]||M[k+2]!==A[k+2])out++;}
-  ok('no trails outside the pointer',out===0,out);await p.evaluate(()=>annDispatch(12));ok('hiding restores the identical image',same(A,await fb(p)));
+  ok('no trails outside the pointer',out===0,out);await p.evaluate(()=>annDispatch(12));await p.keyboard.press('End');ok('hiding restores the identical image',same(A,await fb(p)));
   // pointer over text the caret blinks under, then a paint: nothing is left behind
   await p.mouse.move(345,296);await p.keyboard.type(' more');await p.mouse.move(600,500);await p.evaluate(()=>annDispatch(12));const B1=await fb(p);
   const {p:q}=await open();await q.keyboard.type('Sample text for the pointer more');await q.evaluate(()=>annDispatch(12));ok('painting under the pointer leaves no sprite',same(B1,await fb(q)));
@@ -34,7 +34,7 @@ const like=(a,b)=>{let c=0;for(const k of a.s)if(b.s.has(k))c++;return c/Math.ma
  {const {p}=await open();await p.mouse.click(190,47);await p.waitForTimeout(30);await p.evaluate(()=>annDispatch(12));const lay=await fb(p);await p.mouse.move(127,47);await p.mouse.click(127,47);await p.evaluate(()=>annDispatch(12));
   // insert a table: border shape
   await p.mouse.click(40,75);await p.waitForTimeout(100);const page=await sig(p,700,600);
-  let best=null;for(let x=620;x<640&&!best;x+=2){const s=await sig(p,x,312);if(!like(s,page)&&s.cnt>10){const arrow=await sig(p,100,500);if(!like(s,arrow))best=[x,s];}}
+  let best=null;for(let x=620;x<640&&!best;x+=2){const s=await sig(p,x,335);if(!like(s,page)&&s.cnt>10){const arrow=await sig(p,100,500);if(!like(s,arrow))best=[x,s];}}
   ok('resize arrow over a table border',!!best,best&&best[0]);
  }
  {const {p}=await open();await p.evaluate(()=>annDispatch(12));const A=await fb(p);await p.mouse.click(28,47);await p.waitForTimeout(30);await p.evaluate(()=>annDispatch(12));const F=await fb(p);ok('File screen covers the app',!same(A,F));
