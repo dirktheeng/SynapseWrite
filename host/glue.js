@@ -1,16 +1,15 @@
 // Glue: runs ANN inference, encodes events and bytes as vectors, displays the output
 // tensor, and executes what the network commands. It never inspects document data.
 (async()=>{
-const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const b64=s=>{const t=atob(s),n=t.length,u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=t.charCodeAt(i);return u;};
 const gunzip=async u=>new Uint8Array(await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
-const blob=await gunzip(b64(window.NET_B64));
+const blob=await gunzip(b64(document.getElementById('net').dataset.b));
 const hl=new DataView(blob.buffer).getUint32(0,true);const h=JSON.parse(new TextDecoder().decode(blob.subarray(4,4+hl)));
 let o=4+hl;o+=(4-o%4)%4;
-const {instance:{exports:e}}=await WebAssembly.instantiate(b64(window.ENG_B64),{});
-e.setup(h.n,h.e,h.L,h.nports,h.bank,h.ni,h.nt,h.dn,h.wn);
+const {instance:{exports:e}}=await WebAssembly.instantiate(b64(document.getElementById('eng').dataset.b),{});
+e.setup(h.n,h.e,h.L,h.nports,h.bank,h.ni,h.nt,h.zn);
 const mem=()=>e.memory.buffer;
-const put=(ptr,bytes)=>{new Uint8Array(mem(),ptr,bytes).set(blob.subarray(o,o+bytes));o+=bytes;};
-put(e.p_istart(),4*(h.n+1));put(e.p_isrc(),4*h.ni);put(e.p_iwi(),2*h.ni);put(e.p_act(),h.n);put(e.p_bias(),8*h.n);put(e.p_ostart(),4*(h.n+1));put(e.p_dz(),h.dn);put(e.p_wz(),h.wn);put(e.p_lstart(),4*(h.L+1));put(e.p_ports(),4*h.nports);put(e.p_wtab(),8*h.nt);
+new Uint8Array(mem(),e.p_z(),h.zn).set(blob.subarray(o,o+h.zn));
 e.finish();
 for(const [i,v] of h.init)e.inject(i,v);
 const bank=()=>new Float32Array(mem(),e.p_bank(),h.bank);

@@ -3,29 +3,39 @@
 // v_i(t) = act_i(bias_i + sum_{layer(j)<layer(i)} w_ji v_j(t) + sum_{recurrent} w_ji v_j(t-1))
 // All neurons rest at zero, so only neurons with a nonzero input are visited.
 // Neurons are numbered in layer order, so a two level bitmap yields them in a valid order.
-typedef unsigned char u8; typedef unsigned short u16; typedef int i32; typedef float f32; typedef double f64; typedef unsigned long long u64;
+typedef unsigned char u8; typedef unsigned short u16; typedef int i32; typedef float f32; typedef double f64; typedef unsigned long long u64; typedef unsigned int u32;
 extern u8 __heap_base; static u8* hp=&__heap_base;
 __attribute__((export_name("alloc"))) void* alloc(i32 n){u8*p=(u8*)(((unsigned long)hp+15)&~15ul);hp=p+n;
   unsigned long need=((unsigned long)hp+65535)/65536, have=__builtin_wasm_memory_size(0);
   if(need>have)__builtin_wasm_memory_grow(0,need-have); return p;}
-static u8*dz,*wz; static i32 *stamp,tickno=1; static i32 *istart,*isrc; static u16 *iwi,*wi; static f64 *wtab; static i32 NI;
+static u8*z; static i32 *stamp,tickno=1; static i32 *istart,*isrc; static u16 *iwi,*wi; static f64 *wtab; static i32 NI;
 static i32 N,E,L,NP,NT; static u8*act; static f64*bias,*v,*acc,*nacc; static i32*ostart,*osplit,*dst;
 static i32*lstart,*live,*nlist,*ports,*pen,*pptr; static u8*nflag; static i32 nlive,nnext,nwp,nrp; static u64*bits,*sum; static i32 SWORDS;
 static f32*bank; static u8*fb; enum{W=1280,H=800,YB=4096};
-__attribute__((export_name("setup"))) void setup(i32 n,i32 e,i32 l,i32 np,i32 banksize,i32 ni,i32 nt,i32 dn,i32 wn){dz=alloc(dn+1);wz=alloc(wn+1);N=n;E=e;L=l;NP=np;NI=ni;NT=nt;istart=alloc(4*(n+1));isrc=alloc(4*ni+4);iwi=alloc(2*ni+2);wtab=alloc(8*nt+8);
+__attribute__((export_name("setup"))) void setup(i32 n,i32 e,i32 l,i32 np,i32 banksize,i32 ni,i32 nt,i32 zn){z=alloc(zn+1);N=n;E=e;L=l;NP=np;NI=ni;NT=nt;istart=alloc(4*(n+1));isrc=alloc(4*ni+4);iwi=alloc(2*ni+2);wtab=alloc(8*nt+8);
  act=alloc(n);bias=alloc(8*n);v=alloc(8*n);acc=alloc(8*n);nacc=alloc(8*n);ostart=alloc(4*(n+1));osplit=alloc(4*n);dst=alloc(4*e+4);wi=alloc(2*e+2);
  stamp=alloc(4*n);lstart=alloc(4*(l+1));live=alloc(4*n);nlist=alloc(4*n);nflag=alloc(n);bits=alloc(8*(n/64+2));SWORDS=n/4096+2;sum=alloc(8*SWORDS);
  ports=alloc(4*np);pen=alloc(4*np);pptr=alloc(4*np);bank=alloc(4*banksize);fb=alloc(W*H*4);}
 #define PTR(name,x) __attribute__((export_name(name))) void* x##_p(void){return x;}
-PTR("p_dz",dz)PTR("p_wz",wz)PTR("p_istart",istart)PTR("p_isrc",isrc)PTR("p_iwi",iwi)PTR("p_wtab",wtab)PTR("p_act",act)PTR("p_bias",bias)PTR("p_ostart",ostart)PTR("p_lstart",lstart)PTR("p_ports",ports)PTR("p_bank",bank)PTR("p_fb",fb)PTR("p_v",v)
-// Sizes and targets arrive delta coded so the weight file compresses; this restores them.
+PTR("p_z",z)PTR("p_bank",bank)PTR("p_fb",fb)PTR("p_v",v)
+// The weight file is streams of base 128 integers (see gen/rv_a8_fmt.py); this restores the arrays the tick loop uses.
 // Each neuron's targets ascend, so its recurrent targets come first. Ports are indexed by enable.
-__attribute__((export_name("finish"))) void finish(void){
- for(i32 i=0;i<N;i++){istart[i+1]+=istart[i];ostart[i+1]+=ostart[i];}
- {u8*d=dz,*w_=wz;for(i32 k=0;k<E;k++){i32 x=*d++;if(x==255){__builtin_memcpy(&x,d,4);d+=4;}dst[k]=x;u16 y=*w_++;if(y==255){__builtin_memcpy(&y,w_,2);w_+=2;}wi[k]=y;}}
- for(i32 l=0;l<L;l++)for(i32 i=lstart[l];i<lstart[l+1];i++){i32 s=ostart[i],e=ostart[i+1],end=lstart[l+1],q=s;
-  for(i32 k=s+1;k<e;k++)dst[k]+=dst[k-1];
-  while(q<e&&dst[q]<end)q++; osplit[i]=q;}
+static u8*zp; static inline u32 R(void){u8*p=zp;u32 x=*p++;if(x>=128){x&=127;i32 sh=7;u32 b;do{b=*p++;x|=(b&127)<<sh;sh+=7;}while(b>=128);}zp=p;return x;}
+__attribute__((export_name("finish"))) void finish(void){zp=z;
+ {i32 s=0;for(i32 i=0;i<N;i++){ostart[i]=s;s+=R();}ostart[N]=s;}
+ {i32 pf=0;for(i32 i=0;i<N;i++)if(ostart[i+1]>ostart[i]){u32 x=R();pf+=(i32)(x>>1)^-(i32)(x&1);dst[ostart[i]]=pf;}}
+ for(i32 i=0;i<N;i++)for(i32 k=ostart[i]+1,en=ostart[i+1];k<en;k++)dst[k]=dst[k-1]+R();
+ for(i32 k=0;k<E;k++)wi[k]=R();
+ {i32 s=0;for(i32 i=0;i<N;i++){istart[i]=s;s+=R();}istart[N]=s;}
+ for(i32 i=0;i<N;i++)for(i32 k=istart[i],en=istart[i+1];k<en;k++){u32 x=R();i32 d=(i32)(x>>2)^-(i32)((x>>1)&1),a=i-d;isrc[k]=x&1?~a:a;}
+ for(i32 k=0;k<NI;k++)iwi[k]=R();
+ __builtin_memcpy(act,zp,N);zp+=N;
+ u8*bz=zp;for(i32 i=0;i<N;i++)R();
+ for(i32 l=0;l<=L;l++)lstart[l]=R();
+ __builtin_memcpy(ports,zp,4*NP);zp+=4*NP;__builtin_memcpy(wtab,zp,8*NT);zp+=8*NT;
+ {u8*bt=zp;zp=bz;for(i32 i=0;i<N;i++){f64 b;__builtin_memcpy(&b,bt+8*R(),8);bias[i]=b;}}
+ for(i32 l=0;l<L;l++)for(i32 i=lstart[l];i<lstart[l+1];i++){i32 q=ostart[i],en=ostart[i+1],end=l&1?i+1:lstart[l+1];   // even ranges hold registers, odd ranges feed forward
+  while(q<en&&dst[q]<end)q++; osplit[i]=q;}
  for(i32 pass=0;pass<2;pass++){i32*p=ports,*e=ports+NP;i32 c=0;
   while(p<e){i32 k=p[0],len=k==1||k==2?6:k==3?12:k==4?9:k==6?8:k==7?8:4;
    if((k==1||k==3||k==4||k==6||k==7)==(pass==0)){pen[(pass?nwp:0)+c]=p[1];pptr[(pass?nwp:0)+c]=(i32)(p-ports);c++;}
