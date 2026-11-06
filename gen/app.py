@@ -280,12 +280,12 @@ ik=net.reg(); in_=net.reg(); iy=net.reg(); im_k=net.reg(); im_n=net.reg(); im_y=
 IF.set(iv,I_go,I_val); IF.set(ifb,I_go,I_fb); IF.set(ifull,I_go,0); IF.set(ik,I_go,I_k); IF.set(in_,I_go,I_n); IF.set(iy,I_go,I_y)
 irR=RPort(4); iW=WPort(4); irR.dom=1; iW.dom=1; IRD=irR.out[0]
 net.rec(IF.S('I0'),I_go)
-e=IF.S('I0'); imemo=net.and_(net.eq(iv,im_v,e),net.eq(ik,im_k,e),net.eq(in_,im_n,e),net.eq(iy,im_y,e))
+e=IF.S('I0'); _im0=net.eq(iv,im_v,e); imemo=net.and_(_im0,net.eq(ik,im_k,_im0),net.eq(in_,im_n,_im0),net.eq(iy,im_y,_im0))   # the rest is read only when the record matches
 IF.on('I0',(imemo,'IE',{iout:im_o}),(None,'IS',{ii:0}))   # record 0 is searched too: the default style must not get a second index
 e=IF.S('IS')
 IF.on('IS',(net.ge(ii,icnt,e),'IA',None),(None,'IC',{irR:as_x(STYT)+ii*4}))
 e=IF.S('IC')
-IF.on('IC',(net.and_(net.eq(IRD,iv,e),net.eq(irR.out[1],ik,e),net.eq(irR.out[2],in_,e),net.eq(irR.out[3],iy,e)),'IM',{iout:ii}),(None,'IS',{ii:ii+1}))
+_ic0=net.eq(IRD,iv,e); IF.on('IC',(net.and_(_ic0,net.eq(irR.out[1],ik,_ic0),net.eq(irR.out[2],in_,_ic0),net.eq(irR.out[3],iy,_ic0)),'IM',{iout:ii}),(None,'IS',{ii:ii+1}))
 e=IF.S('IA')
 IF.on('IA',(net.ge(icnt,STYCAP,e),'IE',{iout:ifb,ifull:1}),(None,'IM',{iout:icnt,icnt:icnt+1,iW:(as_x(STYT)+icnt*4,iv,ik,in_,iy)}))
 IF.on('IM',(None,'IE',{im_v:iv,im_o:iout,im_k:ik,im_n:in_,im_y:iy}))
@@ -721,7 +721,7 @@ fsm.set(a7_wb,S('RD1'),0); fsm.set(a7_vw,net.and_(S('RD1'),a7_far,bgp,ONE-lc),1)
 minc=net.min_(cp,oldcp);maxc=net.max_(cp,oldcp)
 e=S('RD1')
 # The provisional page stays only for the keys that keep it. Anything else with the caret still past the background redraws around the caret, and otherwise the view goes back to where it was: the paragraphs after the background have no saved place to walk from.
-fsm.set(impk,e,0)
+fsm.set(impk,e,0); fsm.set(vrc,e,0)
 on('RD1',(net.and_(impf,ONE-impk,ONE-has_sel,net.ge(cp,bpi,e)),'IMP_F0',{ap:cp,ao:co,autos:0,a7_jmp:1,fastok:0}),(net.and_(impf,ONE-impk),'IMP_X',None),(net.and_(e,ONE-full),'RF0',{sidx:minc,vm:0}),
  (lc,'VS2048',{rZ:(0,DOCY,1262,VH,GRAY,0),sidx:0,vm:0,vln:0,bgp:0,hitn:0}),
  (None,'VS2048',{rZ:(0,DOCY,1262,VH,GRAY,0),sidx:0,vm:1,vln:0,hitn:0}))
@@ -817,7 +817,7 @@ here=net.and_(ONE-a4hw,net.eq(pi,cp,e),net.or_(net.and_(ONE-rv_eol,net.ge(co,ls_
 fsm.set(cy,here,yy);fsm.set(chh,here,lhh);fsm.set(pcp,here,pages);fsm.set(cxl,here,lleft);fsm.set(cxr,here,lright)
 vis=net.and_(net.gt(yy+lhh,scroll,e),net.lt(yy,scroll+VHZ,e))
 pa=net.or_(full,net.eq(pi,cp,e),net.eq(pi,oldcp,e))
-_vfs=net.and_(vis,full,ONE-vrc); fsm.set(vrt,_vfs,ptop); fsm.set(vrm,_vfs,s_mt); fsm.set(vrh,_vfs,s_th); fsm.set(vrc,_vfs,1)
+_vfs=net.and_(vis,full,ONE-vrc); fsm.set(vrt,_vfs,ptop); _vf1=net.and_(_vfs,net.eq(pi,0,e),net.eq(lj,0,e)); fsm.set(vrm,_vfs-_vf1,s_mt); fsm.set(vrm,_vf1,yy-ptop); fsm.set(vrh,_vfs,s_th); fsm.set(vrc,_vfs,1)
 cvl=net.and_(vis,full); wvl.drive(cvl,(as_x(VL)+vln*6,yy+DOCY-scroll,yy+DOCY-scroll+lhh,pi,lj,lleft,lright)); fsm.set(vln,cvl,vln+1)
 on('R7',(net.and_(vis,pa),'R8',None),(None,'R9',None))
 sy=yy+DOCY-scroll
@@ -843,11 +843,11 @@ on('C0',(net.ge(off,le_,e),'CE',None),(net.and_(rv_hl,net.ge(off,rv_mhe,e)),'RVA
 fsm.set(kprev,S('R8'),0)
 e=S('C1')
 Kp=pi*2048+off; insel=net.and_(net.ge(Kp,Lo,e),net.lt(Kp,Hi,e)); rv_mh=net.and_(rv_hl,ONE-insel,net.lt(off,rv_mhe,e)); nosel=e-insel-rv_mh
-_xue=net.ge(R1,UO,e); isfnc=net.and_(net.ge(R1,1000,e),ONE-_xue); isp=net.eq(R1,32,e); xtra=G_(lex,isp)+rv_tabw(x-(tx0+48),net.eq(R1,9,e)); _rv_ne=net.and_(e,rv_eol); chere=net.and_(net.eq(pi,cp,e),net.eq(off,co,e),ONE-net.eq(off,ls_,_rv_ne))
+_hi8=net.ge(R1,127,e); _xue=net.ge(R1,UO,_hi8); isfnc=net.and_(net.ge(R1,1000,_hi8),ONE-_xue); isp=net.eq(R1,32,e); xtra=G_(lex,isp)+rv_tabw(x-(tx0+48),net.eq(R1,9,e)); _rv_ne=net.and_(e,rv_eol); chere=net.and_(net.eq(pi,cp,e),net.eq(off,co,e),ONE-net.eq(off,ls_,_rv_ne))
 fsm.set(cx,chere,x);fsm.set(cacol,chere,col)
 g_en.lin(e);g_ch.add(e,R1);g_st.add(e,RSR);g_fl.add(e,RSC);g_x.add(e,x+kern+0.5);g_y.add(e,gly_y+YB)
 ke2=net.and_(e,net.step(kprev));kp_en.lin(ke2);kp_in.add(ke2,kprev)
-_shh=net.and_(net.eq(R1,173,e),net.or_(net.lt(off+1,le_,e),net.ge(le_,plen_,e))); g_draw.lin(e-isp-isfnc-_shh)
+_sh0=net.eq(R1,173,_hi8); _shh=net.and_(_sh0,net.or_(net.lt(off+1,le_,_sh0),net.ge(le_,plen_,_sh0))); g_draw.lin(e-isp-isfnc-_shh)
 und_w=net.and_(e,net.or_(SD['und'],SD['ins'])); ske_w=net.and_(e,net.or_(SD['strike'],SD['dele'])); trk_=net.and_(e,net.or_(SD['ins'],SD['dele'])); a2_chg=R(); fsm.set(a2_chg,trk_,1)   # tracked text is drawn in the review color
 colh=net.decode_z(G_(SD['color'],ONE-trk_)+trk_*4,32,e)
 for j in range(32): fg[j].lin(colh[j])
@@ -881,7 +881,7 @@ for rr,en_,yv in ((rC,und,sy+lasc+2-rise),(rD,ske,sy+lasc-strk-rise)):
     rr.b[8].add(en_,col)
 mk_=net.and_(e,isp,t1_marks,ONE-und); rC.drive(mk_,(x+net.gate(adv*0.5,mk_),sy+lasc-6,2,2,(120,120,160),col))
 exec(open('t4_spell.py').read())
-adv_c={x:x+net.relu(adv+kern-_shh*M)+xtra,col:col+1,off:off+1,kprev:R1}
+adv_c={x:x+adv+kern-G_(adv+kern,_shh)+xtra,col:col+1,off:off+1,kprev:R1}
 on('C1',(net.eq(R1,9,e),'A4_PT0',None),(net.and_(net.ge(R1,300,e),ONE-isfnc,ONE-_xue),'A6Q_C0',{a6qk:R1-300,a6qs:insel}),(isfnc,'T3_CF0',None),(sp_bad,'A6D_0',{**adv_c,sx:sp_x0,sp_xe:x,sp_r:0,a6oe:off}),(net.ge(off+1,le_,e),'CE',adv_c),(rv_hl,'C0',adv_c),(None,'C1',{**adv_c,r1:pbs+off+1,rs:pbs+1024+off+1}))
 e=S('CE'); chere2=net.and_(net.eq(pi,cp,e),net.eq(off,co,e))
 fsm.set(cx,chere2,x);fsm.set(cacol,chere2,col)
@@ -926,16 +926,16 @@ on('LE0',(None,'EM',{lasc:asc,lhh:lh,lend:0,lwid:0,lspc:0,llast:1}))
 fsm.set(kprev,S('LAY0'),0)
 _rv_e=S('L1'); on('L1',(net.and_(net.step(off),net.ge(off,plen_,_rv_e)),'RVA3_LE0',None),(None,'L2',{r1:pbs+off,rs:pbs+1024+off}))
 e=S('L2'); measure(e,R1,RSR,RSC); ke2=net.and_(e,net.step(kprev)); kp_en.lin(ke2); kp_in.add(ke2,kprev)
-sp=net.eq(R1,32,e); _rv_tb=net.eq(R1,9,e); _rv_lt=rv_tabw(lx+indb+pind+pf_val(lfi),_rv_tb); _rv_vt=net.eq(R1,11,e); _rv_sb=net.or_(sp,_rv_tb); _shy=net.eq(R1,173,e); _ov=net.gt(lx+adv+kern+_rv_lt,ww,e); over=net.and_(_ov,ONE-sp,net.gt(off,ls_,_ov));   # a line always takes its first character, or a very narrow cell never ends
+sp=net.eq(R1,32,e); _rv_tb=net.eq(R1,9,e); _rv_lt=rv_tabw(lx+indb+pind+pf_val(lfi),_rv_tb); _rv_vt=net.eq(R1,11,e); _rv_sb=net.or_(sp,_rv_tb); _hi7=net.ge(R1,127,e); _shy=net.eq(R1,173,_hi7); _ov=net.gt(lx+adv+kern+_rv_lt,ww,e); over=net.and_(_ov,ONE-sp,net.gt(off,ls_,_ov));   # a line always takes its first character, or a very narrow cell never ends
 hasb=net.gt(lb,ls_,e); nsp=e-sp
 lastc=net.ge(off+1,plen_,e); newword=net.and_(nsp,prevsp)
-advance={kprev:R1,lx:lx+net.relu(adv+kern-_shy*M)+_rv_lt,lasc:net.max_(asc,lasc),lhh:net.max_(lh,lhh),off:off+1,prevsp:_rv_sb,wc:wc+newword,lsn:lsn+sp}
+advance={kprev:R1,lx:lx+adv+kern-G_(adv+kern,_shy)+_rv_lt,lasc:net.max_(asc,lasc),lhh:net.max_(lh,lhh),off:off+1,prevsp:_rv_sb,wc:wc+newword,lsn:lsn+sp}
 _shb=net.and_(_shy,ONE-over); fsm.set(lb,net.and_(_rv_sb,ONE-over),off+1);fsm.set(lbx,net.and_(_rv_sb,ONE-over),lx+kern+_rv_lt);fsm.set(lspb,net.and_(_rv_sb,ONE-over),lsn)
 fsm.set(lb,_shb,off+1);fsm.set(lbx,_shb,lx+adv+kern);fsm.set(lspb,_shb,lsn)   # an optional hyphen has no width unless the line ends at it
-_xuf=net.ge(R1,UO,e); isfl=net.and_(net.ge(R1,1000,e),ONE-_xuf); fsm.set(lfnb,net.and_(_rv_sb,ONE-over),lfn);fsm.set(lfhb,net.and_(_rv_sb,ONE-over),lfh)
+_xuf=net.ge(R1,UO,_hi7); isfl=net.and_(net.ge(R1,1000,_hi7),ONE-_xuf); fsm.set(lfnb,net.and_(_rv_sb,ONE-over),lfn);fsm.set(lfhb,net.and_(_rv_sb,ONE-over),lfh)
 on('L2',(net.eq(R1,9,e),'A4_LT0',{ra4t:pbs+A4T,lasc:net.max_(asc,lasc),lhh:net.max_(lh,lhh)}),(net.and_(net.ge(R1,300,e),ONE-isfl,ONE-_xuf),'A6Q_L0',{a6qk:R1-300,r1:as_x(1330000)+(R1-300)*64+1,r2:as_x(1330000)+(R1-300)*64}),(isfl,'T3_LF0',{r1:as_x(FNB)+(R1-1000)*256+254}),(_rv_vt,'EM',{**advance,prevsp:ONE,lend:off+1,lwid:lx,lspc:lsn,llast:0}),(net.and_(over,hasb),'EM',{lend:lb,lwid:lbx,lspc:lspb,off:lb,llast:0,lfn:lfnb,lfh:lfhb}),
  (over,'EM',{lend:off,lwid:lx,lspc:lsn,llast:0}),
- (lastc,'EM',{**advance,lend:off+1,lwid:lx+net.relu(adv+kern-_shy*M)+_rv_lt,lspc:lsn,llast:1}),
+ (lastc,'EM',{**advance,lend:off+1,lwid:lx+adv+kern-G_(adv+kern,_shy)+_rv_lt,lspc:lsn,llast:1}),
  (None,'L2',{**advance,r1:pbs+off+1,rs:pbs+1024+off+1}))
 e=S('EM'); delta=net.relu(ww-lwid); alh=net.decode(al,4,e)
 just=net.and_(alh[3],ONE-llast,ONE-a4lt); sph=net.decode(lspc,64,just); ex=X()

@@ -21,3 +21,9 @@ A long bug: pasted text in the second paragraph had two wrong cells. Bisected to
 ## Zoom and vertical ruler
 175 and 200 percent. A page wider than the window slides: rects carry negative x already, glyph x arrives lifted by 4096 so a gate does not clamp it, and the copy port's lift grew. Mouse maps back through the slide. Caret leaving the window moves the slide. Bar along the foot; a click beside the thumb moves 400 px. Thumb geometry uses a portrait page's width.
 Vertical ruler: scale of the first page in view, at the window's left, 40 one tick tokens on a full paint only.
+
+## Full run 1
+e2e 208/210: page break and narrow margin differed only in the vertical ruler. A walk restarted by an autoscroll left the ruler's capture latched: reset at each walk start. On page 1 the first line starts at its saved place, which a narrow margin does not move (existing behaviour), so the ruler now reads the first line's own top there. tier2: PDF after a LibreOffice file never came: LibreOffice writes nine levels and my lvlText rule did not step past levels above 2, an endless loop on open that the earlier pixel check could not see. Fixed. t4_docx: the styles test expected rStyle to replace the paragraph color, the old limit; its direct text now has the color, listed as a test edit. a5_docx open 10.17 M against its 10 M bound: rare character tests moved behind one neuron. imp3 page width counted the ruler's white band: band is 253 gray now.
+
+## a5_docx edge bound
+Open of a01_format is 10.14 M edges, 9.90 M at imp3, bound 10 M. Tried: rare character tests behind one neuron (no gain), lazy ext compares in the interner (no gain), a separate decoder for extended faces (small gain), exact color lines woken only for an exact color (10.17 to 10.14 M). A once per row pulse made it 13.4 M. The rest is mainly that this file's headings now draw 24 exact color lines per ink pixel. Not fixed; the test is left as it is.

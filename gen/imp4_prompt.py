@@ -65,7 +65,8 @@ net.group('extended characters')
 # leaving as UTF-8: a code unit, and a surrogate pair joined into four bytes
 v7h=R();v7l=R()
 e=S('V7_U0'); _u=ins_ch-UO; _hi=net.and_(net.ge(_u,0xD800,e),net.lt(_u,0xDC00,e)); _lo=net.and_(net.ge(_u,0xDC00,e),net.lt(_u,0xE000,e),net.step(v7h))
-on('V7_U0',(_hi,'SVC',{v7h:_u-0xD800+1}),(_lo,'V7_U4',{t2cp:(v7h-1)*1024+_u-0xDC00+65536,v7h:0}),(None,'V7_U3',{t2cp:_u,v7h:0}))
+_lone=net.and_(net.ge(_u,0xDC00,e),net.lt(_u,0xE000,e),ONE-net.step(v7h))   # half a pair alone cannot be written as UTF-8
+on('V7_U0',(_hi,'SVC',{v7h:_u-0xD800+1}),(_lo,'V7_U4',{t2cp:(v7h-1)*1024+_u-0xDC00+65536,v7h:0}),(_lone,'V7_U3',{t2cp:0xFFFD}),(None,'V7_U3',{t2cp:_u,v7h:0}))
 def _emit(st,val,nx):
     e_=S(st); em_en.lin(e_); em_b.add(e_,val(e_)); on(st,(None,nx,None))
 def _cb_(k_): 

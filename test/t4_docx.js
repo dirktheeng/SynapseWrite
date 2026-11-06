@@ -54,7 +54,7 @@ def doc(b): return '<w:document '+NS+'><w:body>'+b+'</w:body></w:document>'
 A='<w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>Title here</w:t></w:r></w:p><w:p><w:r><w:t>Body </w:t></w:r><w:r><w:rPr><w:b/></w:rPr><w:t>bold</w:t></w:r><w:r><w:rPr><w:rStyle w:val="Em"/></w:rPr><w:t> slanted</w:t></w:r></w:p><w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:rPr><w:b w:val="0"/></w:rPr><w:t>Plain weight</w:t></w:r></w:p>'
 def R(t,x): return '<w:r><w:rPr>'+x+'</w:rPr><w:t>'+t+'</w:t></w:r>'
 C='<w:color w:val="C00000"/>'
-B='<w:p><w:pPr><w:jc w:val="center"/></w:pPr>'+R('Title here','<w:b/>'+C+'<w:sz w:val="40"/>')+'</w:p><w:p>'+R('Body ',C+'<w:sz w:val="24"/>')+R('bold','<w:b/>'+C+'<w:sz w:val="24"/>')+R(' slanted','<w:i/><w:sz w:val="24"/>')+'</w:p><w:p><w:pPr><w:jc w:val="center"/></w:pPr>'+R('Plain weight',C+'<w:sz w:val="40"/>')+'</w:p>'
+B='<w:p><w:pPr><w:jc w:val="center"/></w:pPr>'+R('Title here','<w:b/>'+C+'<w:sz w:val="40"/>')+'</w:p><w:p>'+R('Body ',C+'<w:sz w:val="24"/>')+R('bold','<w:b/>'+C+'<w:sz w:val="24"/>')+R(' slanted','<w:i/>'+C+'<w:sz w:val="24"/>')+'</w:p><w:p><w:pPr><w:jc w:val="center"/></w:pPr>'+R('Plain weight',C+'<w:sz w:val="40"/>')+'</w:p>'
 for name,body,sty in (('sa',A,ST),('sb',B,None)):
     z=zipfile.ZipFile('build/'+name+'.docx','w',zipfile.ZIP_DEFLATED); z.writestr('[Content_Types].xml',CT)
     if sty: z.writestr('word/styles.xml',sty)

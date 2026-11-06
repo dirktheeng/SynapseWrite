@@ -270,11 +270,11 @@ class GlyphUnit:
                         if gridbits(col[k])[b_]: e_=e_+h[j]
                     if e_.t: out.append((k,wt,L(net.step(e_),slow0)))
             return out
-        fce=net.and_(slow0,fcu); fgl=lines(g.palF,Lfg,net.and_(slow0,ONE-fcu)); bgl=lines(g.palB,Lbg)
+        fce=net.and_(slow0,fcu); fxl=[]; fgl=lines(g.palF,Lfg,net.and_(slow0,ONE-fcu)); bgl=lines(g.palB,Lbg)
         # an exact color: one line per bit of each channel, weighted as a binary number
         _fcb=net.bits(Lfc-1,24,fce)
         for k in range(3):
-            for b_ in range(8): fgl.append((k,1<<b_,L(_fcb[16-8*k+b_],fce)))
+            for b_ in range(8): fxl.append((k,1<<b_,L(_fcb[16-8*k+b_],fce)))
         # ---- row plane ----
         data=[net.wire() for _ in range(4*LW)]
         nonw=ONE-fast
@@ -288,6 +288,8 @@ class GlyphUnit:
             ic=net.relu(slow*M-M+m-c)
             for k in range(3): o[k]=o[k]-ic*255
             for k,wt,ln in fgl: o[k]=o[k]+net.relu(slow*M-M+c+ln-1)*wt
+            slx=net.step(slow*M-M+fcu-0.5)   # exact color lines wake only for an exact color
+            for k,wt,ln in fxl: o[k]=o[k]+net.relu(slx*M-M+c+ln-1)*wt
             for k,wt,ln in bgl: o[k]=o[k]+net.relu(slow*M-M+m-c+ln-1)*wt
             for k in range(3): net.connect(data[4*i+k],o[k])
             net.connect(data[4*i+3],m)
@@ -331,7 +333,10 @@ class GlyphUnit:
         # one hot face and a binary tree over the character, walked only on the start tick
         faceidx=Lface
         NF=max(len(g.faces),max(g.pseudo)+1)
-        fh=net.decode(faceidx,NF,st,hot=True)
+        # extended pages have a decoder of their own, so a common face does not pay for them
+        _xf0=EXTTAG[0] if EXTTAG[0]<NF else NF
+        stx=net.step(st*M-M+faceidx-_xf0+0.5); st0=net.step(st-stx-0.5)
+        fh=net.decode(faceidx,_xf0,st0,hot=True)+(net.decode(faceidx-_xf0,NF-_xf0,stx,hot=True) if NF>_xf0 else [])
         chv=net.relu(Lch-32+1+st*M-M); chok=net.step(chv); bits=net.bits(chv-1,8,chok)
         leaf={}
         def tnode(p,sel,neg=False): return net.step(p*M-M+((ONE-sel) if neg else sel)-0.5)

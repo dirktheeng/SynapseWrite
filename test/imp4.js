@@ -118,9 +118,9 @@ const near=(A,r,g,b,t=6)=>count(A,223,1039,174,776,(x,y,z)=>Math.abs(x-r)<=t&&Ma
   let L='';for(let i=0;i<14;i++)L+='Zoom paragraph '+i+' has enough words on it that it wraps across the page and shows how lines scale when the view changes.\\n';
   const white=(A,y)=>{const f=A.fb();let n=0;for(let x=0;x<1262;x++){const i=(y*1280+x)*4;if(f[i]==255&&f[i+1]==255&&f[i+2]==255)n++;}return n;};
   // vertical ruler
-  let A=await lib();A.paste(L);A.settle();A.shot('build/imp4_v0.png');const st=count(A,2,18,174,776,(r,g,b)=>r==198&&g==198&&b==198),wb=count(A,2,18,174,776,(r,g,b)=>r==255&&g==255&&b==255);ok('vertical ruler: gray margins and a white band',st>0&&wb>16*300,st+' '+wb);
+  let A=await lib();A.paste(L);A.settle();A.shot('build/imp4_v0.png');const st=count(A,2,18,174,776,(r,g,b)=>r==198&&g==198&&b==198),wb=count(A,2,18,174,776,(r,g,b)=>r>=253&&g>=253&&b>=253);ok('vertical ruler: gray margins and a white band',st>0&&wb>16*300,st+' '+wb);
   const ink=count(A,2,18,174,776,(r)=>r<160);ok('vertical ruler has marks',ink>40,ink);
-  const hr=A.hash(174,776);A.wheel(300);A.settle();A.shot('build/imp4_v1.png');const st2=count(A,2,18,174,776,(r,g,b)=>r==255&&g==255&&b==255);ok('it moves with the page',A.hash(174,776)!==hr,st2);
+  const hr=A.hash(174,776);A.wheel(300);A.settle();A.shot('build/imp4_v1.png');const st2=count(A,2,18,174,776,(r,g,b)=>r>=253&&g>=253&&b>=253);ok('it moves with the page',A.hash(174,776)!==hr,st2);
   // hidden with the ruler
   A=await lib();A.paste(L);A.settle();
   // zoom past 150
@@ -130,9 +130,10 @@ const near=(A,r,g,b,t=6)=>count(A,223,1039,174,776,(x,y,z)=>Math.abs(x-r)<=t&&Ma
   A.type('Q');A.settle();A.key(133);A.settle();A.type('R');A.settle();A.shot('build/imp4_z200b.png');const x=part(A,'word/document.xml');ok('typing lands at the line end',/\w R|view changes|R/.test(x),'');
   const fbar=count(A,0,1262,764,776,(r,g,b)=>r==205&&g==205&&b==205);ok('side scroll bar drawn',fbar>100,fbar);
   // a click maps through the slide: find a word near the right of the view, click it, type
-  A=await lib();A.paste('alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau\nsecond line here\n');A.settle();for(let i=0;i<4;i++){A.click(1232,788);A.settle();}A.shot('build/imp4_z1.png');A.click(1000,770);A.settle();A.shot('build/imp4_z2.png');
+  A=await lib();A.paste('alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau\nsecond line here\n');A.settle();for(let i=0;i<4;i++){A.click(1232,788);A.settle();}A.shot('build/imp4_z1.png');
   // click the second line, wherever it is drawn
   const f=A.fb();const tops=[];let pr=false;for(let y=190;y<760;y++){let d=false;for(let x=200;x<700;x++)if(f[(y*1280+x)*4]<110){d=true;break;}if(d&&!pr)tops.push(y);pr=d;}
+  A.click(1000,770);A.settle();A.shot('build/imp4_z2.png');
   A.click(600,tops[1]+6);A.settle();A.key(133);A.type('Z');A.settle();const pp=[...part(A,'word/document.xml').matchAll(/<w:t[^>]*>([^<]*)/g)].map(m=>m[1]);ok('click maps through the slide',pp[1]=='second line hereZ',JSON.stringify(pp));
   // round trip to 100 is pixel equal
   let C=await lib();C.paste(L);C.settle();const h0=C.hash(174,776);for(let i=0;i<4;i++){C.click(1232,788);C.settle();}for(let i=0;i<4;i++){C.click(1096,788);C.settle();}ok('back to 100 percent, pixel equal',C.hash(174,776)===h0);
