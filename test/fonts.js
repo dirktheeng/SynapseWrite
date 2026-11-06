@@ -46,10 +46,10 @@ PY`);
  // the style table: fill it with distinct records by input events, then check what overflow does
  {const p=await open();await p.keyboard.type('anchor');await p.keyboard.press('Control+a');
   const made=await p.evaluate(()=>{const key=(c,m=1)=>annDispatch(2,c,m,1000),click=(x,y)=>{annDispatch(3,x,y,1000);annDispatch(4,x,y);};let k=0;const szs=[];for(let s=8;s<=72;s++)szs.push(s);
-   for(let f=0;f<8;f++){click(229,75);click(170,98+f*22);for(const s of szs){click(258,75);for(const ch of String(s))annDispatch(2,ch.charCodeAt(0),0,1000);annDispatch(2,13,0,1000);for(let i=0;i<8;i++){key([98,105,117,98,105,98,117,105][i]);k++;}}}return k;});
+   for(let f=0;f<8;f++){click(229,75);click(170,98+f*22);for(const s of szs){click(258,75);for(const ch of String(s))annDispatch(2,ch.charCodeAt(0),0,1000);annDispatch(2,13,0,1000);for(let i=0;i<8;i++){key([98,105,98,117,98,105,98,117][i]);k++;}}}return k;});
   ok('input made more than 4096 format changes',made>4096,made);
   const before=await shot(p,page);
-  await p.keyboard.press('Control+b');await p.keyboard.press('Control+i');const after=await shot(p,page);
+  const sb0=await shot(p,{x:0,y:777,width:1000,height:23});await size(p,72);const after=await shot(p,page);ok('over capacity the status bar says so',hash(sb0)!==hash(await shot(p,{x:0,y:777,width:1000,height:23})));
   ok('over capacity a new format is not applied',hash(before)===hash(after));
   await p.keyboard.press('End');await p.keyboard.type('X');const typed=await shot(p,page);ok('over capacity typing still works',hash(typed)!==hash(after));
   await p.keyboard.press('Control+z');await p.keyboard.press('Control+z');const u=await shot(p,page);ok('over capacity undo still works',hash(u)!==hash(typed));
