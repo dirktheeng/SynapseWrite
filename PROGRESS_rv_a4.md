@@ -24,3 +24,4 @@ Build took 5 min, 338 s of it the glyph render. A local cache (scratch only, not
 6. Merge test selected the paragraph before a leading table; test fixed to click in the cell. Tab in any row end added a row; now only at the table end.
 7. Repeated header row drew empty: the row fill used the stale ENDY, which the walk leaves unwritten. Fill height gated off during a repeat.
 Regression before merged cells: tier2 49/49, t3_table no failures printed, e2e killed at my 900 s limit under load.
+Final run at load 20 to 30: tier2 49/49, t4_docx 18/18, t4_pdf 7/7, t3_table no failures, roundtrip finished, touch finished, look 30/31, e2e 193 passes then killed at 2400 s with one failure. Single failures examined by image were 1 px caret columns (blink), and download timeouts passed on rerun at the same load.
