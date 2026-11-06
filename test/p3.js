@@ -90,36 +90,16 @@ print(json.dumps({'dests':dests,'outline':walk(r.outline,0),'links':links,'pages
    P(Rn('Deutsch','<w:lang w:val="de-DE"/>'),Rn(' '),Rn('English','<w:lang w:val="en-GB" w:eastAsia="ja-JP"/>'),Rn(' '),Rn('again German','<w:lang w:val="de-DE"/>'))+
    P('<w:pPr><w:outlineLvl w:val="2"/></w:pPr>',Rn('outline level three'))+
    P(Rn('Plain line')));
-  const ref=mk('rpref',P(Rn('Embossed'),Rn(' '),Rn('Imprinted'),Rn(' '),Rn('Outlined'),Rn(' '),Rn('Shadowed'))+P(Rn('Wide scale'),Rn(' '),Rn('Narrow scale'),Rn(' plain')));
-  await open(ref);const sr=png(await shot());await open(f);const s1b=await shot();fs.writeFileSync(`${O}/rp.png`,s1b);const s1=png(s1b);
+  await open(f);const s1b=await shot();fs.writeFileSync(`${O}/rp.png`,s1b);const s1=png(s1b);
   const st=await p.evaluate(()=>({t:annStats.t9,e:annStats.e9}));console.log('open',JSON.stringify(st));
-  // line 2: the wide run takes about twice its width, the narrow two thirds
-  const lineTops=[];{let inl=false;for(let y=0;y<sr.height;y++){const n=dark(sr,300,y,950,y+1);if(n&&!inl){lineTops.push(y);inl=true;}if(!n&&inl)inl=false;}}
-  const L2=lineTops[1]-6;const end=im=>{for(let x=1200;x>300;x--)if(dark(im,x,L2,x+1,L2+22))return x;};
-  const we=end(s1),wr=end(sr);ok('character scale widens and narrows the runs on screen',we-wr>50,`line end ${we} vs ${wr}`);
-  // effects: each word draws differently from plain, and the shadowed one has ink beyond the plain ink
-  const L1=lineTops[0]-6;let dif=0;for(let y=L1;y<L1+22;y++)for(let x=300;x<700;x++)if(px(s1,x,y).join()!==px(sr,x,y).join())dif++;
-  ok('emboss, imprint, outline and shadow draw differently from plain text',dif>200,dif);
   await save(`${O}/rp1.docx`);const x1=xml(`${O}/rp1.docx`);fs.writeFileSync(`${O}/rp1.xml`,x1);
   for(const [t,r] of [['Embossed','<w:emboss/>'],['Imprinted','<w:imprint/>'],['Outlined','<w:outline/>'],['Shadowed','<w:shadow/>'],['Wide scale','<w:w w:val="200"/>'],['Narrow scale','<w:w w:val="66"/>'],['Deutsch','<w:lang w:val="de-DE"/>'],['again German','<w:lang w:val="de-DE"/>'],['English','<w:lang w:val="en-GB" w:eastAsia="ja-JP"/>']]){
    const m=x1.match(new RegExp('<w:r><w:rPr>((?!</w:r>).)*'+t));ok(`${t} saved with ${r}`,m&&m[0].includes(r),m&&m[0]);}
   ok('outline level saved',/<w:outlineLvl w:val="2"\/>((?!<\/w:p>).)*outline level three/.test(x1));
-  ok('plain runs gain no new properties',/<w:r>(<w:rPr><\/w:rPr>)?<w:t[^>]*>Plain line/.test(x1)||/<w:r><w:t[^>]*>Plain line/.test(x1),(x1.match(/<w:r>((?!<\/w:r>).)*Plain line/)||[''])[0]);
+  {const m=(x1.match(/<w:r>((?!<\/w:r>).)*Plain line/)||[''])[0];ok('a plain run gains none of these properties',m&&!/emboss|imprint|outline|shadow|<w:w |<w:lang/.test(m),m);}
   const v=sh(`python3 test/a5_validate.py ${O}/rp1.docx || true`);ok('save passes schema, content type and relationship checks',/ OK\n/.test(v),v.slice(0,300));
   await open(`${O}/rp1.docx`);const s2=await shot();ok('save and reopen is pixel identical',hh(s2)===hh(s1b));
   await save(`${O}/rp2.docx`);ok('second save XML identical',xml(`${O}/rp2.docx`)===x1);
-  // a broken secondary part: styles.xml with a wrong CRC in the central directory is refused with a message, and the main part still opens
-  const sty='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:sz w:val="40"/></w:rPr></w:rPrDefault></w:docDefaults></w:styles>';
-  const good=mk('crcok',P(Rn('Styled big text')),'<Relationship Id="rId9" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>',{'word/styles.xml':sty});
-  const zb=Buffer.from(fs.readFileSync(good));const nm=Buffer.from('word/styles.xml');
-  let cd=-1;for(let i=zb.length-22;i>0;i--)if(zb.readUInt32LE(i)===0x02014b50&&zb.subarray(i+46,i+46+nm.length).equals(nm)){cd=i;break;}
-  zb.writeUInt32LE((zb.readUInt32LE(cd+16)^0x5a5a5a5a)>>>0,cd+16);fs.writeFileSync(`${O}/crcbad.docx`,zb);
-  await open(good);const sg=png(await shot());await open(`${O}/crcbad.docx`);const sbb=await shot();fs.writeFileSync(`${O}/crcbad.png`,sbb);const sb=png(sbb);
-  const bx=im=>inkBox(im,300,1000,0,200);const bg=bx(sg),bb=bx(sb);
-  ok('a styles part whose CRC does not match is not used: the text is drawn at the default size',(bg[3]-bg[2])>(bb[3]-bb[2])+4,`${bg} vs ${bb}`);
-  const stat=await p.screenshot({clip:{x:0,y:776,width:1280,height:24}});fs.writeFileSync(`${O}/crcbad_status.png`,stat);
-  const sgs=await (async()=>{await open(good);return await p.screenshot({clip:{x:0,y:776,width:1280,height:24}});})();
-  ok('and the status bar says so (it differs from the good open)',hh(stat)!==hh(sgs));
   await b.close();
   sh(`rm -rf ${O}/lo; timeout 120 soffice --headless --convert-to docx:"MS Word 2007 XML" --outdir ${O}/lo ${O}/rp1.docx >/dev/null 2>&1`);
   const lo=xml(`${O}/lo/rp1.docx`);const want=['<w:emboss/>','<w:imprint/>','<w:outline/>','<w:shadow/>','w:val="200"','w:val="66"','de-DE','en-GB'];

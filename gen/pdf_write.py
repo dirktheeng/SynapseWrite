@@ -126,7 +126,7 @@ number('PD_Fd',qsz,'PD_Fe')
 lit('PD_Fe',b' Tf ','PD_Ff')
 PCS=[('%.2f %.2f %.2f rg\n'%(c_[0]/255,c_[1]/255,c_[2]/255)).encode() for c_ in PAL_F]; _pcb=rom_str(b''.join(PCS)); _pcl=len(PCS[0])
 on('PD_Ff',(net.and_(net.step(v4qk),ONE-net.step(ptk_q)),'V4_PK0',None),(None,'A10_B0',{la_:as_x(_pcb)+qbase*_pcl,ln_lit:_pcl,lbret.r:lbret.id('T4P_O')}))
-e=S('T4P_O'); _f2xb=net.bits(f2cx,14,e); _f2raw=sum((_f2xb[k_]*(1<<(k_-4)) for k_ in range(4,14)),X()); _f2on=net.step(_f2raw); _f2tw=G_(_f2raw,_f2on)+(e-_f2on)*512-512   # feat2: character spacing as Tc, written when it changes
+e=S('T4P_O'); _f2xb=net.bits(f2cx,24,e); _f2raw=sum((_f2xb[k_]*(1<<(k_-4)) for k_ in range(4,14)),X()); _f2on=net.step(_f2raw); _f2tw=G_(_f2raw,_f2on)+(e-_f2on)*512-512   # feat2: character spacing as Tc, written when it changes
 on('T4P_O',(net.step(net.step(_f2tw*(1/15)+100-f2tc-0.01)+net.step(f2tc-100-_f2tw*(1/15)-0.01)),'F2P_T0',{qcx0:qxx,qop:1,f2tw:_f2tw+512}),(None,'T4P_Oa',{qcx0:qxx,qop:1}))
 lit('T4P_Oa',b'BT 1 0 0 1 ','T4P_Ob'); number('T4P_Ob',qxx,'T4P_Oc'); lit('T4P_Oc',b' ','T4P_Od')
 number('T4P_Od',qyb+qrise-3,'T4P_Oe'); lit('T4P_Oe',b' Tm (','PD_Tc')

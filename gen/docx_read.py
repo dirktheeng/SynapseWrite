@@ -195,6 +195,7 @@ on('PX2',(net.ge(nextb,SLOTMAX,e),'T2_ZN',None),(net.and_(t2skip,ONE-pat('</w:st
  (pat('</w:styl',e),'T2_SW',{oi:oi+8,t2rr.r:t2rr.id('T2_SC')}),
  *A5_PX_EARLY(e),
  *F1_PX(e),
+ *P3_PX(e),
  (tag('<w:p',' >'),'PN1',{oi:oi+4}),
  (tag('<w:t',' >'),'TX0',{oi:oi+4}),
  (tag('<w:r',' >'),'PX',{ics:(t2ps,t2pK,t2pN,X(),X(),f1lb,X()),rnop:0,oi:oi+4}),

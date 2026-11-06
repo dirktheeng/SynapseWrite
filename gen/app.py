@@ -352,7 +352,7 @@ def T1(n): exec(T1S[n],globals())
 T1('regs')
 exec(open('rv_a4_regs.py').read())
 exec(open('imp3_regs.py').read()); exec(open('imp4_regs.py').read()); exec(open('imp5_regs.py').read()); exec(open('imp4_list.py').read())
-exec(open('feat1_regs.py').read())
+exec(open('feat1_regs.py').read()); exec(open('p3_regs.py').read())
 cbb=R();qrep=R();a7_vw=R();a7_far=R();a7_jmp=R();a7_wb=R();impf=R();impk=R();impc=R();impsc=R();impyt=R();stp=R();stg=R();stw=R();stm=R();tbm=R();A7BUD=15000   # characters of layout one event may do before the rest goes to the background
 # dispatch tables for subroutine returns
 class Ret:
@@ -1182,7 +1182,7 @@ net.group('late commands')
 exec(open('rv_a2_canvas.py').read())
 exec(open('rv_a4_features.py').read())
 exec(open('rv_a5_docx.py').read())
-exec(open('feat1_docx.py').read())
+exec(open('feat1_docx.py').read()); exec(open('p3_docx.py').read())
 exec(open('rv_a6_spell.py').read())
 # ---- ribbon commands: id plus tab select the command, first rule wins ----
 _L0=[(PIND,-24,0),(PIND,24,0),(PFIRST,-24,1),(PFIRST,24,1),(PSPB,-8,0),(PSPB,8,0),(PSPA,-8,0),(PSPA,8,0)]
