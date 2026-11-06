@@ -21,3 +21,5 @@ a16 profile: 44 percent of work was the ribbon display list reached through the 
 Machine is out of memory at times, so Chromium tabs crash ("Target crashed"); those runs are not results. test/a5_node.js opens files with no browser for tick counts.
 ## Test edits made because the caret now starts at the top after open
 roundtrip.js, t4_docx.js, t3_pic.js: End after open became Control+End, so they check the same last paragraph as before. t4_docx.js styles test: Control+Home before both shots so the blink phase matches. drive.js: 240 s default wait, as the shared machine ran at load 40 and downloads passed 30 s.
+## Final run (load 30 to 40, shared machine)
+a5_docx 37/37, t4_docx 18/18, roundtrip 3/3, t3_table 10/10, tier2 49/49, touch 4/4, t3_misc all pass on rerun after the margins test edit, e2e 209/210. Remaining e2e FAIL and t3_pic resize redo differ only by a caret column (blink phase under load). Numbers: python-docx open 1.01 M to 0.55 M ticks, 10.7 M to 9.2 M edges; 3000 paragraph file 3.40 M to 1.46 M ticks, 74 M to 29 M edges; picture file 12.7 M to 8.4 M ticks.
