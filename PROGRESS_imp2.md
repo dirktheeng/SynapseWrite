@@ -29,3 +29,6 @@ Scratch record starts PLSP=6 (single) in T3_Z6n, record 0 PLSP=6 at the same pla
 Dry read: A12_OV2 goes to IMP_V0, which inflates word/document.xml into OUTB with vdry on before OP0. Missing part, bad block type, bad code, or output not equal to the directory's size (unless the output limit was hit) reach IMP_VF: message, document untouched. On success OP0 runs as before; styles and numbering now inflate to OUTP and the main part is not inflated again (IMP_DD2 jumps to PX with vob), so an open costs about what it did.
 Limit: a flipped bit that still decodes to the stated size is not caught; that needs CRC32, one XOR per byte, too dear for the 10 M open bound. First test of that case opened with garbage text. Other members (styles, comments) that fail are still dropped silently.
 Copy: COPYE refuses at 589900 with its own message and clears the network's own clip (the buffer was overwritten). Cut clears it too.
+
+## Full run 1, stopped after e2e: 200/210
+All ten differences in the box (113,65)-(275,107): font and size boxes gray, B I U missing. The ribbon display list paints placeholders and halts; the next event's TB chain fills them. The memo skipped that fill. Fix: UI clears tbm. Test edits: none.
