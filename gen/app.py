@@ -295,7 +295,7 @@ T1S={x.split('\n',1)[0].strip():x.split('\n',1)[1] for x in open('t1_features.py
 def T1(n): exec(T1S[n],globals())
 T1('regs')
 exec(open('rv_a4_regs.py').read())
-cbb=R();qrep=R();a7_vw=R();a7_far=R();a7_jmp=R();a7_wb=R();impf=R();A7BUD=15000   # characters of layout one event may do before the rest goes to the background
+cbb=R();qrep=R();a7_vw=R();a7_far=R();a7_jmp=R();a7_wb=R();impf=R();impk=R();impc=R();impsc=R();impyt=R();stp=R();stg=R();stw=R();stm=R();tbm=R();A7BUD=15000   # characters of layout one event may do before the rest goes to the background
 # dispatch tables for subroutine returns
 class Ret:
     def __init__(s,name): s.r=R(); s.t=[]; s.name=name
@@ -332,10 +332,11 @@ on('DISP',*PTR_DISP,(net.and_(kh[3],t1_mopb),'T1_MD',{hx_:eva,hy_:evb}),(net.and
    (kh[4],'T3_MU',{drag:0}),(kh[5],'MV',None),(kh[6],'WH',None),(kh[7],'TM',{blink:ONE-blink,autos:0}),(kh[8],'PASTE',{}),(kh[9],'A12_OV0',{}),(kh[10],'PG_0',{}),(None,'HALT',None))
 on('IDL2',(None,'HALT',None))
 on('MV',(t1_tdrag,'T1_TM0',None),(net.and_(S('MV'),net.step(tdk)),'T3_MV',None),(net.and_(S('MV'),drag),'MD2',{hx_:net.max_(net.min_(eva,s_px+s_pw-2),s_px+1),hy_:net.max_(net.min_(evb,DOCB-6),DOCY+6),shiftk:1}),(None,'HALT',None))
-on('WH',(None,'RD0',{scroll:net.relu(scroll+evc-1000),autos:0,a7_jmp:0,impf:0}))   # ev_c carries delta+1000
+_wi=net.and_(S('WH'),impf); _wn=S('WH')-_wi; on('WH',(None,'RD0',{scroll:net.relu(G_(impsc,_wi)+G_(scroll,_wn)+evc-1000),ytot:G_(impyt,_wi)+G_(ytot,_wn),autos:0,a7_jmp:0,impf:0}))   # ev_c carries delta+1000
 e=S('TM'); _a6stale=net.and_(a6hf,ONE-has_sel,ONE-drag,net.eq(mode,0,e),net.step(net.gt(wtot,a6w,e)+net.lt(wtot,a6w,e)+net.gt(pagesT,a6pg,e)+net.lt(pagesT,a6pg,e)))
 _rv_tm=S('TM'); on('TM',(net.and_(_rv_tm,drag,net.or_(net.lt(mp_pty,DOCY+8,_rv_tm),net.ge(mp_pty,DOCB-8,_rv_tm))),'RVA3_AS0',None),(t1_cntp,'T1_C0',{blink:blink}),(bgp,'BG',{blink:blink}),(_a6stale,'T4_FU',{blink:blink,a6fg:1,nolog:1,a6w:wtot,a6pg:pagesT}),(None,'A11_C0',None))
-on('BG',(None,'T3_RS0',{fnh:bfnh,cursec:bsec,fnn:bfn,fnp:bfp,xcol:bxc,pi:bpi,yy:byy,ptop:bptop,pages:bpg,wsum:bws,listn:bln,full:1,vm:0,bgm:1,bcnt:0,clip0:DOCY,clip1:800-DOCB}))
+# A provisional page is not the background's to paint on: the clip is empty until it finishes.
+on('BG',(None,'T3_RS0',{fnh:bfnh,cursec:bsec,fnn:bfn,fnp:bfp,xcol:bxc,pi:bpi,yy:byy,ptop:bptop,pages:bpg,wsum:bws,listn:bln,full:1,vm:0,bgm:1,bcnt:0,clip0:G_(as_x(800),net.and_(S('BG'),impf))+G_(as_x(DOCY),S('BG')-net.and_(S('BG'),impf)),clip1:G_(as_x(800-DOCB),S('BG')-net.and_(S('BG'),impf))}))
 _rv_hf=S('HF'); _rv_bg=net.or_(bgp,t1_cntp); timer.lin(_rv_hf*530-net.and_(_rv_hf,_rv_bg)*529-net.and_(_rv_hf,drag,ONE-_rv_bg,net.or_(net.lt(mp_pty,DOCY+8,_rv_hf),net.ge(mp_pty,DOCB-8,_rv_hf)))*495)
 # ---- character code tables: internal cells use Windows-1252 style codes ----
 net.group('character maps')
@@ -394,7 +395,7 @@ on('TK1',(net.and_(net.step(R1),shiftk,net.step(cp)),'MVJ',{jp:cp-1,jo:0,jret.r:
 tabn=R()
 on('TAB3',(net.ge(tabn,3,S('TAB3')),'AFTER_ED',{tabn:0}),(None,'INS',{tabn:tabn+1,ins_ch:32,ins_st:TST,oret.r:oret.id('TAB3')}))
 # while the background has not reached the caret it is below the viewport: an edit there needs no paint, since the background lays it out and then jumps to it
-_a7e=S('AFTER_ED'); on('AFTER_ED',(net.and_(a7_far,bgp,net.ge(cp,bpi,_a7e),impf,fastok),'SYNC',{ap:cp,ao:co,autos:1,blink:0,a7_jmp:1}),(net.and_(a7_far,bgp,net.ge(cp,bpi,_a7e)),'IMP_F0',{ap:cp,ao:co,autos:0,blink:0,a7_jmp:1,fastok:0}),(net.and_(fastok,ONE-a7_far),'SYNC',{ap:cp,ao:co,autos:1,blink:0}),(None,'SYNC',{ap:cp,ao:co,autos:1,blink:0,lc:1}))
+_a7e=S('AFTER_ED'); on('AFTER_ED',(net.and_(a7_far,bgp,net.ge(cp,bpi,_a7e),impf,fastok),'SYNC',{ap:cp,ao:co,autos:1,blink:0,a7_jmp:1,impk:1}),(net.and_(a7_far,bgp,net.ge(cp,bpi,_a7e)),'IMP_F0',{ap:cp,ao:co,autos:0,blink:0,a7_jmp:1,fastok:0}),(net.and_(fastok,ONE-a7_far),'SYNC',{ap:cp,ao:co,autos:1,blink:0}),(None,'SYNC',{ap:cp,ao:co,autos:1,blink:0,lc:1}))
 on('SYNC',(None,'RD0',{ap:cp,ao:co}))
 on('BKSP',(has_sel,'DS0',{dret.r:dret.id('AFTER_ED')}),(trk,'T4_BK',None),(None,'BK1',{oret.r:oret.id('AFTER_ED')}))
 on('BK1',(net.step(co),'DEL',{co:co-1}),(None,'T2_BK',{r1:cb+LIST}))
@@ -535,8 +536,8 @@ on('DS0',(trk,'T4_DS0',{wp:lo_p,wo:lo_o,wm:2,wfirst:1,fm:11,wret.r:wret.id('T4_D
 Kw=wp*2048+wo; wsel=Bus(net)
 on('COPY',(has_sel,'W0',{wp:lo_p,wo:lo_o,wn:0,wm:1,wret.r:wret.id('COPYE')}),(None,'HALT',None))
 on('CUT',(has_sel,'W0',{wp:lo_p,wo:lo_o,wn:0,wm:1,wret.r:wret.id('CUT2'),grp:grp+1}),(None,'HALT',None))
-e=S('CUT2'); on('CUT2',(net.ge(wn,589900,e),'RD0',{pcut:PMSG}),(None,'DS0',{dret.r:dret.id('AFTER_ED'),clipl:wn+1,clipn:wn,clipi:0}))
-on('COPYE',(None,'HALT',{clipl:wn+1,clipn:wn,clipi:0}))
+e=S('CUT2'); on('CUT2',(net.ge(wn,589900,e),'RD0',{pcut:PMSG,clipn:0}),(None,'DS0',{dret.r:dret.id('AFTER_ED'),clipl:wn+1,clipn:wn,clipi:0}))
+e=S('COPYE'); on('COPYE',(net.ge(wn,589900,e),'RD0',{pcpy:PMSG,clipn:0}),(None,'HALT',{clipl:wn+1,clipn:wn,clipi:0}))
 clipout.add(S('HF'),clipl); fsm.set(clipl,S('HF'),0)
 wantp=Bus(net); wantp.lin(S('HF')*0+wpaste); fsm.set(wpaste,S('HF'),0)
 e=S('W0')
@@ -672,9 +673,12 @@ on('RD0',(None,'RD1',{cbb:0,clip0:DOCY,clip1:800-DOCB,full:ONE-net.and_(S('RD0')
 fsm.set(a7_wb,S('RD1'),0); fsm.set(a7_vw,net.and_(S('RD1'),a7_far,bgp,ONE-lc),1); fsm.set(a7_vw,S('RE1'),0)   # a walk of the viewport alone: it leaves the background's saved position alone
 minc=net.min_(cp,oldcp);maxc=net.max_(cp,oldcp)
 e=S('RD1')
-on('RD1',(net.and_(e,ONE-full),'RF0',{sidx:minc,vm:0}),
+# The provisional page stays only for the keys that keep it. Anything else with the caret still past the background redraws around the caret, and otherwise the view goes back to where it was: the paragraphs after the background have no saved place to walk from.
+fsm.set(impk,e,0)
+on('RD1',(net.and_(impf,ONE-impk,ONE-has_sel,net.ge(cp,bpi,e)),'IMP_F0',{ap:cp,ao:co,autos:0,a7_jmp:1,fastok:0}),(net.and_(impf,ONE-impk),'IMP_X',None),(net.and_(e,ONE-full),'RF0',{sidx:minc,vm:0}),
  (lc,'VS2048',{rA:(0,DOCY,1262,VH,GRAY,0),sidx:0,vm:0,vln:0,bgp:0,hitn:0}),
  (None,'VS2048',{rA:(0,DOCY,1262,VH,GRAY,0),sidx:0,vm:1,vln:0,hitn:0}))
+on('IMP_X',(None,'RD1',{impf:0,scroll:impsc,ytot:impyt,full:1,a7_jmp:0}))
 on('VSEND',(lc,'RF0',{sidx:net.min_(sidx,dfrom)}),(None,'RF0',None))
 on('RF0',(None,'RF1',{r1:as_x(PT)+sidx}))
 on('RF1',(None,'RF2',{r2:R1+FNHT,rl:R1+SAVE,rc:R1+2062,rf:R1+FNS,rmeta:R1+META}))
@@ -703,7 +707,7 @@ e=S('R1')
 fsm.set(a7_far,net.and_(S('R1'),a7_vw,ONE-impf,net.ge(pi,npar,S('R1'))),0)
 saveb={bfnh:fnh,bsec:cursec,bfn:fnn,bfp:fnp,bxc:xcol,bpi:pi,byy:yy,bptop:ptop,bpg:pages,bws:wsum,bln:listn}
 on('R1',(net.and_(a4hw,net.ge(pi,a4he,e)),'A4_HC',None),(a4hw,'R2',{r1:as_x(PT)+pi}),(net.and_(a7_vw,net.gt(yy,scroll+VH,e),net.gt(pi,cp,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{a7_far:0}),(net.and_(a7_vw,net.gt(yy,scroll+VH,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{autos:0,a7_jmp:net.or_(a7_jmp,autos)}),(net.and_(bgm,net.ge(pi,npar,e)),'BGD',None),(net.and_(net.ge(pi,npar,e),full,ONE-vm,net.step(fnp)),'T3_PFE',{pfc:fnp,pff:fnn-fnp,pfh:fnh,pfy:ptop+s_mt+s_th,pfx:s_tx,pfw:s_tw}),(net.and_(net.ge(pi,npar,e),full,vm,net.step(fnp)),'T3_PFE',{pfc:fnp,pff:fnn-fnp,pfh:fnh,pfy:ptop+s_mt+s_th,pfx:s_tx,pfw:s_tw}),(net.ge(pi,npar,e),'RE0',None),
- (net.and_(bgm,net.ge(bcnt,60,e)),'HALT',{**saveb,bgm:0}),(net.and_(full,ONE-vm,ONE-bgm,net.ge(a7_wb,A7BUD,e),net.gt(yy,scroll+VH,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1,autos:0,a7_far:ONE-net.gt(pi,cp,e),a7_jmp:autos}),(net.and_(full,ONE-vm,ONE-bgm,net.ge(a7_wb,A7BUD,e)),'RD0',{**saveb,bgp:1,lc:0,a7_far:ONE-net.gt(pi,cp,e),a7_jmp:autos,autos:0}),(net.and_(full,ONE-vm,ONE-bgm,autos,net.gt(pi,cp,e),net.lt(cy,scroll+40,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1}),(net.and_(full,ONE-vm,ONE-bgm,ONE-autos,has_sel,net.gt(yy,scroll+VH,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1}),
+ (net.and_(bgm,impc,net.ge(bcnt,60,e)),'IMP_C0',{**saveb,bgm:0}),(net.and_(bgm,net.ge(bcnt,60,e)),'HALT',{**saveb,bgm:0}),(net.and_(full,ONE-vm,ONE-bgm,net.ge(a7_wb,A7BUD,e),net.gt(yy,scroll+VH,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1,autos:0,a7_far:ONE-net.gt(pi,cp,e),a7_jmp:autos}),(net.and_(full,ONE-vm,ONE-bgm,net.ge(a7_wb,A7BUD,e)),'RD0',{**saveb,bgp:1,lc:0,a7_far:ONE-net.gt(pi,cp,e),a7_jmp:autos,autos:0}),(net.and_(full,ONE-vm,ONE-bgm,autos,net.gt(pi,cp,e),net.lt(cy,scroll+40,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1}),(net.and_(full,ONE-vm,ONE-bgm,ONE-autos,has_sel,net.gt(yy,scroll+VH,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1}),
  (net.and_(full,ONE-vm,ONE-bgm,net.gt(yy,scroll+VH,e),net.gt(pi,cp,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1}),(net.and_(ONE-full,net.gt(pi,maxc,e)),'RE0',None),(net.and_(vm,net.gt(yy,scroll+VH,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',None),(None,'R2',{r1:as_x(PT)+pi}))
 on('R2',(None,'R3',{r2:R1+PMK,ra4:R1+A4C,rmeta:R1+META,rim:R1+IMF,pbs:R1,rl:R1+LEN,rc:R1+2062,rf:R1+FNS,rp6:R1+PIND}))
 on('R2X',(None,'R3',{r2:pbs+PMK,ra4:pbs+A4C,rmeta:pbs+META,rim:pbs+IMF,rl:pbs+LEN,rc:pbs+2062,rf:pbs+FNS,rp6:pbs+PIND}))
@@ -902,25 +906,30 @@ on('LF',(a4la,'A4_KL',_lf),(None,'R2X',_lf))
 # ---- end of walk: autoscroll, caret, scrollbar, status bar ----
 net.group('chrome')
 e=S('RE0')
-endw=net.and_(e,full,ONE-vm,ONE-bgp); fsm.set(dfrom,endw,99999); fsm.set(pagesT,endw,pages);fsm.set(wtot,endw,wsum);fsm.set(ytot,endw,ptop+s_ps);fsm.set(lc,e,0)
+endw=net.and_(e,full,ONE-vm,ONE-bgp); fsm.set(dfrom,endw,99999); fsm.set(pagesT,endw,pages);fsm.set(wtot,endw,wsum);fsm.set(ytot,endw,ptop+s_ps);fsm.set(lc,e,0);fsm.set(impc,endw,0)
 on('RE0',(net.and_(autos,net.lt(cy,scroll+40,e)),'RD0',{scroll:net.relu(cy-40),autos:0}),
  (net.and_(autos,net.gt(cy+chh,scroll+VH-40,e)),'RD0',{scroll:net.relu(cy+chh-VH+40),autos:0}),
  (net.gt(scroll,net.relu(ytot-VH+20),e),'RD0',{scroll:net.relu(ytot-VH+20)}),(None,'RE1',None))
 e=S('RE1'); showc=net.and_(e,ONE-has_sel,ONE-blink,ONE-net.step(mode),ONE-a7_far+impf)
 rA.drive(showc,(cx,cy+DOCY-scroll,1,chh,(0,0,0),cacol))
 fsm.set(dfrom,net.and_(S('RE1'),ONE-full,ONE-bgp),99999)
-on('BGD',(None,'RD0',{impf:0,bgp:0,bgm:0,dfrom:99999,pagesT:pages,wtot:wsum,ytot:ptop+s_ps,lc:0,a7_far:0,autos:a7_jmp,a7_jmp:0}))
+fsm.set(pcp,net.and_(S('RE1'),impf),pagesT)   # on a provisional page the caret is on the last page known
+on('BGD',(None,'RD0',{impf:0,impc:0,bgp:0,bgm:0,dfrom:99999,pagesT:pages,wtot:wsum,ytot:ptop+s_ps,lc:0,a7_far:0,autos:a7_jmp,a7_jmp:0}))
 on('RE1',(None,'RE2',{oldcp:cp,wassel:has_sel}))
 # An edit past where the background has reached: its true height is not known yet, so the caret's neighbourhood is drawn at once on a provisional page after the
 # known ones. The background keeps its saved position, and on finishing it redraws everything in its true place.
-_P=bptop+PST; e=S('IMP_F0'); _f=net.relu(cp-6); _bel=net.lt(_f,bpi,e)
-on('IMP_F0',(None,'IMP_F1',{impf:1,scroll:_P,ytot:_P+PST*2,clip0:DOCY,clip1:800-DOCB,full:1,vm:1,vln:0,hitn:0,a7_vw:1,rA:(0,DOCY,1262,VH,GRAY,0),sidx:net.gate(bpi,_bel)+net.gate(_f,e-_bel)}))
-on('IMP_F1',(None,'T3_RS0',{pi:sidx,yy:_P+s_mt,ptop:_P,pages:bpg,wsum:bws,listn:bln,xcol:0,fnh:bfnh,fnn:bfn,fnp:bfp,rowmax:0,cursec:bsec}))
-e=S('RE2'); ph=net.decode(pagesT,128,e); th=X();ty_=X()
+_P=bptop+PST; e=S('IMP_F0'); _f=net.relu(cp-1); _bel=net.lt(_f,bpi,e); _if0=net.and_(e,impf); _in0=e-_if0
+on('IMP_F0',(None,'IMP_F1',{impf:1,impc:1,impsc:G_(impsc,_if0)+G_(scroll,_in0),impyt:G_(impyt,_if0)+G_(ytot,_in0),pagesT:bpg+1,scroll:_P,ytot:_P+PST*2,clip0:DOCY,clip1:800-DOCB,full:1,vm:1,vln:0,hitn:0,a7_vw:1,rA:(0,DOCY,1262,VH,GRAY,0),sidx:net.gate(bpi,_bel)+net.gate(_f,e-_bel)}))
+on('IMP_F1',(None,'T3_RS0',{pi:sidx,yy:_P+s_mt,ptop:_P,pages:bpg+1,wsum:bws,listn:bln,xcol:0,fnh:bfnh,fnn:bfn,fnp:bfp,rowmax:0,cursec:bsec}))
+# While the background runs, each of its slices brings the bars up to what it has laid out so far. A provisional page is the last page known, so its thumb sits at the end.
+on('IMP_C0',(None,'RE2',{pagesT:pages+1,pcp:G_(pages+1,net.and_(S('IMP_C0'),impf))+G_(pcp,S('IMP_C0')-net.and_(S('IMP_C0'),impf)),full:0}))
+e=S('RE2'); ph=net.decode(pagesT,128,e); th=X();ty_=X(); _thi=net.and_(e,impf); _ths=G_((pagesT-1)*PST,_thi)+G_(scroll,e-_thi)
 for k_ in range(1,128):
-    th=th+ph[k_]*max(20,int((VH-8)/k_)); ty_=ty_+net.gate(scroll*((VH-8)/(k_*PST)),ph[k_])
+    th=th+ph[k_]*max(20,int((VH-8)/k_)); ty_=ty_+net.gate(_ths*((VH-8)/(k_*PST)),ph[k_])
 on('RE2',(None,'RE3',{clip0:0,clip1:0,rA:(1262,DOCY,18,VH,(243,242,241),250),rB:(1265,ty_+DOCY+4,12,th,tuple(as_x(205)-net.step(t1_tdrag+net.eq(t1_hov,255,e))*65 for _ in range(3)),255),thumb:ty_+DOCY+4,t1_thh:th}))
-on('RE3',(None,'STATUS',{rA:(0,DOCB+1,640,23,PAL_B[3],0)}))
+# The status bar costs far more than a key's own paint. A fast event repaints it only if something it shows has changed.
+e=S('RE3'); _stk=net.step(pfile)+net.step(pcut)*2+net.step(pfull)*4+net.step(pmsg)*8+trk*16+sp_on*32+net.step(pcpy)*64
+on('RE3',(net.and_(e,ONE-full,net.eq(pcp,stp,e),net.eq(pagesT,stg,e),net.eq(wtot,stw,e),net.eq(_stk,stm,e)),'FB0',None),(None,'STATUS',{rA:(0,DOCB+1,640,23,PAL_B[3],0),stp:pcp,stg:pagesT,stw:wtot,stm:_stk}))
 # number and text drawing states
 def text_chain(start,items,nxt,y=None,f=1,b=3):
     """items are strings or number registers; each glyph takes one tick."""
@@ -950,12 +959,14 @@ def text_chain(start,items,nxt,y=None,f=1,b=3):
 sb_y=as_x(DOCB+6)
 on('STATUS',(None,'ST1',{sx:12}))
 text_chain('ST1',['Page ',pcp,' of ',pagesT,'      ',wtot,' words      English (United States)'],'PM0')
-on('PM0',(net.step(pfile),'PMr',None),(net.step(pcut),'PMc',None),(net.step(pfull),'PMf',None),(net.step(pmsg),'PMa',None),(None,'T4_ST',None))
+on('PM0',(net.step(pfile),'PMr',None),(net.step(pcut),'PMc',None),(net.step(pcpy),'PMh',None),(net.step(pfull),'PMf',None),(net.step(pmsg),'PMa',None),(None,'T4_ST',None))
 on('PMf',(None,'PMg',{sx:sx+18}))
 on('PMr',(None,'PMs',{sx:sx+18}))
 text_chain('PMs',['This file could not be opened: it is not a valid document or picture'],'T4_ST')
 on('PMc',(None,'PMd',{sx:sx+18}))
 text_chain('PMd',['The selection is too large to cut: nothing was removed'],'T4_ST')
+on('PMh',(None,'PMi',{sx:sx+18}))
+text_chain('PMi',['The selection is too large to copy: nothing was copied'],'T4_ST')
 text_chain('PMg',['Too many different text formats: this one was not applied'],'T4_ST')
 on('PMa',(None,'PMb',{sx:sx+18}))
 text_chain('PMb',['Press Ctrl+V to paste from other apps'],'T4_ST')
@@ -979,7 +990,10 @@ on('FBS',(None,'FB4',{gly:(R1,0,sx,DOCY+4,0,0),sx:sx+adv,fi_:fi_+1}))
 fbr=R();fir=R();fur=R();fszv=R();ffn=R()
 e=S('TB0'); measure(e,32,ty)
 home_=net.eq(tab,0,e)
-on('TB0',(net.eq(tab,0,e),'TB1',{fbr:net.relu(SD['bold']+0),fir:net.relu(SD['ital']+0),fur:net.relu(SD['und']+0),ffn:net.relu(SD['font']+0),fszv:G_(sum((h*p for h,p in zip(raw_hot,rom.SZ)),X()),ONE-net.eq(mode,7,e))+G_(td1*10+td0,net.eq(mode,7,e))}),(None,'T1_POST',None))
+_fszv=G_(sum((h*p for h,p in zip(raw_hot,rom.SZ)),X()),ONE-net.eq(mode,7,e))+G_(td1*10+td0,net.eq(mode,7,e)); _tbk=net.relu(SD['bold']+0)+net.relu(SD['ital']+0)*2+net.relu(SD['und']+0)*4+net.relu(SD['font']+0)*16+_fszv*256+1
+# The same for the font and size boxes and the B I U buttons. A repaint of the ribbon wipes them, so it clears the memo.
+fsm.set(tbm,S('UI'),0)
+on('TB0',(net.and_(home_,ONE-full,net.eq(_tbk,tbm,e)),'T1_POST',None),(net.eq(tab,0,e),'TB1',{tbm:_tbk,fbr:net.relu(SD['bold']+0),fir:net.relu(SD['ital']+0),fur:net.relu(SD['und']+0),ffn:net.relu(SD['font']+0),fszv:_fszv}),(None,'T1_POST',None))
 T1('biu')
 on('TB6',(None,'TB6B',{rA:(113,65,110,20,(255,255,255),206)}))
 e=S('TB6B'); tens_=sum((net.ge(fszv,10*q_,e) for q_ in range(1,10)),X())

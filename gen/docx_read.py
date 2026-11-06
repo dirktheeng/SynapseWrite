@@ -21,7 +21,7 @@ for i_,v_ in enumerate((1,816,PH,PX,TX,TW,96,864)):
 FA=as_x(FILE)
 W=rl.out
 exec(open('rv_a10_pat.py').read())
-ilim=R();oblim=R();ztarget=R();zp0=R();zk=R();ibase=R();obase=R(OUTB);mth=R();csz=R();nm=R();ext=R();cmt=R();loff=R()
+vdry=R();vusz=R();vob=R();ilim=R();oblim=R();ztarget=R();zp0=R();zk=R();ibase=R();obase=R(OUTB);mth=R();csz=R();nm=R();ext=R();cmt=R();loff=R()
 # locate the end record by scanning back, then walk the central directory
 on('OP1',(None,'ZE0',{zp:net.relu(evc-22)}))
 on('ZE0',(None,'ZE1',{rl:FA+zp}))
@@ -33,7 +33,7 @@ e=S('X_C0'); on('X_C0',(net.ge(zp,evc,e),'T3_ZN',None),(None,'X_C1',{rl:FA+zp}))
 e=S('X_C1')
 on('X_C1',(net.and_(net.eq(W[0],80,e),net.eq(W[1],75,e),net.eq(W[2],1,e),net.eq(W[3],2,e)),'C2',{rl:FA+zp+8}),(None,'T3_ZN',None))
 on('C2',(None,'C3',{mth:W[2]+W[3]*256,rl:FA+zp+20}))
-on('C3',(None,'C4',{csz:W[0]+W[1]*256+W[2]*65536,rl:FA+zp+28}))
+on('C3',(None,'C4',{csz:W[0]+W[1]*256+W[2]*65536,vusz:W[4]+W[5]*256+W[6]*65536+W[7]*16777216,rl:FA+zp+28}))
 on('C4',(None,'C5',{nm:W[0]+W[1]*256,ext:W[2]+W[3]*256,cmt:W[4]+W[5]*256,rl:FA+zp+42}))
 on('C5',(None,'C6',{loff:W[0]+W[1]*256+W[2]*65536,rl:FA+zp+46+nm-8}) if False else (None,'C5b',{loff:W[0]+W[1]*256+W[2]*65536}))
 on('C5b',(net.ge(loff,evc,S('C5b')),'T3_ZN',None),(None,'C6',{rl:FA+zp+46+nm-8}))
@@ -267,7 +267,7 @@ for i_ in range(512):
 _ctab=rom_table(_ctab)
 on('CO0',(au,'T2_C',{t2k:7,t2v:0,oi:oi+6}),(exf,'T2_C',{t2k:7,t2v:cvv,oi:oi+6}),(None,'A10_CO',{r1:as_x(_ctab)+hix,oi:oi+6}))
 on('A10_CO',(None,'T2_C',{t2k:7,t2v:R1}))
-on('OPEND',(None,'OPE2',{nolog:0,clip0:0,clip1:0}))
+on('OPEND',(vdry,'IMP_VF',None),(None,'OPE2',{nolog:0,clip0:0,clip1:0}))
 on('OPE2',(None,'A5_CX0',{autos:1,lc:1,dfrom:0,ity:as_x(0),a5i:1}))
 
 # ---- PNG reader: chunks, inflate, row filters, decimation to fit the page ----

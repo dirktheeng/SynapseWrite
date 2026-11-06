@@ -119,8 +119,11 @@ e=S('T2_OR2'); on('T2_OR2',(net.ge(t2z,512,e),'OP1',{w1:(t2cb0+PSPA,DEFSPA)}),(N
 # member walk order is in T3_ZN; end of a scanned part moves to the next part
 e=S('T2_ZN')
 on('T2_ZN',(net.eq(ztarget,6,e),'T3_Z6n',None),(net.eq(ztarget,7,e),'T3_Z7n',None),(None,'OPEND',None))
-on('T3_Z6n',(None,'X_C0',{ztarget:7,zp:zp0,ob:0,obase:OUTB,cb:SCR,ics:as_x(0),t2df:0,t2ps:0,w1:(as_x(SCR)+ALIGN,0),w2:(as_x(SCR)+LIST,0),wln:(as_x(SCR)+PIND,0,0,0,0,0,0)}))
-on('T3_Z7n',(None,'X_C0',{ztarget:4,zp:zp0,ob:0,obase:OUTB,cb:t2cb0,t2skip:0}))
+# A file that sets no line spacing anywhere is single spaced, as in Word: PLSP index 6. docDefaults overwrite the scratch record, and record 0 stands for a paragraph with no style.
+on('T3_Z6n',(None,'X_C0',{ztarget:7,zp:zp0,ob:0,obase:OUTP,cb:SCR,ics:as_x(0),t2df:0,t2ps:0,w1:(as_x(SCR)+ALIGN,0),w2:(as_x(SCR)+LIST,0),w3:(as_x(STY)+4,6),wln:(as_x(SCR)+PIND,0,0,6,0,0,0)}))
+on('T3_Z7n',(net.step(ONE-t2df),'IMP_DD0',{r1:as_x(SCR)+PLSP}),(None,'IMP_DD2',None))
+on('IMP_DD0',(None,'IMP_DD2',{w1:(as_x(STY)+4,R1)}))
+on('IMP_DD2',(None,'PX',{ztarget:4,oi:0,ob:vob,obase:OUTB,cb:t2cb0,t2skip:0}))
 # attribute search: moves oi to the first value after w:val=" in this tag
 e=S('T2_VF1')
 on('T2_VF',(None,'T2_VF1',{rl:OA+oi}))
@@ -193,7 +196,9 @@ on('T2_NI1',(net.step(t2n_),'PX',{w1:(cb+LIST,kd+t2il*4),w2:(cb+PIND,0),w3:(cb+P
 # style part
 t2ido=R();t2oi=R();t2i=R();t2jj=R();t2fnd=R()
 e=S('T2_STQ'); on('T2_STQ',(net.or_(net.eq(W[0],32,e),net.eq(W[0],62,e)),'T2_ST0',{oi:oi+8}),(None,'PX',{oi:oi+8}))
-on('T2_ST0',(net.step(ONE-t2df),'T2_SW',{t2si:DEFREC,t2df:1,t2rr.r:t2rr.id('T2_ST0b')}),(None,'T2_ST0b',None))
+on('T2_ST0',(net.step(ONE-t2df),'T2_SW',{t2si:DEFREC,t2df:1,t2rr.r:t2rr.id('IMP_DD1')}),(None,'T2_ST0b',None))
+on('IMP_DD1',(None,'IMP_DD3',{r1:as_x(SCR)+PLSP}))
+on('IMP_DD3',(None,'T2_ST0b',{w1:(as_x(STY)+4,R1)}))
 t2chr=R()
 on('T2_ST0b',(None,'T2_ST',{t2skip:1,t2ido:0,t2chr:0}))
 on('T2_ST',(None,'T2_ST1',{rl:OA+oi}))

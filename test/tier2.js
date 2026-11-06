@@ -92,7 +92,7 @@ W='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
 z=zipfile.ZipFile('build/hang_f.docx','w')
 z.writestr('[Content_Types].xml','<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>')
 z.writestr('_rels/.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>')
-z.writestr('word/document.xml','<?xml version="1.0"?><w:document %s><w:body><w:p><w:pPr><w:spacing w:before="0" w:after="165"/><w:ind w:left="720" w:hanging="360"/></w:pPr><w:r><w:rPr><w:sz w:val="22"/></w:rPr><w:t>${LG}</w:t></w:r></w:p></w:body></w:document>'%W)
+z.writestr('word/document.xml','<?xml version="1.0"?><w:document %s><w:body><w:p><w:pPr><w:spacing w:before="0" w:after="165" w:line="259" w:lineRule="auto"/><w:ind w:left="720" w:hanging="360"/></w:pPr><w:r><w:rPr><w:sz w:val="22"/></w:rPr><w:t>${LG}</w:t></w:r></w:p></w:body></w:document>'%W)
 z.close()
 P`);
   await A.open('build/hang_f.docx');await A.K('Control+End');const f=await shot(A.p);fs.writeFileSync('build/hang_f.png',f);ok('hanging indent from a foreign file',h(a)===h(f));
