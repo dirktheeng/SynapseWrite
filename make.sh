@@ -6,3 +6,4 @@ clang --target=wasm32 -O3 -nostdlib -mbulk-memory -msimd128 -Wl,--no-entry -Wl,-
 (cd gen && python3 app.py)
 python3 build.py
 cp test/fixtures/*.png build/
+clang -DCHECK --target=wasm32 -O2 -nostdlib -mbulk-memory -msimd128 -Wl,--no-entry -Wl,-z,stack-size=1048576 -o build/engine_check.wasm host/engine.c

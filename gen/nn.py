@@ -73,6 +73,7 @@ class Net:
         r=s.step(e)
         # An AND's inputs are 0 or 1 by construction, so any of them may wake it.
         s.bool_in=getattr(s,'bool_in',set()); s.bool_in.add(next(iter(r.t)))
+        s.and_args=getattr(s,'and_args',[]); s.and_args.append((next(iter(r.t)),a))   # only read by the debug table
         return r
     def or_(s,*a):
         e=X()

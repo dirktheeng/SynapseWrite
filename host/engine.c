@@ -63,9 +63,16 @@ static void read_port(i32*p){ if(p[0]==2){ // read: {2,en,addr,out,len,lenN}
    i32 a=I(p[2]),n=p[5]>=0?I(p[5]):p[4];if(n>p[4])n=p[4];i32 o=p[3];f32*b=bank+a;for(i32 j=0;j<n;j++){f32 x=b[j];if(x!=0)inject(o+j,x);}}
   else { // screenshot pixel read: {5,en,xy,out} with xy neuron packed as x+y*65536
    i32 xy=I(p[2]),x=xy&65535,y=xy>>16;if(x>=0&&x<W&&y>=0&&y<H){u8*o=fb+4*(y*W+x);for(i32 j=0;j<4;j++)if(o[j])inject(p[3]+j,o[j]);}}}
+#ifdef CHECK
+#include "engine_check.h"
+#else
+#define CHK_PORT(p) 1
+#define CHK_TICK()
+#define CHK_STICKY(i)
+#endif
 static inline void run_ports(void){
- for(i32 i=0;i<nwp;i++)if(v[pen[i]]!=0)write_port(ports+pptr[i]);
- for(i32 i=nwp,e=nwp+nrp;i<e;i++)if(v[pen[i]]!=0)read_port(ports+pptr[i]);}
+ for(i32 i=0;i<nwp;i++)if(v[pen[i]]!=0&&CHK_PORT(ports+pptr[i]))write_port(ports+pptr[i]);
+ for(i32 i=nwp,e=nwp+nrp;i<e;i++)if(v[pen[i]]!=0&&CHK_PORT(ports+pptr[i]))read_port(ports+pptr[i]);}
 static long edges_total=0; __attribute__((export_name("edges"))) f64 edges(void){return (f64)edges_total;}
 #define SET(d) do{bits[(d)>>6]|=1ull<<((d)&63);sum[(d)>>12]|=1ull<<(((d)>>6)&63);}while(0)
 #ifdef COUNT
@@ -90,12 +97,12 @@ __attribute__((noinline)) static void tick(void){ tickno++;
    while((b=bits[wd])){i32 i=wd*64+__builtin_ctzll(b);bits[wd]=b&(b-1);
     f64 x=acc[i]+bias[i];acc[i]=0;CNT(0);CN(i,1);
     {i32 a0=istart[i],a1=istart[i+1];if(a1>a0&&x>-549755813888.0){for(i32 q=a0;q<a1;q++){i32 s=isrc[q];CNT(1);CN(i,1);x+=wtab[iwi[q]]*(s>=0?v[s]:pull(~s));}}}
-    i32 ac=act[i];if(ac==3){v[i]+=x;continue;}f64 o=ac==0?x:ac==1?(x>1e-9?1:0):(x>0?x:0);
+    i32 ac=act[i];if(ac==3){v[i]+=x;CHK_STICKY(i);continue;}f64 o=ac==0?x:ac==1?(x>1e-9?1:0):(x>0?x:0);
     if(o!=0){v[i]=o;live[nlive++]=i;i32 q=ostart[i],sp=osplit[i],en=ostart[i+1];edges_total+=en-q;CN(i,en-q);
      for(;q<sp;q++){i32 d=dst[q];nacc[d]+=o*wtab[wi[q]];if(!nflag[d]){nflag[d]=1;nlist[nnext++]=d;}}
      for(;q<en;q++){i32 d=dst[q];acc[d]+=o*wtab[wi[q]];SET(d);}}}
    sum[sw]&=~(1ull<<(wd&63));}}
- run_ports();}
+ CHK_TICK();run_ports();}
 // Run ticks until the halt neuron fires. Returns the tick count.
 __attribute__((export_name("run"))) i32 run(i32 halt,i32 maxticks){i32 n=0;while(n<maxticks){tick();n++;if(v[halt]!=0)break;}return n;}
 __attribute__((export_name("val"))) f64 val(i32 i){return v[i];}
