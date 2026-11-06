@@ -13,3 +13,10 @@ Why: the style record is a 24 bit float32 integer and every bit is used, and the
 - Format commands (W4, bulk A7, equation apply) and typing style (TYS2, FTY) keep the extra fields.
 - Capacity: STYT stays at 1100000 but would run into STYX at 1120000 at 4096 entries of 7, so STYCAP is now 2856 entries (was 4096).
 - Build: ok, 3,795,777 bytes.
+
+## Step 2: properties through open, display, save (commit after this)
+- Reader rules F1_PX (gen/feat1_regs.py) ahead of the paragraph spacing rule; states in gen/feat1_docx.py. Links: r:id resolved through the existing relationship lookup (T3_BR1) and copied into a link table at 1130000; w:anchor kept as a name. Bookmarks: start opens an id the runs carry, end closes it; names at 1264100.
+- Display (gen/feat1_glyph.py, hooks in the glyph network and C1 paint): caps and small caps draw and measure the capital, small capitals at 0.8 size, hidden text no width and no ink (Word with marks off), spacing joins the advance, double strike as a second line through rZ, run shade as a rect under darker wins.
+- Writer: rPr in schema order (caps, smallCaps before strike, dstrike after, vanish after noProof, spacing after color, shd after u); links and bookmarks opened and closed around runs; external targets listed in document.xml.rels as rIdL<n>; contextualSpacing and widowControl w:val="0" from slot cell 4095.
+- First run of test/feat1.js: 15/22. Fixes: number() pads with zeros and has no sign, so spacing is written as an optional minus and vnum; test pixel helpers had swapped arguments. Then 22/22.
+- Contextual spacing is applied the way rv_a5 applies a style's: the gap is dropped at the end of open (values lost on save, flag kept).

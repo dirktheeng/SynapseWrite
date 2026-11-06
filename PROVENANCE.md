@@ -2,7 +2,7 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-534459 neurons, 1080754 edges, 188 layers, 4037 control states.
+534467 neurons, 1080770 edges, 188 layers, 4040 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
@@ -46,7 +46,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | zoom | Zoom levels and read mode commands, status bar controls, and pictures at other scales. | gen/imp3_zoom.py (457) | 457 | 3692 |
 | view: side scroll and vertical ruler | Slides a page wider than the window, its bar, and draws the vertical ruler. | gen/imp4_view.py (301), gen/app.py (212), gen/t1_features.py (44) | 557 | 3209 |
 | ribbon actions | Maps button ids to commands. | gen/app.py (155) | 155 | 256 |
-| docx writer | Writes the document XML parts. | gen/t2_write.py (652), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1095 | 9446 |
+| docx writer | Writes the document XML parts. | gen/t2_write.py (652), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1095 | 9451 |
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2707), gen/app.py (4) | 2711 | 41587 |
 | pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1396) | 1396 | 4416 |
 | docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (2885) | 2885 | 18001 |
@@ -88,8 +88,8 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | a4 pagenum | Page number formats and section start values. | gen/rv_a4_features.py (254) | 254 | 583 |
 | docx reader rv_a5 | Reader fidelity (nested tables, row spans, spacing, truncation), plus spell suggestions and the saved list of added words. | gen/rv_a6_spell.py (845), gen/rv_a5_docx.py (355), gen/app.py (303) | 1503 | 13761 |
 | feat1 docx reader | Reads caps, small caps, double strike, hidden text, character spacing, run shading, links with their targets, bookmarks, contextual spacing and widow control from a .docx. | gen/feat1_docx.py (249) | 249 | 648 |
-| feat1 docx writer | Writes those run and paragraph properties back, opens and closes links and bookmarks around runs, and lists external link targets as relationships. | gen/feat1_docx.py (217) | 217 | 947 |
+| feat1 docx writer | Writes those run and paragraph properties back, opens and closes links and bookmarks around runs, and lists external link targets as relationships. | gen/feat1_docx.py (224) | 224 | 957 |
 | rv a3 interaction | Editing keys, word and page motion, right click, autoscroll, context menu, and the late tier 1 features. | gen/t1_features.py (2039), gen/rv_a3_keys.py (655), gen/pointer3.py (86), gen/rv_a4_features.py (79), gen/ui.py (42) | 2901 | 25112 |
 | file output command | Selects the length, data base and file name the glue saves. | gen/rv_a11_out.py (5) | 5 | 8 |
 | screen check | Compares one line of the screen id plane against the line table on each blink tick and repairs by repainting. | gen/rv_a11_out.py (23) | 23 | 56 |
-| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (10194) | 10194 | 55704 |
+| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (10195) | 10195 | 55710 |

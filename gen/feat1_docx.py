@@ -63,7 +63,7 @@ on('F1_R0',(f1wx[0],'F1_Rc',None),(None,'F1_R1',None)); lit('F1_Rc',b'<w:caps/>'
 on('F1_R1',(f1wx[1],'F1_Rm',None),(None,'F1_R4',None)); lit('F1_Rm',b'<w:smallCaps/>','F1_R4')
 on('F1_R5',(f1wx[2],'F1_Rd',None),(None,'T2R4n',None)); lit('F1_Rd',b'<w:dstrike/>','T2R4n')
 on('F1_R6',(f1wx[3],'F1_Rv',None),(None,'T2R5',None)); lit('F1_Rv',b'<w:vanish/>','T2R5')
-on('F1_R7',(net.step(f1wx[4]),'F1_Rs',None),(None,'F1_R7z',None)); lit('F1_Rs',b'<w:spacing w:val="','F1_Rs1'); number('F1_Rs1',f1wx[4]-512,'F1_Rs2'); lit('F1_Rs2',b'"/>','F1_R7z')
+on('F1_R7',(net.step(f1wx[4]),'F1_Rs',None),(None,'F1_R7z',None)); lit('F1_Rs',b'<w:spacing w:val="','F1_Rs1'); e=S('F1_Rs1'); on('F1_Rs1',(net.lt(f1wx[4],512,e),'F1_Rsm',None),(None,'F1_Rsp',None)); lit('F1_Rsm',b'-','F1_Rsn'); vnum('F1_Rsn',as_x(512)-f1wx[4],'F1_Rs2'); vnum('F1_Rsp',f1wx[4]-512,'F1_Rs2'); lit('F1_Rs2',b'"/>','F1_R7z')
 on('F1_R8',(net.step(ins_z),'F1_Rh',None),(None,'F1_RB',None)); lit('F1_Rh',b'<w:shd w:val="clear" w:color="auto" w:fill="','F1_Rh0')
 f1nbz=[R() for _ in range(6)]; e=S('F1_Rh0'); _zb=net.bits(ins_z-1,24,e)
 on('F1_Rh0',(None,'F1_Rhx0',{f1nbz[j_]:_zb[20-4*j_]+_zb[21-4*j_]*2+_zb[22-4*j_]*4+_zb[23-4*j_]*8 for j_ in range(6)}))

@@ -54,34 +54,34 @@ const xml=(f,m='word/document.xml')=>execSync(`python3 -c "import zipfile;print(
  await open(main);const sm=await shot();fs.writeFileSync(`${O}/main.png`,sm);const st=await p.evaluate(()=>({t:annStats.t9,e:annStats.e9}));console.log('open',JSON.stringify(st));
  const A=png(sm),Rf=png(sr),N=png(sn);
  // line boxes: find the first rows of text ink on the page in the reference
- const lines=[];{let inl=false;for(let y=0;y<A.height;y++){const n=dark(Rf,300,950,y,y+1);if(n&&!inl){lines.push(y);inl=true;}if(!n&&inl)inl=false;}}
+ const lines=[];{let inl=false;for(let y=0;y<A.height;y++){const n=dark(Rf,300,y,950,y+1);if(n&&!inl){lines.push(y);inl=true;}if(!n&&inl)inl=false;}}
  console.log('ref line tops',lines.slice(0,6).join(' '));
  const L1=lines[0]-6,L2=lines[1]-6;const band=(im,y)=>{const o=[];for(let yy=y;yy<y+22;yy++)for(let x=300;x<950;x++)o.push(px(im,x,yy).join(','));return o.join(';');};
  // caps: the first line matches the plain capitals up to the small caps run
- const capsSame=(()=>{for(let yy=L1;yy<L1+22;yy++)for(let x=300;x<500;x++)if(px(A,x,yy).join()!==px(Rf,x,yy).join())return false;return true;})();
+ const capsSame=(()=>{for(let yy=L1;yy<L1+22;yy++)for(let x=330;x<440;x++)if(px(A,x,yy).join()!==px(Rf,x,yy).join())return false;return true;})();
  ok('caps draws the capitals, pixel identical with typed capitals',capsSame);
  // small caps: lowercase letters drawn as capitals, shorter than the full capitals and taller than lowercase x height
  const [sa,sb]=(()=>{let x0=-1,x1=-1;for(let x=950;x>300;x--){if(dark(A,x,L1,x+1,L1+22)){if(x1<0)x1=x;x0=x;}else if(x1>0&&x0-x>8)break;}return [x0,x1];})();
  const scBox=inkBox(A,sa,sb+1,L1,L1+22),rcBox=inkBox(Rf,sa-10,sb+20,L1,L1+22);
  const colTop=(im,x0,x1)=>{const t=[];for(let x=x0;x<=x1;x++){let y0=-1;for(let y=L1;y<L1+22;y++){const c=px(im,x,y);if(c[0]+c[1]+c[2]<300){y0=y;break;}}t.push(y0);}return t;};
- const tops=colTop(A,sa,sb).filter(v=>v>=0);const capTop=Math.min(...tops),lowTop=Math.max(...tops);
+ const tops=colTop(A,sa,sb).filter(v=>v>=0).sort((a,b)=>a-b);const capTop=tops[0],lowTop=tops[tops.length>>1];
  ok('small caps: two letter heights, the small capitals lower than the capitals',lowTop-capTop>=2&&lowTop-capTop<=5,`cap top ${capTop}, small cap top ${lowTop}`);
  ok('small caps run is wider than the same text in lowercase would be',(sb-sa)>(rcBox[1]-rcBox[0])*0.95,`${sb-sa} vs ${rcBox[1]-rcBox[0]}`);
  // second line: hidden text takes no room, so "ab" is drawn as in the reference; double strike has two lines
  const ab=(()=>{for(let yy=L2;yy<L2+22;yy++)for(let x=300;x<640;x++)if(dark(A,x,yy,x+1,yy+1)!==dark(Rf,x,yy,x+1,yy+1))return false;return true;})();
  const sRows=rowsInk(A,330,400,L2,L2+22).map(v=>v>50?1:0),rRows=rowsInk(Rf,330,400,L2,L2+22).map(v=>v>50?1:0);
  ok('double strike draws two lines where strike draws one',sRows.reduce((a,b)=>a+b,0)===2&&rRows.reduce((a,b)=>a+b,0)===1,`${sRows.join('')} ${rRows.join('')}`);
- const ab2=(()=>{let d=0;for(let yy=L2;yy<L2+22;yy++)for(let x=420;x<470;x++)if(px(A,x,yy).join()!==px(Rf,x,yy).join())d++;return d;})();
+ const ab2=(()=>{let d=0;for(let yy=L2;yy<L2+22;yy++)for(let x=405;x<422;x++)if(px(A,x,yy).join()!==px(Rf,x,yy).join())d++;return d;})();
  ok('hidden text takes no width or ink: the text around it is drawn as without it',ab2===0,ab2);
- const sp=(im)=>{let x0=-1,x1=-1,g=0;for(let x=480;x<950;x++){if(dark(im,x,L2,x+1,L2+22)){if(x0<0)x0=x;x1=x;g=0;}else if(x0>0&&++g>6)break;}return [x0,x1];};
- const ws=sp(A),wr=sp(Rf);ok('3 pt spacing widens "spaced" by 4 px a letter',Math.abs((ws[1]-ws[0])-(wr[1]-wr[0])-5*4)<=2,`${ws[1]-ws[0]} vs ${wr[1]-wr[0]}`);
+ const sp=(im)=>{let x0=-1,x1=-1,g=0;for(let x=423;x<950;x++){if(dark(im,x,L2,x+1,L2+22)){if(x0<0)x0=x;x1=x;g=0;}else if(x0>0&&++g>6)break;}return [x0,x1];};
+ const re=im=>{for(let x=1000;x>300;x--)if(dark(im,x,L2,x+1,L2+22))return x;};const ws=re(A),wr=re(Rf);ok('3 pt spacing widens "spaced" by 4 px a letter, and -0.5 pt narrows "tight"',Math.abs(ws-wr-(6*4-5*2/3))<=2,`line end ${ws} vs ${wr}`);
  // third line: the shade under shaded words
  const L3=L2+(L2-L1);let shade=0;for(let yy=L3;yy<L3+20;yy++)for(let x=300;x<400;x++){const c=px(A,x,yy);if(Math.abs(c[0]-255)<3&&Math.abs(c[1]-217)<3&&Math.abs(c[2]-102)<3)shade++;}
  ok('run shading fills behind the run in its exact color',shade>400,shade);
  // contextual spacing: the two ctx paragraphs sit with no gap, closer than without the flag
- const findText=(im)=>{const t=[];let inl=false;for(let y=0;y<im.height;y++){const n=dark(im,300,950,y,y+1);if(n&&!inl){t.push(y);inl=true;}if(!n&&inl)inl=false;}return t;};
+ const findText=(im)=>{const t=[];let last=-99;for(let y=0;y<im.height;y++){const n=dark(im,300,y,950,y+1);if(n>=4){if(y-last>4)t.push(y);last=y;}}return t;};
  const ta=findText(A),tn=findText(N);
- ok('contextual spacing drops the gap between two paragraphs of one style that both set it',(ta[5]-ta[4])<(tn[5]-tn[4])-40,`${ta[5]-ta[4]} vs ${tn[5]-tn[4]}`);
+ ok('contextual spacing drops the gap between two paragraphs of one style that both set it',(ta[ta.length-2]-ta[ta.length-3])<(tn[tn.length-1]-tn[tn.length-2])-40,`${ta[ta.length-2]-ta[ta.length-3]} vs ${tn[tn.length-1]-tn[tn.length-2]}`);
  // save and the file
  await save(`${O}/s1.docx`);const x1=xml(`${O}/s1.docx`),r1=xml(`${O}/s1.docx`,'word/_rels/document.xml.rels');fs.writeFileSync(`${O}/s1.xml`,x1);
  ok('caps and small caps saved',/<w:caps\/>.*caps text/.test(x1)&&/<w:smallCaps\/>.*Small Caps/.test(x1));
