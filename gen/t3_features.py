@@ -160,7 +160,7 @@ e=S('RE1'); dgd=net.and_(e,net.step(tdk),net.lt(tdk,17,e))
 rC.drive(dgd,(tmx,DOCY,1,VH,(43,87,154),0))
 # column border release: resize through the field pass
 e=S('T3_MU'); ck_=net.and_(e,net.step(tdk),net.lt(tdk,17,e))
-on('T3_MU',(ck_,'T3_CW0',{tmx:eva,tdc:tdk-1,tdk:0,jp:tdr,jo:0,jret.r:jret.id('T3_CW1')}),(net.and_(e,net.step(tdk)),'T3_IMU',None),(a4fp,'A4_FA0',None),(None,'IDL2',None))
+on('T3_MU',(net.ge(tdk,30,e),'A4_RU',None),(ck_,'T3_CW0',{tmx:eva,tdc:tdk-1,tdk:0,jp:tdr,jo:0,jret.r:jret.id('T3_CW1')}),(net.and_(e,net.step(tdk)),'T3_IMU',None),(a4fp,'A4_FA0',None),(None,'IDL2',None))
 on('T3_CW0',(None,'J0',None))
 scan('T3_CW1','T3_CW2')
 on('T3_CW2',(None,'T3_CW3',{r1:as_x(PT)+ts+tdc,r2:as_x(PT)+ts+net.min_(tdc+1,tn-1)}))
@@ -187,16 +187,16 @@ for i_,v_ in enumerate(SWV):
     nx_=f'T3_SW{i_}' if i_<7 else 'T3_SWR'
     on(cur_,(None,nx_,{w1:(as_x(SECB)+sv_i*8+i_,net.relu(v_))})); cur_=nx_
 # change the caret section: read, edit, write, relayout everything
-on('T3_SP0',(None,'T3_SP1',{r1:cb+SSI}))
+on('T3_SP0',(None,'T3_SP1',{r1:cb+SSI,grp:grp+1}))
 on('T3_SP1',(None,'T3_SP2',{csc:R1,sv_i:R1,rl:as_x(SECB)+R1*8}))
-e=S('T3_SP2'); op_=net.decode(tsop,9,e)
+e=S('T3_SP2'); op_=net.decode(tsop,11,e)
 base_={sv_nc:RL[0],sv_pw:RL[1],sv_ph:RL[2],sv_ml:RL[4]-RL[3],sv_mr:RL[1]-RL[4]+RL[3]-RL[5],sv_mt:RL[6],sv_mb:RL[2]-RL[6]-RL[7]}
 def ovr(k_,v_):
     d_=dict(base_); d_.update(v_); return (op_[k_],'T3_SP3',d_)
 on('T3_SP2',ovr(1,{sv_pw:net.min_(RL[1],RL[2]),sv_ph:net.max_(RL[1],RL[2])}),ovr(2,{sv_pw:net.max_(RL[1],RL[2]),sv_ph:net.min_(RL[1],RL[2])}),
  ovr(3,{sv_ml:96,sv_mr:96,sv_mt:96,sv_mb:96}),ovr(4,{sv_ml:48,sv_mr:48,sv_mt:48,sv_mb:48}),ovr(5,{sv_ml:144,sv_mr:144,sv_mt:96,sv_mb:96}),
- ovr(6,{sv_nc:1}),ovr(7,{sv_nc:2}),ovr(8,{sv_ml:72,sv_mr:72,sv_mt:96,sv_mb:96}),(None,'RD0',None))
-on('T3_SP3',(None,'T3_SW',{swret.r:swret.id('T3_SP4')}))
+ ovr(9,{sv_ml:net.relu(RL[4]-RL[3]+a4dl-1000)}),ovr(10,{sv_mr:net.relu(RL[1]-RL[4]+RL[3]-RL[5]+1000-a4dl)}),ovr(6,{sv_nc:1}),ovr(7,{sv_nc:2}),ovr(8,{sv_ml:72,sv_mr:72,sv_mt:96,sv_mb:96}),(None,'RD0',None))
+on('T3_SP3',(None,'A4_SL',None))
 on('T3_SP4',(None,'DA0',{di_:0}))
 for st_,k_ in (('T3_C_POR',1),('T3_C_LAN',2),('T3_C_MN',3),('T3_C_MS',4),('T3_C_MW',5)):
     on(st_,(None,'T3_SP0',{tsop:k_}))
@@ -329,7 +329,7 @@ on('T3_GC2',(None,'PX',{w1:(as_x(TGW)+gcount,floorv(aval*(1.0/15)+0.5,e)),gcount
 on('T3_TC0',(None,'SPLIT',{oret.r:oret.id('T3_TC1')}))
 on('T3_TC1',(None,'T3_TC2',{r1:as_x(TGW)+tcidx}))
 on('T3_TC2',(None,'T3_TC3',{w1:(cb+2062,gcount),w2:(cb+2063,tcidx),w3:(cb+CWO,R1),w4:(cb+CXO,gx),gx:gx+R1,incell:1}))
-on('T3_TC3',(None,'PX',{w1:(cb+ALIGN,0)}))
+on('T3_TC3',(None,'PX',{w1:(cb+ALIGN,0),w2:(cb+CSH,0)}))
 e=S('T3_SHD')
 on('T3_SHD',(None,'T3_SHD1',{rl:OA+oi}))
 e=S('T3_SHD1')
@@ -939,7 +939,7 @@ on('T3_RC4',(net.ge(tq,xl,e),'PX',None),(None,'T3_RC5',{r1:xb+tq}))
 on('T3_RC5',(None,'T3_RC4',{w1:(cb+CMT+tq,R1),tq:tq+1}))
 # TOC entries and tabs
 e=S('T3_RT0')
-on('T3_RT0',(rtoc,'PX',{rdig:1,tpgv:0}),(None,'INS',{ins_ch:32,ins_st:cs+rhi,tabn:0,oret.r:oret.id('T3_RT3')}))
+on('T3_RT0',(rtoc,'PX',{rdig:1,tpgv:0}),(net.ge(clen,1000,e),'PX',None),(None,'INS',{ins_ch:9,ins_st:cs+rhi,oret.r:oret.id('PX')}))
 on('T3_RT3',(None,'INS',{ins_ch:32,ins_st:cs+rhi,oret.r:oret.id('T3_RT4')}));on('T3_RT4',(None,'INS',{ins_ch:32,ins_st:cs+rhi,oret.r:oret.id('T3_RT5')}));on('T3_RT5',(None,'INS',{ins_ch:32,ins_st:cs+rhi,oret.r:oret.id('PX')}))
 on('T3_RT1',(None,'T3_RT2',{rl:OA+oi}))
 e=S('T3_RT2')

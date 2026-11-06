@@ -14,21 +14,23 @@ def a4_hover(e):
 on('A4_CF',(None,'PA0',{pwalk:lo_p,pfld:LIST,alv:0,t1_pdm:0,grp:grp+1,a4cfk:1,t1_lastk:0}))
 on('A4_CF1',(has_sel,'A4_CF2',{rl:as_x(STY)}),(None,'T2_SA0',{t2si:0,a4cfq:1}))
 on('A4_CF2',(None,'A4_CF3',None))
-on('A4_CF3',(None,'W0',{fpre:W_[0],t2f[1]:W_[1],t2f[2]:W_[2],t2f[3]:W_[3],t2f[4]:W_[4],t2f[5]:W_[5],t2f[6]:W_[6],fm:8,t2si:0,t2lo:lo_p,t2hi:hi_p,t2um:0,wp:lo_p,wo:lo_o,wm:2,wfirst:1,wret.r:wret.id('FEND')}))
+on('A4_CF3',(None,'W0',{fpre:W_[0],t2f[1]:W_[1],t2f[2]:W_[2],t2f[3]:W_[3],t2f[4]:W_[4],t2f[5]:W_[5],t2f[6]:W_[6],fm:8,t2si:0,t2lo:lo_p,t2hi:hi_p,t2um:0,a4wp_:lo_p,a4wo_:lo_o,wm:2,wfirst:1,wret.r:wret.id('FEND')}))
 fsm.set(a4cfq,S('T2_SA2'),0)
 # change case: a menu, then the range walker in mode 3. Without a selection the word at the caret is selected first.
 on('A4_CM',(None,'T1_M0',{t1_mop:9,t1_mrow:99,t1_mtop:131,clip0:0,clip1:0}))
-on('A4_CC',(has_sel,'W0',{wp:lo_p,wo:lo_o,wm:3,a4ws:1,a4ss:1,grp:grp+1,wret.r:wret.id('A4_CE')}),(None,'T1_W0',{a4cw:1}))
+on('A4_CC',(has_sel,'W0',{a4wp_:lo_p,a4wo_:lo_o,wm:3,a4ws:1,a4ss:1,grp:grp+1,wret.r:wret.id('A4_CE')}),(None,'T1_W0',{a4cw:1}))
 on('A4_CE',(None,'RD0',{lc:1}))
 fsm.set(a4cw,S('RD0'),0)
 # format painter: the first click takes the run format and paragraph record at the caret, mouse up applies them. A double click stays on.
 e=S('A4_FP')
-on('A4_FP',(net.and_(a4fp,net.eq(t1_clk,2,e)),'RD0',{a4fs:1}),(a4fp,'RD0',{a4fp:0,a4fs:0}),(None,'A4_FP1',{r1:cb+ALIGN,rp6:cb+PIND}))
+on('A4_FP',(net.and_(a4fp,net.eq(t1_clk,2,e)),'RD0',{a4fs:1}),(a4fp,'RD0',{a4fp:0,a4fs:0}),(has_sel,'A4_FPs',{r1:as_x(PT)+lo_p}),(None,'A4_FP1',{r1:cb+ALIGN,rp6:cb+PIND,a4fst:ty}))
+on('A4_FPs',(None,'A4_FPt',{r2:R1+1024+lo_o}))
+on('A4_FPt',(None,'A4_FP1',{a4fst:R2,r1:cb+ALIGN,rp6:cb+PIND}))
 e=S('A4_FP1')
-on('A4_FP1',(None,'RD0',{a4ff[1]:R1,a4ff[2]:rp6.out[0],a4ff[3]:rp6.out[1],a4ff[4]:rp6.out[2],a4ff[5]:rp6.out[3],a4ff[6]:rp6.out[4],a4fps:rp6.out[5],a4fst:ty,a4fpp:net.or_(e-net.and_(e,has_sel),net.gt(hi_p,lo_p,e)),a4fp:1,a4fs:0}))
+on('A4_FP1',(None,'RD0',{a4ff[1]:R1,a4ff[2]:rp6.out[0],a4ff[3]:rp6.out[1],a4ff[4]:rp6.out[2],a4ff[5]:rp6.out[3],a4ff[6]:rp6.out[4],a4fps:rp6.out[5],a4fpp:net.or_(e-net.and_(e,has_sel),net.gt(hi_p,lo_p,e)),a4fp:1,a4fs:0}))
 _a4set={fpre:a4fst,t2f[1]:a4ff[1],t2f[2]:a4ff[2],t2f[3]:a4ff[3],t2f[4]:a4ff[4],t2f[5]:a4ff[5],t2f[6]:a4ff[6],t2si:a4fps,fm:8,t2lo:lo_p,t2hi:hi_p,t2um:0,a4fp:a4fs,t1_uid:1}
 e=S('A4_FA0')
-on('A4_FA0',(has_sel,'W0',{**_a4set,wp:lo_p,wo:lo_o,wm:2,wfirst:1,grp:grp+1,wret.r:wret.id('A4_FE')}),(net.eq(clen,0,e),'A4_FE',{**_a4set,grp:grp+1}),(None,'T1_W0',{a4cw:2}))
+on('A4_FA0',(has_sel,'W0',{**_a4set,a4wp_:lo_p,a4wo_:lo_o,wm:2,wfirst:1,grp:grp+1,wret.r:wret.id('A4_FE')}),(net.eq(clen,0,e),'A4_FE',{**_a4set,grp:grp+1}),(None,'T1_W0',{a4cw:2}))
 on('A4_FE',(a4fpp,'T2_SP0',{ap:cp,ao:co,lc:1,ty:fpre}),(None,'RD0',{lc:1,ty:fpre}))
 # paragraph switches through the logged paragraph field pass
 def a4_toggle(st,fld):
@@ -46,10 +48,9 @@ on('T1_MM10',(None,'A4_GM',{a4gc:_b[0]+_b[1]*2+_b[2]*4,a4gr:_b[3]+_b[4]*2+_b[5]*
 e=S('A4_GI'); _gh=net.decode(a4gr,8,e); _prod=X()
 for r_ in range(8): _prod=_prod+G_((a4gc+1)*(r_+1),_gh[r_])
 on('A4_GI',(None,'TI0',{tin:a4gc+1,tic:0,tir:_prod-1,grp:grp+1}))
-e=S('A4_GJ'); _b=net.bits(t1_mrow,7,e)
-on('A4_GJ',(None,'A4_GI',{a4gc:_b[0]+_b[1]*2+_b[2]*4,a4gr:_b[3]+_b[4]*2+_b[5]*4}))
 def a4_mrules(mc,CM,e):
-    return [(mc(9,r_),'A4_CC',{a4cm:r_,**CM}) for r_ in range(5)]+[(net.and_(net.eq(t1_mop,10,e),net.lt(t1_mrow,64,e)),'A4_GJ',CM)]
+    _b=net.bits(t1_mrow,7,e)
+    return [(mc(9,r_),'A4_CC',{a4cm:r_,**CM}) for r_ in range(5)]+[(net.and_(net.eq(t1_mop,10,e),net.lt(t1_mrow,64,e)),'A4_GI',{a4gc:_b[0]+_b[1]*2+_b[2]*4,a4gr:_b[3]+_b[4]*2+_b[5]*4,**CM})]
 def a4_late():
     t1_menu(9,112,131,170,['Sentence case','lowercase','UPPERCASE','Capitalize Each Word','tOGGLE cASE'])
     x_,y_=826,127; u=ui.L()
@@ -187,3 +188,92 @@ e=S('A4_RS4'); on('A4_RS4',(net.eq(W[0],62,e),'T3_RT1',{oi:a4roi}),(pat('w:pos="
 on('A4_RS5',(None,'T2_DV',{t2q:0,t2sr.r:t2sr.id('A4_RS6')}))
 e=S('A4_RS6'); _ok=net.lt(a4rsn,4,e); w1.drive(_ok,(cb+A4T+a4rsn,t2q+a4rsk*4096))
 on('A4_RS6',(None,'T3_RT1',{oi:a4roi,a4rsn:a4rsn+_ok}))
+# ---- real tabs: the layout network finds each tab's width and keeps (offset, width) pairs in the paragraph; paint and PDF look them up ----
+net.group('a4 tabs')
+A4TW=2025; A4TN=11
+a4tn=R();a4ts=R();a4tk_=R();a4tw=R();a4tc=R();a4ti=R();a4tq=R();a4tb=R();a4trel=R()
+e=S('A4_LT0'); a4trel_=lx+pind+pf_val(lfi)+indb; _kd=[net.ge(A4TO[i_],4096,e)+net.ge(A4TO[i_],8192,e) for i_ in range(4)]; _p=[A4TO[i_]-_kd[i_]*4096 for i_ in range(4)]
+_gt=[net.gt(_p[i_],a4trel_,e) for i_ in range(4)]; _c=[G_(_p[i_],_gt[i_])+(e-_gt[i_])*60000 for i_ in range(4)]
+_gi=net.gt(pind,a4trel_,e); _mn=net.min_(net.min_(net.min_(_c[0],_c[1]),net.min_(_c[2],_c[3])),G_(pind,_gi)+(e-_gi)*60000)
+_rv=net.gate(a4trel_,e); _k=X()
+for i_ in range(1,27): _k=_k+net.step(_rv-48*i_+0.001)
+_hc=net.lt(_mn,60000,e)
+_kk=X()
+for i_ in range(4): _kk=_kk+G_(_kd[i_],net.eq(_c[i_],_mn,e))
+on('A4_LT0',(None,'A4_LT1',{a4ts:G_(_mn,_hc)+G_((_k+1)*48,e-_hc),a4tk_:G_(_kk,_hc),a4trel:a4trel_,a4tc:0,a4tq:off+1}))
+e=S('A4_LT1'); on('A4_LT1',(net.step(a4tk_),'A4_LM0',None),(None,'A4_LT2',{a4tw:net.relu(a4ts-a4trel)}))
+e=S('A4_LM0'); on('A4_LM0',(net.ge(a4tq,plen_,e),'A4_LMz',None),(None,'A4_LM1',{r1:pbs+a4tq,r2:pbs+1024+a4tq}))
+e=S('A4_LM1'); _tab=net.eq(R1,9,e); _c1=e-_tab; measure(_c1,R1,R2)
+on('A4_LM1',(_tab,'A4_LMz',None),(None,'A4_LM0',{a4tc:a4tc+adv,a4tq:a4tq+1}))
+e=S('A4_LMz'); on('A4_LMz',(net.eq(a4tk_,2,e),'A4_LT2',{a4tw:net.relu(a4ts-a4trel-a4tc)}),(None,'A4_LT2',{a4tw:net.relu(a4ts-a4trel-a4tc*0.5)}))
+e=S('A4_LT2'); _w=net.min_(a4tw,net.relu(ww-lx)); _ok=net.lt(a4tn,A4TN,e)
+w1.drive(_ok,(pbs+A4TW+a4tn*2,off)); w2.drive(_ok,(pbs+A4TW+a4tn*2+1,_w))
+_adv={a4tn:a4tn+_ok,a4lt:1,kprev:0,lx:lx+_w,off:off+1,prevsp:1,lb:off+1,lbx:lx+_w,lspb:lsn,lfnb:lfn,lfhb:lfh}
+on('A4_LT2',(net.ge(off+1,plen_,e),'EM',{**_adv,lend:off+1,lwid:lx+_w,lspc:lsn,llast:1}),(None,'L1',_adv))
+fsm.set(a4tn,S('LAY0'),0); fsm.set(a4lt,S('LAY0'),0); fsm.set(a4lt,S('EM'),0)
+# lookup used by paint and PDF
+a4lr=t3ret('A4_LUR');a4lk=R();a4lb=R()
+e=S('A4_LU0'); on('A4_LU0',(net.ge(a4ti,A4TN,e),'A4_LUR',{a4tw:48}),(None,'A4_LU1',{r1:a4lb+A4TW+a4ti*2,r2:a4lb+A4TW+a4ti*2+1}))
+e=S('A4_LU1'); on('A4_LU1',(net.eq(R1,a4lk,e),'A4_LUR',{a4tw:R2}),(None,'A4_LU0',{a4ti:a4ti+1}))
+on('A4_PT0',(None,'A4_LU0',{a4ti:0,a4lk:off,a4lb:pbs,a4lr.r:a4lr.id('A4_PT3')}))
+e=S('A4_PT3'); _kp=pi*2048+off; _is=net.and_(net.ge(_kp,Lo,e),net.lt(_kp,Hi,e)); _ns=e-_is
+_col=tuple(_is*SEL[i_]+G_((bc0,bc1,bc2)[i_],_ns) for i_ in range(3))
+_mk=net.and_(e,t1_marks); rC.drive(_mk,(x+1,sy+lasc-6,net.relu(a4tw-2),1,(120,120,160),col))
+on('A4_PT3',(None,'C0',{rA:(x,sy,a4tw*0.5+1,lhh,_col,col),rB:(x+a4tw*0.5,sy,a4tw*0.5+1,lhh,_col,col+1),x:x+a4tw,col:col+1,off:off+1,kprev:0}))
+on('A4_QX0',(None,'A4_LU0',{a4ti:0,a4lk:qo,a4lb:qb,a4lr.r:a4lr.id('A4_QX1')}))
+on('A4_QX1',(None,'PD_9',{qxx:qxx+a4tw,qo:qo+1,qpc:0}))
+e=S('A4_SF0'); on('A4_SF0',(net.eq(t2psv,99999,e),'A4_SF2',None),(None,'T4_SC',{t4cr.r:t4cr.id('A4_SF2')}))
+lit('A4_SF2',b'<w:r><w:tab/></w:r>','A4_SF3'); on('A4_SF3',(None,'SVC',{t2psv:99999,off_:off_+1}))
+# ---- the ruler: first line, left and right indent markers, margins, tab stops ----
+net.group('a4 ruler')
+a4tkind=R();a4so=R();a4sk=R();a4dm=R()
+on('A4_RM0',(None,'A4_RM1',{ra4t:cb+A4T,ra4:cb+A4C,rp6:cb+PIND,rc:cb+2062}))
+e=S('A4_RM1')
+def _near(v,e): return net.and_(net.lt(hx_,as_x(v)+6,e),net.gt(hx_,as_x(v)-6,e))
+_Lx=t1_rL+t1_rI; _Fx=_Lx+pf_val(rp6.out[1]); _Rx=t1_rL+t1_rW-A4O[6]; _top=net.lt(hy_,157,e); _low=net.ge(hy_,166,e); _mid=e-_top-_low; _notb=e-net.step(rc.out[0])
+_kd=[net.ge(A4TO[i_],4096,e)+net.ge(A4TO[i_],8192,e) for i_ in range(4)]; _p=[A4TO[i_]-_kd[i_]*4096 for i_ in range(4)]
+_st=[net.and_(net.step(A4TO[i_]),_near(t1_rL+_p[i_],e),e-_top) for i_ in range(4)]
+_drag=lambda k_:{tdk:k_,tdx:hx_,tmx:hx_,drag:0}
+_srules=[(_st[i_],'A4_RMd',{**_drag(40+i_),a4so:_p[i_],a4sk:_kd[i_]}) for i_ in range(4)]
+_inw=net.and_(net.gt(hx_,t1_rL,e),net.lt(hx_,t1_rL+t1_rW,e))
+_empty=X(); _e0=e-net.step(A4TO[0]); _e1=net.and_(e-_e0,ONE-net.step(A4TO[1])); _e2=net.and_(e-_e0-_e1,ONE-net.step(A4TO[2]))
+_slot=_e1*1+_e2*2+(e-_e0-_e1-_e2)*3
+on('A4_RM1',(net.and_(net.ge(hx_,200,e),net.lt(hx_,222,e)),'RD0',{a4tkind:G_(a4tkind+1,net.lt(a4tkind,2,e)),t1_rv:0}),
+ (net.and_(_top,_near(_Fx,e)),'A4_RMd',_drag(30)),(net.and_(_low,_near(_Rx,e)),'A4_RMd',_drag(32)),(net.and_(_low,_near(_Lx,e)),'A4_RMd',_drag(31)),*_srules,
+ (net.and_(_mid,_notb,_near(t1_rL,e)),'A4_RMd',_drag(33)),(net.and_(_mid,_notb,_near(t1_rL+t1_rW,e)),'A4_RMd',_drag(34)),
+ (_inw,'PA0',{pwalk:lo_p,pfld:G_(as_x(A4T)+_slot,e),alv:floorv((hx_-t1_rL)*(1.0/6)+0.5,e)*6+a4tkind*4096,t1_pdm:0,grp:grp+1,t1_lastk:0,t1_rv:0}),(None,'HALT',None))
+on('A4_RMd',(None,'HALT',None))
+e=S('A4_RU'); _d=floorv((eva-tdx+1200)*(1.0/6)+0.5,e)*6-200
+_kh=net.decode(net.relu(tdk-30),15,e); _off=net.or_(net.lt(evb,130,e),net.ge(evb,190,e))
+_u={tdk:0,a4dl:_d,t1_rv:0}
+_tr=[(_kh[10+i_],'A4_RUt',{**_u,pfld:as_x(A4T)+i_,a4tb:net.gt(evb,130,e)-net.ge(evb,190,e)}) for i_ in range(4)]
+on('A4_RU',(_kh[0],'T2_PD',{**_u,pfld:PFIRST,t2d:_d,t2mn:1}),(_kh[1],'T2_PD',{**_u,pfld:PIND,t2d:_d,t2mn:0,a4rc:1}),(_kh[2],'T2_PD',{**_u,pfld:A4R,t2d:as_x(2000)-_d,t2mn:0}),
+ (_kh[3],'T3_SP0',{**_u,tsop:9}),(_kh[4],'T3_SP0',{**_u,tsop:10}),*_tr,(None,'RD0',_u))
+e=S('A4_RUt'); on('A4_RUt',(None,'PA0',{pwalk:lo_p,alv:G_(net.relu(a4so+a4dl-1000)+a4sk*4096,a4tb),t1_pdm:0,grp:grp+1,t1_lastk:0}))
+e=S('RE1'); rD.drive(net.and_(e,net.ge(tdk,30,e)),(tmx,DOCY,1,VH,(43,87,154),0))
+# ruler marks for tab stops and the stop kind selector
+e=S('A4_RS'); rkc=(60,60,60)
+for i_ in range(4):
+    pass
+def _sm(i_,e):
+    v_=a4m[i_]; k1=net.and_(net.ge(v_,4096,e),net.lt(v_,8192,e)); k2=net.ge(v_,8192,e); return v_-k1*4096-k2*8192,k1,k2
+for s_,(ia,ib) in enumerate(((0,1),(2,3))):
+    st_=f'A4_RS{s_}'; e=S(st_); pa_,ka,kb=_sm(ia,e); pb_2,kc_,kd_=_sm(ib,e)
+    ca=net.and_(e,net.step(a4m[ia])); cb_=net.and_(e,net.step(a4m[ib]))
+    rA.drive(ca,(t1_rL+pa_,160,2,8,rkc,0)); rB.drive(ca,(t1_rL+pa_-kb*5-ka*3,166,6,2,rkc,0)); rC.drive(cb_,(t1_rL+pb_2,160,2,8,rkc,0)); rD.drive(cb_,(t1_rL+pb_2-kd_*5-kc_*3,166,6,2,rkc,0))
+    on(st_,(None,f'A4_RS{s_+1}',None))
+e=S('A4_RS2'); hk_=net.decode(a4tkind,3,e)
+on('A4_RS2',(None,'A4_RS3',{rA:(200,153,20,18,(255,255,255),0),rB:(200,153,20,1,(150,150,150),0),rC:(200,170,20,1,(150,150,150),0)}))
+e=S('A4_RS3'); hk_=net.decode(a4tkind,3,e)
+on('A4_RS3',(None,'T1_V0',{gly:(hk_[0]*76+hk_[1]*67+hk_[2]*82,9,206,154,0,0)}))
+# section records are logged, so margin, size and column changes undo
+cur_='A4_SL'
+for i_,v_ in enumerate(SWV):
+    nx_=f'A4_SLa{i_}'; nn_=f'A4_SLb{i_}'
+    on(cur_,(None,nx_,{r1:as_x(SECB)+sv_i*8+i_}))
+    e=S(nx_); log(e,7,as_x(SECB)+sv_i*8+i_,0,R1,net.relu(v_))
+    on(nx_,(None,nn_,None)); cur_=nn_
+on(cur_,(None,'T3_SW',{swret.r:swret.id('T3_SP4')}))
+e=S('U2'); fsm.set(a4da,net.and_(e,net.eq(uop,7,e),net.lt(up,as_x(SECB)+400,e),net.ge(up,SECB,e)),1)
+e=S('V2'); fsm.set(a4da,net.and_(e,net.eq(uop,7,e),net.lt(up,as_x(SECB)+400,e),net.ge(up,SECB,e)),1)
+on('A4_UD',(None,'DA0',{ap:cp,ao:co,di_:0,a4da:0}))

@@ -109,7 +109,7 @@ on('T2_PD1',(None,'T2_PD2',{t2b:R1,r2:R1+pfld,r1:R1+PIND}))
 e=S('T2_PD2'); t2dd=t2d-1000; t2nvv=G_(net.max_(pf_val(R2)+t2dd,as_x(0)-R1)+PFO,t2mn)+G_(net.relu(R2+t2dd),e-net.and_(e,t2mn))
 on('T2_PD2',(None,'T2_PD3',{t2val:t2nvv,t2o:R2}))
 e=S('T2_PD3'); log(e,6,pwalk,pfld,t2o,t2val)
-on('T2_PD3',(net.lt(pwalk,hi_p,e),'T2_PD0',{pwalk:pwalk+1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}),(None,'RD0',{lc:1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}))
+on('T2_PD3',(net.lt(pwalk,hi_p,e),'T2_PD0',{pwalk:pwalk+1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}),(a4rc,'T2_PD0',{pwalk:lo_p,a4rc:0,pfld:PFIRST,t2d:as_x(2000)-a4dl,t2mn:1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}),(None,'RD0',{lc:1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}))
 # ---- .docx reader helpers ----
 net.group('docx reader tier 2')
 # open: restore the built in styles and clear the numbering tables

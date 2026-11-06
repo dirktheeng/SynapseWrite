@@ -3,7 +3,7 @@
 # keep next 4090, keep lines 4091, border bits 4092 (1 top, 2 bottom, 4 left, 8 right), header row 4093, right indent px 4094.
 A4T=4084;A4C=4088;A4K=4090;A4L=4091;A4B=4092;A4H=4093;A4R=4094
 ra4=RPort(8);ra4t=RPort(4);A4O=ra4.out;A4TO=ra4t.out
-a4k=R();a4l=R();a4b=R();a4hf=R();a4rr=R();a4kf=R();a4kd=R();a4kbr=R();a4la=R();a4kp=R()
+a4da=R();a4rS=R();a4rR=R();a4rF=R();a4m=[R() for _ in range(4)];a4dl=R();a4lt=R();a4rc=R();a4k=R();a4l=R();a4b=R();a4hf=R();a4rr=R();a4kf=R();a4kd=R();a4kbr=R();a4la=R();a4kp=R()
 a4fp=R();a4fs=R();a4fpp=R();a4fst=R();a4fps=R();a4ff=[R() for _ in range(7)];a4cw=R();a4cm=R();a4ws=R();a4ss=R();a4cfk=R();a4cfq=R();a4sha=R()
 a4wk=R();a4wl=R();a4wb=R();a4wr=R();a4wt=[R() for _ in range(4)];a4inb=R();a4inr=R();a4rsn=R();a4rbb=R();a4rk=R();a4roi=R();a4rsk=R()
 def A4_META(e):
@@ -11,6 +11,8 @@ def A4_META(e):
 def A4_R9():
     e=S('R9'); return net.and_(e,ONE-net.step(tcols),net.or_(net.step(pbg),net.step(a4b)),net.or_(full,net.eq(pi,cp,e),net.eq(pi,oldcp,e)))
 def A4_W4(e):
+    global a4wp_,a4wo_
+    a4wp_,a4wo_=wp,wo
     "Change case, one character of the range walker. Case differs by 32 in both ASCII and Latin-1."
     c3=net.and_(e,net.eq(wm,3,e))
     isup=net.or_(net.and_(net.ge(R1,65,c3),net.lt(R1,91,c3)),net.and_(net.ge(R1,192,c3),net.lt(R1,223,c3),ONE-net.eq(R1,215,c3)))
