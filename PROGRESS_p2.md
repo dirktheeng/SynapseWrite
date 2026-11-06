@@ -68,3 +68,9 @@ Trigger: first Ctrl+K as a key rule. It cost +211 FLOPs on every typed key (type
 Follow: Ctrl+click (modifier bit 0) at mouse up in text enters P2_FL0: the clicked character's link id, an anchor entry is compared with each bookmark name, and the caret jumps (MVJ) to the first character carrying that bookmark id. An external link would need the glue to open a page; not done.
 Test snags: the headless driver clears inputs after each event, so the modifier is injected before each raw event; a click y above the text line collapsed the selection (as Word does).
 Runs: part link 7/7 (hyperlink saved with external relationship, 0563C1 underline, blue drawn, undo, redo, save and reopen pixel identical); part follow 1/1. FLOPs below baseline on all events but mouse move (equal).
+
+### Key decoder (tried, reverted)
+To make room for key rules (Ctrl+K, Word's Ctrl+Shift+A and Ctrl+Shift+K), replaced the 256-step cascade decoder of the key code with two one-hot nibble decoders and 256 line neurons. FLOPs rose by about 1,300 per key event (type at end +1,308). Reverted; key shortcuts stay out (each costs about 211 FLOPs per typed key).
+
+### Hyphenation: pattern table measured
+hyph-en-us (hyph-utf8, openly licensed): 4,953 patterns of letters and dots, a trie of 8,421 nodes. Laid out as the spell table is (27 next-node cells of 2 bytes per node, plus two 3 byte cells of the pattern's digits in base 6): 505,260 bytes raw, 36,769 gzipped. With identical subtrees merged (a pure function of the patterns, as the spell automaton does): 3,955 nodes, 237,300 bytes raw, 24,478 gzipped, about 32.6 KB in the page as base64. The page has about 38 KB left. Walker and line breaker integration not built.
