@@ -17,3 +17,11 @@ Each run below is a full build, then test/oprof.js on a01_format, counting engin
 - One whole column sum per block, edges that cancel wake no column: 10.18 M.
 - Height thresholds in groups of 16: 9.976 M. Tried a full chain: page 4.85 MB and 332 layers, dropped. Groups of 8: 9.965 M at 3.265 MB; groups of 16: 3.215 MB, kept. Blocks of 4 worse (10.46 M).
 Regress (a10_regress on a01 and a02 fixtures, /tmp/fx) base 98ffb6c vs now: every screen hash and docx hash equal, PDF differ only in embedded font stream as expected (same size). Total ticks 5,931,802 to 5,786,983, total edges 644.6 M to 301.7 M.
+
+## Line pitch and Heading 2
+a5_docx in browser after open work: 37 pass, 'under 10 M' PASS at 9,976,002 edges.
+metrics_sz now reads OS/2 winAscent and winDescent (Carlito (1950+550)/2048 = 1.2207) at true px 14.667, times 1.08: 19.34 px. Old table used PIL rounded metrics at px 15: 22.
+Lines stay on whole pixels: EM rounds with a fraction carried to the next line of the paragraph (lcar), measured pitch 19,20,19,19,20 = 19.33 mean; paragraph step 30 to 31 with 11 px after.
+Line spacing: index 0 is the default 1.08 and saves w:line=259; index 6 is true single (menu 1.0, Ctrl+1, reader w:line<=250, saves 240); the rest absolute, lxtra linear, no decode of 128 heights.
+Heading 2: record now 13 pt through a pt argument (was PTS index 2, 14 pt).
+Not done: a file with no w:line anywhere opens at 1.08 where Word would use single unless docDefaults or Normal say otherwise.
