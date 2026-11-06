@@ -8,8 +8,8 @@ net=Net(); fsm=FSM(net); on=fsm.on; ONE=net.ONE; G_=net.gate
 # STY 40000, deflate hash 50000, mail merge 60000 and 100000, FNB 500000, XR 900000, ZT 1000000, HFB, FORD, FORD2, RIDB, PDFN up to 1020000, CB 1400000, CB2 1600000, slots 2000000.
 # High cells: undo 14500000, OUTB 20000000, IMG0 24000000, SAVEB 32000000 and everything from OUTP up only matters while reading, so a large save may run over it.
 PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; BANK=61000000; SAVEB=32000000; OUTP=40000000; PNGB=46000000; AUXB=50000000; RELB=51000000; CMB=51200000; FILE=53000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000
-LEN,DIRTY,ALIGN,LIST,NLINES,WORDS,ENDY,PBRK=2048,2049,2050,2051,2052,2053,2054,2055; SAVE=2056; LINES=2064; IMF=3670; CMTL=3699; CMT=3700; FNS=3690; FNL=3692
-# Slot cells from 3670: IMF 3670-3672, META 3673-3680, RBOT 3681-3682, FNHT 3683, IMN 3684-3686, FNS 3690-3692, paragraph properties 3693-3698, CMTL 3699, comment text 3700-4095.
+PDATE,PAUTH,PMK=3687,3688,3689; LEN,DIRTY,ALIGN,LIST,NLINES,WORDS,ENDY,PBRK=2048,2049,2050,2051,2052,2053,2054,2055; SAVE=2056; LINES=2064; IMF=3670; CMTL=3699; CMT=3700; FNS=3690; FNL=3692
+# Slot cells from 3670: IMF 3670-3672, META 3673-3680, RBOT 3681-3682, FNHT 3683, IMN 3684-3686, revision day, author and mark 3687-3689, FNS 3690-3692, paragraph properties 3693-3698, CMTL 3699, comment text 3700-4095.
 META=3673; CWO,CXO,CSH,SECN,TOCF,TSRC,TPG,SSI=[META+i_ for i_ in range(8)]; RBOT=3681; FNHT=3683; ZT=1000000; HFB=1010000; FORD=1012000; FORD2=1014000; RIDB=1016000; FNB=500000; FNMAX=1500; HIT=22000; TGW=23300; SECB=23400
 # paragraph properties: left indent px, first line offset px, line spacing index, space before px, space after px, style index. LIST holds kind+4*level.
 # The first line offset is stored as 0 for none or PFO+offset, as gates clamp negative values; pf_val gives the signed value at use.
@@ -274,7 +274,7 @@ R=net.reg
 s_px=R(PX);s_pw=R(816);s_ph=R(PH);s_tx=R(TX);s_tw=R(TW);s_mt=R(96);s_th=R(864);s_ps=R(PST);hitn=R();pbg=R();bc0=R(255);bc1=R(255);bc2=R(255);fnh=R();bfnh=R();pfc=R();pff=R();pfh=R();pfy=R();pfx=R();pfw=R();dnum=R();lnfh=R();lfn=R();lfb=R();lfh=R();lfnb=R();lfhb=R();ptoc=R();ptsrc=R();ptpg=R();hfk=R();hfb=R(HFB);hftp=R();rdp=R();hfl=[R() for _ in range(4)];tdk=R();cursec=R();bsec=R();nsec=R(1);cxl=R(PX);cxr=R(PX+816)
 cp=R();cb=R(SLOT0);co=R();clen=R();ap=R();ao=R();scroll=R();npar=R(1);nextb=R(SLOT0+STRIDE);ty=R();tab=R()
 drag=R();usp=R(UB);urp=R(UB);grp=R(1);nolog=R();blink=R();autos=R();mode=R();qlen=R();rlen=R();field=R()
-tsop=R();spb=R();scols=R();sci=R();scw=R();ssh=R();spc=R();t4k=R();arj=R();evk=R();eva=R();evb=R();evc=R();shiftk=R();trk=R();sp_on=R(1)
+tsop=R();spb=R();scols=R();sci=R();scw=R();ssh=R();spc=R();t4k=R();arj=R();evk=R();eva=R();evb=R();evc=R();shiftk=R();trk=R();sp_on=R(1);a6pm2=R();a6pm=R();a6hf=R();a6fg=R();a6w=R();a6pg=R()
 TST=ty+trk*ST_INS
 hx_=R();hy_=R();fm=R();alv=R();jp=R();jo=R();hdir=R();hact=R();btn=R();hcol=R();vi=R();clipr=R()
 clipl=R();wpaste=R();full=R(1);fastok=R();oldcp=R();wassel=R();bgp=R();bgm=R();bcnt=R();dfrom=R();bpi=R();byy=R();bptop=R();bpg=R(1);bws=R();bln=R();tcols=R();tci=R();rw=R(624);rx0=R();rleft=R(223);rright=R(1039);rowtop=R();rowmax=R();tiv=R();tin=R();tic=R();tip=R();tir=R();sx=R();ncol=R();xcol=R();bxc=R();hlen=R();hdi=R();di_=R();ti_=R();tk_=R();tbase=R();tl_=R();tpg=R();tdig=R();tivx=R();fnn=R();fnp=R();bfn=R();bfp=R();pfn=R();fni=R();pim=R();pih=R();pio=R();irow=R();iaddr=R();wpic=R();imgp=R();ci_=R();cl_=R();wopen=R();lc=R(1);vm=R();pagesT=R(1);wtot=R();ytot=R(112);oend=R();sidx=R()
@@ -313,7 +313,8 @@ on('DISP',*PTR_DISP,(net.and_(kh[3],t1_mopb),'T1_MD',{hx_:eva,hy_:evb}),(net.and
 on('IDL2',(None,'HALT',None))
 on('MV',(t1_tdrag,'T1_TM0',None),(net.and_(S('MV'),net.step(tdk)),'T3_MV',None),(net.and_(S('MV'),drag),'MD2',{hx_:eva,hy_:evb,shiftk:1}),(None,'HALT',None))
 on('WH',(None,'RD0',{scroll:net.relu(scroll+evc-1000),autos:0}))   # ev_c carries delta+1000
-on('TM',(t1_cntp,'T1_C0',{blink:blink}),(bgp,'BG',{blink:blink}),(None,'RD0',{fastok:1}))
+e=S('TM'); _a6stale=net.and_(a6hf,ONE-has_sel,ONE-drag,net.eq(mode,0,e),net.step(net.gt(wtot,a6w,e)+net.lt(wtot,a6w,e)+net.gt(pagesT,a6pg,e)+net.lt(pagesT,a6pg,e)))
+on('TM',(t1_cntp,'T1_C0',{blink:blink}),(bgp,'BG',{blink:blink}),(_a6stale,'T4_FU',{blink:blink,a6fg:1,nolog:1,a6w:wtot,a6pg:pagesT}),(None,'RD0',{fastok:1}))
 on('BG',(None,'T3_RS0',{fnh:bfnh,cursec:bsec,fnn:bfn,fnp:bfp,xcol:bxc,pi:bpi,yy:byy,ptop:bptop,pages:bpg,wsum:bws,listn:bln,full:1,vm:0,bgm:1,bcnt:0,clip0:DOCY,clip1:DOCB}))
 timer.lin(S('HF')*530-net.and_(S('HF'),net.or_(bgp,t1_cntp))*529)
 # ---- character code tables: internal cells use Windows-1252 style codes ----
@@ -452,17 +453,17 @@ on('D2',(None,'D3',{wb:(cb+co,net.relu(clen-co-1)),rb:(cb+1024+co+1,net.relu(cle
 e=S('D3'); log(e,2,cp,co,ins_ch,ins_st)
 on('D3',(None,'OR',{wb:(cb+1024+co,net.relu(clen-co-1)),w3:(cb+LEN,clen-1),w4:(cb+DIRTY,1),clen:clen-1}))
 on('SPLIT',(net.ge(nextb,SLOTMAX,S('SPLIT')),'OR',None),(None,'S1',{rb:(cb+co,clen-co)}))
-on('S1',(None,'S2',{wb:(nextb,clen-co),rb:(cb+1024+co,clen-co)}))
-on('S2',(None,'S3',{wb:(nextb+1024,clen-co),w1:(nextb+LEN,clen-co),w2:(nextb+DIRTY,1),w3:(cb+LEN,co),w4:(cb+DIRTY,1),r1:cb+ALIGN,r2:cb+LIST,rp6:cb+PIND}))
-on('S3',(None,'S4',{w1:(nextb+ALIGN,R1),w2:(nextb+LIST,R2),wln:(nextb+PIND,*rp6.out),rb:(as_x(PT)+cp+1,net.relu(npar-cp-1))}))
+on('S1',(None,'S2',{wb:(nextb,clen-co),rb:(cb+1024+co,clen-co),rU:cb+PMK}))
+on('S2',(None,'S3',{wb:(nextb+1024,clen-co),w1:(nextb+LEN,clen-co),w2:(nextb+DIRTY,1),w3:(cb+LEN,co),w4:(cb+DIRTY,1),r1:cb+ALIGN,r2:cb+LIST,rp6:cb+PIND,a6pm2:rU.out[0]}))
+on('S3',(None,'S4',{w3:(nextb+PMK,a6pm2),w4:(cb+PMK,trk),w1:(nextb+ALIGN,R1),w2:(nextb+LIST,R2),wln:(nextb+PIND,*rp6.out),rb:(as_x(PT)+cp+1,net.relu(npar-cp-1))}))
 e=S('S4'); log(e,3,cp,co,0,0)
 on('S4',(None,'OR',{wb:(as_x(PT)+cp+2,net.relu(npar-cp-1)),w1:(as_x(PT)+cp+1,nextb),cp:cp+1,cb:nextb,co:0,clen:clen-co,npar:npar+1,nextb:nextb+STRIDE}))
 pb=R();plen=R()
 on('MERGE',(None,'M1',{r1:as_x(PT)+cp-1}))
-on('M1',(None,'M2',{pb:R1,r2:R1+LEN}))
-on('M2',(net.ge(R2+clen,1000,S('M2')),'OR',None),(None,'M3',{plen:R2,rb:(cb,clen)}))
+on('M1',(None,'M2',{pb:R1,r2:R1+LEN,r1:cb+PMK}))
+on('M2',(net.ge(R2+clen,1000,S('M2')),'OR',None),(None,'M3',{plen:R2,rb:(cb,clen),a6pm2:R1}))
 on('M3',(None,'M4',{wb:(pb+plen,clen),rb:(cb+1024,clen)}))
-on('M4',(None,'M5',{wb:(pb+1024+plen,clen),w1:(pb+LEN,plen+clen),w2:(pb+DIRTY,1),rb:(as_x(PT)+cp+1,net.relu(npar-cp-1))}))
+on('M4',(None,'M5',{w3:(pb+PMK,a6pm2),wb:(pb+1024+plen,clen),w1:(pb+LEN,plen+clen),w2:(pb+DIRTY,1),rb:(as_x(PT)+cp+1,net.relu(npar-cp-1))}))
 e=S('M5'); log(e,4,cp-1,plen,0,0)
 on('M5',(None,'OR',{wb:(as_x(PT)+cp,net.relu(npar-cp-1)),cp:cp-1,co:plen,cb:pb,clen:clen+plen,npar:npar-1}))
 on('MG0',(None,'MG1',{r1:as_x(PT)+cp-1}))
@@ -669,7 +670,7 @@ on('R1',(net.and_(bgm,net.ge(pi,npar,e)),'BGD',None),(net.and_(net.ge(pi,npar,e)
  (net.and_(bgm,net.ge(bcnt,60,e)),'HALT',{**saveb,bgm:0}),
  (net.and_(full,ONE-vm,ONE-bgm,net.gt(yy,scroll+VH,e),net.gt(pi,cp,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1}),(net.and_(ONE-full,net.gt(pi,maxc,e)),'RE0',None),(net.and_(vm,net.gt(yy,scroll+VH,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',None),(None,'R2',{r1:as_x(PT)+pi}))
 on('R2',(None,'R3',{rmeta:R1+META,rim:R1+IMF,pbs:R1,rl:R1+LEN,rc:R1+2062,rf:R1+FNS,rp6:R1+PIND}))
-on('R2X',(None,'R3',{rmeta:pbs+META,rim:pbs+IMF,rl:pbs+LEN,rc:pbs+2062,rf:pbs+FNS,rp6:pbs+PIND}))
+on('R2X',(None,'R3',{r2:pbs+PMK,rmeta:pbs+META,rim:pbs+IMF,rl:pbs+LEN,rc:pbs+2062,rf:pbs+FNS,rp6:pbs+PIND}))
 RL=rl.out
 pbk=R()
 e3=S('R3'); tb3=net.step(rc.out[0]); nt3=ONE-tb3
@@ -680,7 +681,7 @@ def bcv(k): return sum((shh[i_]*PAL_B[i_][k] for i_ in range(len(PAL_B))),X())
 meta0={ptoc:MT[4],ptsrc:MT[5],ptpg:MT[6],bc0:bcv(0),bc1:bcv(1),bc2:bcv(2),pbg:MT[2],pim:rim.out[0],pih:rim.out[1],pio:rim.out[2],pfn:rf.out[2],tcols:rc.out[0],tci:rc.out[1],rw:geom_w,rx0:geom_x,rleft:G_(s_px,nt3)+G_(s_tx+1+MT[1],tb3),rright:G_(s_px+s_pw,one3)+G_(s_tx+col2,two)+G_(s_tx+MT[1]+MT[0],tb3)}
 newsec=net.and_(e3,net.step(MT[3]),net.step(net.step(MT[3]-1-cursec-0.5)+net.step(cursec-MT[3]+1-0.5)))
 lb3=net.bits(RL[3],4,e3)
-meta={**meta0,plen_:RL[0],al:RL[2],lsf:lb3[0]+lb3[1]*2,plvl:lb3[2]+lb3[3]*2,pind:rp6.out[0],pfirst_:rp6.out[1],plsp:rp6.out[2],pspb:rp6.out[3],pspa:rp6.out[4],psty:rp6.out[5],lfi:rp6.out[1],nl:RL[4],wdp:RL[5],oend:RL[6],pbk:RL[7]}
+meta={**meta0,plen_:RL[0],al:RL[2],lsf:lb3[0]+lb3[1]*2,plvl:lb3[2]+lb3[3]*2,pind:rp6.out[0],pfirst_:rp6.out[1],plsp:rp6.out[2],pspb:rp6.out[3],pspa:rp6.out[4],psty:rp6.out[5],lfi:rp6.out[1],nl:RL[4],wdp:RL[5],oend:RL[6],pbk:RL[7],a6pm:R2}
 on('R3',(newsec,'T3_SB0',{cursec:MT[3]-1,rl:as_x(SECB)+(MT[3]-1)*8}),(net.step(RL[1]),'LAY0',{**meta,lfn:0,lfb:0,lfh:0,lfnb:0,lfhb:0,lj:0,ls_:0,off:0,lx:0,lb:0,lbx:0,lsn:0,lspb:0,lasc:0,lhh:0,wc:0,prevsp:1,llast:0}),(None,'R3B',meta))
 e=S('R3B')
 pb_=net.or_(net.and_(pbk,net.gt(yy,ptop+s_mt,e)),net.and_(net.step(tcols),net.eq(tci,0,e),net.gt(yy+60,ptop+s_mt+s_th,e)))
@@ -789,6 +790,7 @@ on('C1',(isfnc,'T3_CF0',None),(sp_bad,'A6D_0',{**adv_c,sx:sp_x0,sp_xe:x,sp_r:0,a
 e=S('CE'); chere2=net.and_(net.eq(pi,cp,e),net.eq(off,co,e))
 fsm.set(cx,chere2,x);fsm.set(cacol,chere2,col)
 mk2=net.and_(e,t1_marks,net.eq(le_,plen_,e)); rB.drive(mk2,(x+5,sy+lasc-12,1,14,(120,120,160),col)); rC.drive(mk2,(x+1,sy+lasc-12,4,6,(120,120,160),col))
+mk3=net.and_(e,ONE-t1_marks,net.eq(le_,plen_,e),net.step(a6pm),ONE-net.step(tcols)); rB.drive(mk3,(x+5,sy+lasc-12,1,14,(187,0,0),col)); rC.drive(mk3,(x+1,sy+lasc-12,4,6,(187,0,0),col))   # rv_a6: a tracked paragraph mark
 on('IM0',(net.ge(irow,pih,S('IM0')),'T3_IH0',None),(None,'IM0',{imr:(x,sy+irow,as_x(IMG0)+pio+iaddr,pim),irow:irow+1,iaddr:iaddr+pim}))
 _ce_fill=(x,sy,lright-x,lhh,(bc0,bc1,bc2),net.min_(col,199))
 on('CE',(sp_bad2,'A6D_0',{sx:sp_x0,sp_xe:x,sp_r:1,sp_in:0,a6oe:off}),(net.and_(net.step(ptoc),net.eq(le_,plen_,e)),'T3_TD0',{rA:_ce_fill}),(net.step(pim),'IM0',{irow:0,iaddr:0,rA:_ce_fill}),(net.and_(net.eq(ls_,0,e),ONE-net.step(tcols)),'CB0',{rA:_ce_fill}),(None,'R9',{rA:_ce_fill}))
