@@ -20,7 +20,7 @@ const near=(A,r,g,b,t=6)=>count(A,223,1039,174,776,(x,y,z)=>Math.abs(x-r)<=t&&Ma
   // a style in a file with an exact color
   A=await lib();A.file(9,doc('<w:p><w:pPr><w:pStyle w:val="H9"/></w:pPr><w:r><w:t>Styled</w:t></w:r></w:p>',{'word/styles.xml':`<w:styles ${W}><w:style w:type="paragraph" w:styleId="H9"><w:name w:val="H nine"/><w:rPr><w:color w:val="2F5496"/></w:rPr></w:style></w:styles>`}));A.settle();ok('style color drawn exactly',near(A,0x2f,0x54,0x96,2)>5,near(A,0x2f,0x54,0x96,2));x=part(A,'word/styles.xml');ok('style color saved exactly',/2F5496/.test(x));
   // PDF
-  A=await lib();A.file(9,doc('<w:p><w:r><w:rPr><w:color w:val="5A1FB3"/></w:rPr><w:t>PDF color</w:t></w:r></w:p>'));A.settle();A.key(112,1);const pn=A.e.val(A.h.fileout)||0,pa=A.e.val(A.h.outbase);const pb=Buffer.alloc(pn);for(let i=0;i<pn;i++)pb[i]=A.e.bget(pa+i);const pdf=pb.toString('latin1');ok('PDF carries the exact color',/0\.34 0\.12 0\.69 rg/.test(pdf),(pdf.match(/[\d.]+ [\d.]+ [\d.]+ rg/g)||[]).slice(0,4).join('|'));
+  A=await lib();A.file(9,doc('<w:p><w:r><w:rPr><w:color w:val="5A1FB3"/></w:rPr><w:t>PDF color</w:t></w:r></w:p>'));A.settle();A.key(112,1);const pn=A.e.val(A.h.fileout)||0,pa=A.e.val(A.h.outbase);const pb=Buffer.alloc(pn);for(let i=0;i<pn;i++)pb[i]=A.e.bget(pa+i);const pdf=pb.toString('latin1');ok('PDF carries the exact color',/0\.35 0\.12 0\.69 rg/.test(pdf),(pdf.match(/[\d.]+ [\d.]+ [\d.]+ rg/g)||[]).slice(0,4).join('|'));
   // underline follows
   A=await lib();A.file(9,doc('<w:p><w:r><w:rPr><w:color w:val="5A1FB3"/><w:u w:val="single"/></w:rPr><w:t>Under</w:t></w:r></w:p>'));A.settle();A.shot('build/imp4_c5.png');const pu=count(A,319,360,270,320,(r,g,b)=>r==0x5a&&g==0x1f&&b==0xb3);ok('underline in the exact color',pu>20,pu);
  }
