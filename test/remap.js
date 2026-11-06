@@ -20,7 +20,7 @@ const inr=(x,y,r)=>x>=r[0]&&x<r[0]+r[2]&&y>=r[1]&&y<r[1]+r[3];
 const cell=(x0,i)=>[x0+(i%8)*22+11,115+Math.floor(i/8)*22+11];
 const OPEN={242:{old:[120,87,110,44],dx:-8},240:{old:[194,87,50,242],dx:48},206:{},241:{col:1},245:{},207:{old:[514,127,70,88],dx:194}};
 module.exports=(p)=>{let tab=0,menu=null;const m=p.mouse,click=m.click.bind(m),move=m.move.bind(m);
- const at=(a)=>{const c=ids[a];if(BIU[a.split(':')[1]])return BIU[a.split(':')[1]];if(!c)throw new Error('no control '+a);return c;};
+ const at=(a)=>{const c=ids[a];if(a.startsWith('0:')&&BIU[a.split(':')[1]])return BIU[a.split(':')[1]];if(!c)throw new Error('no control '+a);return c;};
  // returns a list of points: all but the last are clicks that come first
  const map=(x,y,isClick)=>{
   if(menu&&menu.old&&inr(x,y,menu.old)){const q=menu.col?cell(270,Math.floor((y-115)/22)):[x+menu.dx,y];if(isClick)menu=null;return [q];}
