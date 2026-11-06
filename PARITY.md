@@ -46,7 +46,6 @@ Evidence: `test/e2e.js`, `test/t3_table.js`, `test/t3_pic.js`, `test/t3_misc.js`
 ## Tier 4
 | Feature | Status | Evidence or gap |
 |---|---|---|
-<<<<<<< HEAD
 | .docx save | Partial | Zip, CRC32, and XML written by the network; styles.xml and document.xml are deflated by the network, static members at build time. Passes a zip CRC check and opens in LibreOffice (`test/roundtrip.js`). Not verified in real Word. Tables flatten to paragraphs; headers are not saved. |
 | .docx open | Partial | Network walks the zip central directory, inflates deflate (fixed and dynamic Huffman, LZ77), and matches XML tags. Reads text in UTF-8, run formats, sizes, colors, serif font names, alignment, paragraph properties, styles and numbering. Save, open, and open after a LibreOffice re-save are pixel identical in the document area for each of those. Also tested on a python-docx file, whose template comes from Word; not tested on files saved by real Word. Tables flatten; images are dropped; 400 KB file limit. Opening a file with a very large styles.xml (349 KB in the python-docx template) took about 13 s. | Also tracked marks and fields.
 | Spell check | Passed | 79,339 word list (SCOWL via npm wordlist-english, license in `gen/words_en.COPYRIGHT`) written into weights as a minimized letter automaton, 28,403 nodes and 66,940 edges. Red squiggles while painting; contractions and possessives; capitals, digits and math not flagged; toggle on Review. No suggestions or custom dictionary. `test/e2e.js`. |
@@ -57,11 +56,9 @@ Evidence: `test/e2e.js`, `test/t3_table.js`, `test/t3_pic.js`, `test/t3_misc.js`
 | Print to PDF | Partial | Embedded subset TrueType Carlito and Caladea, positions from the screen layout in pixels, underline, strike, colors, lists, two columns, inline pictures, header and footer number. Page ink within 2 pixels of the screen for over 90 percent, tested against poppler at 96 dpi. Letter spacing inside a word is the font's own, not the screen's rounded one. Table borders, footnotes, and comments are not drawn. `pdfinfo`, `pdffonts`, `qpdf --check`, `pdftotext` in `test/t4_pdf.js`. |
 | .docx deflate | Passed | Greedy LZ77 with a hash head table and fixed Huffman codes. 87,469 bytes to about 2.3 KB on a repetitive document. Zip CRC checks and own inflate rereads it. No dynamic Huffman blocks. |
 | styles.xml | Passed | The numbering, styles, document member walk reads docDefaults, `w:style`, `basedOn`, `pStyle`, `rStyle`, `jc`; `w:b w:val="0"` handled. Matches direct formatting pixel for pixel (`test/t4_docx.js`). Character styles replace rather than overlay the paragraph style. Other parts (numbering, theme) are not read. |
-=======
 | .docx save | Partial | Zip, CRC32, and XML written by the network; passes a zip CRC check and opens in LibreOffice (`test/roundtrip.js`). Not verified in real Word. Lists are not saved; members are stored uncompressed. |
 | .docx open | Partial | Network walks the zip central directory, inflates deflate (fixed and dynamic Huffman, LZ77), and matches XML tags. Reads text, bold, italic, underline, size, palette colors, Caladea, alignment, paragraphs. Save, open, and open after a LibreOffice re-save are pixel identical in the document area. Not tested on files written by real Word. Lists, styles, and non-ASCII text are dropped; 8 MB file limit. |
 | Track changes, mail merge, equations, fields, spell check, print to PDF | Missing | Not implemented. Not shown to be infeasible. |
->>>>>>> tier3
 
 ## Deployment targets
 | Target | Result |

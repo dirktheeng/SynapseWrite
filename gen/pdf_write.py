@@ -1,12 +1,8 @@
 # ---- PDF writer: objects, content streams and the xref table are all produced here ----
 net.group('pdf writer')
 XR=900000; nv=R(); nret=Ret('NR'); qp=R();qb=R();qyy=R();qtop=R();qlj=R();qnl=R();qcols=R();qci=R();qx=R();qh=R();qa=R();qs=R();qe=R();qo=R();qst=R();qpg=R();qstart=R();qlenat=R();qobj=R();qi=R();qxr=R();qcur=R()
-<<<<<<< HEAD
-qsz=R();qfn=R();qbase=R()
-pfc=Ret('T4_PFC')
-=======
-qph=R();qpw=R();qml=R();qmt=R();qth=R();qps=R();qcx=R();qsz=R();qfn=R();qbase=R()
->>>>>>> tier3
+qph=R();qpw=R();qml=R();qmt=R();qth=R();qps=R();qcx=R();qnc=R();qtw=R();qsz=R();qfn=R();qbase=R()
+pfcr=Ret('T4_PFC')
 def number(st,val,nx):
     on(st,(None,'NUM7',{nv:val,nret.r:nret.id(nx)}))
 cur_n='NUM7'
@@ -38,12 +34,8 @@ cur_n='PD_x'
 for i_,(ob_,of_) in enumerate(seq):
     nx_=f'PD_x{i_}'
     on(cur_n,(None,nx_,{xw:(as_x(XR)+ob_,of_)})); cur_n=nx_
-<<<<<<< HEAD
-on(cur_n,(None,'PD_0',{qp:0,qpg:0,qtop:0,qobj:FIRST}))
-qln=R();qxc=R();qpw=R();qph=R();qpo=R();qxx=R();qcx0=R();qop=R();qund=R();qdel=R();qrise=R();qadv=R();qex=R();qind=R();qry=R();qrc=R();qpa=R();qpv=R();qri=R();qhi=R()
-=======
 on(cur_n,(None,'T3_PQ0',{qp:0,qpg:0,qtop:0,qobj:FIRST}))
->>>>>>> tier3
+qln=R();qxc=R();qiw=R();qih=R();qpo=R();qxx=R();qcx0=R();qop=R();qund=R();qdel=R();qrise=R();qadv=R();qex=R();qind=R();qry=R();qrc=R();qpa=R();qpv=R();qri=R();qhi=R()
 # open a page: page object then content object with a fixed width length
 def pg_open(st,nx):
     n1=st+'a';n2=st+'b';n3=st+'c';n4=st+'d';n5=st+'e';n6=st+'f'
@@ -85,13 +77,8 @@ e=S('PD_LR'); on('PD_LR',(net.ge(qp,npar,e),'PD_E',None),(None,'PD_O',None))
 pg_open('PD_O','PD_L5')
 pg_open('PD_0','PD_1')
 # walk paragraphs using the saved layout
-<<<<<<< HEAD
 e=S('PD_1'); on('PD_1',(net.ge(qp,npar,e),'PD_C',None),(net.ge(fp,3800000,e),'PD_C',{qp:npar}),(None,'PD_2',{r1:as_x(PT)+qp}))
-on('PD_2',(None,'PD_3',{qb:R1,rl:R1+SAVE,rc:R1+2062,rim:R1+IMF,r2:R1+LIST,rp6:R1+PIND}))
-=======
-e=S('PD_1'); on('PD_1',(net.ge(qp,npar,e),'PD_C',None),(None,'PD_2',{r1:as_x(PT)+qp}))
 on('PD_2',(None,'T3_PQ2',{qb:R1,rmeta:R1+META}))
->>>>>>> tier3
 e=S('PD_3')
 first_p=net.eq(qtop,0,e)
 qyy0=rl.out[0]+G_(rp6.out[3],net.gt(rl.out[0],rl.out[1]+96,e))
@@ -107,20 +94,12 @@ on('PD_5',(None,'PD_6',{qnl:R1,qlj:0}))
 e=S('PD_6'); on('PD_6',(net.ge(qlj,qnl,e),'PD_N',None),(None,'PD_7',{rl:qb+LINES+qlj*8,rc:qb+2062,r2:qb+LINES+qlj*8+11}))
 e=S('PD_7'); e7=e
 Wl=rl.out
-<<<<<<< HEAD
-tb7=net.step(rc.out[0]); hc7=net.decode(rc.out[0],9,e7); hi7=net.decode(rc.out[1],9,e7); gx7=X()
-for cc_ in range(1,9):
-    for ii_ in range(cc_): gx7=gx7+net.and_(net.step(hc7[cc_]),net.step(hi7[ii_]))*(ii_*(TW//cc_)+6)
-ovf=net.or_(net.and_(net.gt(qyy+Wl[3],qtop+960,e),net.gt(qyy,qtop+96,e)),net.and_(ONE-tb7,keep_lines(e,qyy,qtop,Wl[3],R2,qlj,qnl)))
-lmv={qs:Wl[0],qe:Wl[1],qx:Wl[2]-48+gx7+96,qh:Wl[3],qa:Wl[4],qo:Wl[0],qex:Wl[5]}
-col2=net.and_(ovf,net.eq(ncol,2,e),ONE-net.step(qxc))
-on('PD_7',(col2,'PD_8',{**lmv,qyy:qtop+96,qxc:324}),(ovf,'PD_C2',{**lmv,qyy:qtop+PST+96,qtop:qtop+PST,qxc:0}),(None,'PD_8',lmv))
-=======
 gx7=G_(qcx+6,net.step(qcols))
-ovf=net.and_(net.gt(qyy+Wl[3],qtop+qmt+qth,e),net.gt(qyy,qtop+qmt,e))
-lmv={qs:Wl[0],qe:Wl[1],qx:(Wl[2]+gx7+qml)*0.75,qh:Wl[3],qa:Wl[4],qo:Wl[0]}
-on('PD_7',(ovf,'PD_C2',{**lmv,qyy:qtop+qps+qmt,qtop:qtop+qps}),(None,'PD_8',lmv))
->>>>>>> tier3
+tb7=net.step(qcols)
+ovf=net.or_(net.and_(net.gt(qyy+Wl[3],qtop+qmt+qth,e),net.gt(qyy,qtop+qmt,e)),net.and_(ONE-tb7,keep_lines(e,qyy,qtop,Wl[3],R2,qlj,qnl,qmt,qth)))
+lmv={qs:Wl[0],qe:Wl[1],qx:Wl[2]-48+gx7+qml,qh:Wl[3],qa:Wl[4],qo:Wl[0],qex:Wl[5]}
+col2=net.and_(ovf,net.eq(qnc,2,e),ONE-net.step(qxc))
+on('PD_7',(col2,'PD_8',{**lmv,qyy:qtop+qmt,qxc:(qtw-24)*0.5+24}),(ovf,'PD_C2',{**lmv,qyy:qtop+qps+qmt,qtop:qtop+qps,qxc:0}),(None,'PD_8',lmv))
 pg_close('PD_C2','PD_QH')
 cur_n='PD_QH'
 for k_,pw_ in enumerate((1000000,100000,10000,1000,100,10,1)):
@@ -135,37 +114,21 @@ for k_,pw_ in enumerate((1000000,100000,10000,1000,100,10,1)):
     for t in range(1,10): dg=dg+net.step(val-pw_*t+0.5)
     on(cur_n,(None,nx_,{fw2:(as_x(OUTB)+qlenat+k_,48+dg)})); cur_n=nx_
 pg_open('PD_O2','PD_8')
-<<<<<<< HEAD
 # one text line: positioned chunks of a word and its trailing space, in screen pixels
-qsty=R(); qyb=as_x(1056)-(qyy-qtop+qa); qpc=R()
+qsty=R(); qyb=qph-(qyy-qtop+qa); qpc=R()
 e=S('PD_8')
 on('PD_8',(None,'T2_PM',None))
-on('PD_R',(net.step(qpw),'T4P_IM',None),(None,'PD_9',{qsty:999999,qop:0,qxx:qx+qind+qxc,qpc:0}))
+on('PD_R',(net.step(qiw),'T4P_IM',None),(None,'PD_9',{qsty:999999,qop:0,qxx:qx+qind+qxc,qpc:0}))
 e=S('PD_9'); on('PD_9',(net.ge(qo,qe,e),'PD_Z',None),(None,'PD_A',{r1:qb+qo,r2:qb+1024+qo}))
 e=S('PD_A'); measure(e,R1,R2); ke3=net.and_(e,net.step(qpc)); kp_en.lin(ke3); kp_in.add(ke3,qpc)
 pdiff=net.step(net.step(R2-qsty)+net.step(qsty-R2)); psp=net.eq(R1,32,e)
 ladv={ins_ch:R1,ins_st:R2,qadv:adv+kern+G_(qex,psp),qpc:R1}
-on('PD_A',(net.and_(pdiff,qop),'T4P_CL',{**ladv,pfc.r:pfc.id('PD_F')}),(pdiff,'PD_F',ladv),(qop,'PD_Tc',ladv),(None,'T4P_O',ladv))
+on('PD_A',(net.ge(R1,1000,e),'PD_9',{qo:qo+1}),(net.and_(pdiff,qop),'T4P_CL',{**ladv,pfcr.r:pfcr.id('PD_F')}),(pdiff,'PD_F',ladv),(qop,'PD_Tc',ladv),(None,'T4P_O',ladv))
 sv_en.lin(S('PD_F')); sv_in.add(S('PD_F'),ins_st)
 e=S('PD_F'); zh=net.decode(SV['size'],len(rom.PTS),e); pts=X(); ptv=X()
 for i_,h_ in enumerate(zh): pts=pts+h_*round(rom.PTS[i_]*96/72); ptv=ptv+h_*round(rom.PTS[script_size(i_)]*96/72)
 ptk=net.or_(SV['ins'],SV['dele']); vf_=net.step(SV['sup']+SV['sub'])
 on('PD_F',(None,'PD_Fa',{qsty:ins_st,qfn:SV['bold']+SV['ital']*2+SV['font']*4+3,qsz:G_(pts,ONE-vf_)+G_(ptv,vf_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3}))
-=======
-# one text line with style runs
-lit('PD_8',b'BT 1 0 0 1 ','PD_8x')
-number('PD_8x',qx,'PD_8s'); lit('PD_8s',b' ','PD_8y')
-number('PD_8y',net.relu((qph-qyy+qtop-qa)*0.75),'PD_8t'); lit('PD_8t',b' Tm ','PD_R')
-qsty=R()
-on('PD_R',(None,'PD_9',{qsty:99999}))
-e=S('PD_9'); on('PD_9',(net.ge(qo,qe,e),'PD_Z',None),(None,'PD_A',{r1:qb+qo,r2:qb+1024+qo}))
-e=S('PD_A')
-on('PD_A',(net.ge(R1,1000,e),'PD_9',{qo:qo+1}),(net.step(net.step(R2-qsty)+net.step(qsty-R2)),'PD_F',{qsty:R2,ins_ch:R1,ins_st:R2}),(None,'PD_T',{ins_ch:R1}))
-for st_ in ('PD_F',): sv_en.lin(S(st_)); sv_in.add(S(st_),ins_st)
-e=S('PD_F'); zh=net.decode(SV['size'],11,e); pts=X()
-for i_,h_ in enumerate(zh): pts=pts+h_*rom.PTS[i_]
-on('PD_F',(None,'PD_Fa',{qfn:SV['bold']+SV['ital']*2+SV['font']*4+3,qsz:pts,qbase:SV['color']}))
->>>>>>> tier3
 lit('PD_Fa',b'/F','PD_Fb')
 e=S('PD_Fb'); on('PD_Fb',(None,'PD_Fc',None))
 em_en.lin(e); em_b.add(e,48+qfn-3)

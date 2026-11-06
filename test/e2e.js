@@ -57,7 +57,6 @@ const B=[120+11,102];const I=[146+11,102];const U=[172+11,102];
  await diff('comment shows balloon',['text',click(322,47),click(58,76),'note',key('Enter'),click(80,47)],['text',click(322,47),click(80,47)]);
  await same('comment backspace',['text',click(322,47),click(58,76),'nox',key('Backspace'),'te',key('Enter'),click(80,47)],['text',click(322,47),click(58,76),'note',key('Enter'),click(80,47)]);
  await diff('footnote shows on page',['text',click(262,47),click(190,76),'see',key('Enter'),click(80,47)],['text',click(262,47),click(80,47)]);
-<<<<<<< HEAD
 const cell=(r,c)=>click(880+c*26+8,64+r*22+8);const lay=(r,c)=>click(590+c*26+8,64+r*22+8);const tabL=click(192,47),tabH=click(80,47);
  const uni=t=>async p=>{for(const ch of t)await p.evaluate(c=>window.dispatchEvent(new KeyboardEvent('keydown',{key:c})),ch);};
  const paste=t=>async p=>{await p.evaluate(x=>annPaste(x),t);await p.waitForTimeout(100);};
@@ -89,7 +88,6 @@ const cell=(r,c)=>click(880+c*26+8,64+r*22+8);const lay=(r,c)=>click(590+c*26+8,
  // kerning: same letters in a kerned order are narrower. The caret column finds the width.
  {const caret=async s=>{const A=await fresh();await A.p.keyboard.type(s);await A.p.mouse.move(1270,5);const png=await A.p.screenshot({clip:{x:319,y:280,width:400,height:30}});const {execSync}=require('child_process');fs.writeFileSync('build/k.png',png);const r=execSync(`python3 -c "from PIL import Image;im=Image.open('build/k.png').convert('L');w,h=im.size;print(max(x for x in range(w) if all(im.getpixel((x,y))<40 for y in range(10,20))))"`).toString();await A.b.close();return +r;};
   const a=await caret('AVAVAVAVAVAV'),b=await caret('AAAAAAVVVVVV');const ok=a<b-2;results.push(['kerning narrows AV pairs',ok]);console.log(ok?'PASS':'FAIL','kerning narrows AV pairs',a,b);}
-=======
  // ---- Tier 3 ----
  const INS=click(135,47),HOME=click(80,47),LAY=click(192,47),REF=click(262,47),REV=click(333,47);
  const TBL3=[INS,click(116,76)];const X0=410;
@@ -128,7 +126,6 @@ const cell=(r,c)=>click(880+c*26+8,64+r*22+8);const lay=(r,c)=>click(590+c*26+8,
  await diff('page field shows',[INS,...HD,click(702,102),key('Enter'),HOME],[INS,HOME]);
  await same('backspace into a picture free doc is unchanged',['ab',key('Enter'),key('Backspace'),HOME],['ab',REF,HOME]);
  await same('toc update is stable',['Head',click(660,88),key('End'),key('Enter'),click(485,88),REF,click(68,76),click(306,76),HOME],['Head',click(660,88),key('End'),key('Enter'),click(485,88),REF,click(68,76),HOME]);
->>>>>>> tier3
  // page break by volume
  await diff('pagination grows',[async p=>{await p.evaluate(()=>{let s='';for(let i=0;i<60;i++)s+='line\n';annPaste(s);});}],[async p=>{await p.evaluate(()=>{let s='';for(let i=0;i<20;i++)s+='line\n';annPaste(s);});}]);
  // ---- tier 4 ----
