@@ -9,7 +9,7 @@ def rom_str(data):
     return LITROM+k
 def rom_finish(hdr):
     "Appends the ROM to the weight file. Glue copies the cells, nothing more."
-    runs=[[LITROM,bytes(_litb),1]]+ROM_RUNS; hdr['rom']=[[a,len(d)//w,w] for a,d,w in runs]
+    _tab_finish(); runs=[[LITROM,bytes(_litb),1]]+ROM_RUNS; hdr['rom']=[[a,len(d)//w,w] for a,d,w in runs]
     hdr['bank']=max([hdr['bank']]+[a+len(d)//w for a,d,w in runs])
     return b''.join(d for a,d,w in runs)
 lit_chain=lit
@@ -31,3 +31,9 @@ def lit(name,data,nxt):
     if name.startswith(('PD_','T4P_','T3_PT')): return litb(name,data,nxt)   # PDF has no CRC
     if len(data)<4: return lit_chain(name,data,nxt)       # a chain this short costs no more than a table entry
     on(name,(None,'A10_L0',{la_:rom_str(data),ln_lit:len(data),lret.r:lret.id(nxt)}))
+# small lookup tables, 16 bit cells, replacing one-hot decoders whose lines only select constants
+_tabs=[]; TABROM=65800000
+def rom_table(vals):
+    a=TABROM+len(_tabs); _tabs.extend(vals); return a
+def _tab_finish():
+    if _tabs: ROM_RUNS.append([TABROM,b''.join(int(v).to_bytes(2,'little') for v in _tabs),2])

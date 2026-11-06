@@ -140,14 +140,14 @@ DE=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13]
 e=S('CS')
 lit_=net.lt(sym,256,e); eob=net.eq(sym,256,e)
 on('CS',(lit_,'CODES',{wo:(OA+ob,sym),ob:ob+1}),(eob,'BEND',None),(None,'CL0',None))
-e=S('CL0'); sh=net.decode(sym-257,29,e); bs=X();ex_=X()
-for i_ in range(29): bs=bs+sh[i_]*LB[i_]; ex_=ex_+sh[i_]*LE[i_]
-on('CL0',(None,'CL1',{lc_:bs,gbn:ex_,gbv:0,gbw:1,gbi:0,gret.r:gret.id('CL2')}))
+_ltab=rom_table(sum(([LB[min(i_,28)],LE[min(i_,28)]] for i_ in range(32)),[]))
+on('CL0',(None,'A10_CL',{rl:as_x(_ltab)+(sym-257)*2}))
+on('A10_CL',(None,'CL1',{lc_:W[0],gbn:W[1],gbv:0,gbw:1,gbi:0,gret.r:gret.id('CL2')}))
 on('CL1',(None,'GBL',None))
 on('CL2',(None,'DEC',{copyn:lc_+gbv,hb:DH,hret.r:hret.id('CD_')}))
-e=S('CD_'); dh=net.decode(sym,30,e); db_=X();dx_=X()
-for i_ in range(30): db_=db_+dh[i_]*DB[i_]; dx_=dx_+dh[i_]*DE[i_]
-on('CD_',(None,'CD1',{lb:db_,gbn:dx_,gbv:0,gbw:1,gbi:0,gret.r:gret.id('CD2')}))
+_dtab=rom_table(sum(([DB[min(i_,29)],DE[min(i_,29)]] for i_ in range(32)),[]))
+on('CD_',(None,'A10_CD',{rl:as_x(_dtab)+sym*2}))
+on('A10_CD',(None,'CD1',{lb:W[0],gbn:W[1],gbv:0,gbw:1,gbi:0,gret.r:gret.id('CD2')}))
 on('CD1',(None,'GBL',None))
 on('CD2',(None,'CC',{dist:lb+gbv}))
 e=S('CC')
@@ -205,12 +205,10 @@ on('PX2',(net.and_(t2skip,ONE-pat('</w:styl',e)),'PX',{oi:oi+1}),
  (None,'PX',{oi:oi+1}))
 e=S('SZ0')
 hpv=(W[0]-48)*10+(W[1]-48)
-hps=net.decode(hpv,80,e); cl=X()
 PTL=rom.PTS
-for hp_ in range(80):
-    best=min(range(len(PTL)),key=lambda i:abs(PTL[i]*2-hp_)) if hp_ else 0
-    cl=cl+hps[hp_]*best
-on('SZ0',(None,'T2_C',{t2k:8,t2v:cl,oi:oi+13}))
+_stab=rom_table([0]+[min(range(len(PTL)),key=lambda i:abs(PTL[i]*2-hp_)) if hp_ else 0 for hp_ in range(80)])
+on('SZ0',(None,'A10_SZ',{r1:as_x(_stab)+net.min_(net.relu(hpv+1),as_x(80)),oi:oi+13}))
+on('A10_SZ',(None,'T2_C',{t2k:8,t2v:R1}))
 e=S('JC0'); j1=net.eq(W[0],99,e);j2=net.or_(net.eq(W[0],114,e),net.eq(W[0],101,e));j3=net.eq(W[0],98,e)
 on('JC0',(None,'PX',{w1:(cb+ALIGN,j1*1+j2*2+j3*3),oi:oi+13}))
 e=S('PN1')
@@ -243,13 +241,14 @@ for j_ in range(1,32):
 def hexd(c_,en): return as_x(c_)-48-net.ge(c_,65,en)*7-net.ge(c_,97,en)*32
 hr=net.bits(hexd(W[0],e),4,e);hg=net.bits(hexd(W[2],e),4,e);hb_=net.bits(hexd(W[4],e),4,e)
 hix=(hr[1]+hr[2]*2+hr[3]*4)*64+(hg[1]+hg[2]*2+hg[3]*4)*8+(hb_[1]+hb_[2]*2+hb_[3]*4)
-exf=net.step(exact); au=pat('auto',e); blk=net.and_(e,ONE-exf,ONE-au)
-nh=net.decode(hix,512,blk); nv_=X()
+exf=exact; au=pat('auto',e)
+_ctab=[]
 for i_ in range(512):
     r_,g_,b_=((i_>>6)&7)*36+18,((i_>>3)&7)*36+18,(i_&7)*36+18
-    best=min(range(32),key=lambda j:(PAL_F[j][0]-r_)**2+(PAL_F[j][1]-g_)**2+(PAL_F[j][2]-b_)**2)
-    nv_=nv_+nh[i_]*best
-on('CO0',(au,'T2_C',{t2k:7,t2v:0,oi:oi+16}),(None,'T2_C',{t2k:7,t2v:cvv+nv_,oi:oi+16}))
+    _ctab.append(min(range(32),key=lambda j:(PAL_F[j][0]-r_)**2+(PAL_F[j][1]-g_)**2+(PAL_F[j][2]-b_)**2))
+_ctab=rom_table(_ctab)
+on('CO0',(au,'T2_C',{t2k:7,t2v:0,oi:oi+16}),(exf,'T2_C',{t2k:7,t2v:cvv,oi:oi+16}),(None,'A10_CO',{r1:as_x(_ctab)+hix,oi:oi+16}))
+on('A10_CO',(None,'T2_C',{t2k:7,t2v:R1}))
 on('OPEND',(None,'OPE2',{nolog:0,clip0:0,clip1:0}))
 on('OPE2',(None,'SYNC',{autos:1,lc:1,dfrom:0,ty:0}))
 
