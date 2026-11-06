@@ -2,11 +2,11 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-247361 neurons, 490060 edges, 188 layers, 3947 control states.
+247362 neurons, 490064 edges, 188 layers, 3947 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
-| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1299) | 1299 | 7957 |
+| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1299) | 1299 | 7963 |
 | glyph network | Selects and addresses a character cell for drawing. | gen/app.py (391), gen/imp3_zoom_pre.py (155) | 546 | 9643 |
 | glyph metrics | Character advance and kerning trees. | gen/app.py (20676) | 20676 | 60762 |
 | glyph unit | Draws a character from its edge network into the glyph store, in its own clock domain. | gen/glyphnet.py (10800) | 10800 | 40090 |
@@ -48,7 +48,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | docx writer | Writes the document XML parts. | gen/t2_write.py (648), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1091 | 9261 |
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2707), gen/app.py (4) | 2711 | 41587 |
 | pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1396) | 1396 | 4444 |
-| docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (2829) | 2829 | 16385 |
+| docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (2834) | 2834 | 16390 |
 | png reader | Decodes PNG files to pixel words. | gen/docx_read.py (311), gen/a12_guard.py (61) | 372 | 4192 |
 | zip crc check | Zip CRC check on open: the inflated main part runs through the save CRC network and must match the central directory. | gen/a12_guard.py (18) | 18 | 104 |
 | prompt bar | One bar that takes a short text for a color, a style name or a font name. | gen/imp4_prompt.py (524) | 524 | 2033 |
@@ -89,4 +89,4 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | rv a3 interaction | Editing keys, word and page motion, right click, autoscroll, context menu, and the late tier 1 features. | gen/t1_features.py (2039), gen/rv_a3_keys.py (655), gen/pointer3.py (86), gen/rv_a4_features.py (79), gen/ui.py (42) | 2901 | 25112 |
 | file output command | Selects the length, data base and file name the glue saves. | gen/rv_a11_out.py (5) | 5 | 8 |
 | screen check | Compares one line of the screen id plane against the line table on each blink tick and repairs by repainting. | gen/rv_a11_out.py (23) | 23 | 56 |
-| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (9992) | 9992 | 54582 |
+| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (9988) | 9988 | 54567 |
