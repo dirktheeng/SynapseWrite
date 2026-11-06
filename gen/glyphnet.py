@@ -173,7 +173,7 @@ def miter(cs,bold):
             V[b]=(hx/k,hy/k)
     return V
 class GlyphNet:
-    def __init__(g,faces,codes,K=4,synth=False,xsnap=True,wround=True,tol=None,xh_round=0.5):
+    def __init__(g,faces,codes,K=4,synth=False,xsnap=True,wround=False,tol=None,xh_round=0.5):
         g.faces=faces; g.codes=codes; g.K=K; g.synth=synth; g.xsnap=xsnap; g.wround=wround; g.tol=tol; g.xh_round=xh_round
         g.net=net=Net(); g.stats=dict(edges=0,knots=0,stems=0,flat=0); g.per={}
         g._build()
@@ -270,8 +270,14 @@ class GlyphNet:
         g.sb=None;g.shear=None
         y=yr
         if g.synth:
-            bo=latch(I['bold']); g.sb=net.relu(s+bo*M-M); sl=latch(I['slant'])
-            g.shear=net.relu(y*math.tan(math.radians(g.synth_angle if hasattr(g,'synth_angle') else 12))+sl*M-M)
+            # one offset control: half the difference between the family's real bold and regular stems
+            g.sb=latch(sum((net.gate(I['s']*((face_metrics(f[0],1,0)['stem']-face_metrics(*f)['stem'])/2),fh[fi]) for fi,f in enumerate(g.faces)),X()),net.and_(st,I['bold']))
+            # one shear layer: the angle is the family's italic angle from the post table
+            g.shear=X()
+            for fi,f in enumerate(g.faces):
+                t=math.tan(math.radians(-rom.tt(f[0],0,1)['post'].italicAngle))
+                en=latch(fh[fi],net.and_(st,I['slant']))
+                g.shear=g.shear+net.relu(y*t+en*M-M)-en*(YP*t)
         prog={}
         for fi,f in enumerate(g.faces):
             fm=face_metrics(*f)
@@ -425,3 +431,39 @@ class GlyphNet:
         return dict(neurons=n,synapses=len(dst),lazy=len(isr),weights=len(dst)+len(isr),uniq=len(wtab),raw=len(blob),gz=len(gz),layers=c['L'],groups={k:len(v) for k,v in net.groups.items()},**g.stats,nup=g.nup,ndn=g.ndn,nbank=g.nbank)
 ASCII=list(range(32,127))
 ALLFACES=lambda fi:[(fi,b,i) for b in (0,1) for i in (0,1)]
+
+def cache_blit_net(W,H,path):
+    """The cache hit path as a real network: a tag read, a block read of stored coverage, and the patch port.
+    Tag table at bank cell TAG+key. A zero tag is a miss, which would start the generator above."""
+    import json,struct,gzip,numpy as np
+    net=Net(); key=net.input(); go=net.input(); px=net.input(); py=net.input()
+    tagv=net.input(); cov=[net.reg() for _ in range(W*H)]   # read port output cells, consecutive
+    xr=net.reg(); yr=net.reg(); net.rec(xr,net.gate(px,go)); net.rec(yr,net.gate(py,go))
+    x2=net.reg(); y2=net.reg(); net.rec(x2,net.gate(xr,net.step(tagv))); net.rec(y2,net.gate(yr,net.step(tagv)))
+    hit=net.step(tagv); hit2=net.reg(); net.rec(hit2,hit)
+    d=[net.wire() for _ in range(4*W*H)]
+    for i in range(W*H):
+        m=net.step(cov[i]); c=cov[i]
+        for k in range(3): net.connect(d[4*i+k],(m-c)*255)
+        net.connect(d[4*i+3],m)
+    pen=net.wire(); net.connect(pen,hit2); done=net.step(hit2)
+    c=net.compile(); new=c['new']; nid=lambda x:next(iter(x.t))
+    n=c['n']; pr=[2,new[nid(go)],new[nid(key)],new[nid(tagv)],1,-1, 2,new[nid(hit)],new[nid(tagv)],new[nid(cov[0])],W*H,-1, 4,new[nid(pen)],new[nid(x2)],new[nid(y2)],new[nid(d[0])],W,H,-1,-1]
+    ost=np.zeros(n+1,dtype=np.int32);dst=[];ww=[];ist=np.zeros(n+1,dtype=np.int32);isr=[];iww=[]
+    for i in range(n):
+        o=sorted(c['out'][i]);ost[i+1]=len(o);p=0
+        for t,w in o:dst.append(t-p);p=t;ww.append(w)
+        ist[i+1]=len(c['lazy'][i])
+        for j,w in c['lazy'][i]:isr.append(j);iww.append(w)
+    wt=sorted(set(ww)|set(iww));wx={w:k for k,w in enumerate(wt)}
+    def pack(v,b):
+        o=bytearray()
+        for x in v:
+            if x<255:o.append(x)
+            else:o.append(255);o+=int(x).to_bytes(b,'little')
+        return bytes(o)
+    dz=pack(dst,4);wz=pack([wx[w] for w in ww],2)
+    hdr=dict(n=n,e=len(dst),L=c['L'],nports=len(pr),bank=4000000,ni=len(isr),nt=len(wt),dn=len(dz),wn=len(wz),init=[[new[i],v] for i,v in net.init.items()],key=new[nid(key)],go=new[nid(go)],px=new[nid(px)],py=new[nid(py)],halt=new[nid(done)])
+    raw=b''.join([ist.tobytes(),np.array(isr,dtype=np.int32).tobytes(),np.array([wx[w] for w in iww],dtype=np.uint16).tobytes(),np.array(c['act'],dtype=np.uint8).tobytes(),np.array(c['bias'],dtype=np.float64).tobytes(),ost.tobytes(),dz,wz,np.array(c['lstart'],dtype=np.int32).tobytes(),np.array(pr,dtype=np.int32).tobytes(),np.array(wt,dtype=np.float64).tobytes()])
+    h=json.dumps(hdr,separators=(',',':')).encode()
+    open(path,'wb').write(gzip.compress(struct.pack('<I',len(h))+h+b'\0'*((4-(len(h)+4)%4)%4)+raw,6))
