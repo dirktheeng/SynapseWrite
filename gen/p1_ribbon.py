@@ -15,4 +15,7 @@ fsm.set(p1wcm,net.and_(kh[7],net.step(p1wcm)),p1wcm-1); fsm.set(p1wcm,net.and_(n
 # Blank Page: a page break, an empty paragraph, a page break, as Word inserts it
 on('P1_BP',(None,'SPLIT',{grp:grp+1,oret.r:oret.id('P1_BP1')})); on('P1_BP1',(None,'SPLIT',{w1:(cb+PBRK,1),oret.r:oret.id('P1_BP2')}))
 e=S('P1_BP2'); log(e,6,cp,PBRK,0,1); on('P1_BP2',(None,'AFTER_ED',{w1:(cb+PBRK,1)}))
+# views: draft and web layout set their flag and lay the whole document out again; print layout clears both
+on('P1_VD',(None,'DA0',{p1vdr:1,p1vwb:0,rdm:0,di_:0,clip0:0,clip1:0})); on('P1_VW',(None,'DA0',{p1vdr:0,p1vwb:1,rdm:0,di_:0,clip0:0,clip1:0}))
+on('P1_VP',(rdm,'IMP3_RX',{p1vdr:0,p1vwb:0}),(p1vf,'DA0',{p1vdr:0,p1vwb:0,di_:0,clip0:0,clip1:0}),(None,'HALT',None))
 net.group(_gp1r)

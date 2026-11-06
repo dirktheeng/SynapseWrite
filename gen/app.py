@@ -754,8 +754,8 @@ e=S('RD1')
 # The provisional page stays only for the keys that keep it. Anything else with the caret still past the background redraws around the caret, and otherwise the view goes back to where it was: the paragraphs after the background have no saved place to walk from.
 fsm.set(impk,e,0); fsm.set(vrc,e,0)
 on('RD1',(net.and_(impf,ONE-impk,ONE-has_sel,net.ge(cp,bpi,e)),'IMP_F0',{ap:cp,ao:co,autos:0,a7_jmp:1,fastok:0}),(net.and_(impf,ONE-impk),'IMP_X',None),(net.and_(e,ONE-full),'RF0',{sidx:minc,vm:0}),
- (lc,'VS2048',{rZ:(0,DOCY,1262,VH,GRAY,0),sidx:0,vm:0,vln:0,bgp:0,hitn:0}),
- (None,'VS2048',{rZ:(0,DOCY,1262,VH,GRAY,0),sidx:0,vm:1,vln:0,hitn:0}))
+ (lc,'VS2048',{rZ:(0,DOCY,1262,VH,(as_x(230)+p1vf*25,as_x(230)+p1vf*25,as_x(230)+p1vf*25),0),sidx:0,vm:0,vln:0,bgp:0,hitn:0}),
+ (None,'VS2048',{rZ:(0,DOCY,1262,VH,(as_x(230)+p1vf*25,as_x(230)+p1vf*25,as_x(230)+p1vf*25),0),sidx:0,vm:1,vln:0,hitn:0}))
 on('IMP_X',(None,'RD1',{impf:0,scroll:impsc,ytot:impyt,full:1,a7_jmp:0}))
 on('VSEND',(lc,'RF0',{sidx:net.min_(sidx,dfrom)}),(None,'RF0',None))
 on('RF0',(None,'RF1',{r1:as_x(PT)+sidx}))
@@ -765,15 +765,20 @@ fload={fnh:R2,fnn:rf.out[0],fnp:rf.out[1],yy:RL[0],ptop:RL[1],pages:RL[2],wsum:R
 RC=rc.out
 on('RF2',(net.and_(full,net.step(RC[1])),'RF0',{sidx:sidx-RC[1]}),(None,'T3_RS0',{**fload,rowmax:0,cursec:MT[7]}))
 on('T3_RS0',(None,'T3_RS1',{rl:as_x(SECB)+cursec*8}))
-def sload(W_): return {ncol:W_[0],s_pw:W_[1],s_ph:W_[2],s_px:W_[3],s_tx:W_[4],s_tw:W_[5],s_mt:W_[6],s_th:W_[7],s_ps:W_[2]+16}
+def sload(W_):
+    # p1: draft and web layout are layouts of the same pages: a top margin of 24 px and text down to 24 px from the foot, so text runs
+    # on with a thin line at each page break; web layout also takes the window's width. Print layout reads the section as saved.
+    _nv=ONE-p1vf; _wv=G_(as_x(1222),p1vwb)
+    return {ncol:W_[0],s_pw:G_(W_[1],ONE-p1vwb)+_wv,s_ph:W_[2],s_px:G_(W_[3],ONE-p1vwb)+p1vwb*20,s_tx:G_(W_[4],ONE-p1vwb)+p1vwb*56,s_tw:G_(W_[5],ONE-p1vwb)+p1vwb*1150,
+            s_mt:G_(W_[6],_nv)+p1vf*24,s_th:G_(W_[7],_nv)+G_(W_[2]-48,p1vf),s_ps:W_[2]+16}
 # imp5: the first paragraph starts at the section's top margin as it is now, not as it was saved with the paragraph, so a top margin change moves it
 e=S('T3_RS1'); _z5=net.and_(e,net.eq(pi,0,e)); _sl5={**sload(RL),yy:G_(yy,e-_z5)+G_(ptop+RL[6],_z5)}
 on('T3_RS1',(bgm,'R1',_sl5),(full,'T3_RS2',_sl5),(None,'R1',_sl5))
 def page_shadow(st,nxt,top,keep=None):
     "A soft shadow from three nested rectangles, then the page. Alpha stays 0."
-    a_=dict(keep or {}); a_.update({rA:(s_px-3,top-2,s_pw+7,s_ph+6,(226,226,226),0),rB:(s_px-2,top-1,s_pw+5,s_ph+4,(216,216,216),0),rC:(s_px-1,top,s_pw+3,s_ph+2,(198,198,198),0)})
+    a_=dict(keep or {}); a_.update({rA:(s_px-3,top-2,s_pw+7,s_ph+6,p1c3(226),0),rB:(s_px-2,top-1,s_pw+5,G_(s_ph+4,ONE-p1vf)+p1vf,p1c3(216,190),0),rC:(s_px-1,top,s_pw+3,s_ph+2,p1c3(198),0)})
     on(st,(None,nxt,a_))
-on('T3_RS2',(None,'T3_RS3',{rA:(s_px-3,ptop+DOCY-scroll-2,s_pw+7,s_ph+6,(226,226,226),0),rB:(s_px-2,ptop+DOCY-scroll-1,s_pw+5,s_ph+4,(216,216,216),0),rC:(s_px-1,ptop+DOCY-scroll,s_pw+3,s_ph+2,(198,198,198),0)}))
+on('T3_RS2',(None,'T3_RS3',{rA:(s_px-3,ptop+DOCY-scroll-2,s_pw+7,s_ph+6,p1c3(226),0),rB:(s_px-2,ptop+DOCY-scroll-1,s_pw+5,G_(s_ph+4,ONE-p1vf)+p1vf,p1c3(216,190),0),rC:(s_px-1,ptop+DOCY-scroll,s_pw+3,s_ph+2,p1c3(198),0)}))
 on('T3_RS3',(None,'PNV',{rB:(s_px,ptop+DOCY-scroll,s_pw,s_ph,WHITE,0)}))
 steps=[2048,1024,512,256,128,64,32,16,8,4,2,1]
 for i,st_ in enumerate(steps):
@@ -807,7 +812,7 @@ e=S('R3B')
 pb_=net.and_(ONE-net.eq(a4hlast,pi+1,e),net.or_(a4kbr,net.and_(net.step(pbk),net.gt(yy,ptop+s_mt,e)),net.and_(net.step(tcols),net.eq(tci,0,e),net.gt(yy+60,ptop+s_mt+s_th,e))))
 pfsave={pfc:fnp,pff:fnn-fnp,pfh:fnh,pfy:ptop+s_mt+s_th,pfx:s_tx,pfw:s_tw,fnh:0}
 pnew={**pfsave,fnp:0,ptop:ptop+s_ps,yy:ptop+s_ps+s_mt,pages:pages+1,xcol:0}
-on('R3B',(net.and_(net.eq(pbk,2,e),net.eq(ncol,2,e),ONE-net.step(xcol),ONE-net.step(tcols),net.gt(yy,ptop+s_mt,e)),'R4',{yy:ptop+s_mt,xcol:col2+24}),(net.and_(net.step(tcols),net.eq(tci,0,e),ONE-a4hw,net.gt(yy,ptop+s_mt,e),net.step(net.step(pi+1-a4kd-0.5)+net.step(a4kd-pi-1-0.5))),'A4_KR0',None),(net.and_(a4kf,ONE-net.step(tcols),net.gt(yy,ptop+s_mt,e),net.step(net.step(pi+1-a4kd-0.5)+net.step(a4kd-pi-1-0.5))),'A4_K0',None),(net.and_(pb_,full),'PSH_B',{**pnew,rB:(s_px-2,ptop+s_ps+DOCY-scroll-1,s_pw+5,s_ph+4,(216,216,216),0),rC:(s_px-1,ptop+s_ps+DOCY-scroll,s_pw+3,s_ph+2,(198,198,198),0)}),(pb_,'A4_H0',pnew),(None,'R4',None))
+on('R3B',(net.and_(net.eq(pbk,2,e),net.eq(ncol,2,e),ONE-net.step(xcol),ONE-net.step(tcols),net.gt(yy,ptop+s_mt,e)),'R4',{yy:ptop+s_mt,xcol:col2+24}),(net.and_(net.step(tcols),net.eq(tci,0,e),ONE-a4hw,net.gt(yy,ptop+s_mt,e),net.step(net.step(pi+1-a4kd-0.5)+net.step(a4kd-pi-1-0.5))),'A4_KR0',None),(net.and_(a4kf,ONE-net.step(tcols),net.gt(yy,ptop+s_mt,e),net.step(net.step(pi+1-a4kd-0.5)+net.step(a4kd-pi-1-0.5))),'A4_K0',None),(net.and_(pb_,full),'PSH_B',{**pnew,rB:(s_px-2,ptop+s_ps+DOCY-scroll-1,s_pw+5,G_(s_ph+4,ONE-p1vf)+p1vf,p1c3(216,190),0),rC:(s_px-1,ptop+s_ps+DOCY-scroll,s_pw+3,s_ph+2,p1c3(198),0)}),(pb_,'A4_H0',pnew),(None,'R4',None))
 e=S('R4'); e_=net.and_(e,ONE-a4hw)
 w4.drive(e_,(pbs+FNHT,fnh))
 def list_step(ln_,kind,lvl,e):
@@ -836,7 +841,7 @@ e=S('R6'); fnx_=fnh+RL[7]+net.step(fnh+RL[7])*14
 ne=net.or_(net.and_(net.gt(yy+RL[3]+fnx_,ptop+s_mt+s_th,e),net.gt(yy,ptop+s_mt,e)),net.and_(ONE-net.step(tcols),ONE-f1nwc,keep_lines(e,yy,ptop,RL[3],R2,lj,nl,s_mt,s_th,fnx_)))
 lm={lnfh:RL[7],ls_:RL[0],le_:RL[1],lx:RL[2],lhh:RL[3],lasc:RL[4],lex:RL[5]}
 c1=net.and_(ne,net.eq(ncol,2,e),ONE-net.step(xcol))
-on('R6',(c1,'T3_R6X',{**lm,yy:ptop+s_mt,xcol:col2+24}),(net.and_(ne,full),'PSH_N',{**pfsave,**lm,fnp:0,xcol:0,ptop:ptop+s_ps,yy:ptop+s_ps+s_mt,pages:pages+1,rB:(s_px-2,ptop+s_ps+DOCY-scroll-1,s_pw+5,s_ph+4,(216,216,216),0),rC:(s_px-1,ptop+s_ps+DOCY-scroll,s_pw+3,s_ph+2,(198,198,198),0)}),(ne,'T3_R6X',{**pfsave,**lm,fnp:0,xcol:0,ptop:ptop+s_ps,yy:ptop+s_ps+s_mt,pages:pages+1}),(None,'T3_R6X',lm))
+on('R6',(c1,'T3_R6X',{**lm,yy:ptop+s_mt,xcol:col2+24}),(net.and_(ne,full),'PSH_N',{**pfsave,**lm,fnp:0,xcol:0,ptop:ptop+s_ps,yy:ptop+s_ps+s_mt,pages:pages+1,rB:(s_px-2,ptop+s_ps+DOCY-scroll-1,s_pw+5,G_(s_ph+4,ONE-p1vf)+p1vf,p1c3(216,190),0),rC:(s_px-1,ptop+s_ps+DOCY-scroll,s_pw+3,s_ph+2,p1c3(198),0)}),(ne,'T3_R6X',{**pfsave,**lm,fnp:0,xcol:0,ptop:ptop+s_ps,yy:ptop+s_ps+s_mt,pages:pages+1}),(None,'T3_R6X',lm))
 def _t10(v,e):
     b_=net.gate(v,e); t_=X()
     for k_ in range(1,10): t_=t_+net.step(b_-10*k_+0.5)
@@ -1009,7 +1014,7 @@ on('RE1',(None,'RE2',{oldcp:cp,wassel:has_sel}))
 # An edit past where the background has reached: its true height is not known yet, so the caret's neighbourhood is drawn at once on a provisional page after the
 # known ones. The background keeps its saved position, and on finishing it redraws everything in its true place.
 _P=bptop+PST; e=S('IMP_F0'); _f=net.relu(cp-1); _bel=net.lt(_f,bpi,e); _if0=net.and_(e,impf); _in0=e-_if0
-on('IMP_F0',(None,'IMP_F1',{impf:1,impc:1,impsc:G_(impsc,_if0)+G_(scroll,_in0),impyt:G_(impyt,_if0)+G_(ytot,_in0),pagesT:bpg+1,scroll:_P,ytot:_P+PST*2,clip0:DOCY,clip1:800-DOCB,full:1,vm:1,vln:0,hitn:0,a7_vw:1,rZ:(0,DOCY,1262,VH,GRAY,0),sidx:net.gate(bpi,_bel)+net.gate(_f,e-_bel)}))
+on('IMP_F0',(None,'IMP_F1',{impf:1,impc:1,impsc:G_(impsc,_if0)+G_(scroll,_in0),impyt:G_(impyt,_if0)+G_(ytot,_in0),pagesT:bpg+1,scroll:_P,ytot:_P+PST*2,clip0:DOCY,clip1:800-DOCB,full:1,vm:1,vln:0,hitn:0,a7_vw:1,rZ:(0,DOCY,1262,VH,(as_x(230)+p1vf*25,as_x(230)+p1vf*25,as_x(230)+p1vf*25),0),sidx:net.gate(bpi,_bel)+net.gate(_f,e-_bel)}))
 on('IMP_F1',(None,'T3_RS0',{pi:sidx,yy:_P+s_mt,ptop:_P,pages:bpg+1,wsum:bws,listn:bln,xcol:0,fnh:bfnh,fnn:bfn,fnp:bfp,rowmax:0,cursec:bsec}))
 # While the background runs, each of its slices brings the bars up to what it has laid out so far. A provisional page is the last page known, so its thumb sits at the end.
 on('IMP_C0',(None,'RE2',{pagesT:pages+1,pcp:G_(pages+1,net.and_(S('IMP_C0'),impf))+G_(pcp,S('IMP_C0')-net.and_(S('IMP_C0'),impf)),full:0}))

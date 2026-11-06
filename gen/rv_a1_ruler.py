@@ -1,9 +1,10 @@
 # Ruler scale: quarter inch ticks, half inch marks and inch numbers, measured from the left text edge t1_rL.
 # Each mark is one token; it shows only while its offset lies inside the text width t1_rW, so the scale follows margins, orientation and table cells.
 _a1c=(138,136,134); _a1i=[]
-for q_ in range(1,41):
+for q_ in range(1,53):   # p1: to 13 in, for web layout's window wide text; inch numbers from 10 take two glyphs
     o_=q_*24
-    if q_%4==0: _a1i.append(('g',o_-3,48+q_//4))
+    if q_%4==0 and q_//4>9: _a1i.append(('g',o_-7,49)); _a1i.append(('g',o_,48+q_//4-10))
+    elif q_%4==0: _a1i.append(('g',o_-3,48+q_//4))
     else: _a1i.append(('r',o_,159 if q_%2==0 else 161,7 if q_%2==0 else 3))
 _a1t=S('T1_RT'); fsm.states['T1_RT'][1].append((_a1t,None))
 _a1s=[net.reg() for _ in range(len(_a1i)+1)]; net.rec(_a1s[0],_a1t)

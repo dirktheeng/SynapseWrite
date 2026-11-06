@@ -96,5 +96,20 @@ const yel=(r,g,b)=>r>200&&g>180&&b<170; // match tint
   const ps=(x.match(/<w:p>.*?<\/w:p>/g)||[]);ok('Blank Page makes an empty page between',ps.length===3&&/pageBreakBefore/.test(ps[1])&&/pageBreakBefore/.test(ps[2])&&/after/.test(ps[2])&&!/<w:t/.test(ps[1]),ps.map(p_=>p_.slice(0,160)).join(' || '));
   let D=await lib();D.type('x');D.click(127,47);D.settle();D.click(1190,96);D.settle();D.key('z',1);D.settle();x=xml(D);ok('Blank Page undoes in one step',(x.match(/<w:p>/g)||[]).length===1&&!/pageBreakBefore/.test(x));
  }
+
+ if(!only||only=='views'){
+  let L='';for(let i=0;i<30;i++)L+='View paragraph '+i+' has enough words on it that it wraps across the page and shows how lines flow when the view changes its layout, and then it goes on.\n';
+  const dark=(A,x0,x1)=>count(A,x0,x1,180,770,(r,g,b)=>r<100&&g<100&&b<100);
+  const gray=A=>count(A,0,1262,180,770,(r,g,b)=>r==230&&g==230&&b==230);
+  let A=await lib();A.paste(L);A.settle();A.key(132,1);A.settle();const p0=A.hash(174,776),x0=xml(A),wide0=dark(A,960,1250),g0=gray(A);
+  A.click(372,47);A.settle();A.click(398,96);A.settle();A.key(132,1);A.settle();A.shot('build/p1_web.png');const wide1=dark(A,960,1250),g1=gray(A);
+  ok('Web Layout wraps text to the window and drops the gray',wide0===0&&wide1>300&&g0>10000&&g1<50,[wide0,wide1,g0,g1]);
+  ok('the saved file does not change with the view',xml(A)===x0);
+  A.click(372,47);A.settle();A.click(398,118);A.settle();A.key(132,1);A.key(131);A.key(131);for(let i=0;i<40;i++)A.key(131);A.settle();A.shot('build/p1_draft.png');
+  const line=(()=>{for(let y=180;y<770;y++){if(count(A,230,1030,y,y+1,(r,g,b)=>r==190&&g==190&&b==190)>700)return y;}return -1;})();
+  ok('Draft shows a page break as a line, no gray, text at the print width',line>0&&gray(A)<50&&dark(A,960,1250)===0,[line,gray(A),dark(A,960,1250)]);
+  A.type('Z');A.settle();ok('typing works in draft',/Z/.test(xml(A)));A.key('z',1);A.settle();
+  A.click(372,47);A.settle();A.click(398,74);A.settle();A.key(132,1);A.settle();ok('Print Layout comes back as it was',A.hash(174,776)===p0);
+ }
  const f=R.filter(x=>!x).length;console.log(R.length-f,'passed',f,'failed');process.exit(f?1:0);
 })();

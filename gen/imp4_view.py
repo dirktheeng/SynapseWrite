@@ -17,7 +17,7 @@ _vb0=zfy0(as_x(vrt)-scroll+DOCY+vrm)
 e=S('V8_V0')
 _vh=sum((net.gate(vrh,h_)*z_ for h_,z_ in zip(ZLH,ZL)),X())+net.gate(vrh,ONE-zany)
 _vt=net.max_(_vb0,as_x(DOCY)); _ve=net.min_(_vb0+_vh,as_x(DOCB))
-on('V8_V0',(net.and_(t1_ruler,ONE-rdm,full),'V8_V1',{rA:(2,DOCY,16,VH,(198,198,198),0),rB:(2,_vt,16,net.relu(_ve-_vt),(253,253,253),0),vrc:0}),(None,'RE3',{vrc:0}))
+on('V8_V0',(net.and_(t1_ruler,ONE-rdm,ONE-p1vf,full),'V8_V1',{rA:(2,DOCY,16,VH,(198,198,198),0),rB:(2,_vt,16,net.relu(_ve-_vt),(253,253,253),0),vrc:0}),(None,'RE3',{vrc:0}))
 _vi=[]
 for q_ in range(1,41):
     o_=q_*24

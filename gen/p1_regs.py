@@ -12,3 +12,8 @@ p1c=[R() for _ in range(3)]
 p1lo,p1nk,p1lk,p1li=[R() for _ in range(4)]
 P1_SYX,P1_SYY=1092,87   # Insert > Symbol menu position (gen/p1_menus.py)
 p1wcm=R()   # Review > Word Count message: timer ticks left to show it, as pmsg
+p1vdr=R();p1vwb=R(); p1vf=net.or_(p1vdr,p1vwb)   # p1: draft view, web layout
+def p1c3(c_,draft=None):
+    "A page frame color that is white in draft and web layout, or another gray in draft."
+    d_=255 if draft is None else draft
+    v_=as_x(c_)+p1vdr*(d_-c_)+p1vwb*(255-c_); return (v_,v_,v_)
