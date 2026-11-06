@@ -247,7 +247,7 @@ IF.set(iv,I_go,I_val); IF.set(ifb,I_go,I_fb); IF.set(ifull,I_go,0)
 irR=RPort(1); iW=WPort(1); irR.dom=1; iW.dom=1; IRD=irR.out[0]
 net.rec(IF.S('I0'),I_go)
 e=IF.S('I0'); imemo=net.eq(iv,im_v,e)
-IF.on('I0',(imemo,'IE',{iout:im_o}),(None,'IS',{ii:1}))
+IF.on('I0',(imemo,'IE',{iout:im_o}),(None,'IS',{ii:0}))   # record 0 is searched too: the default style must not get a second index
 e=IF.S('IS')
 IF.on('IS',(net.ge(ii,icnt,e),'IA',None),(None,'IC',{irR:as_x(STYT)+ii}))
 e=IF.S('IC')
@@ -316,7 +316,7 @@ kh=net.decode(evk,14,S('DISP'))
 exec(open('pointer2.py').read())
 _rv_m=net.bits(evm,4,S('DISP')); fsm.set(rv_eol,net.or_(kh[2],kh[3],kh[8],kh[9],kh[10]),0); fsm.set(rv_try,kh[2],0)
 on('DISP',*PTR_DISP,(net.and_(kh[3],t1_mopb),'T1_MD',{hx_:eva,hy_:evb}),(net.and_(kh[3],_rv_m[3]),'RVA3_RC0',{hx_:eva,hy_:evb}),(net.and_(kh[2],t1_mopb),'T1_MK',None),(net.and_(kh[4],t1_tdrag),'RD0',{drag:0,t1_tdrag:0}),(kh[11],'T1_HV',{hx_:eva,hy_:evb}),(kh[1],'UI',{clip0:0,clip1:0}),(kh[2],'T2_KM',{shiftk:net.bits(evb,2,S('DISP'))[1]}),(kh[3],'MD',{hx_:eva,hy_:evb}),
-   (kh[4],'T3_MU',{drag:0}),(kh[5],'MV',None),(kh[6],'WH',None),(kh[7],'TM',{blink:ONE-blink,autos:0}),(kh[8],'PASTE',{}),(kh[9],'OP0',{}),(kh[10],'PG_0',{}),(None,'HALT',None))
+   (kh[4],'T3_MU',{drag:0}),(kh[5],'MV',None),(kh[6],'WH',None),(kh[7],'TM',{blink:ONE-blink,autos:0}),(kh[8],'PASTE',{}),(kh[9],'A12_OV0',{}),(kh[10],'PG_0',{}),(None,'HALT',None))
 on('IDL2',(None,'HALT',None))
 on('MV',(t1_tdrag,'T1_TM0',None),(net.and_(S('MV'),net.step(tdk)),'T3_MV',None),(net.and_(S('MV'),drag),'MD2',{hx_:net.max_(net.min_(eva,s_px+s_pw-2),s_px+1),hy_:net.max_(net.min_(evb,DOCB-6),DOCY+6),shiftk:1}),(None,'HALT',None))
 on('WH',(None,'RD0',{scroll:net.relu(scroll+evc-1000),autos:0,a7_jmp:0}))   # ev_c carries delta+1000
@@ -531,7 +531,7 @@ on('W0',(None,'W1',{r1:as_x(PT)+wp}))
 on('W1',(None,'W2',{wbase:R1,r2:R1+LEN}))
 on('W2',(None,'W3',{wlen:R2}))
 e=S('W3')
-on('W3',(net.and_(net.step(a7_rn),net.or_(net.ge(Kw,Hi,e),net.ge(wo,wlen,e))),'A7_FL',None),(net.ge(Kw,Hi,e),'WR',None),(net.ge(wo,wlen,e),'WNL',{}),(net.eq(wm,2,e),'A7_FW',{rpw:wbase+1024+wo,rs:wbase+1024+wo}),(net.eq(wm,1,e),'A7_CW',{rpw:wbase+wo}),(None,'W4',{r1:wbase+wo,rs:wbase+1024+wo}))
+on('W3',(net.and_(net.step(a7_rn),net.or_(net.ge(Kw,Hi,e),net.ge(wo,wlen,e))),'A7_FL',None),(net.ge(Kw,Hi,e),'WR',None),(net.and_(net.eq(wm,1,e),net.ge(wn,590000,e)),'WR',None),(net.ge(wo,wlen,e),'WNL',{}),(net.eq(wm,2,e),'A7_FW',{rpw:wbase+1024+wo,rs:wbase+1024+wo}),(net.eq(wm,1,e),'A7_CW',{rpw:wbase+wo}),(None,'W4',{r1:wbase+wo,rs:wbase+1024+wo}))
 e=S('WNL')
 on('WNL',(None,'WNL2',{wp:wp+1,wo:0,wn:wn+net.eq(wm,1,e)}))
 wnl_c=net.and_(e,net.eq(wm,1,e)); w1.drive(wnl_c,(as_x(CB)+wn,10))
@@ -621,7 +621,8 @@ on('PS1',(None,'PS2',{pi_:0}))
 PSN=32
 pn_=R(); PSW_=rpw.out
 e=S('PS2')
-on('PS2',(net.and_(net.ge(pi_,evc,e),net.step(a7_pn)),'A7_PF',None),(net.ge(pi_,evc,e),'AFTER_ED',None),(net.and_(net.ge(usp,UEND_-2200,e),ONE-net.step(a7_pn)),'PS2',{usp:UB,urp:UB}),(None,'PSW',{rpw:as_x(CB2)+pi_}))
+_pe=net.or_(net.ge(pi_,evc,e),net.ge(nextb,SLOTMAX,e))
+on('PS2',(net.and_(_pe,net.step(a7_pn)),'A7_PF',None),(_pe,'AFTER_ED',None),(net.and_(net.ge(usp,UEND_-2200,e),ONE-net.step(a7_pn)),'PS2',{usp:UB,urp:UB}),(None,'PSW',{rpw:as_x(CB2)+pi_}))
 e=S('PSW')
 _bad=[net.step(as_x(32)-PSW_[i_]-0.5+e*M-M)+net.step(PSW_[i_]-126.5+e*M-M) for i_ in range(PSN)]
 _score=sum((_bad[i_]*float(2**(PSN-1-i_)) for i_ in range(PSN)),X())
@@ -852,7 +853,8 @@ on('LE0',(None,'EM',{lasc:asc,lhh:lh,lend:0,lwid:0,lspc:0,llast:1}))
 fsm.set(kprev,S('LAY0'),0)
 _rv_e=S('L1'); on('L1',(net.and_(net.step(off),net.ge(off,plen_,_rv_e)),'RVA3_LE0',None),(None,'L2',{r1:pbs+off,rs:pbs+1024+off}))
 e=S('L2'); measure(e,R1,RSR,RSC); ke2=net.and_(e,net.step(kprev)); kp_en.lin(ke2); kp_in.add(ke2,kprev)
-sp=net.eq(R1,32,e); _rv_tb=net.eq(R1,9,e); _rv_lt=rv_tabw(lx+indb+pind+pf_val(lfi),_rv_tb); _rv_vt=net.eq(R1,11,e); _rv_sb=net.or_(sp,_rv_tb); over=net.and_(net.gt(lx+adv+kern+_rv_lt,ww,e),ONE-sp); hasb=net.gt(lb,ls_,e); nsp=e-sp
+sp=net.eq(R1,32,e); _rv_tb=net.eq(R1,9,e); _rv_lt=rv_tabw(lx+indb+pind+pf_val(lfi),_rv_tb); _rv_vt=net.eq(R1,11,e); _rv_sb=net.or_(sp,_rv_tb); _ov=net.gt(lx+adv+kern+_rv_lt,ww,e); over=net.and_(_ov,ONE-sp,net.gt(off,ls_,_ov));   # a line always takes its first character, or a very narrow cell never ends
+hasb=net.gt(lb,ls_,e); nsp=e-sp
 lastc=net.ge(off+1,plen_,e); newword=net.and_(nsp,prevsp)
 advance={kprev:R1,lx:lx+adv+kern+_rv_lt,lasc:net.max_(asc,lasc),lhh:net.max_(lh,lhh),off:off+1,prevsp:_rv_sb,wc:wc+newword,lsn:lsn+sp}
 fsm.set(lb,net.and_(_rv_sb,ONE-over),off+1);fsm.set(lbx,net.and_(_rv_sb,ONE-over),lx+kern+_rv_lt);fsm.set(lspb,net.and_(_rv_sb,ONE-over),lsn)
@@ -1035,6 +1037,7 @@ exec(open('pdf_write.py').read())
 # ---- .docx reader: zip walk, inflate (canonical Huffman), LZ77 and XML matching ----
 net.group('docx reader')
 exec(open('docx_read.py').read())
+exec(open('a12_guard.py').read())
 exec(open('t4_features.py').read())
 exec(open('t2_features.py').read())
 exec(open('t3_features.py').read())
@@ -1059,8 +1062,10 @@ on('BS_MD',(None,'BS_M1',{pix:(hx_,hy_)}))
 e=S('BS_M1')
 on('BS_M1',(net.eq(A_,201,e),'UI',{bstg:0,clip0:0,clip1:0}),(net.or_(net.eq(A_,202,e),net.eq(A_,206,e)),'SELALL',{bsn:1}),(net.eq(A_,203,e),'HALT',{wopen:1,bsq:1}),(net.eq(A_,204,e),'SAVE',{bsq:1}),(net.eq(A_,205,e),'PDF',{bsq:1}),(None,'HALT',None))
 # ---- internal clipboard: the network's own copy feeds paste when the system clipboard can't ----
-e=S('CLI0'); on('CLI0',(net.ge(cli,clipn,e),'PASTE',{evc:clipn}),(None,'CLI1',{rb:(as_x(CB)+cli,1000)}))
-on('CLI1',(None,'CLI0',{wb:(as_x(CB2)+cli,1000),cli:cli+1000}))
+# The two buffers overlap when the copy is long, so the blocks move from the top down.
+clik=R(); CLIMAX=390000; _clk=net.min_(cli,1000)
+e=S('CLI0'); on('CLI0',(net.eq(cli,0,e),'PASTE',{evc:net.min_(clipn,CLIMAX)}),(None,'CLI1',{rb:(as_x(CB)+cli-_clk,_clk),clik:_clk}))
+on('CLI1',(None,'CLI0',{wb:(as_x(CB2)+cli-clik,clik),cli:cli-clik}))
 # ---- ribbon drawn by a chain of tokens; each token's outgoing weights hold one draw item ----
 net.group('ribbon display list')
 import ui
@@ -1153,6 +1158,7 @@ blob=struct.pack('<I',len(h))+h+b'\0'*((4-(len(h)+4)%4)%4)+raw
 gz=gzip.compress(blob,9)
 if os.environ.get('NETSTAT'):
     print({k_:(len(v_),len(gzip.compress(v_,6))) for k_,v_ in zip('ist ost act bias i0 i1 i2 i3 iw d1 d2 wz'.split(),_streams)},'wtab',len(wtab),'btab',len(btab),'hdr',len(h),file=sys.stderr)
+exec(open('a12_dbg.py').read())
 open('../build/net.bin.gz','wb').write(gz)
 prov={k:len(v) for k,v in net.groups.items()}
 json.dump(dict(neurons=n,edges=len(ww_),layers=c['L'],groups=prov,states=len(fsm.states)),open('../build/provenance.json','w'),indent=1)

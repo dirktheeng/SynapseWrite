@@ -16,8 +16,8 @@ _kv=net.eq(eva,1,e); _hasi=net.step(clipn)
 _ikey=net.and_(kh[8],_kv,_hasi,net.or_(clipi,net.eq(evc,0,e)))
 PTR_DISP=[(kh[12],'T1_HH',None),
  (net.and_(kh[13],net.eq(eva,2,e)),'T1_HH',{clipi:1}),
- (net.and_(kh[13],_hasi),'CLI0',{pmsg:PMSG,cli:0}),(kh[13],'RD0',{pmsg:PMSG}),
- (_ikey,'CLI0',{cli:0}),
+ (net.and_(kh[13],_hasi),'CLI0',{pmsg:PMSG,cli:net.min_(clipn,390000)}),(kh[13],'RD0',{pmsg:PMSG}),
+ (_ikey,'CLI0',{cli:net.min_(clipn,390000)}),
  (net.and_(bstg,kh[3]),'BS_MD',{hx_:eva,hy_:evb}),(net.and_(bstg,kh[2],net.eq(eva,27,e)),'UI',{bstg:0,clip0:0,clip1:0}),
  (net.and_(bstg,net.or_(kh[2],kh[5],kh[6],kh[7],kh[8],kh[9],kh[10])),'HALT',None),(net.and_(bstg,kh[4]),'HALT',{drag:0}),
  (net.and_(kh[4],t1_prs),'UI',{drag:0,t1_prs:0,t1_hvo:1,t1_nh:1,clip0:0,clip1:0})]

@@ -1,5 +1,5 @@
 # rv_a5 registers and helpers for the .docx reader; the states are in rv_a5_docx.py.
-a5nest=R();a5tcp=R();a5tp=R();a5span=R();a5pad=R();a5tre=R();a5ts=R();a5ns=R();a5aft=R();a5sk=R();a5bk=R();a5maj=R();a5min=R();a5k=R();a5end=R();a5cx=R();a5i=R();a5pb=R();a5qb=R();a5hx=R();a5cb=R();a5d=R();a5lim=R();a5fsz=R();a5fs0=R()
+a5nest=R();a5tcp=R();a5tp=R();a5span=R();a5pad=R();a5tre=R();a5ts=R();a5ns=R();a5aft=R();a5sk=R();a5bk=R();a5maj=R();a5min=R();a5k=R();a5end=R();a5cx=R();a5i=R();a5pb=R();a5qb=R();a5hx=R();a5cb=R();a5d=R()
 SERIF_NAMES=('Caladea','Cambria','Times','Georgia','Garamond','Palatino','Book Ant','Bookman','Constant','Baskervi','Noto Ser','DejaVu S','FreeSeri','Minion')
 def a5_serif(e_): return net.or_(*[pat(n_,e_) for n_ in SERIF_NAMES if n_!='DejaVu S'])
 def a5_adv(en):

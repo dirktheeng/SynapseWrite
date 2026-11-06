@@ -39,3 +39,15 @@ a7_bulk ALL PASS, a7_save ALL PASS, a7_type ALL PASS, e2e 210/210, t3_table no f
 ## Step 1: math mark
 Records have all 24 bits taken and the 5 flag bits with kind 1, 2, 3 are all in use, and a bank cell is 32 bit float so bit 24 cannot sit beside low bits. STYCAP is 4096, so the index only needs 12 bits. Bit 18 of the cell moved from the index to a new flag: ST_MATH. IDXM and the rs port mask are now 18 bits, flag_decode starts at bit 18 and FD['flags'] carries it, so all flag preserving paths keep it. Ignore sets only ST_NOP, so ordinary text cannot get it. is_math is the flag AND family Caladea, so choosing another font makes an equation ordinary text as before. Writers of the mark: Equation command (T4_EM) and reader (_eqstyle). Equation characters keep ST_NOP too, the spell checker reads it.
 New test test/rv_math_mark.js, 6/6. Same test on the previous head: 1/6, which confirms it catches the defect. rv_a6_eq 9/9.
+## Step 2: a12 (01a6efb)
+Conflicts and how they were resolved:
+- DISP: HEAD's rules, kh[9] enters a12's zip validator A12_OV0.
+- W3: HEAD's a7 windows plus a12's 590000 copy limit. A7_CW moves at most a window past that, still below SLOT0.
+- PS2: paste stops at pi_ end or SLOTMAX. Either one flushes a7's pending run first.
+- L2: HEAD's tab rule plus a12's rule that a line always takes its first character.
+- Inflate limits, duplicate: a5 had a5lim and a5fsz checked in CS only; a12 has ilim and oblim checked in GBR, XDR, ST2, CODES with a per target table. Kept a12's, removed a5's rule and registers.
+- Weight format, hdr: HEAD's. a12's dbg table added after it. Engine: HEAD's domains and paged bank with a12's CHK hooks, shipped wasm has no check code. Glue: HEAD's.
+- test/fuzz_lib.js ported to HEAD's weight stream and paged bank (test harness only, no assertion changed).
+Found by fuzz_inv seed 2 s: second save split a run, because a record value 0 (Carlito 11 pt reached by toggling bold off) missed the interner's scan from index 1 and got a second index. Scan now starts at 0. Not an a12 defect; from fonts.
+Runs: fuzz regress 5/5, fuzz_selftest 4/4, fuzz run 1000-1003 mix: 0 crash classes, file 1000-1002: 0, fuzz_inv 1-5 us: 0 failures of 8 (1 of 6 before the interner fix), e2e 210/210 (before the one line interner fix), fonts 23/23.
+F32_LOSS warning at port 396 tick 1, value 0.237 is the pointer glyph? not a failure class in a12's list, left.

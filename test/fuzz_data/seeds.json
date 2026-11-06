@@ -1,0 +1,5 @@
+[{"name":"bit reader past the end of a flipped docx (was HANG GBR)","seed":100,"steps":300,"prof":"mix"},
+ {"name":"distance code above 29 stalls the match copy (was HANG CC1)","seed":1003,"steps":100,"prof":"mix"},
+ {"name":"file profile sample","seed":1000,"steps":100,"prof":"file"},
+ {"name":"ui profile sample","seed":1001,"steps":100,"prof":"ui"},
+ {"name":"menu profile sample","seed":1002,"steps":100,"prof":"menu"}]

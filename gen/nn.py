@@ -87,6 +87,7 @@ class Net:
         r=s.step(e)
         # An AND's inputs are 0 or 1 by construction, so any of them may wake it.
         s.bool_in=getattr(s,'bool_in',set()); s.bool_in.add(next(iter(r.t)))
+        s.and_args=getattr(s,'and_args',[]); s.and_args.append((next(iter(r.t)),a))   # only read by the debug table
         return r
     def or_(s,*a):
         e=X()
@@ -282,9 +283,26 @@ class FSM:
             e=r
             for c,_ in outs: e=e-c
             net.rec(r,e)
+        # Optional trap: a level that steers the token out of a set of states. Any cycle holds an edge to a state of
+        # equal or lower index, so guarding those edges (and edges leaving the set) is enough to catch every loop.
+        guard=set(); trap=getattr(s,'trap',None)
+        if trap is not None:
+            idx={n_:i_ for i_,n_ in enumerate(s.states)}; bar=set(s.trap_bar); reach=set(); st_=list(s.trap_roots)
+            while st_:
+                q_=st_.pop()
+                if q_ in reach or q_ in bar: continue
+                reach.add(q_)
+                st_+=[nx for _,nx in s.states[q_][1] if nx is not None]
+            for q_ in reach:
+                for _,nx in s.states[q_][1]:
+                    if nx is not None and (idx[nx]<=idx[q_] or nx in bar) and nx not in ('OPEND','HALT','T3_PF'): guard.add((q_,nx))
+            print('trap reach',len(reach),'guarded edges',len(guard),file=__import__('sys').stderr)
         for name,(r,outs) in s.states.items():
             for c,nxt in outs:
-                if nxt is not None: net.rec(s.state(nxt),c)
+                if nxt is None: continue
+                if (name,nxt) in guard:
+                    k_=net.and_(c,trap); net.rec(s.state(nxt),c-k_); net.rec(s.state(s.trap_to),k_)
+                else: net.rec(s.state(nxt),c)
         for k,(r,lst) in s.assign.items():
             anyc=X()
             for c,_ in lst: anyc=anyc+c
