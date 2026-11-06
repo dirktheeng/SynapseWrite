@@ -27,3 +27,6 @@ Runs: test/imp6.js recent: first run 6 of 7, "drawn in that color" found 11 pixe
 ## Not done
 Automatic hyphenation: needs a pattern set (Liang's English patterns are about 4,500 entries) or a dictionary of break points; not compact, not attempted.
 .docx fidelity probe (scratch, a file with one of each property): lost on save are caps, smallCaps, dstrike, vanish, w:spacing and w:w on runs, run w:shd, emboss, outline, shadow, lang, widowControl, contextualSpacing, outlineLvl, hyperlinks (text kept, link lost) and bookmarks. The style record's 24 bits and the slot cells are all used, so these need a wider record; not done. Written into the PARITY .docx open row.
+
+## Full run at cdbdb9b
+All exit 0: imp6 20/20, e2e 210/210, tier2 49/49, look 31, t3_table 9, t3_pic 9, t3_misc 13, t4_docx 18/18, t4_pdf 7/7, roundtrip, touch, a4 50/50, a5_docx 37/37 (open 9,912,563 edges), imp2 45, imp3 49, imp4 101, imp5 49, t4; audit 67/67. Two builds byte identical. Page 3,795,433 bytes (base 3,791,181).
