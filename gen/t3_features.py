@@ -233,12 +233,12 @@ def zdend(st,nxt):
     on(st+'c',(None,nxt,{fp:zo,embase:SAVEB,**zrec(8)}))
 XHEAD=b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
 WNS=b'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"'
-CTYPES=XHEAD+b'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'+b''.join(b'<Override PartName="/word/%s.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.%s+xml"/>'%(a_,b_) for a_,b_ in ((b'styles',b'styles'),(b'numbering',b'numbering'),(b'footnotes',b'footnotes'),(b'comments',b'comments'),(b'header1',b'header'),(b'header2',b'header'),(b'footer1',b'footer'),(b'footer2',b'footer')))+b'</Types>'
+CTYPES=XHEAD+b'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'+b''.join(b'<Override PartName="/word/%s.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.%s+xml"/>'%(a_,b_) for a_,b_ in ((b'styles',b'styles'),(b'settings',b'settings'),(b'numbering',b'numbering'),(b'footnotes',b'footnotes'),(b'comments',b'comments'),(b'header1',b'header'),(b'header2',b'header'),(b'footer1',b'footer'),(b'footer2',b'footer')))+b'</Types>'
 RTYPE=b'http://schemas.openxmlformats.org/officeDocument/2006/relationships/'
 RELS=XHEAD+b'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="'+RTYPE+b'officeDocument" Target="word/document.xml"/></Relationships>'
-DRELS0=XHEAD+b'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+b''.join(b'<Relationship Id="%s" Type="%s%s" Target="%s.xml"/>'%(i_,RTYPE,t_,f_) for i_,t_,f_ in ((b'rIdS',b'styles',b'styles'),(b'rIdN',b'numbering',b'numbering'),(b'rIdF',b'footnotes',b'footnotes'),(b'rIdC',b'comments',b'comments'),(b'rIdH1',b'header',b'header1'),(b'rIdH2',b'header',b'header2'),(b'rIdR1',b'footer',b'footer1'),(b'rIdR2',b'footer',b'footer2')))
+DRELS0=XHEAD+b'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+b''.join(b'<Relationship Id="%s" Type="%s%s" Target="%s.xml"/>'%(i_,RTYPE,t_,f_) for i_,t_,f_ in ((b'rIdS',b'styles',b'styles'),(b'rIdT',b'settings',b'settings'),(b'rIdN',b'numbering',b'numbering'),(b'rIdF',b'footnotes',b'footnotes'),(b'rIdC',b'comments',b'comments'),(b'rIdH1',b'header',b'header1'),(b'rIdH2',b'header',b'header2'),(b'rIdR1',b'footer',b'footer1'),(b'rIdR2',b'footer',b'footer2')))
 on('SAVE',(None,'SV0',{fp:0,embase:SAVEB,znum:0}))
-zstatic('SV0',b'[Content_Types].xml',CTYPES,'T3_Z2'); zstatic('T3_Z2',b'_rels/.rels',RELS,'T3_ZNM'); zstatic('T3_ZNM',b'word/numbering.xml',docx_tpl.numbering(),'T3_ZS')
+zstatic('SV0',b'[Content_Types].xml',CTYPES,'T3_Z2'); zstatic('T3_Z2',b'_rels/.rels',RELS,'T3_ZNM'); zstatic('T3_ZNM',b'word/numbering.xml',docx_tpl.numbering(),'A5_ZSET'); zstatic('A5_ZSET',b'word/settings.xml',docx_tpl.settings(),'T3_ZS')
 zdyn('T3_ZS',b'word/styles.xml','T2YH'); lit('T2YH',docx_tpl.STY_H,'T2Y0'); zdend('T2YE','T3_Z4')
 zdyn('T3_Z4',b'word/document.xml','SVB')
 lit('SVB',XHEAD+b'<w:document '+WNS+b'><w:body>','T3_SVB2')
@@ -279,7 +279,7 @@ on('T3_SVd',(net.ge(sci+1,scols,e),'T3_SVr',None),(None,'SVP',{pi:pi+1,spc:scols
 lit('T3_SVr',b'</w:tr>','T3_SVs'); on('T3_SVs',(None,'SVP',{pi:pi+1,spc:scols}))
 e=S('T3_SVE')
 on('T3_SVE',(net.step(spc),'T3_SVEa',None),(None,'SVT',None))
-lit('T3_SVEa',b'</w:tbl>','SVT')
+lit('T3_SVEa',b'</w:tbl><w:p/>','SVT')
 on('SVT',(None,'T3_SX',{sxr.r:sxr.id('T3_SVT2')}))
 lit('T3_SVT2',b'</w:body></w:document>','T3_Z4e')
 zdend('T3_Z4e','T3_XM0')
@@ -331,7 +331,7 @@ on('T3_GC2',(None,'PX',{w1:(as_x(TGW)+gcount,floorv(aval*(1.0/15)+0.5,e)),gcount
 on('T3_TC0',(None,'SPLIT',{oret.r:oret.id('T3_TC1')}))
 on('T3_TC1',(None,'T3_TC2',{r1:as_x(TGW)+tcidx}))
 on('T3_TC2',(None,'T3_TC3',{w1:(cb+2062,gcount),w2:(cb+2063,tcidx),w3:(cb+CWO,R1),w4:(cb+CXO,gx),gx:gx+R1,incell:1}))
-on('T3_TC3',(None,'PX',{w1:(cb+ALIGN,0),w2:(cb+CSH,0)}))
+on('T3_TC3',(a5pad,'A5_TCE',{w1:(cb+ALIGN,0),w2:(cb+CSH,0),a5pad:0}),(None,'PX',{w1:(cb+ALIGN,0),w2:(cb+CSH,0)}))
 e=S('T3_SHD')
 on('T3_SHD',(None,'T3_SHD1',{rl:OA+oi}))
 e=S('T3_SHD1')
@@ -347,7 +347,7 @@ for c_,i_ in hx_m: sv_=sv_+c_*i_
 anyp=net.or_(*[c_ for c_,_ in hx_m]); isa=pat('auto',e); isw=pat('FFFFFF',e)
 on('T3_SHD2',(net.or_(isa,isw),'PX',None),(anyp,'PX',{w1:(cb+CSH,sv_)}),(None,'PX',{w1:(cb+CSH,5)}))
 # member walk: 1 relationships, 2 footnotes, 3 comments, 4 document
-on('T3_Z0',(None,'X_C0',{zp:zp0,ztarget:1,obase:RELB,ob:0}))
+on('T3_Z0',(None,'X_C0',{zp:zp0,ztarget:0,obase:AUXB,ob:0,a5maj:0,a5min:0,a5cx:0,a5ts:0,a5nest:0,a5aft:0,a5tp:0,a5tcp:0,a5span:0,a5pad:0,a5tre:0,a5end:0}))
 
 # ---- PDF: page size from the section, table rules and shading ----
 qcw=R();qsh=R();qrb=R();qrt=R()
@@ -577,12 +577,12 @@ on('T3_ZC1',(net.ge(zk,tl,e),'C7',{rl:FA+loff+26}),(None,'T3_ZC2',{r1:FA+zp+46+n
 e=S('T3_ZC2')
 on('T3_ZC2',(net.eq(R1,R2,e),'T3_ZC1',{zk:zk+1}),(None,'X_C0',{zp:zp+46+nm+ext+cmt}))
 mzret_h=None
-e=S('T3_ZN'); zh=net.decode(ztarget,8,e)
+e=S('T3_ZN'); zh=net.decode(ztarget,9,e)
 ZN={ob:0}
-on('T3_ZN',(zh[1],'T3_Z2n',None),(zh[2],'T3_Z3n',None),(zh[3],'T3_Z4n',None),(zh[5],'T3_ZNe',None),(zh[6],'T3_Z6n',None),(zh[7],'T3_Z7n',None),(None,'OPEND',None))
+on('T3_ZN',(zh[0],'A5_Z1',None),(zh[8],'T3_Z3n',None),(zh[1],'T3_Z2n',None),(zh[2],'A5_Z8',None),(zh[3],'T3_Z4n',None),(zh[5],'T3_ZNe',None),(zh[6],'T3_Z6n',None),(zh[7],'T3_Z7n',None),(None,'OPEND',None))
 on('T3_ZNe',(None,'PX',{ob:sob,oi:soi,obase:OUTB}))
-e=S('T3_ZX'); zh2=net.decode(ztarget,8,e)
-on('T3_ZX',(zh2[1],'T3_Z2n',{rels_l:ob}),(zh2[2],'T3_FN0',{aux_l:ob}),(zh2[3],'T3_CM0',{aux_l:ob}),(net.and_(zh2[5],ONE-rhf),'T3_ZP',{pgl:ob}),(net.and_(zh2[5],rhf),'T3_HP0',{aux_l:ob}),(None,'PX',{oi:0}))
+e=S('T3_ZX'); zh2=net.decode(ztarget,9,e)
+on('T3_ZX',(zh2[0],'A5_TH',None),(zh2[8],'A5_EN0',{aux_l:ob}),(zh2[1],'T3_Z2n',{rels_l:ob}),(zh2[2],'T3_FN0',{aux_l:ob}),(zh2[3],'T3_CM0',{aux_l:ob}),(net.and_(zh2[5],ONE-rhf),'T3_ZP',{pgl:ob}),(net.and_(zh2[5],rhf),'T3_HP0',{aux_l:ob}),(None,'PX',{oi:0}))
 on('T3_ZP',(None,'PG_1',{rl:as_x(PNGB),pbase:PNGB,pgdoc:1}))
 on('T3_PF',(pgdoc,'T3_PF2',{ob:sob,oi:soi,obase:OUTB,pgdoc:0}),(None,'HALT',None))
 on('T3_PF2',(None,'PX',None))
@@ -590,7 +590,7 @@ on('T3_PQ',(None,'T3_PQa',{ob:sob,oi:soi,obase:OUTB,pgdoc:0,rs_sw:dw,rs_sh:dh,rs
 on('T3_PQa',(None,'T3_PQb',{w1:(cb+IMN,rs_sw),w2:(cb+IMN+1,rs_sh),w3:(cb+IMN+2,rs_sa),w4:(cb+DIRTY,1)}))
 e=S('T3_PQb'); same_=net.and_(net.eq(rs_w,rs_sw,e),net.eq(rs_h,rs_sh,e))
 on('T3_PQb',(same_,'T3_PQd',{rs_a:rs_sa}),(None,'T3_RS9',{rs_a:imgp,imret.r:imret.id('T3_PQd')}))
-on('T3_PQd',(None,'PX',{wl_i:(cb+IMF,rs_w,rs_h,rs_a),ext_w:0,ext_h:0}))
+on('T3_PQd',(None,'PX',{wl_i:(cb+IMF,rs_w,rs_h,rs_a),ext_w:0,ext_h:0,a5aft:1}))
 
 on('T3_Z2n',(None,'X_C0',{zp:zp0,ztarget:2,obase:AUXB,ob:0}))
 on('T3_Z3n',(None,'X_C0',{zp:zp0,ztarget:3,obase:AUXB,ob:0}))
@@ -871,7 +871,7 @@ for i_,(nm_,tg_) in enumerate(((b'header1',b'hdr'),(b'header2',b'hdr'),(b'footer
 on(cur_,(None,'T3_Z5',None))
 # ---- .docx reader: parts that feed the note and comment stores, header strings ----
 ai=R();ad=R();alen=R();aend=R();akind=R();askip=R();aret=t3ret('T3_AR'); AU=as_x(AUXB)
-on('T3_FN0',(None,'T3_A0',{ai:0,akind:1,ad:as_x(FNB),alen:0,askip:0,aret.r:aret.id('T3_Z3n')}))
+on('T3_FN0',(None,'T3_A0',{ai:0,akind:1,ad:as_x(FNB),alen:0,askip:0,aret.r:aret.id('A5_Z8')}))
 on('T3_CM0',(None,'T3_A0',{ai:0,akind:2,ad:as_x(CMB),alen:0,askip:0,aret.r:aret.id('T3_Z4n')}))
 on('T3_HP0',(None,'T3_A0',{ai:0,akind:3,ad:as_x(HFB)+rhk*256,alen:0,askip:0,aret.r:aret.id('T3_HP1')}))
 e=S('T3_HP1'); hh_=net.decode(rhk,4,e)
@@ -880,11 +880,12 @@ on('T3_HP1',(None,'PX',{ob:sob,oi:soi,obase:OUTB,rhf:0}))
 e=S('T3_A0')
 on('T3_A0',(net.ge(ai,aux_l,e),'T3_AR',None),(None,'T3_A1',{rl:AU+ai}))
 e=S('T3_A1'); k1=net.eq(akind,1,e);k2=net.eq(akind,2,e);k3=net.eq(akind,3,e)
-on('T3_A1',(net.and_(net.step(k1),pat('<w:footn',e)),'T3_AI0',{ai:ai+8}),(net.and_(k2,pat('<w:comme',e)),'T3_AI0',{ai:ai+8}),
- (net.and_(k1,pat('</w:foot',e)),'T3_AE0',{ai:ai+8}),(net.and_(k2,pat('</w:comm',e)),'T3_AE0',{ai:ai+8}),
+on('T3_A1',(net.and_(net.step(k1),net.or_(pat('<w:footn',e),pat('<w:endno',e))),'T3_AI0',{ai:ai+8}),(net.and_(k2,pat('<w:comme',e)),'T3_AI0',{ai:ai+8}),
+ (net.and_(k1,net.or_(pat('</w:foot',e),pat('</w:endn',e))),'T3_AE0',{ai:ai+8}),(net.and_(k2,pat('</w:comm',e)),'T3_AE0',{ai:ai+8}),
  (net.and_(k3,pat('<w:fldSi',e)),'T3_A0',{ai:ai+8,askip:1,w1:(ad+alen,1),alen:alen+1}),(pat('</w:fldS',e),'T3_A0',{ai:ai+8,askip:0}),
  (pat('<w:instr',e),'T3_AF0',{ai:ai+8}),(pat('"end"',e),'T3_A0',{ai:ai+5,askip:0}),(pat('"separa',e),'T3_A0',{ai:ai+7}),
  (net.and_(net.eq(W[0],60,e),net.eq(W[1],119,e),net.eq(W[2],58,e),net.eq(W[3],116,e),net.or_(net.eq(W[4],32,e),net.eq(W[4],62,e))),'T3_AX0',{ai:ai+4}),
+ (net.and_(net.eq(W[0],60,e),net.eq(W[1],119,e),net.eq(W[2],58,e),net.eq(W[3],112,e),net.or_(net.eq(W[4],32,e),net.eq(W[4],62,e)),net.step(alen),net.lt(alen,240,e)),'T3_A0',{ai:ai+4,w1:(ad+alen,32),alen:alen+1}),
  (None,'T3_A0',{ai:ai+1}))
 on('T3_AF0',(None,'T3_AF1',{rl:AU+ai}))
 e=S('T3_AF1')
@@ -893,7 +894,7 @@ e=S('T3_AF2')
 on('T3_AF2',(net.or_(pat('PAGE',e),pat(' PAGE',e)),'T3_A0',{askip:1,w1:(ad+alen,1),alen:alen+1}),(None,'T3_A0',{askip:1}))
 on('T3_AI0',(None,'T3_AI1',{rl:AU+ai}))
 e=S('T3_AI1')
-okt=net.or_(net.and_(k1 if False else net.eq(akind,1,e),pat('ote ',e)),net.and_(net.eq(akind,2,e),pat('nt ',e)))
+okt=net.or_(net.and_(net.eq(akind,1,e),net.or_(pat('ote ',e),pat('te ',e))),net.and_(net.eq(akind,2,e),pat('nt ',e)))
 on('T3_AI1',(okt,'T3_AI2',None),(None,'T3_A0',None))
 on('T3_AI2',(None,'T3_AI3',{rl:AU+ai}))
 e=S('T3_AI3')
@@ -903,7 +904,7 @@ e=S('T3_AI5')
 isd2=net.and_(net.ge(R1,48,e),net.lt(R1,58,e))
 on('T3_AI5',(isd2,'T3_AI4',{aval:aval*10+R1-48,ai:ai+1}),(None,'T3_AI6',None))
 e=S('T3_AI6'); k1_=net.eq(akind,1,e)
-on('T3_AI6',(None,'T3_A0',{ad:G_(as_x(FNB)+net.min_(aval,FNMAX)*256,k1_)+G_(as_x(CMB)+net.min_(aval,3100)*512,e-k1_),alen:0,aend:aval,askip:0}))
+on('T3_AI6',(None,'T3_A0',{ad:G_(as_x(FNB)+net.min_(aval+G_(as_x(1000),a5end),FNMAX)*256,k1_)+G_(as_x(CMB)+net.min_(aval,3100)*512,e-k1_),alen:0,aend:aval,askip:0}))
 # close a note: record length and line count
 e=S('T3_AE0')
 on('T3_AE0',(net.eq(akind,1,e),'T3_W',{wl_:alen,wb_:ad,wdw:s_tw-22,wdd:0,wdx:0,wdy:0,wbgf:0,wret_.r:wret_.id('T3_AE1')}),(net.eq(akind,2,e),'T3_A0',{w1:(ad+511,alen)}),(None,'T3_A0',{w1:(ad+255,alen)}))
@@ -934,14 +935,15 @@ on('T3_RF2',(None,'INS',{fnc:net.max_(fnc,net.min_(aval,FNMAX)),ins_ch:net.min_(
 on('T3_RC0',(None,'T3_RC1',{rl:OA+oi}))
 e=S('T3_RC1')
 on('T3_RC1',(pat('ntRefere',e),'T3_NA',{nmret.r:nmret.id('T3_RC2')}),(None,'PX',None))
-on('T3_RC2',(None,'T3_RC3',{tq:0,xb:as_x(CMB)+net.min_(aval,3100)*512,r1:as_x(CMB)+net.min_(aval,3100)*512+511}))
-on('T3_RC3',(None,'T3_RC4',{xl:net.min_(R1,380),w1:(cb+CMTL,net.min_(R1,380))}))
+on('T3_RC2',(None,'T3_RC3',{tq:0,xb:as_x(CMB)+net.min_(aval,3100)*512,r1:as_x(CMB)+net.min_(aval,3100)*512+511,r2:cb+CMTL}))
+e=S('T3_RC3'); _cs=net.step(R2); _cl=net.min_(R1,net.relu(as_x(379)-R2)+(ONE-_cs))
+on('T3_RC3',(None,'T3_RC4',{xl:_cl,a5cb:R2+_cs,w1:(cb+CMTL,R2+_cs+_cl),w2:(cb+CMT+R2,32)}))
 e=S('T3_RC4')
 on('T3_RC4',(net.ge(tq,xl,e),'PX',None),(None,'T3_RC5',{r1:xb+tq}))
-on('T3_RC5',(None,'T3_RC4',{w1:(cb+CMT+tq,R1),tq:tq+1}))
+on('T3_RC5',(None,'T3_RC4',{w1:(cb+CMT+a5cb+tq,R1),tq:tq+1}))
 # TOC entries and tabs
 e=S('T3_RT0')
-on('T3_RT0',(rtoc,'PX',{rdig:1,tpgv:0}),(net.ge(clen,1000,e),'PX',None),(None,'INS',{ins_ch:9,ins_st:csi+rhi,oret.r:oret.id('PX')}))
+on('T3_RT0',(rtoc,'PX',{rdig:1,tpgv:0,a5bk:oi}),(net.ge(clen,1000,e),'PX',None),(None,'INS',{ins_ch:9,ins_st:csi+rhi,oret.r:oret.id('PX')}))
 on('T3_RT3',(None,'INS',{ins_ch:32,ins_st:csi+rhi,oret.r:oret.id('T3_RT4')}));on('T3_RT4',(None,'INS',{ins_ch:32,ins_st:csi+rhi,oret.r:oret.id('T3_RT5')}));on('T3_RT5',(None,'INS',{ins_ch:32,ins_st:csi+rhi,oret.r:oret.id('PX')}))
 on('T3_RT1',(None,'T3_RT2',{rl:OA+oi}))
 e=S('T3_RT2')
@@ -967,7 +969,7 @@ on('T3_RH3',(net.and_(net.eq(R1,34,e),net.step(had)),'PX',None),(net.eq(R1,34,e)
 
 on('T3_RB0',(None,'T3_RB1',{rl:OA+oi}))
 e=S('T3_RB1')
-on('T3_RB1',(pat('"page"',e),'T3_RB2',None),(net.eq(W[0],62,e),'PX',None),(None,'T3_RB0',{oi:oi+1}))
+on('T3_RB1',(pat('"page"',e),'A5_PB',None),(pat('"column',e),'PX',None),(net.eq(W[0],62,e),'A5_BR',None),(None,'T3_RB0',{oi:oi+1}))
 on('T3_RB2',(None,'PX',{w1:(cb+PBRK,1)}))
 
 # ---- paragraph merge by the user: metadata goes through the log first, so undo brings it back ----

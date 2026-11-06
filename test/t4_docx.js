@@ -22,7 +22,7 @@ const py=c=>execSync(`python3 -c "${c}"`).toString();
  ok('superscript and subscript saved',/vertAlign w:val="superscript"/.test(x)&&/vertAlign w:val="subscript"/.test(x));
  ok('zip passes CRC, members deflated',py("import zipfile;z=zipfile.ZipFile('build/t4.docx');print(z.testzip(),all(i.compress_type==8 for i in z.infolist()))").trim()==='None True');
  py("import xml.dom.minidom as m,zipfile;m.parseString(zipfile.ZipFile('build/t4.docx').read('word/document.xml'))");ok('document.xml is well formed',true);
- await open('build/t4.docx');await HOME();await K('End');
+ await open('build/t4.docx');await HOME();await K('Control+End');
  const a2=await shot(p);fs.writeFileSync('build/t4a2.png',a2);
  ok('tracked, field and equation runs reopen pixel identical',h(a)===h(a2));
  await save('build/t4b.docx');const x2=py("import zipfile;print(zipfile.ZipFile('build/t4b.docx').read('word/document.xml').decode())");ok('second save XML identical after reopen',x===x2);
@@ -62,7 +62,7 @@ for name,body,sty in (('sa',A,ST),('sb',B,None)):
 `);execSync('python3 build/mk.py');
  {const {b,p}=await d();await p.evaluate(()=>{window.annMax=30000000});
   const op=async f=>{await p.evaluate(u=>annOpen(new Blob([new Uint8Array(u)])),[...fs.readFileSync(f)]);await p.waitForTimeout(400);};
-  await op('build/sa.docx');const sa=await shot(p);fs.writeFileSync('build/sa.png',sa);await op('build/sb.docx');const sb=await shot(p);fs.writeFileSync('build/sb.png',sb);
+  await op('build/sa.docx');await p.keyboard.press('Control+Home');const sa=await shot(p);fs.writeFileSync('build/sa.png',sa);await op('build/sb.docx');await p.keyboard.press('Control+Home');const sb=await shot(p);fs.writeFileSync('build/sb.png',sb);
   ok('styles.xml: pStyle, basedOn, docDefaults, rStyle, jc, b=0 match direct formatting',h(sa)===h(sb));await b.close();}
  console.log(res.filter(r=>r[1]).length+'/'+res.length+' passed');fs.writeFileSync('build/t4_docx.json',JSON.stringify(res));
 })();

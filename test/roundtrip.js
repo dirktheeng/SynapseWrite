@@ -13,9 +13,9 @@ const shot=async p=>{await p.mouse.move(1270,5);return await p.screenshot({clip:
  await p.waitForTimeout(50);await K('End');const a=await shot(p);fs.writeFileSync('build/rt_a.png',a);
  const [dl]=await Promise.all([p.waitForEvent('download'),K('Control+s')]);await dl.saveAs('build/rt.docx');
  const open=async f=>{await p.evaluate(u=>annOpen(new Blob([new Uint8Array(u)])),[...fs.readFileSync(f)]);await p.waitForTimeout(600);return await p.evaluate('annStats.k9');};
- const ms=await open('build/rt.docx');await K('End');const c=await shot(p);fs.writeFileSync('build/rt_c.png',c);res.push(['save then open is pixel identical',h(a)===h(c),ms]);
+ const ms=await open('build/rt.docx');await K('Control+End');const c=await shot(p);fs.writeFileSync('build/rt_c.png',c);res.push(['save then open is pixel identical',h(a)===h(c),ms]);
  execSync('rm -rf build/rtlo; timeout 120 soffice --headless --convert-to docx:"MS Word 2007 XML" --outdir build/rtlo build/rt.docx >/dev/null 2>&1');
- const ms2=await open('build/rtlo/rt.docx');await K('End');const e=await shot(p);fs.writeFileSync('build/rt_e.png',e);res.push(['open after LibreOffice deflate is pixel identical',h(a)===h(e),ms2]);
+ const ms2=await open('build/rtlo/rt.docx');await K('Control+End');const e=await shot(p);fs.writeFileSync('build/rt_e.png',e);res.push(['open after LibreOffice deflate is pixel identical',h(a)===h(e),ms2]);
  const [dl2]=await Promise.all([p.waitForEvent('download'),K('Control+s')]);await dl2.saveAs('build/rt2.docx');
  const x=f=>execSync(`python3 -c "import zipfile,sys;print(zipfile.ZipFile('${f}').read('word/document.xml').decode())"`).toString();
  res.push(['second save equals first save, XML',x('build/rt.docx')===x('build/rt2.docx')]);
