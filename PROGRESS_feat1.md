@@ -26,3 +26,9 @@ Why: the style record is a 24 bit float32 integer and every bit is used, and the
 - Fixes: small capitals share the script size leaf (0.72, not 0.8; one split before the normal leaf, so plain text pays nothing); the glyph network reads RSX from the style port directly (no bus gate woken per character); every decoded flag is a gate on the one nonzero test, so pulls stop there; paint gates on the shade and double strike flags.
 - After: gprof wheel work 5,658,461 vs 5,618,241 on main (+0.7%); flops.js: every event within +1.0% of docs/flops_baseline.json (background layout +0.98%, typing +0.24 to 0.78%).
 - test/feat1.js 22/22 after the changes.
+
+## Final full run (background, one at a time)
+e2e 210/210, tier2 49/49, look 31/31, t3_table, t3_pic, t3_misc no FAIL, t4_docx 18/18, t4_pdf 7/7, roundtrip and touch no FAIL, a5_docx no FAIL (a01 open 9,943,745 edges, was 9,912,549), imp2 all pass, imp3 49/49, imp4 101/101, imp5 49/0, imp6 20/0, t4 ran, feat1 24/24, audit 67/67.
+a4 first crashed inside its LibreOffice text conversion (execSync of soffice failed, likely a busy shared machine); rerun alone: 0 failed of 50.
+Two builds byte identical. Page 3,806,957 bytes (was 3,795,433).
+Not done: equations (task 2) and the PARITY PDF gaps (task 3).
