@@ -191,12 +191,12 @@ def sel_sum(val):
     """A value of the drawn size, val(i) at least zero for size i, read through the size tree's groups of 8:
     a closed group gate ends its reads at once. A raised or lowered run takes its script size, behind vflag."""
     o=X(); _scf=net.step(vflag+F1_SMCL+F1_HID)    # the same split as F1_SPLIT: script or small capital size, hidden text none
-    _smo=net.and_(_scf,ONE-F1_HID,F1_SMCL,ONE-vflag)
-    for sc,en_ in ((False,ONE-_scf),(True,net.and_(_scf,ONE-F1_HID)-_smo),(2,_smo)):
+    _smo=net.step(F1_SMCL-vflag-F1_HID-0.5)   # p2: a small capital, read lazily inside the smaller branch so plain text pushes nothing new
+    for sc,en_ in ((False,ONE-_scf),(True,net.and_(_scf,ONE-F1_HID))):
         part=X()
         for g_,gn_ in enumerate(SZG):
             vw_=net.wire()
-            for i_ in range(8*g_,min(8*g_+8,NS)): net.connect(vw_,net.gate(val(smc_size(i_) if sc==2 else script_size(i_) if sc else i_),raw_hot[i_]))
+            for i_ in range(8*g_,min(8*g_+8,NS)): net.connect(vw_,net.gate((val(script_size(i_))+net.gate(val(smc_size(i_))-val(script_size(i_)),_smo)) if sc else val(i_),raw_hot[i_]))
             part=part+net.gate(vw_,gn_)
         o=o+net.gate(part,en_)
     return o
