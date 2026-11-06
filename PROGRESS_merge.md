@@ -89,3 +89,8 @@ Result: 450,014 to 442,591 neurons, 1,014,204 to 959,404 edges, page 3,185,495 t
 Skipped, a10 already has it: literal ROM player, number writer, field writer, hex digits partly, window comparator, deflate and color tables, palette string families (T2Rk, PD_Co, T3_SV, T3_PT). a8's prune covers a9's hash consing.
 Skipped on purpose: a9's ROM range 1030000 to 1390000, which overlaps a6, a7, fonts. Character sink through text_chain: items hold registers and the chrome group is only 1,494 neurons. T2Rh highlight literals: 7 entries, too small. T4P hex in one state: small. Undo and redo as one walker: about 400 states on a9's base, but a3, a4, a6, a7 added log operations since, and a blind port is a risk for little: not attempted. Shared page count decoder and menu row ladder: not attempted.
 Also fixed: a11's group 'screen check' stayed open and labelled the ribbon; group reset after rv_a11_out.
+
+## Final runs on the last step
+Suites after step 6: e2e 210/210, tier2 49/49, t3_table, t3_pic, t3_misc no failures, t4_docx 18/18, t4_pdf 7/7, roundtrip, touch no false, look 31/31, a4 50/50, rv_a1 no failures, rv_a3 49/49, a5_docx one known failure, a7_bulk, a7_save, a7_type pass, rv_a6 6/6, rv_a6_pdf 4/4, rv_a6_track 17/17, rv_a6_eq 9/9, rv_math_mark 6/6, rv_a11_input, rv_a11_screen pass, fonts 23/23, fuzz_selftest 4/4, fuzz regress 5/5, fuzz run mix 3 seeds 0 crash classes, fuzz_inv 0 of 8, audit 67/67. fuzz_caps: caps pass 45 fail 3.
+a5 open of a01_format: 41.1 M edges, 684 ms. Without duplicate pruning 26.1 M, 650 ms. Before a10 about 19.3 M.
+Quiet: 442,591 neurons, 959,404 edges, page 3,157,507, wasm at start 60.9 MB, load x1 296 ms, x4 1095 ms, x6 1480 ms. t4: type at end 0.1 ms, select all 34, jump to top 29.7, Enter 30.9, undo 30.7.
