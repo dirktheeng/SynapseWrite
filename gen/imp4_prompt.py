@@ -24,9 +24,9 @@ on('V4_HW',(None,'FMTS',{fm:7,fcol:R1,fck:v4h+1,t1_uid:1}))
 # a font name: a name in the table comes back as its id; a new one is added. Names the family tables already know need no id.
 e=S('V4_FS'); on('V4_FS',(net.ge(v4i,v4fc,e),'V4_FA',{v4j:0}),(None,'V4_FS1',{r1:as_x(FNT)+v4i*32+v4j,r2:OA+oi+v4j}))
 e=S('V4_FS1'); _q=net.eq(R2,34,e)
-on('V4_FS1',(net.and_(_q,net.eq(R1,0,e)),'V4_FE',{t2nx:net.relu(v4i-FNS)}),(net.and_(ONE-_q,net.eq(R1,R2,e),net.lt(v4j,31,e)),'V4_FS',{v4j:v4j+1}),(None,'V4_FS',{v4i:v4i+1,v4j:0}))
+on('V4_FS1',(net.and_(_q,net.eq(R1,0,e)),'V4_FE',{t2nx:net.relu(v4i-FNSD)}),(net.and_(ONE-_q,net.eq(R1,R2,e),net.lt(v4j,31,e)),'V4_FS',{v4j:v4j+1}),(None,'V4_FS',{v4i:v4i+1,v4j:0}))
 e=S('V4_FA'); on('V4_FA',(net.ge(v4fc,FNMAXN,e),'V4_FE',{t2nx:0}),(None,'V4_FA1',{r2:OA+oi+v4j}))
-e=S('V4_FA1'); on('V4_FA1',(net.or_(net.eq(R2,34,e),net.ge(v4j,31,e),net.eq(R2,0,e)),'V4_FE',{w1:(as_x(FNT)+v4fc*32+v4j,0),t2nx:v4fc-FNS,v4fc:v4fc+1}),(None,'V4_FA',{w1:(as_x(FNT)+v4fc*32+v4j,R2),v4j:v4j+1}))
+e=S('V4_FA1'); on('V4_FA1',(net.or_(net.eq(R2,34,e),net.ge(v4j,31,e),net.eq(R2,0,e)),'V4_FE',{w1:(as_x(FNT)+v4fc*32+v4j,0),t2nx:v4fc-FNSD,v4fc:v4fc+1}),(None,'V4_FA',{w1:(as_x(FNT)+v4fc*32+v4j,R2),v4j:v4j+1}))
 on('V4_FE',(v4ty,'FMTS',{fm:10,fcol:t2v,fnx:t2nx,t2nx:0,obase:OUTB,v4ty:0,oi:0,t1_uid:1}),(None,'T2_C',{oi:oi+8}))
 # a typed font name goes through the reader's own name rules, from a buffer closed by a quote
 e=S('V4_FT0'); on('V4_FT0',(net.ge(v4i,prl,e),'V4_FT2',{wln:(as_x(FTB)+prl,34,34,34,34,34,34)}),(None,'V4_FT1',{r1:as_x(PRB)+v4i}))
@@ -36,8 +36,8 @@ on('V4_FT3',(None,'RF9',None))
 # saving: character style, font name, exact color
 on('V4_RY0',(net.step(ins_y),'V4_RY1',None),(None,'T2RP1',None))
 lit('V4_RY1',b'<w:rStyle w:val="','V4_RY2'); on('V4_RY2',(None,'T2SS',{t2w:as_x(STY)+(ins_y-1)*STYN+8,t2sr.r:t2sr.id('V4_RY3')})); lit('V4_RY3',b'"/>','T2RP1')
-lit('V4_RN0',b'<w:rFonts w:ascii="','V4_RN1'); on('V4_RN1',(None,'T2SS',{t2w:as_x(FNT)+(ins_n+FNS)*32,t2sr.r:t2sr.id('V4_RN2')}))
-lit('V4_RN2',b'" w:hAnsi="','V4_RN3'); on('V4_RN3',(None,'T2SS',{t2w:as_x(FNT)+(ins_n+FNS)*32,t2sr.r:t2sr.id('V4_RN4')})); lit('V4_RN4',b'"/>','T2R2')
+lit('V4_RN0',b'<w:rFonts w:ascii="','V4_RN1'); on('V4_RN1',(None,'T2SS',{t2w:as_x(FNT)+(ins_n+FNSD)*32,t2sr.r:t2sr.id('V4_RN2')}))
+lit('V4_RN2',b'" w:hAnsi="','V4_RN3'); on('V4_RN3',(None,'T2SS',{t2w:as_x(FNT)+(ins_n+FNSD)*32,t2sr.r:t2sr.id('V4_RN4')})); lit('V4_RN4',b'"/>','T2R2')
 lit('V4_RK0',b'<w:color w:val="','V4_RK1')
 v4nb=[R() for _ in range(6)]; e=S('V4_RK1'); _kb=net.bits(ins_k-1,24,e)
 on('V4_RK1',(None,'V4_RKh0',{v4nb[j_]:_kb[20-4*j_]+_kb[21-4*j_]*2+_kb[22-4*j_]*4+_kb[23-4*j_]*8 for j_ in range(6)}))
@@ -56,7 +56,7 @@ for k_ in range(3):
     on(f'V4_PK3_{k_}',(None,f'V4_PK4_{k_}',None))
 # the font box shows a kept font name
 on('V4_TN0',(None,'V4_TN1',{v4j:0}))
-on('V4_TN1',(None,'V4_TN2',{r1:as_x(FNT)+(ity.n+FNS)*32+v4j}))
+on('V4_TN1',(None,'V4_TN2',{r1:as_x(FNT)+(ity.n+FNSD)*32+v4j}))
 e=S('V4_TN2'); on('V4_TN2',(net.or_(net.eq(R1,0,e),net.ge(sx,206,e)),'T1_POST',None),(None,'V4_TN1',{gly:(R1,9,sx,68,0,0),sx:sx+adv,v4j:v4j+1}))
 FN_ROM=[[FNT+(i_+1)*32+j_,ord(c_)] for i_,n_ in enumerate(FNSEED) for j_,c_ in enumerate(n_)]
 for k_ in (3,4,6): on(f'V4_PS{k_}',(None,'V4_PR',{prk:k_}))

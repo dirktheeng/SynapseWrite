@@ -85,7 +85,7 @@ class CopyPort:
     def __init__(s,y0,y1):
         s.b=[Bus(net) for _ in range(7)];s.c=(y0,y1); net.ports.append(s)
     def drive(s,c,v):
-        s.b[0].lin(c); s.b[1].lin(net.gate(as_x(v[0])+64,c)-c*64)   # x may be just off the left edge
+        s.b[0].lin(c); s.b[1].lin(net.gate(as_x(v[0])+4096,c)-c*4096)   # x may be just off the left edge
         for b,e in zip(s.b[2:],(as_x(v[1])+YB,v[2],v[3],v[4],v[5])): b.add(c,e)
     def rec(s,nm): return [6]+[b.w for b in s.b]+list(s.c)
 class PixPort:
@@ -465,7 +465,7 @@ on('BS_N',(has_sel,'DS0',{dret.r:dret.id('AFTER_ED'),grp:grp+1}),(None,'RD0',Non
 # ---- hit test on the screenshot ----
 net.group('screenshot hit test')
 T1('md')
-e=S('MD'); on('MD',(net.ge(hy_,777,e),'IMP3_ZC',None),(net.and_(e,t1_ruler,net.ge(hy_,150,e),net.lt(hy_,174,e),ONE-t1_mopb),'A4_RM0',T1_CLICK),(None,'T3_H0',{hdir:0+3,hact:0,drag:1,grp:grp+1,vi:0,t1_lastk:0,**T1_CLICK}))
+e=S('MD'); on('MD',(net.ge(hy_,777,e),'IMP3_ZC',None),(net.and_(zwd,net.ge(hy_,DOCB-12,e),net.lt(hx_,1262,e)),'V8_HC',None),(net.and_(e,t1_ruler,net.ge(hy_,150,e),net.lt(hy_,174,e),ONE-t1_mopb),'A4_RM0',T1_CLICK),(None,'T3_H0',{hdir:0+3,hact:0,drag:1,grp:grp+1,vi:0,t1_lastk:0,**T1_CLICK}))
 on('MD2',(None,'HT',{hdir:3,hact:2}))
 on('HT',(None,'HT1',{pix:(hx_,hy_)}))
 A_=pix.out[3]; e1=S('HT1')
@@ -817,6 +817,7 @@ here=net.and_(ONE-a4hw,net.eq(pi,cp,e),net.or_(net.and_(ONE-rv_eol,net.ge(co,ls_
 fsm.set(cy,here,yy);fsm.set(chh,here,lhh);fsm.set(pcp,here,pages);fsm.set(cxl,here,lleft);fsm.set(cxr,here,lright)
 vis=net.and_(net.gt(yy+lhh,scroll,e),net.lt(yy,scroll+VHZ,e))
 pa=net.or_(full,net.eq(pi,cp,e),net.eq(pi,oldcp,e))
+_vfs=net.and_(vis,full,ONE-vrc); fsm.set(vrt,_vfs,ptop); fsm.set(vrm,_vfs,s_mt); fsm.set(vrh,_vfs,s_th); fsm.set(vrc,_vfs,1)
 cvl=net.and_(vis,full); wvl.drive(cvl,(as_x(VL)+vln*6,yy+DOCY-scroll,yy+DOCY-scroll+lhh,pi,lj,lleft,lright)); fsm.set(vln,cvl,vln+1)
 on('R7',(net.and_(vis,pa),'R8',None),(None,'R9',None))
 sy=yy+DOCY-scroll
@@ -960,7 +961,8 @@ on('LF',(a4la,'A4_KL',_lf),(None,'R2X',_lf))
 net.group('chrome')
 e=S('RE0')
 endw=net.and_(e,full,ONE-vm,ONE-bgp); fsm.set(dfrom,endw,99999); fsm.set(pagesT,endw,pages);fsm.set(wtot,endw,wsum);fsm.set(ytot,endw,ptop+s_ps);fsm.set(lc,e,0);fsm.set(impc,endw,0)
-on('RE0',(net.and_(autos,net.lt(cy,scroll+40,e)),'RD0',{scroll:net.relu(cy-40),autos:0}),
+_cxs=zfx0(cx)
+on('RE0',(net.and_(autos,zwd,net.lt(_cxs,30,e)),'V8_HS0',{hsv:net.relu(hsv+_cxs-200),v8u:0}),(net.and_(autos,zwd,net.gt(_cxs,1230,e)),'V8_HS0',{hsv:hsv+_cxs-1000,v8u:0}),(net.and_(autos,net.lt(cy,scroll+40,e)),'RD0',{scroll:net.relu(cy-40),autos:0}),
  (net.and_(autos,net.gt(cy+chh,scroll+VHZ-40,e)),'RD0',{scroll:net.relu(cy+chh-VHZ+40),autos:0}),
  (net.gt(scroll,net.relu(ytot-VHZ+20),e),'RD0',{scroll:net.relu(ytot-VHZ+20)}),(None,'RE1',None))
 e=S('RE1'); showc=net.and_(e,ONE-has_sel,ONE-blink,ONE-net.step(mode),ONE-a7_far+impf)
@@ -979,7 +981,8 @@ on('IMP_C0',(None,'RE2',{pagesT:pages+1,pcp:G_(pages+1,net.and_(S('IMP_C0'),impf
 e=S('RE2'); ph=net.decode(pagesT,128,e); th=X();ty_=X(); _thi=net.and_(e,impf); _ths=G_((pagesT-1)*PST,_thi)+G_(scroll,e-_thi)
 for k_ in range(1,128):
     th=th+ph[k_]*max(20,int((VH-8)/k_)); ty_=ty_+net.gate(_ths*((VH-8)/(k_*PST)),ph[k_])
-on('RE2',(None,'RE3',{clip0:0,clip1:0,rA:(1262,DOCY,18,VH,(243,242,241),250),rB:(1265,ty_+DOCY+4,12,th,tuple(as_x(205)-net.step(t1_tdrag+net.eq(t1_hov,255,e))*65 for _ in range(3)),255),thumb:ty_+DOCY+4,t1_thh:th}))
+_re2a={clip0:0,clip1:0,rA:(1262,DOCY,18,VH,(243,242,241),250),rB:(1265,ty_+DOCY+4,12,th,tuple(as_x(205)-net.step(t1_tdrag+net.eq(t1_hov,255,e))*65 for _ in range(3)),255),thumb:ty_+DOCY+4,t1_thh:th}
+on('RE2',(net.and_(ONE-rdm,full,net.or_(zwd,t1_ruler)),'V8_E0',_re2a),(net.and_(zwd,ONE-rdm),'V8_E0',_re2a),(None,'RE3',_re2a))
 # The status bar costs far more than a key's own paint. A fast event repaints it only if something it shows has changed.
 e=S('RE3'); _stk=net.step(pfile)+net.step(pcut)*2+net.step(pfull)*4+net.step(pmsg)*8+trk*16+sp_on*32+net.step(pcpy)*64
 on('RE3',(net.and_(e,ONE-full,net.eq(pcp,stp,e),net.eq(pagesT,stg,e),net.eq(wtot,stw,e),net.eq(_stk,stm,e)),'FB0',None),(None,'STATUS',{rA:(0,DOCB+1,640,23,PAL_B[3],0),stp:pcp,stg:pagesT,stw:wtot,stm:_stk}))
@@ -1023,7 +1026,7 @@ text_chain('PMi',['The selection is too large to copy: nothing was copied'],'T4_
 text_chain('PMg',['Too many different text formats: this one was not applied'],'T4_ST')
 on('PMa',(None,'PMb',{sx:sx+18}))
 text_chain('PMb',['Press Ctrl+V to paste from other apps'],'T4_ST')
-exec(open('imp3_zoom.py').read())
+exec(open('imp3_zoom.py').read()); exec(open('imp4_view.py').read())
 # find bar
 e=S('FB0')
 fbx=R();fi_=R()

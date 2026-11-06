@@ -99,7 +99,7 @@ def edges(cs):
             if a[1]==b[1]: continue
             E.append((a[1],a[0],b[1],b[0],1) if a[1]<b[1] else (b[1],b[0],a[1],a[0],-1))
     return E
-EXTTAG=(1<<30,0); PFM={}
+EXTTAG=(1<<30,0); PFM={}; XO=4096    # glyph x arrives lifted by XO: a page wider than the window draws to the left of it
 def _ymax(fi,bo,it,ch):
     cs=contours(fi,bo,it,ord(ch)); ys=[p[1] for c in cs for p in c]; return (max(ys),min(ys)) if ys else (0.0,0.0)
 _FM={}
@@ -293,7 +293,7 @@ class GlyphUnit:
             net.connect(data[4*i+3],m)
         net.aligned.append([next(iter(w.t)) for w in data])
         px=net.wire(); py=net.wire()
-        net.connect(px,net.gate(bpx,bwr)-bwr*OFF); net.connect(py,net.gate(bpy,bwr))
+        net.connect(px,net.gate(bpx,bwr)-bwr*(OFF+XO)); net.connect(py,net.gate(bpy,bwr))
         p1=g.patch_cls(net.step(bwr-Lnc*2-fast*2-0.5),px,py,data,LW,1); p2=g.sprite_cls(net.step(bwr+Lnc*2-2.5),px,py,data,LW,1); p3=g.patch_cls(net.step(bwr+fast-Lnc*2-1.5),px,py,data,LW,1); p3.kind=11
         p1.dom=1;p2.dom=1;p3.dom=1
         # ---- pixel records ----
@@ -302,7 +302,7 @@ class GlyphUnit:
         rp=net.reg(init=1.0); net.rec(recg,recg+net.step(blast*M-M+rp-(RECE-RECB-RECW*RECH*4-8)))   # the ring wraps: older records are stale by generation
         rd4=_RowRead(blk,net.gate(H[5]-1+RECB,blk),recin[0],4*RECW*RECH,net.gate(H[1]*(4*RECW),blk)); net.ports.append(rd4); rd4.dom=1
         rbx=L(Lx-H[3]+OFF+OFF,blk); rby=L(Ly-H[4]+OFF,blk)
-        qx=net.wire(); qy=net.wire(); net.connect(qx,net.gate(rbx,blk1)-blk1*OFF); net.connect(qy,net.gate(rby,blk1))
+        qx=net.wire(); qy=net.wire(); net.connect(qx,net.gate(rbx,blk1)-blk1*(OFF+XO)); net.connect(qy,net.gate(rby,blk1))
         p4=g.patch_cls(blk1,qx,qy,recin,RECW,RECH); p4.kind=11; p4.dom=1
         # a first draw records: rows are written from the row plane, then the block's header takes the record's place
         small=net.and_(start,ONE-net.step(H[1]-RECH-0.5),ONE-net.step(H[2]-RECW-0.5),fast_,ONE-fnc_)

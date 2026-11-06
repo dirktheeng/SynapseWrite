@@ -11,11 +11,15 @@ def pd_patch(st,nx):
     number(st+'p',qi,st+'q')
     on(st+'q',(None,nx,{fp:qsvf}))
 import pdf_fonts
-NFC=len(FACES); OROOT=3+3*NFC; FIRST=OROOT+1; PUS=999000; PFT=999100   # faces used by this PDF, and where each face's bytes are in the read only part of the bank
+PXV=[(p_,v_) for p_ in rom.EXT_PAGES for v_ in rom.EXT_VARS]; NFB_=len(FACES); NFC=len(FACES)+len(PXV); OROOT=3+3*NFC; FIRST=OROOT+1; PUS=999000; PFT=999100   # faces used by this PDF, and where each face's bytes are in the read only part of the bank
 PF_ROM=bytearray(); PF_INIT=[]
 for i_,f_ in enumerate(FACES):
     bl_,o1_,o2_=pdf_fonts.face_blob(i_,*f_,3+3*i_)
     for j_,v_ in enumerate((len(PF_ROM)+1,len(bl_),o1_,o2_)): PF_INIT.append([PFT+i_*4+j_,v_])
+    PF_ROM+=bl_
+for i0_,(p_,v_) in enumerate(PXV):
+    i_=NFB_+i0_; bl_,o1_,o2_=pdf_fonts.ext_blob(i_,v_,p_,3+3*i_)
+    for j_,v2_ in enumerate((len(PF_ROM)+1,len(bl_),o1_,o2_)): PF_INIT.append([PFT+i_*4+j_,v2_])
     PF_ROM+=bl_
 head=b'%PDF-1.4\n'; cat_=b'1 0 obj\n<</Type/Catalog/Pages 2 0 R/Outlines %d 0 R>>\nendobj\n'%OROOT
 pfr=Ret('T4_PFR')
@@ -92,7 +96,11 @@ on('PD_R',(net.step(qiw),'T4P_IM',None),(None,'PD_9',{qsty:999999,qop:0,qxx:qx+q
 e=S('PD_9'); on('PD_9',(net.ge(qo,qe,e),'PD_Z',None),(None,'PD_A',{r1:qb+qo,rs:qb+1024+qo}))
 e=S('PD_A'); measure(e,R1,RSR,RSC); ke3=net.and_(e,net.step(qpc)); kp_en.lin(ke3); kp_in.add(ke3,qpc)
 pdiff=net.step(net.step(RSC-qsty)+net.step(qsty-RSC)); psp=net.eq(R1,32,e)
-ladv={v4qk:RSK,ins_ch:R1,ins_st:RSC,ins_rec:RSR,qadv:adv+kern+G_(qex,psp)+rv_tabw(qxx-rv_qm-qxc,net.eq(R1,9,e)),qpc:R1}
+_qxe=net.ge(R1,UO,e); _qxb=net.bits(R1-UO,16,_qxe); _xpv=X()
+def _qxl(G,ix,pv={p_>>7:i_+1 for i_,p_ in enumerate(rom.EXT_PAGES)}): net.connect(_qxw,G*pv[ix])
+_qxw=net.wire(); chartree(_qxe,_qxb[7:],8,[p_>>7 for p_ in rom.EXT_PAGES],_qxl)
+pdiff=net.step(pdiff+net.step(_qxw-qxp-0.5+e*M-M)+net.step(qxp-_qxw-0.5+e*M-M))
+ladv={qxp:_qxw,v4qk:RSK,ins_ch:R1,ins_st:RSC,ins_rec:RSR,qadv:adv+kern+G_(qex,psp)+rv_tabw(qxx-rv_qm-qxc,net.eq(R1,9,e)),qpc:R1}
 on('PD_A',(net.and_(net.eq(R1,9,e),qop),'T4P_CL',{pfcr.r:pfcr.id('A4_QX0')}),(net.eq(R1,9,e),'A4_QX0',None),(net.and_(net.ge(R1,300,e),net.lt(R1,1000,e)),'A6Q_P0',{qo:qo+1,a6qk:R1-300}),(net.and_(net.ge(R1,1000,e),net.lt(R1,UO,e)),'T4P_MK',{qo:qo+1,qfid:R1-1000}),(net.and_(pdiff,qop),'T4P_CL',{**ladv,pfcr.r:pfcr.id('PD_F')}),(pdiff,'PD_F',ladv),(qop,'PD_Tc',ladv),(None,'T4P_O',ladv))
 sv_en.lin(S('PD_F')); sv_in.add(S('PD_F'),ins_rec); sv_fl.add(S('PD_F'),ins_st)
 e=S('PD_F'); zh=net.decode(SV['si'],rom.NSZ,e); pts=X(); ptv=X()
@@ -105,10 +113,11 @@ for ff_,h_ in enumerate(_pfh):
             k_=FACES.index(rom.face_of(ff_,bo_,it_))
             if k_: _pfv=_pfv+net.and_(h_,bb_,ii_)*k_
 fsm.set(ptk_q,e,ptk)
-on('PD_F',(None,'PD_Fa',{qsty:ins_st,qfn:_pfv,qsz:G_(pts,ONE-vf_)+G_(ptv,vf_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3,qhl:SV['hl']}))
+_qxh=net.step(qxp); _qxv=net.gate(as_x(NFB_)+(qxp-1)*3+SV['bold']+net.and_(e,ONE-SV['bold'],SV['ital'])*2,_qxh)
+on('PD_F',(None,'PD_Fa',{qsty:ins_st,qfn:net.relu(_pfv-_qxh*M)+_qxv,qsz:G_(pts,ONE-vf_)+G_(ptv,vf_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3,qhl:SV['hl']}))
 lit('PD_Fa',b'/F','PD_Fb')
 e=S('PD_Fb'); on('PD_Fb',(None,'PD_Fc',{xw:(as_x(PUS)+qfn,1)}))
-em_en.lin(e); em_b.add(e,48+qfn+net.ge(qfn,10,e)*7)     # font names /F0 to /F9, /FA and on
+em_en.lin(e); em_b.add(e,48+qfn+net.ge(qfn,10,e)*7+net.ge(qfn,36,e)*6)     # font names /F0 to /F9, /FA and on
 lit('PD_Fc',b' ','PD_Fd')
 number('PD_Fd',qsz,'PD_Fe')
 lit('PD_Fe',b' Tf ','PD_Ff')
@@ -120,7 +129,7 @@ number('T4P_Od',qyb+qrise-3,'T4P_Oe'); lit('T4P_Oe',b' Tm (','PD_Tc')
 e=S('PD_Tc'); esc=net.or_(net.eq(ins_ch,40,e),net.eq(ins_ch,41,e),net.eq(ins_ch,92,e))
 on('PD_Tc',(esc,'PD_Te',None),(None,'PD_Td',None))
 lit('PD_Te',b'\\','PD_Td')
-e=S('PD_Td'); em_en.lin(e); _qx=net.ge(ins_ch,UO,e); em_b.add(e,G_(ins_ch,ONE-_qx)+net.eq(ins_ch,9,e)*23+net.eq(ins_ch,11,e)*21+_qx*63)
+e=S('PD_Td'); em_en.lin(e); _qx=net.ge(ins_ch,UO,e); _qxk=net.and_(_qx,net.step(qxp)); _qlb=net.bits(ins_ch-UO,16,_qxk); em_b.add(e,G_(ins_ch,ONE-_qx)+net.eq(ins_ch,9,e)*23+net.eq(ins_ch,11,e)*21+net.and_(_qx,ONE-net.step(qxp))*63+_qxk*128+sum((_qlb[j_]*(1<<j_) for j_ in range(7)),X()))
 on('PD_Td',(None,'PD_Tg',{qo:qo+1,qxx:qxx+qadv}))
 e=S('PD_Tg')
 on('PD_Tg',(net.or_(net.eq(ins_ch,32,e),net.eq(ins_ch,9,e)),'T4P_CL',{pfcr.r:pfcr.id('PD_9')}),(None,'PD_9',None))
@@ -202,7 +211,7 @@ for i_ in range(NFC):
     on(f'PR_{i_}',(None,f'PRa_{i_}',{r1:PUS+i_}))
     nx_=f'PR_{i_+1}' if i_+1<NFC else 'PR_E'
     on(f'PRa_{i_}',(net.step(R1),f'PRb_{i_}',None),(None,nx_,None))
-    lit(f'PRb_{i_}',('/F%s %d 0 R'%(chr(48+i_+(7 if i_>=10 else 0)),3+3*i_)).encode(),nx_)
+    lit(f'PRb_{i_}',('/F%s %d 0 R'%(chr(48+i_+(7 if i_>=10 else 0)+(6 if i_>=36 else 0)),3+3*i_)).encode(),nx_)
 lit('PR_E',b'>>>>/Count ','PD_E2')
 number('PD_E2',qpg,'PD_E3')
 lit('PD_E3',b'/Kids[','PD_K0')

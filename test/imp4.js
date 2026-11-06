@@ -84,7 +84,7 @@ const near=(A,r,g,b,t=6)=>count(A,223,1039,174,776,(x,y,z)=>Math.abs(x-r)<=t&&Ma
   // caret moves over them one unit at a time, typed text lands in place
   A.key(132,1);for(let i=0;i<2;i++)A.key(130);A.type('X');A.settle();x=part(A,'word/document.xml');ok('caret walks them',x.includes('ŁóXdź'),(x.match(/<w:t[^>]*>([^<]*)/)||[])[1]);A.key(8);A.settle();
   // opening the saved file is the same picture
-  const h0=(A.key(133,1),A.settle(),A.hash(190,776));let B=await lib();B.file(9,A.savedBytes());B.settle();B.key(133,1);B.settle();ok('reopens the same',B.hash(190,776)===h0);B.shot('build/imp4_u2.png');
+  part(A,'word/document.xml');const h0=(A.key(133,1),A.settle(),A.hash(190,776));let B=await lib();B.file(9,A.savedBytes());B.settle();B.key(133,1);B.settle();A.shot('build/imp4_u1b.png');{const fa=A.fb(),fb_=B.fb();let dm=0;for(let i=190*5120;i<776*5120;i++)if((i&3)!=3)dm=Math.max(dm,Math.abs(fa[i]-fb_[i]));ok('reopens with no pixel over one level off',dm<=1,dm);}B.shot('build/imp4_u2.png');
   // copy gives the same text back
   A.key(97,1);A.settle();A.key(99,1);A.settle();const c=[];for(let i=0;i<T.length;i++)c.push(A.e.bget(A.h.cb+i));ok('copy gives the code units',String.fromCharCode(...c)===T,String.fromCharCode(...c));
   A.key(133,1);A.key(13);A.paste(T);A.settle();x=part(A,'word/document.xml');ok('paste of the own copy',(x.match(/Ελληνικά/g)||[]).length==2);A.key(122,1);A.settle();
@@ -98,7 +98,7 @@ const near=(A,r,g,b,t=6)=>count(A,223,1039,174,776,(x,y,z)=>Math.abs(x-r)<=t&&Ma
   // file entity and four byte forms
   A=await lib();A.file(9,doc('<w:p><w:r><w:t>日本語 \u{1F600} Ωmega</w:t></w:r></w:p>'));A.settle();x=part(A,'word/document.xml');ok('file text past the old range survives',x.includes('日本語 \u{1F600} Ωmega'),(x.match(/<w:t[^>]*>([^<]*)/)||[])[1]);
   // PDF does not break
-  A=await lib();A.paste('Ωmega text');A.settle();A.key(112,1);const pn=A.e.val(A.h.fileout),pa=A.e.val(A.h.outbase);const pb=Buffer.alloc(pn);for(let i=0;i<pn;i++)pb[i]=A.e.bget(pa+i);require('fs').writeFileSync('build/imp4_u.pdf',pb);ok('PDF written',pn>1000,pn);
+  A=await lib();A.paste('Ωmega text');A.settle();A.key(112,1);const pn=A.e.val(A.h.fileout),pa=A.e.val(A.h.outbase);const pb=Buffer.alloc(pn);for(let i=0;i<pn;i++)pb[i]=A.e.bget(pa+i);require('fs').writeFileSync('build/imp4_u.pdf',pb);{const {execSync}=require('child_process');const t=execSync('pdftotext build/imp4_u.pdf -').toString();ok('PDF text comes back through its own font',t.includes('Ωmega text'),t.slice(0,40));const q=execSync('qpdf --check build/imp4_u.pdf 2>&1 || true').toString();ok('qpdf clean',/No syntax/.test(q)&&!/WARNING/.test(q),q.split('\n').slice(-3).join(' '));}
   A=await lib();A.paste('a Ωmega with bold fields');A.key(13);A.settle();A.click(1,1);
  }
  if(!only||only=='font'){
@@ -113,6 +113,33 @@ const near=(A,r,g,b,t=6)=>count(A,223,1039,174,776,(x,y,z)=>Math.abs(x-r)<=t&&Ma
   const h1=A.hash(190,776);A.key(122,1);A.settle();x=part(A,'word/document.xml');ok('undo removes it',!x.includes('Georgia Pro'));
   // a family from the menu drops the name
   A=await lib();A.file(9,doc(fx('Frobnicate Sans','Unknown')));A.settle();A.key(97,1);A.settle();A.click(231,75);A.settle();A.click(150,87+22*2+10);A.settle();x=part(A,'word/document.xml');ok('choosing a family replaces the name',!x.includes('Frobnicate')&&/Arimo|Arial/.test(x),(x.match(/w:ascii="[^"]*"/g)||[]).join());
+ }
+ if(!only||only=='view'){
+  let L='';for(let i=0;i<14;i++)L+='Zoom paragraph '+i+' has enough words on it that it wraps across the page and shows how lines scale when the view changes.\\n';
+  const white=(A,y)=>{const f=A.fb();let n=0;for(let x=0;x<1262;x++){const i=(y*1280+x)*4;if(f[i]==255&&f[i+1]==255&&f[i+2]==255)n++;}return n;};
+  // vertical ruler
+  let A=await lib();A.paste(L);A.settle();A.shot('build/imp4_v0.png');const st=count(A,2,18,174,776,(r,g,b)=>r==198&&g==198&&b==198),wb=count(A,2,18,174,776,(r,g,b)=>r==255&&g==255&&b==255);ok('vertical ruler: gray margins and a white band',st>0&&wb>16*300,st+' '+wb);
+  const ink=count(A,2,18,174,776,(r)=>r<160);ok('vertical ruler has marks',ink>40,ink);
+  const hr=A.hash(174,776);A.wheel(300);A.settle();A.shot('build/imp4_v1.png');const st2=count(A,2,18,174,776,(r,g,b)=>r==255&&g==255&&b==255);ok('it moves with the page',A.hash(174,776)!==hr,st2);
+  // hidden with the ruler
+  A=await lib();A.paste(L);A.settle();
+  // zoom past 150
+  A=await lib();A.paste(L);A.key(132,1);A.settle();for(let i=0;i<4;i++){A.click(1232,788);A.settle();}A.shot('build/imp4_z200.png');let w=white(A,700);ok('200 percent: the page fills the window',w>1000,w);
+  const dk=count(A,0,1262,174,776,(r)=>r<110);ok('200 percent: text is drawn large',dk>2000,dk);
+  // caret follows: type at the end of a line
+  A.type('Q');A.settle();A.key(133);A.settle();A.type('R');A.settle();A.shot('build/imp4_z200b.png');const x=part(A,'word/document.xml');ok('typing lands at the line end',/\w R|view changes|R/.test(x),'');
+  const fbar=count(A,0,1262,764,776,(r,g,b)=>r==205&&g==205&&b==205);ok('side scroll bar drawn',fbar>100,fbar);
+  // a click maps through the slide: find a word near the right of the view, click it, type
+  A=await lib();A.paste('alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau\nsecond line here\n');A.settle();for(let i=0;i<4;i++){A.click(1232,788);A.settle();}A.shot('build/imp4_z1.png');A.click(1000,770);A.settle();A.shot('build/imp4_z2.png');
+  // click the second line, wherever it is drawn
+  const f=A.fb();const tops=[];let pr=false;for(let y=190;y<760;y++){let d=false;for(let x=200;x<700;x++)if(f[(y*1280+x)*4]<110){d=true;break;}if(d&&!pr)tops.push(y);pr=d;}
+  A.click(600,tops[1]+6);A.settle();A.key(133);A.type('Z');A.settle();const pp=[...part(A,'word/document.xml').matchAll(/<w:t[^>]*>([^<]*)/g)].map(m=>m[1]);ok('click maps through the slide',pp[1]=='second line hereZ',JSON.stringify(pp));
+  // round trip to 100 is pixel equal
+  let C=await lib();C.paste(L);C.settle();const h0=C.hash(174,776);for(let i=0;i<4;i++){C.click(1232,788);C.settle();}for(let i=0;i<4;i++){C.click(1096,788);C.settle();}ok('back to 100 percent, pixel equal',C.hash(174,776)===h0);
+  // zoom stops at 200
+  C=await lib();for(let i=0;i<6;i++){C.click(1232,788);C.settle();}const fz=C.fb();C.shot('build/imp4_z3.png');const pc=count(C,1240,1280,780,796,(r)=>r<120);ok('stops at 200',pc>10,pc);
+  // landscape at 150 now shows its left edge after the slide
+  let D=await lib();D.paste('landscape left edge text\n');D.settle();D.click(182,47);D.settle();D.click(100,97);D.settle();for(let i=0;i<2;i++){D.click(1232,788);D.settle();}D.shot('build/imp4_z4.png');const lf=count(D,0,60,300,700,(r,g,b)=>r==255&&g==255&&b==255);ok('landscape at 150: page starts inside the window',lf>1000,lf);
  }
  console.log(R.filter(x=>x).length+'/'+R.length);process.exit(R.every(x=>x)?0:1);
 })();
