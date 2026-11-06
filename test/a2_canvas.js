@@ -20,10 +20,10 @@ const go={home:[80,47],ins:[135,47],ref:[262,47],rev:[333,47]};
  {const {b,p}=await d();const K=k=>p.keyboard.press(k),T=t=>p.keyboard.type(t),C=(x,y)=>p.mouse.click(x,y);
   // lists: tight items, marker at the quarter inch, space after the last item
   await C(325,76);await T('Bullet one');await K('Enter');await T('Bullet two');await K('Enter');await K('Enter');await T('After');const I=await img(p);
-  const rows=rowsInk(I,319,520,270,420,dark);ok('list items one line apart',rows[1]-rows[0]===22,JSON.stringify(rows));ok('space after the last item',rows[2]-rows[1]===33);
+  const rows=rowsInk(I,319,520,270,420,dark);ok('list items one line apart',rows[1]-rows[0]===22,JSON.stringify(rows));ok('space after the last item',rows[2]-rows[1]===33,JSON.stringify(rows));
   let mx=9999;for(let y=rows[0];y<rows[0]+16;y++)for(let x=325;x<366;x++)if(dark(px(I,x,y))&&x<mx)mx=x;ok('bullet starts near the quarter inch',mx>=343&&mx<=347,mx);
   const [dl]=await Promise.all([p.waitForEvent('download'),K('Control+s')]);await dl.saveAs('build/a2c.docx');const xml=execSync('unzip -p build/a2c.docx word/document.xml').toString();ok('list items saved with contextual spacing',(xml.match(/<w:contextualSpacing\/>/g)||[]).length===2);
-  const bytes=[...fs.readFileSync('build/a2c.docx')];await p.evaluate(u=>annOpen(new Blob([new Uint8Array(u)])),bytes);await p.waitForTimeout(1200);const I2=await img(p);ok('reopened list looks the same',JSON.stringify(rowsInk(I2,319,520,270,420,dark))===JSON.stringify(rows));
+  const bytes=[...fs.readFileSync('build/a2c.docx')];await p.evaluate(u=>annOpen(new Blob([new Uint8Array(u)])),bytes);await p.waitForTimeout(1200);const I2=await img(p);{const r2=rowsInk(I2,319,520,270,420,dark);ok('reopened list looks the same',JSON.stringify(r2)===JSON.stringify(rows),JSON.stringify(r2));};
   // selection shows the paragraph mark
   await K('Control+a');const S=await img(p);const sel=0xccddee;let w=0;for(let x=367;x<600;x++)if(px(S,x,rows[0]+3)===sel)w=x;const I0=await (async()=>I2)();let e=0;for(let x=367;x<600;x++)if(dark(px(I2,x,rows[0]+2))||dark(px(I2,x,rows[0]+6))||dark(px(I2,x,rows[0]+9)))e=x;ok('selection runs past the last glyph',w>e+2,[w,e]);
   await b.close();}

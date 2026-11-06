@@ -850,14 +850,14 @@ on('LF',(None,'R2X',{w1:(pbs+NLINES,lj),w2:(pbs+DIRTY,0),w3:(pbs+WORDS,wc),wtot:
 # ---- end of walk: autoscroll, caret, scrollbar, status bar ----
 net.group('chrome')
 e=S('RE0')
-endw=net.and_(e,full,ONE-vm,ONE-bgp); fsm.set(dfrom,endw,99999); fsm.set(pagesT,endw,pages);fsm.set(wtot,endw,wsum);fsm.set(ytot,endw,yy);fsm.set(lc,e,0)
+endw=net.and_(e,full,ONE-vm,ONE-bgp); fsm.set(dfrom,endw,99999); fsm.set(pagesT,endw,pages);fsm.set(wtot,endw,wsum);fsm.set(ytot,endw,ptop+s_ps);fsm.set(lc,e,0)
 on('RE0',(net.and_(autos,net.lt(cy,scroll+40,e)),'RD0',{scroll:net.relu(cy-40),autos:0}),
  (net.and_(autos,net.gt(cy+chh,scroll+VH-40,e)),'RD0',{scroll:net.relu(cy+chh-VH+40),autos:0}),
- (net.gt(scroll,ytot,e),'RD0',{scroll:net.relu(ytot-300)}),(None,'RE1',None))
+ (net.gt(scroll,net.relu(ytot-VH+20),e),'RD0',{scroll:net.relu(ytot-VH+20)}),(None,'RE1',None))
 e=S('RE1'); showc=net.and_(e,ONE-has_sel,ONE-blink,ONE-net.step(mode))
 rA.drive(showc,(cx,cy+DOCY-scroll,1,chh,(0,0,0),cacol))
 fsm.set(dfrom,net.and_(S('RE1'),ONE-full,ONE-bgp),99999)
-on('BGD',(None,'RD0',{bgp:0,bgm:0,dfrom:99999,pagesT:pages,wtot:wsum,ytot:yy,lc:0}))
+on('BGD',(None,'RD0',{bgp:0,bgm:0,dfrom:99999,pagesT:pages,wtot:wsum,ytot:ptop+s_ps,lc:0}))
 on('RE1',(None,'RE2',{oldcp:cp,wassel:has_sel}))
 e=S('RE2'); ph=net.decode(pagesT,128,e); th=X();ty_=X()
 for k_ in range(1,128):
