@@ -2,11 +2,11 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-237522 neurons, 461199 edges, 187 layers, 4653 control states.
+237556 neurons, 461242 edges, 187 layers, 4656 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
-| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1302) | 1302 | 8650 |
+| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1302) | 1302 | 8653 |
 | glyph network | Selects and addresses a character cell for drawing. | gen/app.py (253), gen/feat1_glyph.py (208), gen/imp3_zoom_pre.py (155) | 616 | 9968 |
 | feat1 run effects | Decodes the extended field of a style entry for the glyph network: caps and small caps draw and measure the capital, small capitals take a smaller size, hidden text takes no width or ink, character spacing joins the advance. | gen/feat1_glyph.py (49) | 49 | 369 |
 | glyph metrics | Character advance and kerning trees. | gen/app.py (20677) | 20677 | 60764 |
@@ -47,13 +47,14 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | view: side scroll and vertical ruler | Slides a page wider than the window, its bar, and draws the vertical ruler. | gen/imp4_view.py (301), gen/app.py (212), gen/t1_features.py (44) | 557 | 3186 |
 | ribbon actions | Maps button ids to commands. | gen/app.py (155) | 155 | 251 |
 | docx writer | Writes the document XML parts. | gen/t2_write.py (652), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1095 | 11128 |
-| docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2707), gen/app.py (4) | 2711 | 41575 |
+| docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2707), gen/app.py (4) | 2711 | 41579 |
 | pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1455) | 1455 | 4607 |
 | feat2 pdf run effects | Prints character spacing, run shading, double strike and external links as link annotations. | gen/pdf_write.py (307) | 307 | 1338 |
 | p3 pdf destinations | Prints bookmarks as named destinations and outline items, and internal links as GoTo link annotations. | gen/pdf_write.py (143) | 143 | 395 |
 | docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (2939) | 2939 | 17864 |
-| png reader | Decodes PNG files to pixel words. | gen/docx_read.py (311), gen/a12_guard.py (61) | 372 | 2781 |
+| png reader | Decodes PNG files to pixel words. | gen/docx_read.py (311), gen/a12_guard.py (61) | 372 | 2783 |
 | zip crc check | Zip CRC check on open: the inflated main part runs through the save CRC network and must match the central directory. | gen/a12_guard.py (18) | 18 | 102 |
+| p3 part crc | NO PURPOSE RECORDED | gen/a12_guard.py (24) | 24 | 120 |
 | prompt bar | One bar that takes a short text for a color, a style name or a font name. | gen/imp4_prompt.py (524) | 524 | 2015 |
 | extended characters | UTF-8 and code units for characters past Latin-1. | gen/imp4_prompt.py (131) | 131 | 881 |
 | tier 4 features | Tracked changes, fields, equations, mail merge. | gen/t4_features.py (705) | 705 | 1887 |
@@ -69,7 +70,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | zip container | Zip member table, central directory, and table XML for saving. | gen/t3_features.py (210) | 210 | 411 |
 | docx reader tier 3 | Reader additions for parts walking. | gen/t3_features.py (127) | 127 | 404 |
 | pdf tables | PDF page size, table rules and shading. | gen/t3_features.py (55) | 55 | 88 |
-| pictures | Picture handles, resizing by resampling, PNG writing, and reading pictures from a file. | gen/t3_features.py (926) | 926 | 4315 |
+| pictures | Picture handles, resizing by resampling, PNG writing, and reading pictures from a file. | gen/t3_features.py (926) | 926 | 4318 |
 | notes and balloons | Wrapped text, comment balloons and footnotes. | gen/t3_features.py (257) | 257 | 601 |
 | headers and footers | Header and footer strings and their edit bar. | gen/t3_features.py (112) | 112 | 403 |
 | table of contents | Builds and updates the table of contents. | gen/t3_features.py (175) | 175 | 516 |
@@ -98,4 +99,4 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | rv a3 interaction | Editing keys, word and page motion, right click, autoscroll, context menu, and the late tier 1 features. | gen/t1_features.py (2039), gen/rv_a3_keys.py (655), gen/pointer3.py (86), gen/rv_a4_features.py (79), gen/ui.py (42) | 2901 | 25117 |
 | file output command | Selects the length, data base and file name the glue saves. | gen/rv_a11_out.py (5) | 5 | 8 |
 | screen check | Compares one line of the screen id plane against the line table on each blink tick and repairs by repainting. | gen/rv_a11_out.py (23) | 23 | 56 |
-| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (9468) | 9468 | 56522 |
+| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (9478) | 9478 | 56552 |
