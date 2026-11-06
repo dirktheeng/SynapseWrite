@@ -37,3 +37,4 @@ All ten differences in the box (113,65)-(275,107): font and size boxes gray, B I
 e2e 210/210, tier2 48/49, look, t3_table, t3_pic, t3_misc, t4_docx 18/18, t4_pdf, roundtrip, touch, a4 0 failed of 50, rv_a3 49/49, fonts 23/23, a5_docx (open 9,976,789 edges), a7_type, imp_far, imp_misc, imp2, rv_a1 38/38, t4 no failures, audit 67/67.
 tier2 failure: `hanging indent from a foreign file` compares a file with no w:line to a 1.08 document. Item 3 makes that file single, correctly. Test edit: the fixture states w:line=259 so it still compares the hanging indent. Rerun of tier2 logged below.
 Jump, Enter, undo stay near 1.9 M: more glyphs on screen, see bisect.
+tier2 rerun after fixture: 49/49 passed
