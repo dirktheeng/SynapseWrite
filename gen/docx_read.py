@@ -171,7 +171,7 @@ e=S('PX2')
 def tag(n,end):
     return net.and_(pat(n,e),net.or_(*[net.eq(W[len(n)],ord(q),e) for q in end]))
 def tagA(n,end): return tag(n,end)
-on('PX2',(net.and_(t2skip,ONE-pat('</w:styl',e)),'PX',{oi:oi+1}),
+on('PX2',(net.ge(nextb,SLOTMAX,e),'T2_ZN',None),(net.and_(t2skip,ONE-pat('</w:styl',e)),'PX',{oi:oi+1}),
  (pat('</w:styl',e),'T2_SW',{oi:oi+8,t2rr.r:t2rr.id('T2_SC')}),
  (tag('<w:p',' >'),'PN1',{oi:oi+4}),
  (tag('<w:t',' >'),'TX0',{oi:oi+4}),
