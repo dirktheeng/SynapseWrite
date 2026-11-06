@@ -21,9 +21,58 @@ It is an independent project with its own name and icons, modeled on the feature
 
 ## Contents
 
-[One tick](#the-whole-program-is-one-function) · [The equation](#the-equation-explained) · [Neurons](#from-neurons-to-logic) · [Control flow](#control-flow-a-token-in-the-weights) · [Sparsity](#why-half-a-million-neurons-can-feel-instant) · [Memory](#memory-the-network-holds-the-pointers) · [The screen](#the-screen-is-also-an-input) · [Text](#how-a-letter-gets-drawn) · [File formats](#file-formats-are-networks-too) · [Connections](#how-everything-is-connected) · [Every sub-network](#every-sub-network-and-why-it-exists) · [Circuits](#is-it-a-circuit) · [Classification](#how-do-we-classify-what-this-is) · [Determinism](#determinism-and-hallucinations) · [Boundaries](#what-is-not-the-network) · [Building](#build-it) · [Verification](#how-it-is-checked) · [Status](#status)
+- **[Start here](#start-here)**: [Build it](#build-it) · [Status](#status)
+- **[How it works](#how-it-works)**: [One tick](#the-whole-program-is-one-function) · [The equation](#the-equation-explained) · [Neurons to logic](#from-neurons-to-logic) · [Control flow](#control-flow-a-token-in-the-weights) · [Sparsity](#why-half-a-million-neurons-can-feel-instant) · [Memory](#memory-the-network-holds-the-pointers) · [The screen](#the-screen-is-also-an-input) · [Text](#how-a-letter-gets-drawn) · [File formats](#file-formats-are-networks-too)
+- **[How it is put together](#how-it-is-put-together)**: [Connections](#how-everything-is-connected) · [Every sub-network](#every-sub-network-and-why-it-exists) · [Boundaries](#what-is-not-the-network) · [The build](#how-it-is-built)
+- **[What kind of thing is this?](#what-kind-of-thing-is-this)**: [Circuits](#is-it-a-circuit) · [Classification](#how-do-we-classify-what-this-is) · [Determinism](#determinism-and-hallucinations)
+- **[Evidence and reference](#evidence-and-reference)**: [Verification](#how-it-is-checked) · [Repository tour](#repository-tour) · [License](#license)
 
-## The whole program is one function
+## Start here
+
+### Build it
+
+You need clang with the wasm32 target, Python 3 with `fonttools`, `numpy` and `pillow`.
+
+```bash
+git clone https://github.com/dirktheeng/SynapseWrite.git
+cd SynapseWrite
+./make.sh
+# then open build/index.html in a browser
+```
+
+To run the tests, add Node with Playwright. Saved-file checks also use LibreOffice.
+
+```bash
+NODE_PATH=$(npm root -g) node test/e2e.js
+python3 test/audit.py
+```
+
+### Status
+
+Every feature is tracked in [`PARITY.md`](PARITY.md). "Passed" means an automated test passed, not that behavior was confirmed against Word.
+
+| Tier | Scope | Passed | Partial |
+|---|---|---:|---:|
+| 1 | Ribbon, rulers, typing, selection, undo, clipboard, find | 8 | 7 |
+| 2 | Formatting, styles, fonts, lists, line breaking, pagination | 8 | 4 |
+| 3 | Tables, images, headers, sections, columns, footnotes, comments | 7 | 1 |
+| 4 | Track changes, merge, equations, fields, spell check, PDF, `.docx` | 6 | 4 |
+
+**Known gaps, stated plainly:**
+
+- **Not verified in real Word.** No copy of Word has been used, so there are no pixel comparisons against Word, and saved `.docx` files have only been checked with LibreOffice and file-format checks.
+- **Only tested in Chromium.** Current Firefox and Edge are targets, but they are untested.
+- **Clipboard formatting works only inside the app.** Other programs receive plain text.
+- **Zoom stops at 150 percent,** and there is no vertical ruler.
+- **Styling limits:** no custom colors, user-created styles or character styles, and only some list formats.
+- **Characters beyond the Windows-1252 block are not supported.**
+- **Greedy line breaking only,** with no hyphenation.
+
+## How it works
+
+From the one function that runs the app, down to how a letter and a file are handled.
+
+### The whole program is one function
 
 Each key press, click, mouse move or timer signal starts ticks. A tick is one pass through the same network:
 
@@ -43,7 +92,7 @@ v_i(t) = act_i( bias_i + sum over earlier layers  w_ji * v_j(t)
                        + sum over recurrent edges w_ji * v_j(t-1) )
 ```
 
-## The equation, explained
+### The equation, explained
 
 Everything the app does comes from repeating one equation. You do not need a machine learning background to follow it, only the idea of a list of numbers and a table of numbers.
 
@@ -55,7 +104,7 @@ v(t) = σ( b + F·v(t) + R·v(t-1) + u(t) )
 
 *This figure is drawn from the shipped weight file. Each dot in a square is a group of real connections.*
 
-### The pieces
+#### The pieces
 
 **A neuron is one number, plus a simple rule for updating it.** The app has 450,104 of them. One holds the caret's position, for example, and another is 1 only while a particular step of the program is running.
 
@@ -71,7 +120,7 @@ v(t) = σ( b + F·v(t) + R·v(t-1) + u(t) )
 
 The two tables are programmed, not learned. Each of their entries was written by the generator for a reason. Their entries that are not 0 fill less than 0.001 percent of each table, and they only ever use about 10,000 different values.
 
-### Reading it from the inside out
+#### Reading it from the inside out
 
 To update one neuron, do three things:
 
@@ -88,7 +137,7 @@ To update one neuron, do three things:
 
 The fourth rule is an engine detail. The generator writes three kinds of neuron, and the optimizer converts registers that do nothing but hold their value into this cheaper form.
 
-### Why `v(t)` is on both sides
+#### Why `v(t)` is on both sides
 
 This looks circular, but it is not. The neurons are numbered so that each one reads only from neurons before it, which puts every entry of `F` below the diagonal of the table. So the first neuron can be calculated from outside inputs alone. The second can then use the first, and so on to the end.
 
@@ -106,7 +155,7 @@ After the sweep, multiplying the table by the finished vector gives that same ve
 
 If you have seen numerical methods, this is forward substitution on a lower triangular system. Nothing is iterated, and there is no matrix to invert. Although the equation looks implicit, it is an explicit calculation.
 
-### How the two tables differ
+#### How the two tables differ
 
 - **`F` is for computing.** It carries signals within a tick, through as many as 152 layers in the main clock domain and 23 in the second. Most of a neuron's work happens here. A layer is just a group of neurons at the same depth, so layer sizes vary widely.
 - **`R` is for remembering.** It carries values from one tick to the next. A register is a neuron that feeds itself through `R`, which is how the network holds a number over time. It is also how control moves from one program step to the next.
@@ -119,7 +168,30 @@ v(t) = G( v(t-1), u(t) )
 
 Here `G` is the feed-forward network formed by `b`, `F` and `σ`. Each tick is one direct step forward, and the ticks do not converge toward an answer. They are the steps of a program, and they end when one particular neuron, the halt neuron, becomes nonzero.
 
-### Layer by layer: the sizes
+#### A logic gate from one row
+
+This shows how arithmetic becomes decisions. Say neuron `y` should pass a value `v` only when a control neuron `en` is 1. Give it these entries:
+
+```
+y = relu( v + en × 2^40 − 2^40 )
+```
+
+| `en` | Total | Output `y` |
+|---:|---|---|
+| 1 | `v + 2^40 − 2^40`, which is `v` | `v` |
+| 0 | `v − 2^40`, which is far below 0 | 0 |
+
+That is one row of `F`: a weight of 1 from `v`, a weight of 2^40 from `en`, a bias of −2^40, and a ReLU rule. With gates like this, the generator builds registers, comparisons, memory addressing and program flow.
+
+#### What is not in the equation
+
+The equation updates neurons and nothing else. Three things sit around it:
+
+- **Memory and the screen.** The document is stored in a separate memory bank. There are ports that treat particular neurons as an enable, an address and data. When an enable is nonzero, the engine carries out that read or write. Data that is read comes back through `u` on the next tick.
+- **The glue.** It writes events into `u`, runs ticks until the halt neuron fires, and shows the screen.
+- **A second clock.** Neurons for drawing text and for managing styles run as a separate block with no connections to the main block, shown by the amber lines in the figure. A call port pauses the main block, passes values over, runs the second block to completion and passes the results back.
+
+#### Layer by layer: the sizes
 
 A layer here is a group of neurons at the same depth, so layers are not designed by hand, and their sizes vary widely. This figure shows every real layer of `F · v(t)`. It gives the number of neurons, the mix of activations, and how many weights feed that layer.
 
@@ -138,15 +210,15 @@ A layer here is a group of neurons at the same depth, so layers are not designed
 
 Layer 0 has no `F` inputs at all: it reads only the last tick and outside input. The long run of very small layers in the middle is mostly step neurons making chains of decisions. Layer 156 is the largest layer, and it is nearly all ReLU. Its size is close to the number of outline edges the build reports, so it appears to hold the font edge neurons.
 
-### Real neurons, and where they live
+#### Real neurons, and where they live
 
 This animation visits ten sub-networks. On the left, amber marks where that unit's incoming weights sit in the full matrices. On the right is a real neuron from the weight file, with its bias, activation and each weight coming in.
 
 <p align="center"><img src="docs/figures/subunits.gif" width="900" alt="Tour of ten sub-networks showing their place in the matrices and real neurons with their weights"></p>
 
-Look for weights of `2^40` paired with a bias near `-2^40`: that is the gate described in the next section. The font neurons also carry fractional weights, which fit the line coefficients of an outline edge. The examples were chosen to be easy to read, with 2 to 6 inputs each, so they are not a random sample. A sub-network's label can also look unexpected on an input, partly because merged neurons are credited to just one sub-network.
+Look for weights of `2^40` paired with a bias near `-2^40`: that is the gate described above. The font neurons also carry fractional weights, which fit the line coefficients of an outline edge. The examples were chosen to be easy to read, with 2 to 6 inputs each, so they are not a random sample. A sub-network's label can also look unexpected on an input, partly because merged neurons are credited to just one sub-network.
 
-### What the weights and biases look like
+#### What the weights and biases look like
 
 Trained networks usually have weights that look like continuous noise. These do not, because each value was chosen for a logical reason. This shows every real weight and every nonzero bias, by family of sub-networks.
 
@@ -168,30 +240,7 @@ The 1,702,201 weights use only 10,020 distinct values. They fall into a few grou
 
 **The families have different shapes.** "Changing the document" has an even spread of powers of two from 2^1 to about 2^30, a sign of binary packing and unpacking. "Drawing text" is the only family with a wide smooth spread, and it comes from font coordinates and slopes. "Writing files" is about 90% ±1.
 
-### A logic gate from one row
-
-This shows how arithmetic becomes decisions. Say neuron `y` should pass a value `v` only when a control neuron `en` is 1. Give it these entries:
-
-```
-y = relu( v + en × 2^40 − 2^40 )
-```
-
-| `en` | Total | Output `y` |
-|---:|---|---|
-| 1 | `v + 2^40 − 2^40`, which is `v` | `v` |
-| 0 | `v − 2^40`, which is far below 0 | 0 |
-
-That is one row of `F`: a weight of 1 from `v`, a weight of 2^40 from `en`, a bias of −2^40, and a ReLU rule. With gates like this, the generator builds registers, comparisons, memory addressing and program flow.
-
-### What is not in the equation
-
-The equation updates neurons and nothing else. Three things sit around it:
-
-- **Memory and the screen.** The document is stored in a separate memory bank. There are ports that treat particular neurons as an enable, an address and data. When an enable is nonzero, the engine carries out that read or write. Data that is read comes back through `u` on the next tick.
-- **The glue.** It writes events into `u`, runs ticks until the halt neuron fires, and shows the screen.
-- **A second clock.** Neurons for drawing text and for managing styles run as a separate block with no connections to the main block, shown by the amber lines in the figure. A call port pauses the main block, passes values over, runs the second block to completion and passes the results back.
-
-## From neurons to logic
+### From neurons to logic
 
 The generator writes three activation functions. (The engine has a fourth kind internally, an optimization for registers whose only job is holding their value.) The important building block is the gate, which lets a one-bit signal decide whether a value passes.
 
@@ -208,7 +257,7 @@ def gate(s, val, en):
 
 With gates you can build multiplexers, registers (a neuron feeding itself through a recurrent edge), comparators, decision trees and memory addressing. Linear expressions fold into the next real neuron at build time, so `a + 2*b` costs no neuron of its own.
 
-## Control flow: a token in the weights
+### Control flow: a token in the weights
 
 The program counter is a one-hot vector. In each clock domain, exactly one state neuron holds 1, and its weights open the gates for that step. Many neurons can compute in the same tick, but control moves one step at a time, much like a processor.
 
@@ -216,7 +265,7 @@ The program counter is a one-hot vector. In each clock domain, exactly one state
 
 Subroutines work too: a return register holds the id of the state to go back to, and a small dispatch layer decodes it. The build fails if two states share a name.
 
-## Why half a million neurons can feel instant
+### Why half a million neurons can feel instant
 
 Neurons rest at zero, and the engine only visits a neuron when something nonzero reaches it. Gated neurons are lazy: their value inputs are read only if the gate opens. This is real data from the shipped weights, one frame per group of ticks. Watch the font outlines tile in the top left: it lights up only for a letter that has not been drawn before.
 
@@ -236,7 +285,7 @@ Neurons rest at zero, and the engine only visits a neuron when something nonzero
 
 Figures are from a short document at commit `9387767`. A long document costs more on events that repaint the whole view.
 
-## Memory: the network holds the pointers
+### Memory: the network holds the pointers
 
 External memory is a passive tensor. The network produces every address, read, write, length and mask. The engine executes those signals and decides nothing.
 
@@ -244,7 +293,7 @@ External memory is a passive tensor. The network produces every address, read, w
 
 Two timing rules shape the design: a read's data arrives on the tick after its address, and it lasts one tick. Much of the generator is careful scheduling around those two facts, much like programming a pipelined processor by hand.
 
-## The screen is also an input
+### The screen is also an input
 
 The output is RGBA, and the alpha channel is not transparency. It holds an object id. To answer "what did the user click?", the network reads the pixel under the pointer from its own last screenshot.
 
@@ -252,7 +301,7 @@ The output is RGBA, and the alpha channel is not transparency. It holds an objec
 
 So buttons, tabs and menu rows need no table of rectangles: they paint their ids as they draw. For a click in text, the id finds the line, and a line table in memory gives the exact document position. The pointer shape comes from the same plane. On caret blink ticks, a small checker also reads the screen back and compares it to the line table, then repairs any damage it finds.
 
-## How a letter gets drawn
+### How a letter gets drawn
 
 There is no stored bitmap font, and no transform basis. Open font outlines are compiled straight into weights. Each outline edge is a neuron whose weights are that edge's line coefficients. A glyph is literally a small program made of neurons.
 
@@ -272,7 +321,7 @@ Vertical snapping is a piecewise linear layer written from font metrics. Horizon
 
 The other 90,000 or so neurons hold the rest of text drawing and the entire word processor. The provenance record, [`PROVENANCE.md`](PROVENANCE.md), lists all 73 sub-networks with their purposes and generator files, and is regenerated by every build.
 
-## File formats are networks too
+### File formats are networks too
 
 Opening a `.docx` means inflating a zip file and parsing XML. Saving means writing XML, compressing it with deflate, computing CRC32 and assembling a zip. All of that is neurons.
 
@@ -280,7 +329,11 @@ Opening a `.docx` means inflating a zip file and parsing XML. Saving means writi
 
 The same is true of PNG pictures and PDF export. The network also chooses the file name and tells the glue when to offer the download.
 
-## How everything is connected
+## How it is put together
+
+What connects to what, what every part does, and what sits outside the network.
+
+### How everything is connected
 
 The whole app is one neural network: one graph of neurons, evaluated by one engine. A "sub-network" is a label on a set of those neurons, recorded by the generator so each neuron can be traced to its purpose. There is no boundary in the weights between them. The colored families in this figure are just categories for this README. The sub-networks are also not wired in a chain: they are built around a hub. This figure and the numbers below are decoded from the shipped weight file, and the engine ports are read from the same file.
 
@@ -330,13 +383,13 @@ Here is every connection, at the level of single sub-networks. Each row sends to
 Two things to keep in mind when reading it. The build merges duplicate neurons, and a merged neuron is credited to just one sub-network. So a line between two unrelated names, such as `png reader` and `compiled control`, can be logic they share. That is also why a few reader and writer names light up slightly on a key press. The raw data is in [`docs/figures/src/connections.json`](docs/figures/src/connections.json).
 
 <!-- networks:start -->
-## Every sub-network, and why it exists
+### Every sub-network, and why it exists
 
 The build traces each neuron to one of 73 named sub-networks. This is the whole list, with neuron counts from the current build. Names are the exact labels in [`PROVENANCE.md`](PROVENANCE.md), and some keep working labels from when they were written (`a4`, `rv a3`, `tier 2`).
 
 <p align="center"><img src="docs/figures/network_path.svg" alt="Animated path of a key press through the sub-networks"></p>
 
-### Getting events in (15,334 neurons)
+#### Getting events in (15,334 neurons)
 
 The browser reports raw facts, such as a key name or a button mask. Deciding what those facts mean is application logic, so it has to happen in neurons.
 
@@ -353,7 +406,7 @@ The browser reports raw facts, such as a key name or a button mask. Deciding wha
 | `character maps` | 89 | Converts between Unicode and the internal character codes, using the Windows-1252 block. | Keeping internal codes small keeps glyph, metric and spelling tables small. Files and the clipboard still need Unicode. |
 | `event dispatch` | 1 | One neuron left from the first dispatcher. It did not fire on the key presses we traced. | Routing now lives in `raw event interpretation` and the state rules. It is listed so that the record stays complete. |
 
-### Changing the document (3,839 neurons)
+#### Changing the document (3,839 neurons)
 
 These networks are the only ones that write document text. They all go through the same edit and undo paths, so everything stays undoable.
 
@@ -375,7 +428,7 @@ These networks are the only ones that write document text. They all go through t
 | `style interner` | 53 | Finds or adds a style record in the interned table, in its own clock domain. | Each character stores a short index instead of a full record. That makes the text compact and makes comparing two styles a single check. |
 | `tier3` | 22 | Holds the remaining tier 3 commands, plus undo for their operations. | It connects tier 3 features to the shared undo log. |
 
-### Laying out and painting the page (7,874 neurons)
+#### Laying out and painting the page (7,874 neurons)
 
 These networks decide where everything goes, then draw it.
 
@@ -401,7 +454,7 @@ These networks decide where everything goes, then draw it.
 | `a4 keep` | 56 | Applies keep with next and keep lines during pagination. | It has to add up the height a paragraph must share a page with before placing its first line. |
 | `screen check` | 23 | Compares one line of the id plane with the line table on each blink tick, and repairs it by repainting. | The project requires checking the screen against document state. This catches drawing damage as the app runs. |
 
-### Drawing text (410,392 neurons)
+#### Drawing text (410,392 neurons)
 
 This is the largest family. It is what replaces a font engine. The method is described in [How a letter gets drawn](#how-a-letter-gets-drawn).
 
@@ -421,7 +474,7 @@ This is the largest family. It is what replaces a font engine. The method is des
 | `glyph patch` | 6 | Assembles coverage and color into a patch for the patch port. | Text color is applied here, so a cached glyph works in any color. |
 | `stem units` | 0 | Would hold stem positions for horizontal snapping. It has no neurons in the current build, because no font turns that on. | It is listed so that the provenance record stays complete. |
 
-### Reading files (6,787 neurons)
+#### Reading files (6,787 neurons)
 
 Each of these exists because no parser library is allowed. XML, zip and PNG bytes are consumed one state at a time.
 
@@ -436,7 +489,7 @@ Each of these exists because no parser library is allowed. XML, zip and PNG byte
 | `a4 docx` | 268 | Reads and writes the paragraph properties added by the commands above. | Anything the app can do must survive a save and open, so features carry their own file code. |
 | `docx reader tier 3` | 106 | Adds walking between the parts of a file. | Tier 3 content lives in separate parts of the zip file. |
 
-### Writing files (5,878 neurons)
+#### Writing files (5,878 neurons)
 
 Saving runs the same idea in reverse. The network produces every byte, and the glue only offers the download.
 
@@ -453,7 +506,25 @@ Saving runs the same idea in reverse. The network produces every byte, and the g
 
 <!-- networks:end -->
 
-## Is it a circuit?
+### What is not the network
+
+<p align="center"><img src="docs/figures/glue_boundary.svg" alt="Network logic compared with the glue and engine"></p>
+
+The rule is that glue may not branch on, parse, format or interpret application data. It is enforced, not just promised. [`test/audit.py`](test/audit.py) holds an exact allow list of every `if` condition and string literal in the glue, and bans text parsing calls and drawing APIs. Anything new has to be argued for in that file.
+
+Three things run outside the network, and they are all plumbing: the WASM inference engine, the event and byte encoding, and the commands the network raises by name (save this file, set this timer, focus this field). The glue also keeps the spell checker's added words in browser storage when the network says to.
+
+### How it is built
+
+<p align="center"><img src="docs/figures/build_pipeline.svg" alt="Animated build pipeline"></p>
+
+Weights compress well because they recur. Neurons are stored in layer order as small integer deltas, weights index a table of distinct values, duplicate neurons are merged, and dead ones are removed. Display lists hold the ribbon, menus and labels in read only memory, played by one sequencer. The page also carries read only tables for strings, the spell automaton and PDF fonts.
+
+## What kind of thing is this?
+
+What the network can fairly be called, and how it behaves.
+
+### Is it a circuit?
 
 Largely, yes. The generator works more like a hardware compiler than a machine learning tool. Every neuron acts as a circuit part, and a matrix row is that part's wiring. All of the network has this structure. But only part of it is digital logic, and some of the system is not a circuit at all.
 
@@ -470,7 +541,7 @@ Largely, yes. The generator works more like a hardware compiler than a machine l
 
 The idea has a long history: McCulloch and Pitts described neurons as threshold logic in 1943. A matrix-vector product `F·v` here is a circuit's input totals. One sweep through the layers is the signals settling.
 
-### What behaves like what
+#### What behaves like what
 
 I classified every neuron from its activation, bias and incoming weights:
 
@@ -489,7 +560,7 @@ Only a small share is pure Boolean logic. Most of the network is mixed-signal in
 
 Actual values show the same mix. In a short session of typing, clicking, formatting and find, on the main clock block only, 3,570 neurons fired over 5,928 ticks. Of those, 2,139 (60%) only ever held 0 or 1, and 1,431 (40%) held other numbers.
 
-### Where the comparison holds, and where it does not
+#### Where the comparison holds, and where it does not
 
 **It holds for the whole network's structure.** All of the neurons, including the fonts, are fixed parts wired together, clocked by ticks. No part is computing anything other than a weighted sum and a simple rule.
 
@@ -501,11 +572,11 @@ Actual values show the same mix. In a short session of typing, clicking, formatt
 - **Memory and the screen.** These are stored outside the network, in the engine. Hardware has RAM too, but here no gates implement it. The rectangle, patch and copy ports are also loops in the engine, not neurons, although the network controls them.
 - **Timing.** A real circuit has wire delays, glitches and a clock limit. Here a sweep is simply calculated in order, so these issues do not arise.
 - **The engine's shortcuts.** Skipping zeros and closed gates is a property of how this software simulates the circuit. It changes the speed, not the design.
-- **The glue and the browser.** These are ordinary code around the circuit, limited as described below.
+- **The glue and the browser.** These are ordinary code around the circuit, limited as described in [What is not the network](#what-is-not-the-network).
 
 **Clock domains have a hardware parallel.** Pausing the main block while the second one runs resembles clock gating. As a call that runs to completion, it is also like a software subroutine.
 
-## How do we classify what this is?
+### How do we classify what this is?
 
 The short answer is a **neural program, written at the generator level**: a fixed-function recurrent threshold-linear network whose weights implement a complete interactive application. Those weights are mostly the compiled output of a program that a language model wrote.
 
@@ -518,7 +589,7 @@ The short answer is a **neural program, written at the generator level**: a fixe
 | **Weight-Space Programming** | Arguably, at the generator level | [The original post](https://rikiyat.github.io/blog/weight-space-programming/) describes a language model reading and writing weights directly. Here, a language model authored the design and the weights, but through a generator. It rarely read them. See below. |
 | **Machine learning** | No | There is no data, loss, gradient or search. |
 
-### Is this Weight-Space Programming?
+#### Is this Weight-Space Programming?
 
 Reasonable people could answer either way. Here is the case on each side.
 
@@ -545,7 +616,7 @@ Where the weights come from also varies:
 
 So this is strong on writing weights and weak on reading them. A fair summary is that the generator was the program, and the weights are mostly its compiled output. Reading a neuron here also relied on knowing the generator: an unfamiliar weight file would be much harder to interpret. The label "Weight-Space Programming at the generator level" is the closest this project claims.
 
-### Earlier work it relates to
+#### Earlier work it relates to
 
 | Line of work | Example | How weights are made | Relationship |
 |---|---|---|---|
@@ -556,7 +627,7 @@ So this is strong on writing weights and weak on reading them. A fair summary is
 | Compiled modern networks | [Tracr, Lindner et al., 2023](https://arxiv.org/abs/2301.05062v3): programs to transformers | Compiled, to give interpretability research a known ground truth | Similar method, different goal |
 | Trained programs | Neural Turing Machines; [Neural Programmer-Interpreters](https://arxiv.org/abs/1511.06279v4) | Trained | Similar structure in places, opposite method |
 
-### What may be different here
+#### What may be different here
 
 These may be unusual, but they have not been checked against a full literature survey, so this project makes no claim to be first:
 
@@ -566,11 +637,11 @@ These may be unusual, but they have not been checked against a full literature s
 
 It is also arguable whether "compiler" is the right word for the generator. It is a single-purpose program with its own primitives, not a general compiler with a source language. This table is based on a quick search and on abstracts and summaries of the papers, so treat it as a starting point rather than a complete review.
 
-## Determinism and hallucinations
+### Determinism and hallucinations
 
 People who hear "neural network" often expect a system that varies from run to run and sometimes makes things up. This one works differently, because of how it was made.
 
-### Same input, same output
+#### Same input, same output
 
 Nothing in the network is random. No sampling, temperature, noise or dropout exists at run time, and the audit rejects randomness in the generator and host.
 
@@ -584,7 +655,7 @@ These tests ran on one machine. WebAssembly specifies its floating point arithme
 
 **The output can still differ if the input differs.** The glue passes in a few things from the outside world: the date, event times, and the timing of keys and timers. So a tracked change records today's date, and a saved file with one will differ from one saved on another day. Given the same inputs at the same times, the result is the same.
 
-### Exactly repeatable is not the same as exact
+#### Exactly repeatable is not the same as exact
 
 Every result repeats down to the last bit, but it is still floating point, with rounding at known limits:
 
@@ -593,7 +664,7 @@ Every result repeats down to the last bit, but it is still floating point, with 
 
 Most of the program is logic and integers, which are exact. Fractions appear mainly in font geometry.
 
-### Can it hallucinate?
+#### Can it hallucinate?
 
 Not in the sense that a language model can. Hallucination is when a trained model produces plausible content with no basis, because it generates output from learned statistics. This network has none of the parts that do that:
 
@@ -601,45 +672,15 @@ Not in the sense that a language model can. Hallucination is when a trained mode
 - **No generated content.** It does not write or complete text. Letters appear because you typed them or a file contained them. The spell checker's suggestions are single edits of your word, checked against a fixed word list.
 - **No confidence or guessing.** A neuron has no notion of a likely answer. A rule either matches or does not.
 
-### What can go wrong instead
+#### What can go wrong instead
 
 The failure mode here is the ordinary one for software: bugs. A wrong result is repeatable, can be traced neuron by neuron, and gets fixed by changing the generator. This project has had plenty of them, such as a Select All that painted a blank page. Bad output is also possible when a feature is simply missing or a file uses something the reader does not handle.
 
 This repository's generator and documentation were largely written with a language model, which is a different matter from the network it wrote. That model could make mistakes in code, and did, in the same way it could in prose. Some labels and claims in these files were wrong until they were checked against the weight file. So the running network cannot hallucinate, but its documentation could have errors. Where a number matters, the scripts in `docs/figures/src/` measure it from the shipped weights.
 
-## What is not the network
+## Evidence and reference
 
-<p align="center"><img src="docs/figures/glue_boundary.svg" alt="Network logic compared with the glue and engine"></p>
-
-The rule is that glue may not branch on, parse, format or interpret application data. It is enforced, not just promised. [`test/audit.py`](test/audit.py) holds an exact allow list of every `if` condition and string literal in the glue, and bans text parsing calls and drawing APIs. Anything new has to be argued for in that file.
-
-Three things run outside the network, and they are all plumbing: the WASM inference engine, the event and byte encoding, and the commands the network raises by name (save this file, set this timer, focus this field). The glue also keeps the spell checker's added words in browser storage when the network says to.
-
-## How it is built
-
-<p align="center"><img src="docs/figures/build_pipeline.svg" alt="Animated build pipeline"></p>
-
-Weights compress well because they recur. Neurons are stored in layer order as small integer deltas, weights index a table of distinct values, duplicate neurons are merged, and dead ones are removed. Display lists hold the ribbon, menus and labels in read only memory, played by one sequencer. The page also carries read only tables for strings, the spell automaton and PDF fonts.
-
-## Build it
-
-You need clang with the wasm32 target, Python 3 with `fonttools`, `numpy` and `pillow`.
-
-```bash
-git clone https://github.com/dirktheeng/SynapseWrite.git
-cd SynapseWrite
-./make.sh
-# then open build/index.html in a browser
-```
-
-To run the tests, add Node with Playwright. Saved-file checks also use LibreOffice.
-
-```bash
-NODE_PATH=$(npm root -g) node test/e2e.js
-python3 test/audit.py
-```
-
-## How it is checked
+### How it is checked
 
 Tests drive the app only through events, and they judge only output images and saved files.
 
@@ -654,7 +695,7 @@ Tests drive the app only through events, and they judge only output images and s
 
 More suites cover tables, pictures, fonts, PDF, tracked changes, equations and bulk edits. Fuzz tests run the real weights on a checked engine build that traps out-of-bounds memory, two active state tokens and non-boolean logic.
 
-### Latency
+#### Latency
 
 Measured in headless Chromium on a CPU through WASM, on a long test document at `9387767`:
 
@@ -669,28 +710,7 @@ Measured in headless Chromium on a CPU through WASM, on a long test document at 
 
 The project's target is under 100 ms from event to frame, at 1280 by 800. It has not been measured on a mid-range GPU.
 
-## Status
-
-Every feature is tracked in [`PARITY.md`](PARITY.md). "Passed" means an automated test passed, not that behavior was confirmed against Word.
-
-| Tier | Scope | Passed | Partial |
-|---|---|---:|---:|
-| 1 | Ribbon, rulers, typing, selection, undo, clipboard, find | 8 | 7 |
-| 2 | Formatting, styles, fonts, lists, line breaking, pagination | 8 | 4 |
-| 3 | Tables, images, headers, sections, columns, footnotes, comments | 7 | 1 |
-| 4 | Track changes, merge, equations, fields, spell check, PDF, `.docx` | 6 | 4 |
-
-**Known gaps, stated plainly:**
-
-- **Not verified in real Word.** No copy of Word has been used, so there are no pixel comparisons against Word, and saved `.docx` files have only been checked with LibreOffice and file-format checks.
-- **Only tested in Chromium.** Current Firefox and Edge are targets, but they are untested.
-- **Clipboard formatting works only inside the app.** Other programs receive plain text.
-- **Zoom stops at 150 percent,** and there is no vertical ruler.
-- **Styling limits:** no custom colors, user-created styles or character styles, and only some list formats.
-- **Characters beyond the Windows-1252 block are not supported.**
-- **Greedy line breaking only,** with no hyphenation.
-
-## Repository tour
+### Repository tour
 
 | Path | What is there |
 |---|---|
@@ -705,6 +725,6 @@ Every feature is tracked in [`PARITY.md`](PARITY.md). "Passed" means an automate
 | `docs/figures/src/` | Scripts that generate this README's figures |
 | `PROGRESS_*.md` | Verbose build logs: what was tried, and each result |
 
-## License
+### License
 
 The code is under the [MIT License](LICENSE). The fonts in `fonts/` keep their own licenses, included with each family, and the word list keeps its notice in `gen/words_en.COPYRIGHT`.
