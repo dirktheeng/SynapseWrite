@@ -1,0 +1,4 @@
+# Reviewer a3 progress: Tier 1 interaction gaps against Word
+Baseline build took 5 min wall on the shared machine (59 s user). Read app.py key, hit test, paint, layout, pdf and docx paths.
+Found by reading: no Ctrl word moves or word deletes, no Shift+click, PageUp/Down only scroll, End on a wrapped line and a click right of a wrapped line land on the next line (no end of line affinity), arrow keys while the caret is scrolled away read pixels of the ribbon and can press a button, Up at the top of a page gap sticks, a click in a long paragraph jumps to its top (ASC2 used the paragraph top), drag into gray cancels drag, Tab is four spaces, no line break, no context menu, no match highlight.
+Plan: gen/rv_a3_pre.py (registers, key rule table), gen/rv_a3_keys.py (states). Glue only gains a modifier and button input (ev_m), more key codes, and contextmenu suppression.

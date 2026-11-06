@@ -16,14 +16,14 @@ for(const [i,v] of h.init)e.inject(i,v);
 const bank=()=>new Float32Array(mem(),e.p_bank(),h.bank);
 {const b=bank();for(const [a,v] of h.bank_init)b[a]=v;}
 const cv=document.getElementById('screen'),ctx=cv.getContext('2d',{alpha:false,willReadFrequently:true});const img=ctx.createImageData(1280,800);
-let ptr='mouse';let timer=0,pendClip=null,keyCopy=false;
+let ptr='mouse';let evm=0;let timer=0,pendClip=null,keyCopy=false;
 // Clipboard write: the async API, then the copy event, then a code telling the network that only its own copy holds the text.
 const writeClip=t=>{const fail=()=>{let ok=false;try{ok=document.execCommand('copy');}catch(_){}if(!ok)dispatch(13,2);};try{navigator.clipboard.writeText(t).catch(fail);}catch(_){fail();}};
 window.addEventListener('copy',ev=>{if(pendClip!==null){ev.clipboardData.setData('text/plain',pendClip);ev.preventDefault();}});window.addEventListener('cut',ev=>{if(pendClip!==null){ev.clipboardData.setData('text/plain',pendClip);ev.preventDefault();}});
 const stats=window.annStats={ticks:0,ms:0,edges:0,events:0};
 const dispatch=(k,a=0,b=0,c=0)=>{
  const t0=performance.now();const E0=e.edges();
- e.inject(h.ev[0],k);e.inject(h.ev[4],Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/864e5));if(a)e.inject(h.ev[1],a);if(b)e.inject(h.ev[2],b);if(c)e.inject(h.ev[3],c);
+ e.inject(h.ev[0],k);e.inject(h.ev[4],Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/864e5));if(evm){e.inject(h.ev[5],evm);evm=0;}if(a)e.inject(h.ev[1],a);if(b)e.inject(h.ev[2],b);if(c)e.inject(h.ev[3],c);
  const n=e.run(h.halt,window.annMax||50000000);
  {const dr=new Uint8Array(mem(),e.p_drow(),801),f=new Uint32Array(mem(),e.p_fb(),1024000),q=new Uint32Array(img.data.buffer);for(let y=0;y<800;y++)if(dr[y]){let z=y;while(dr[z])dr[z++]=0;for(let i=y*1280,j=z*1280;i<j;i++)q[i]=f[i]|0xff000000;ctx.putImageData(img,0,0,0,y,1280,z-y);y=z;}}
  const clip=e.val(h.clipout);if(clip){const bb=bank();const cs=[];for(let i=0;i<clip-1;i++)cs.push(bb[h.cb+i]);const txt=String.fromCharCode(...cs);window.annClip=txt;pendClip=txt;if(!keyCopy)writeClip(txt);keyCopy=false;}
@@ -42,9 +42,9 @@ const openPic=async f=>{const u=new Uint8Array(await f.arrayBuffer());const bb=b
 const saveFile=async (u,name)=>{let dl=null;try{dl=window.claude?await window.claude.use('downloads'):null;}catch(_){}
  if(dl){try{await dl.save({filename:name,data:u});}catch(_){}return;}
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([u]));a.download=name;a.click();};
-const NAMED={Backspace:8,Tab:9,Enter:13,Escape:27,Delete:127,ArrowLeft:128,ArrowUp:129,ArrowRight:130,ArrowDown:131,Home:132,End:133,PageUp:134,PageDown:135};
+const NAMED={Backspace:8,Tab:9,Enter:13,Escape:27,Delete:127,ArrowLeft:128,ArrowUp:129,ArrowRight:130,ArrowDown:131,Home:132,End:133,PageUp:134,PageDown:135,Insert:136,F3:137,F12:140};
 const mods=ev=>(ev.ctrlKey||ev.metaKey?1:0)+(ev.shiftKey?2:0);
-window.addEventListener('keydown',ev=>{let c=NAMED[ev.key];if(!c&&ev.key.length===1)c=(ev.ctrlKey||ev.metaKey)?ev.key.toLowerCase().charCodeAt(0):ev.key.charCodeAt(0);
+window.addEventListener('keydown',ev=>{if(ev.altKey&&!ev.ctrlKey)return;let c=NAMED[ev.key];if(!c&&ev.key.length===1)c=(ev.ctrlKey||ev.metaKey)?ev.key.toLowerCase().charCodeAt(0):ev.key.charCodeAt(0);
  if(!c)return;const cm=ev.ctrlKey||ev.metaKey;
  // Ctrl+V lets the browser fire paste, with the hidden field focused because some browsers only paste into a field. Ctrl+C and Ctrl+X let it fire copy or cut.
  if(cm&&c===118){if(!ev.repeat&&ptr!=='touch'){ti.focus({preventScroll:true});setTimeout(()=>cv.focus({preventScroll:true}),0);}return;}
@@ -52,7 +52,7 @@ window.addEventListener('keydown',ev=>{let c=NAMED[ev.key];if(!c&&ev.key.length=
  ev.preventDefault();dispatch(2,c,mods(ev),Math.floor(performance.now()));});
 window.addEventListener('paste',ev=>{ev.preventDefault();pasteText(ev.clipboardData.getData('text'),1);});
 const pos=ev=>{const r=cv.getBoundingClientRect();return [Math.round((ev.clientX-r.left)*1280/r.width),Math.round((ev.clientY-r.top)*800/r.height)];};
-cv.addEventListener('mousedown',ev=>{cv.focus({preventScroll:true});const [x,y]=pos(ev);dispatch(3,x,y,Math.floor(performance.now()));});
+cv.addEventListener('mousedown',ev=>{cv.focus({preventScroll:true});const [x,y]=pos(ev);evm=mods(ev)+(ev.button===2?8:0);dispatch(3,x,y,Math.floor(performance.now()));});cv.addEventListener('contextmenu',ev=>ev.preventDefault());
 window.addEventListener('mouseup',ev=>{const [x,y]=pos(ev);dispatch(4,x,y);});
 let moving=false;cv.addEventListener('mouseleave',()=>dispatch(11));cv.addEventListener('mouseenter',ev=>{if(ptr!=='touch'&&!ev.buttons){const [x,y]=pos(ev);dispatch(11,x,y);}});window.addEventListener('mousemove',ev=>{if(!ev.buttons){const [x,y]=pos(ev);dispatch(11,x,y);return;}if(moving)return;moving=true;requestAnimationFrame(()=>{moving=false;const [x,y]=pos(ev);dispatch(5,x,y);});});
 cv.addEventListener('wheel',ev=>{ev.preventDefault();dispatch(6,0,0,Math.round(ev.deltaY)+1000);},{passive:false});

@@ -145,9 +145,9 @@ lit('SVo',b'<w:r>','SVo2')
 on('SVo2',(None,'T2RP',{t2full:net.step(psty),t2pr.r:t2pr.id('T4_TO')}))
 on('SVrs',(None,'SVch',{t2psv:ins_st}))
 # text bytes, in UTF-8. Latin-1 takes two bytes; the punctuation block has compiled byte sequences.
-e=S('SVch'); amp=net.eq(ins_ch,38,e);ltc=net.eq(ins_ch,60,e);gtc=net.eq(ins_ch,62,e);hi1=net.ge(ins_ch,160,e);pun=net.and_(net.ge(ins_ch,128,e),net.lt(ins_ch,160,e)); other=e-amp-ltc-gtc-hi1-pun
+e=S('SVch'); amp=net.eq(ins_ch,38,e);ltc=net.eq(ins_ch,60,e);gtc=net.eq(ins_ch,62,e);hi1=net.ge(ins_ch,160,e);pun=net.and_(net.ge(ins_ch,128,e),net.lt(ins_ch,160,e)); _rv_c9=net.eq(ins_ch,9,e);_rv_c11=net.eq(ins_ch,11,e);_rv_d=net.bits(ins_st,21,_rv_c9+_rv_c11)[20];other=e-amp-ltc-gtc-hi1-pun-_rv_c9-_rv_c11;em_en.lin(_rv_d);em_b.lin(_rv_d*32)
 em_en.lin(other); em_b.add(other,ins_ch)
-on('SVch',(amp,'SVa_',{off:off+1}),(ltc,'SVl_',{off:off+1}),(gtc,'SVg_',{off:off+1}),(hi1,'T2U2',{off:off+1,t2ur.r:t2ur.id('SVC')}),(pun,'T2U3',{off:off+1,t2ur.r:t2ur.id('SVC')}),(None,'SVC',{off:off+1}))
+on('SVch',(_rv_d,'SVC',{off:off+1}),(_rv_c9,'RVA3_ST',{off:off+1}),(_rv_c11,'RVA3_SB',{off:off+1}),(amp,'SVa_',{off:off+1}),(ltc,'SVl_',{off:off+1}),(gtc,'SVg_',{off:off+1}),(hi1,'T2U2',{off:off+1,t2ur.r:t2ur.id('SVC')}),(pun,'T2U3',{off:off+1,t2ur.r:t2ur.id('SVC')}),(None,'SVC',{off:off+1}))
 e=S('T2U2'); c3=net.ge(ins_ch,192,e); em_en.lin(e); em_b.add(e,194+c3)
 on('T2U2',(None,'T2U2b',None))
 e=S('T2U2b'); c3=net.ge(ins_ch,192,e); em_en.lin(e); em_b.add(e,as_x(ins_ch)-c3*64)
