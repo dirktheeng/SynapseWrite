@@ -21,3 +21,7 @@ Tried: PLAYWRIGHT_BROWSERS_PATH=build/pwx playwright install firefox webkit. Blo
 - Paste and reader now stop at the slot limit rather than filling the last paragraph.
 - Wide table file (300 columns): real hang in L1, L2, EM. A glyph wider than the cell broke the line before consuming anything, forever. A line now always takes its first character.
 - Baseline file limits at a 10M tick cap: 12 of 33 fail. Same cap at the commit before this fix: 6 of 33, of which the bombs are work within the budget.
+
+## Final numbers
+Fuzz 30 runs (5 profiles, seeds 1000 to 1005, 100 steps), pre fix: mix 1 of 6 seeds hang (CC1), file profile lost to the time limit after 3 seeds. Head: 0 crashes in all 30.
+File limits at 10M tick cap, pre fix: 12 of 33 fail. Head at 60M: all 48 caps pass. Invariants: 12 of 12 pass. Regression seeds 5 of 5.
