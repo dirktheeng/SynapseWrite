@@ -1,25 +1,9 @@
 # ---- .docx writer: zip container, CRC32 and XML are all produced here ----
 # Parts: static members, a dynamic styles.xml written from the style table, a dynamic document.xml.
-t2nr=Ret('T2NR');t2pr=Ret('T2PR');t2rr=Ret('T2RR');t2pp=Ret('T2PP');t2sr=Ret('T2SR')
+t2pr=Ret('T2PR');t2rr=Ret('T2RR');t2pp=Ret('T2PP');t2sr=Ret('T2SR')
 zo=R();zdr=Ret('T2ZD');usize=R();t2ur=Ret('T2UR')
-t2n=R();t2run=R();t2pk=R();t2full=R();t2w=R();t2j=R();t2pa=R();t2st=R();t2psv=R()
+t2run=R();t2pk=R();t2full=R();t2w=R();t2j=R();t2pa=R();t2st=R();t2psv=R()
 qsty_=R()
-# number printing without leading zeros
-cur_='T2_NV'
-for pw_ in (100000,10000,1000,100,10,1):
-    nx_='T2NR' if pw_==1 else f'T2_NV{pw_}'
-    e=S(cur_); base=net.gate(t2n,e); val=base
-    for big in (100000,10000,1000,100,10):
-        if big>pw_:
-            dd=X()
-            for t in range(1,10): dd=dd+net.step(val-big*t+0.5)
-            val=val-dd*big
-    dg=X()
-    for t in range(1,10): dg=dg+net.step(val-pw_*t+0.5)
-    show=e if pw_==1 else net.and_(e,net.step(base-pw_+0.5))
-    em_en.lin(show); em_b.add(show,48+dg)
-    on(cur_,(None,nx_,None)); cur_=nx_
-def vnum(st,val,nx): on(st,(None,'T2_NV',{t2n:val,t2nr.r:t2nr.id(nx)}))
 # run properties: ins_st holds the cell. t2full also writes the "off" forms so a paragraph style cannot leak in.
 sv_in=Bus(net); sv_en=Bus(net); SV=style_decode(sv_in.w,sv_en.w)
 sv_en.lin(S('T2RP')); sv_in.add(S('T2RP'),ins_st)

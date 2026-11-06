@@ -1,24 +1,15 @@
 # ---- PDF writer: objects, content streams and the xref table are all produced here ----
 net.group('pdf writer')
-XR=900000; nv=R(); nret=Ret('NR'); qp=R();qb=R();qyy=R();qtop=R();qlj=R();qnl=R();qcols=R();qci=R();qx=R();qh=R();qa=R();qs=R();qe=R();qo=R();qst=R();qpg=R();qstart=R();qlenat=R();qobj=R();qi=R();qxr=R();qcur=R()
+XR=900000; qp=R();qb=R();qyy=R();qtop=R();qlj=R();qnl=R();qcols=R();qci=R();qx=R();qh=R();qa=R();qs=R();qe=R();qo=R();qst=R();qpg=R();qstart=R();qlenat=R();qobj=R();qi=R();qxr=R();qcur=R()
 qph=R();qpw=R();qml=R();qmt=R();qth=R();qps=R();qcx=R();qnc=R();qtw=R();qsz=R();qfn=R();qbase=R()
 A9=rom.metrics(9)[0]
 pfcr=Ret('T4_PFC');qnr=t3ret('T4P_NR');qfc=R();qf0=R();qfh=R();qfi=R();qfid=R();qtoc=R();qsrc=R();qtpg=R();qtpv=R();qtxe=R();PDFN=1018000
-def number(st,val,nx):
-    on(st,(None,'NUM7',{nv:val,nret.r:nret.id(nx)}))
-cur_n='NUM7'
-for pw_ in (1000000,100000,10000,1000,100,10,1):
-    nx_=f'NUMd{pw_}' if pw_>1 else 'NR'
-    e=S(cur_n); val=net.gate(nv,e)
-    for big in (1000000,100000,10000,1000,100,10):
-        if big>pw_:
-            dd=X()
-            for t in range(1,10): dd=dd+net.step(val-big*t+0.5)
-            val=val-dd*big
-    dg=X()
-    for t in range(1,10): dg=dg+net.step(val-pw_*t+0.5)
-    em_en.lin(e); em_b.add(e,48+dg)
-    on(cur_n,(None,nx_,None)); cur_n=nx_
+qsvf=R()
+def pd_patch(st,nx):
+    "Writes the stream length into its reserved seven digit field, then puts the write position back."
+    on(st,(None,st+'p',{qsvf:fp,fp:qlenat}))
+    number(st+'p',qi,st+'q')
+    on(st+'q',(None,nx,{fp:qsvf}))
 import pdf_fonts
 head=b'%PDF-1.4\n'
 off=len(head); body=b''; offs={}
@@ -59,22 +50,10 @@ def pg_close(st,nx):
     n1=st+'a'
     on(st,(None,'T4P_NT',{qnr.r:qnr.id(st+'z')}))
     lit(st+'z',b'\nendstream\nendobj\n',n1)
-    on(n1,(None,nx,{qcur:qlenat,nv:0,qobj:qobj+2,qi:fp-qstart-18}))
+    on(n1,(None,nx,{qcur:qlenat,qobj:qobj+2,qi:fp-qstart-18}))
     # length is patched digit by digit into the reserved field
 pg_close('PD_C','PD_LP')
-# patch seven digits: units of qi at qlenat
-cur_n='PD_LP'
-for k_,pw_ in enumerate((1000000,100000,10000,1000,100,10,1)):
-    nx_=f'PD_LP{k_}' if pw_>1 else 'PD_LR'
-    e=S(cur_n); val=net.gate(qi,e)
-    for big in (1000000,100000,10000,1000,100,10):
-        if big>pw_:
-            dd=X()
-            for t in range(1,10): dd=dd+net.step(val-big*t+0.5)
-            val=val-dd*big
-    dg=X()
-    for t in range(1,10): dg=dg+net.step(val-pw_*t+0.5)
-    on(cur_n,(None,nx_,{fw2:(as_x(OUTB)+qlenat+k_,48+dg)})); cur_n=nx_
+pd_patch('PD_LP','PD_LR')
 e=S('PD_LR'); on('PD_LR',(net.ge(qp,npar,e),'PD_E',None),(None,'PD_O',None))
 pg_open('PD_O','PD_L5')
 pg_open('PD_0','PD_1')
@@ -104,18 +83,7 @@ lmv={qs:Wl[0],qe:Wl[1],qx:Wl[2]-48+gx7+qml,qh:Wl[3],qa:Wl[4],qo:Wl[0],qex:Wl[5]}
 col2=net.and_(ovf,net.eq(qnc,2,e),ONE-net.step(qxc))
 on('PD_7',(col2,'PD_8',{**lmv,qyy:qtop+qmt,qxc:(qtw-24)*0.5+24}),(ovf,'PD_C2',{**lmv,qyy:qtop+qps+qmt,qtop:qtop+qps,qxc:0}),(None,'PD_8',lmv))
 pg_close('PD_C2','PD_QH')
-cur_n='PD_QH'
-for k_,pw_ in enumerate((1000000,100000,10000,1000,100,10,1)):
-    nx_=f'PD_LQ{k_}' if pw_>1 else 'PD_O2'
-    e=S(cur_n); val=net.gate(qi,e)
-    for big in (1000000,100000,10000,1000,100,10):
-        if big>pw_:
-            dd=X()
-            for t in range(1,10): dd=dd+net.step(val-big*t+0.5)
-            val=val-dd*big
-    dg=X()
-    for t in range(1,10): dg=dg+net.step(val-pw_*t+0.5)
-    on(cur_n,(None,nx_,{fw2:(as_x(OUTB)+qlenat+k_,48+dg)})); cur_n=nx_
+pd_patch('PD_QH','PD_O2')
 pg_open('PD_O2','PD_8')
 # one text line: positioned chunks of a word and its trailing space, in screen pixels
 qsty=R(); qyb=qph-(qyy-qtop+qa); qpc=R()

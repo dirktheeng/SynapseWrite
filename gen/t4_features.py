@@ -54,20 +54,7 @@ on('T4_FI2',(None,'T4_FV',{fst:TST+t4k*ST_F0,fvr.r:fvr.id('AFTER_ED')}))
 on('T4_FV',(None,'T4_FV1',{r1:cb+SAVE+2}))
 e=S('T4_FV1')
 on('T4_FV1',(net.eq(t4k,1,e),'T4_NI',{t4nv:R1,t4r.r:t4r.id('T4_FVR')}),(net.eq(t4k,2,e),'T4_NI',{t4nv:wtot,t4r.r:t4r.id('T4_FVR')}),(None,'T4_DY1',{t4y:1970,t4d:evt}))
-PW=(100000,10000,1000,100,10,1)
-for i_,pw_ in enumerate(PW):
-    st=f'T4_NI{pw_}'; nx=f'T4_NI{PW[i_+1]}' if pw_>1 else 'T4_RR'
-    e=S(st); base=net.gate(t4nv,e); val=base
-    for big in PW:
-        if big>pw_:
-            dd=X()
-            for t in range(1,10): dd=dd+net.step(val-big*t+0.5)
-            val=val-dd*big
-    dg=X()
-    for t in range(1,10): dg=dg+net.step(val-pw_*t+0.5)
-    show=e if pw_==1 else net.step(base-pw_+0.5)
-    on(st,(show,'INS',{ins_ch:48+dg,ins_st:fst,oret.r:oret.id(nx)}),(None,nx,None))
-on('T4_NI',(None,'T4_NI100000',None))
+num_field('T4_NI',t4nv,fst,'T4_RR')
 # days since 1970 to a civil date, valid for 1970 to 2099
 e=S('T4_DY1'); ybits=net.bits(t4y,12,e); leap=net.and_(e,ONE-ybits[0],ONE-ybits[1]); yd=365+leap
 on('T4_DY1',(net.ge(t4d,yd,e),'T4_DY1',{t4d:t4d-yd,t4y:t4y+1}),(None,'T4_DM',{t4m:1,t4lp:leap}))
