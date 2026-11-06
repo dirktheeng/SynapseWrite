@@ -14,3 +14,7 @@ Run 1 (commit after PARITY edit): two builds byte identical (2,954,793). All sui
 But FLOPs rose: background layout +4,332,776 (0.8%), bold and click +27,854. Cause: the third sel_sum branch added a gate per size whose gate input is raw_hot, which changes on every glyph.
 Fix: no third branch. Inside the script branch each size's value is val(script)+gate(val(smc)-val(script), _smo), where _smo is a step of the small capital flag that rests at zero for plain text, so its lazy pull stops at once. The F1_SPLIT selector is a step of the same flag, not an and_ with ONE.
 Result: FLOPs identical to baseline on all 15 events. Page 2,955,265 (+1,548 bytes over baseline).
+
+## 3. Full suite run 2 (final code a43a321 plus PARITY text)
+Two builds byte identical, 2,955,265 bytes. Every suite passed as in run 1; p2 3/3; audit 67/67; flops identical to baseline on all events.
+Not done on this branch, for lack of time, not for a rule: links drawn or followed, highlight colors past 7 (needs a fourth highlight bit; the 24 bit style record is full), styles gaps, list levels past three, column line and third column (the 8 field section record is full), Fonts gaps. Hyphenation: pattern set measured, network not built.
