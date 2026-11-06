@@ -11,4 +11,11 @@ const d=require('./drive');const fs=require('fs');(async()=>{const {b,p}=await d
  await p.keyboard.press('ArrowDown');await stat('down');
  await p.keyboard.press('Enter');await stat('enter at top of long doc');
  await p.keyboard.press('Control+z');await stat('undo enter');
- await p.screenshot({path:'build/t4.png'});fs.writeFileSync('build/latency.json',JSON.stringify(out,null,0));await b.close();})();
+ await p.screenshot({path:'build/t4.png'});
+ // cold paint: a page of text in a font and size no glyph has been drawn in, so every glyph goes through the generator
+ {const q=await b.newPage({viewport:{width:1280,height:800}});await q.goto('file://'+require('path').resolve(__dirname,'../build/index.html'));await q.waitForFunction('window.annReady',{timeout:120000});await q.evaluate(()=>{window.annMax=60000000});
+  await q.evaluate(()=>{let s='';for(let i=0;i<30;i++)s+='The quick brown fox jumps over the lazy dog, then packs five dozen liquor jugs and vexes a sphinx. 0123456789\n';annPaste(s)});
+  const cold=async(l,r,sz)=>{await q.keyboard.press('Control+a');await q.mouse.click(229,75);await q.mouse.click(170,98+r*22);let ms=await q.evaluate(()=>Math.max(annStats.k3||0,annStats.k4||0,annStats.k2||0));out.push([l,Math.round(ms*10)/10]);console.log(l,Math.round(ms*10)/10,'ms');};
+  await cold('cold page, new family at 11 pt',2);await cold('cold page, another new family at 11 pt',3);await cold('cold page, script family at 11 pt',7);
+  await q.keyboard.press('Control+a');await q.mouse.click(258,75);await q.keyboard.type('36');await q.keyboard.press('Enter');const m36=await q.evaluate(()=>annStats.k2);out.push(['cold page, 36 pt',Math.round(m36*10)/10]);console.log('cold page, 36 pt',m36);await q.close();}
+ fs.writeFileSync('build/latency.json',JSON.stringify(out,null,0));console.log('wasm MB',await p.evaluate(()=>annMem()/1e6));await b.close();})();

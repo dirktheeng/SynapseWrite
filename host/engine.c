@@ -38,8 +38,8 @@ __attribute__((export_name("finish"))) void finish(void){
  __builtin_memset(zb,0,zn_);hp=zb;
  // Ports are grouped by clock domain, writes first. A port of kind 9 marks the start of domain 1.
  i32 c=0;for(i32 d=0;d<2;d++)for(i32 pass=0;pass<2;pass++){i32*p=ports,*e=ports+NP;i32 cd=0;pb[d][pass]=c;
-  while(p<e){i32 k=p[0],len=k==1||k==2?6:k==3?12:k==4?9:k==6?8:k==7?8:k==8?5+2*p[3]+2*p[4]:k==9?1:k==10?8:4;
-   if(k==9)cd=1;else if(cd==d&&(k==1||k==3||k==4||k==6||k==7||k==8)==(pass==0)){pen[c]=p[1];pptr[c]=(i32)(p-ports);c++;}
+  while(p<e){i32 k=p[0],len=k==1||k==2?6:k==3?12:k==4||k==11?9:k==6?8:k==7?8:k==8?5+2*p[3]+2*p[4]:k==9?1:k==10?8:4;
+   if(k==9)cd=1;else if(cd==d&&(k==1||k==3||k==4||k==11||k==6||k==7||k==8)==(pass==0)){pen[c]=p[1];pptr[c]=(i32)(p-ports);c++;}
    p+=len;}
   if(pass)pb[d][2]=c;}}
 // Initial values of one clock domain go on that domain's list.
@@ -62,12 +62,13 @@ static void write_port(i32*p){switch(p[0]){
    i32 x=I(p[2]),y=I(p[3])-YB,w_=I(p[4]),h=I(p[5]);i32 y0=V(p[10]),y1=V(p[11]);if(y1==0){y0=0;y1=H;}
    i32 x1=x+w_,yy1=y+h;if(x<0)x=0;if(x1>W)x1=W;if(y<y0)y=y0;if(yy1>y1)yy1=y1;
    u8 c[4]={C(v[p[6]]),C(v[p[7]]),C(v[p[8]]),C(v[p[9]])};
+   if(v[p[6]]<0){u8 al=c[3];if(y<yy1&&x<x1)for(i32 yy=y;yy<yy1;yy++){u8*q=fb+4*(yy*W+x)+3;for(i32 xx=x;xx<x1;xx++,q+=4)*q=al;}break;} // id plane only, colors stay
    if(y<yy1&&x<x1){i32 cc;__builtin_memcpy(&cc,c,4);for(i32 yy=y;yy<yy1;yy++){i32*q=(i32*)(fb+4*(yy*W+x));i32 diff=0;for(i32 xx=x;xx<x1;xx++){diff|=(*q^cc)&0xffffff;*q++=cc;}if(diff)drow[yy]=1;}}break;}
-  case 4:{ // patch write, each pixel masked by its nonzero 4th channel: {4,en,x,y,data,pw,ph,y0,y1}
+  case 11:case 4:{ // patch write, each pixel masked by its nonzero 4th channel: {4,en,x,y,data,pw,ph,y0,y1}. Kind 11 keeps the darker of old and new, so overlapping dark letters on a light page stay whole
    // Only neurons that fired this tick can have a nonzero mask, so the live list gives the pixels.
    i32 x=I(p[2]),y=I(p[3])-YB,pw=p[5],ph=p[6],y0=V(p[7]),y1=V(p[8]);if(y1==0){y0=0;y1=H;}i32 d=p[4];i32 cells=4*pw*ph;
    for(i32 t=0;t<nlive;t++){i32 q=live[t]-d;if((unsigned)q<(unsigned)cells&&(q&3)==3){i32 ix=q>>2,yy=y+ix/pw,xx=x+ix%pw;
-     if(yy>=y0&&yy<y1&&yy>=0&&yy<H&&xx>=0&&xx<W){u8*o=fb+4*(yy*W+xx);f64*c=v+d+q-3;o[0]=C(c[0]);o[1]=C(c[1]);o[2]=C(c[2]);drow[yy]=1;}}}break;}
+     if(yy>=y0&&yy<y1&&yy>=0&&yy<H&&xx>=0&&xx<W){u8*o=fb+4*(yy*W+xx);f64*c=v+d+q-3;if(p[0]==11){u8 r=C(c[0]),g=C(c[1]),b=C(c[2]);if(r<o[0])o[0]=r;if(g<o[1])o[1]=g;if(b<o[2])o[2]=b;}else{o[0]=C(c[0]);o[1]=C(c[1]);o[2]=C(c[2]);}drow[yy]=1;}}}break;}
   case 6:{ // image row copy, packed RGB cells to pixels: {6,en,x,y,addr,n,y0,y1}
    i32 x=I(p[2]),y=I(p[3])-YB,a=I(p[4]),n=I(p[5]),y0=V(p[6]),y1=V(p[7]);if(y1==0){y0=0;y1=H;}
    if(y>=y0&&y<y1&&y>=0&&y<H){drow[y]=1;for(i32 j=0;j<n;j++){i32 xx=x+j;if(xx>=0&&xx<W){u8*o=fb+4*(y*W+xx);i32 c=(i32)bget(a+j);o[0]=c>>16;o[1]=(c>>8)&255;o[2]=c&255;o[3]=1;}}}break;}

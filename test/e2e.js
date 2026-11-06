@@ -266,6 +266,6 @@ const cell=(r,c)=>click(880+c*26+8,64+r*22+8);const lay=(r,c)=>click(590+c*26+8,
  const SHADE3=[click(135,47),click(770+132+29,102)];
  await same('undo across indent and shading ops',['a',tabL,lay(0,1),tabH,click(135,47),click(116,76),'b',...SHADE3,key('Control+z'),key('Control+z'),key('Control+z'),HOME,click(400,320)],['a',tabL,lay(0,1),tabH,click(135,47),HOME,click(400,320)]);
  await same('mail merge keeps the cell layout',[click(135,47),click(116,76),'Hi {A}',REFS,MM,paste('A\nx\n'),HOME,click(400,320)],[click(135,47),click(116,76),'Hi x',REFS,HOME,click(400,320)]);
- await same('header text does not leak into find bar',[INS,click(275,76),'Head',key('Enter'),HOME,key('Control+f'),key('Escape')],[INS,click(275,76),'Head',key('Enter'),HOME]);
+ await same('header text does not leak into find bar',[INS,click(275,76),'Head',key('Enter'),HOME,key('Control+f'),key('Escape'),key('End')],[INS,click(275,76),'Head',key('Enter'),HOME,key('End')]);
  const ok=results.filter(r=>r[1]).length;console.log(`${ok}/${results.length} passed`);fs.writeFileSync('build/e2e.json',JSON.stringify(results,null,1));
 })();

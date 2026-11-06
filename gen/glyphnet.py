@@ -281,8 +281,8 @@ class GlyphUnit:
         net.aligned.append([next(iter(w.t)) for w in data])
         px=net.wire(); py=net.wire()
         net.connect(px,net.gate(bpx,bwr)-bwr*OFF); net.connect(py,net.gate(bpy,bwr))
-        p1=g.patch_cls(net.step(bwr-Lnc*2-0.5),px,py,data,LW,1); p2=g.sprite_cls(net.step(bwr+Lnc*2-2.5),px,py,data,LW,1)
-        p1.dom=1;p2.dom=1
+        p1=g.patch_cls(net.step(bwr-Lnc*2-fast*2-0.5),px,py,data,LW,1); p2=g.sprite_cls(net.step(bwr+Lnc*2-2.5),px,py,data,LW,1); p3=g.patch_cls(net.step(bwr+fast-Lnc*2-1.5),px,py,data,LW,1); p3.kind=11
+        p1.dom=1;p2.dom=1;p3.dom=1
         # ---- miss path: the generator ----
         g._generator(miss,Lch,Lface,Lppem,Lpt,g.key,retry,fin)
     def _generator(g,st,Lch,Lface,Lppem,Lpt,key,retry,fin):

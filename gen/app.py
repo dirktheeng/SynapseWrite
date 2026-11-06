@@ -75,7 +75,8 @@ class PixPort:
     def rec(s,nm): return [5,s.en.w,s.xy.w,s.out[0]]
 class PatchPort:
     def __init__(s,en,x,y,data,w,h): s.a=(en,x,y,data,w,h); net.ports.append(s)
-    def rec(s,nm): e,x,y,d,w,h=s.a; return [4,e,x,y,d,w,h,clip0,clip1]
+    kind=4
+    def rec(s,nm): e,x,y,d,w,h=s.a; return [s.kind,e,x,y,d,w,h,clip0,clip1]
 class SpritePort(PatchPort):
     "A patch write with no clip: it always covers the whole screen."
     def rec(s,nm): e,x,y,d,w,h=s.a; return [4,e,x,y,d,w,h,ZERO_R,ZERO_R]
@@ -734,7 +735,7 @@ sy=yy+DOCY-scroll
 indb=net.gate(plvl*48+48,net.step(lsf))
 ind=indb+net.eq(ptoc,2,S('R8'))*24
 e=S('R8')
-tx0=s_tx+rx0+xcol+tpad-48; r8a={rA:(lleft,sy,tx0-lleft+lx+ind,lhh,(bc0,bc1,bc2),1),x:tx0+ind+lx,off:ls_,col:1}
+tx0=s_tx+rx0+xcol+tpad-48; r8a={rA:(lleft,sy,lright-lleft,lhh,(bc0,bc1,bc2),1),x:tx0+ind+lx,off:ls_,col:1}    # the whole line is cleared first; characters then only set ids, so a letter's overhang survives its neighbor
 on('R8',(net.and_(net.eq(ls_,0,e),net.eq(lsf,1,e)),'BUL',r8a),(net.and_(net.eq(ls_,0,e),net.eq(lsf,2,e)),'NUM',r8a),(None,'C0',r8a))
 gly_y=sy+lasc-asc_e-rise
 BULS=[127,ord('o'),150,150]
@@ -771,7 +772,8 @@ adv2=adv*0.5
 for rr,xx,ww,aa in ((rA,x,adv2+1,col),(rB,x+adv2,adv2+1+xtra+kern,col+1)):
     rr.b[0].lin(e)
     for b,val in zip(rr.b[1:],(xx,sy+YB,ww,lhh)): b.add(e,val)
-    for i,bc_ in enumerate((bc0,bc1,bc2)): rr.b[5+i].lin(hlcol[i]); rr.b[5+i].add(nsh_,bc_)
+    for i in range(3): rr.b[5+i].lin(hlcol[i])
+    rr.b[5].lin(nsh_*(-1))
     rr.b[8].add(e,aa)
 und=net.and_(e,net.or_(SD['und'],SD['ins'])); ske=net.and_(e,net.or_(SD['strike'],SD['dele']))
 for rr,en_,yv in ((rC,und,sy+lasc+2-rise),(rD,ske,sy+lasc-strk-rise)):
@@ -790,7 +792,7 @@ e=S('CE'); chere2=net.and_(net.eq(pi,cp,e),net.eq(off,co,e))
 fsm.set(cx,chere2,x);fsm.set(cacol,chere2,col)
 mk2=net.and_(e,t1_marks,net.eq(le_,plen_,e)); rB.drive(mk2,(x+5,sy+lasc-12,1,14,(120,120,160),col)); rC.drive(mk2,(x+1,sy+lasc-12,4,6,(120,120,160),col))
 on('IM0',(net.ge(irow,pih,S('IM0')),'T3_IH0',None),(None,'IM0',{imr:(x,sy+irow,as_x(IMG0)+pio+iaddr,pim),irow:irow+1,iaddr:iaddr+pim}))
-_ce_fill=(x,sy,lright-x,lhh,(bc0,bc1,bc2),net.min_(col,199))
+_ce_fill=(x,sy,lright-x,lhh,(-1,0,0),net.min_(col,199))
 on('CE',(sp_bad2,'T4_SQ',{sx:sp_x0,sp_xe:x,sp_r:1,sp_in:0}),(net.and_(net.step(ptoc),net.eq(le_,plen_,e)),'T3_TD0',{rA:_ce_fill}),(net.step(pim),'IM0',{irow:0,iaddr:0,rA:_ce_fill}),(net.and_(net.eq(ls_,0,e),ONE-net.step(tcols)),'CB0',{rA:_ce_fill}),(None,'R9',{rA:_ce_fill}))
 on('CB0',(None,'CB1',{r1:pbs+CMTL}))
 on('CB1',(net.step(R1),'T3_CB2',{wl_:R1,wb_:pbs+CMT,wdx:1050,wdy:sy+3,wdw:200,wdd:0,wbgf:1,wret_.r:wret_.id('T3_CB3')}),(None,'R9',None))
@@ -1070,7 +1072,7 @@ for p in _ports:
         d=r[3]
         pr+=[r[0],new[nid(r[1])],new[nid(r[2])],new[nid(d)],r[4],new[nid(r[5])] if r[5] is not None else -1]
     elif r[0]==3: pr+=[3]+[new[nid(q)] for q in r[1:]]
-    elif r[0]==4: pr+=[4,new[nid(r[1])],new[nid(r[2])],new[nid(r[3])],new[nid(r[4][0])],r[5],r[6],new[nid(r[7])],new[nid(r[8])]]
+    elif r[0] in (4,11): pr+=[r[0],new[nid(r[1])],new[nid(r[2])],new[nid(r[3])],new[nid(r[4][0])],r[5],r[6],new[nid(r[7])],new[nid(r[8])]]
     elif r[0]==6: pr+=[6]+[new[nid(q)] for q in r[1:]]
     elif r[0]==7: pr+=[7,new[nid(r[1])],new[nid(r[2])],new[nid(r[3])]]+list(r[4:])
     elif r[0]==5: pr+=[5,new[nid(r[1])],new[nid(r[2])],new[nid(r[3])]]
