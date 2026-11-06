@@ -38,5 +38,5 @@ def zoom_sizes(size_hot):
     for i_,h_ in enumerate(size_hot):
         n_,s_=tsplit(h_,anyz); out[i_]=out[i_]+n_
         for z_h,z_ in zip(_zgy_h,ZL):
-            t_=rom.sz_near(max(4,min(72,rom.SZ[i_]*z_))); out[t_]=out[t_]+net.and_(s_,z_h)
+            t_=rom.SZ.index(max(4,min(72,round(rom.SZ[i_]*z_+0.01)))); out[t_]=out[t_]+net.and_(s_,z_h)
     return out

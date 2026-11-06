@@ -20,7 +20,7 @@ net=Net(); fsm=FSM(net); on=fsm.on; ONE=net.ONE; G_=net.gate
 # STYT 1100000 is the interned style table; PUS 999000 and PFT 999100 hold PDF face use and offsets. Glyph tag table TAGB 61000000, glyph store GSTORE 61500000, PDF font bytes FROMB 63000000.
 # The bank is paged by the engine: a page takes wasm memory only when first written, so far apart regions cost nothing until used.
 # High cells: undo 14500000, OUTB 20000000, IMG0 24000000, SAVEB 32000000 and everything from OUTP up only matters while reading, so a large save may run over it.
-PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; SAVEB=32000000; OUTP=40000000; PNGB=46000000; AUXB=50000000; RELB=51000000; CMB=51200000; FILE=53000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000; TAGB=61000000; GSTORE=61500000; GSTORE_END=63000000; FROMB=63000000; BANK=67000000
+PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; SAVEB=32000000; OUTP=40000000; PNGB=46000000; AUXB=50000000; RELB=51000000; CMB=51200000; FILE=53000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000; TAGB=61000000; GSTORE=61500000; GSTORE_END=63000000; FROMB=63000000; BANK=67200000
 # Regions fail the build if they overlap: see region() in nn.py. Bounds are exclusive at the end.
 for r_ in (('undo',14500000,20000000),('STYT interned styles',1100000,1100000+4096),('TAGB glyph tags',61000000,61500000),('GSTORE glyph store',61500000,63000000),('FROMB PDF fonts',63000000,64000000),
  ('a4 PDF numbering table',23800,25000),('a6 PDBM bookmarks',1200000,1264016),('a6 SGB suggestions',1302000,1310000),('a6 DICTB user words',1310000,1320000),('a6 AUTHB authors',1320000,1330000),('a6 EQT math records',1330000,1375000),
@@ -334,7 +334,7 @@ on('DISP',*PTR_DISP,(net.and_(kh[3],t1_mopb),'T1_MD',{hx_:eva,hy_:evb}),(net.and
    (kh[4],'T3_MU',{drag:0}),(kh[5],'MV',None),(kh[6],'WH',None),(kh[7],'TM',{blink:ONE-blink,autos:0}),(kh[8],'PASTE',{}),(kh[9],'A12_OV0',{}),(kh[10],'PG_0',{}),(None,'HALT',None))
 on('IDL2',(None,'HALT',None))
 on('MV',(t1_tdrag,'T1_TM0',None),(net.and_(S('MV'),net.step(tdk)),'T3_MV',None),(net.and_(S('MV'),drag),'MD2',{hx_:net.max_(net.min_(eva,zfx0(s_px+s_pw-2)),zfx0(s_px+1)),hy_:net.max_(net.min_(evb,DOCB-6),DOCY+6),shiftk:1}),(None,'HALT',None))
-_wi=net.and_(S('WH'),impf); _wn=S('WH')-_wi; on('WH',(None,'RD0',{scroll:net.relu(G_(impsc,_wi)+G_(scroll,_wn)+evc-1000),ytot:G_(impyt,_wi)+G_(ytot,_wn),autos:0,a7_jmp:0,impf:0}))   # ev_c carries delta+1000
+_wi=net.and_(S('WH'),impf); _wn=S('WH')-_wi; on('WH',(net.and_(net.step(evm),net.gt(evc,1000,S('WH'))),'IMP3_ZO',None),(net.step(evm),'IMP3_ZI',None),(None,'RD0',{scroll:net.relu(G_(impsc,_wi)+G_(scroll,_wn)+evc-1000),ytot:G_(impyt,_wi)+G_(ytot,_wn),autos:0,a7_jmp:0,impf:0}))   # ev_c carries delta+1000
 e=S('TM'); _a6stale=net.and_(a6hf,ONE-has_sel,ONE-drag,net.eq(mode,0,e),net.step(net.gt(wtot,a6w,e)+net.lt(wtot,a6w,e)+net.gt(pagesT,a6pg,e)+net.lt(pagesT,a6pg,e)))
 _rv_tm=S('TM'); on('TM',(net.and_(_rv_tm,drag,net.or_(net.lt(mp_pty,DOCY+8,_rv_tm),net.ge(mp_pty,DOCB-8,_rv_tm))),'RVA3_AS0',None),(t1_cntp,'T1_C0',{blink:blink}),(bgp,'BG',{blink:blink}),(_a6stale,'T4_FU',{blink:blink,a6fg:1,nolog:1,a6w:wtot,a6pg:pagesT}),(None,'A11_C0',None))
 # A provisional page is not the background's to paint on: the clip is empty until it finishes.
@@ -539,8 +539,8 @@ on('DS0',(trk,'T4_DS0',{wp:lo_p,wo:lo_o,wm:2,wfirst:1,fm:11,wret.r:wret.id('T4_D
 Kw=wp*2048+wo; wsel=Bus(net)
 on('COPY',(has_sel,'W0',{wp:lo_p,wo:lo_o,wn:0,wm:1,wret.r:wret.id('COPYE')}),(None,'HALT',None))
 on('CUT',(has_sel,'W0',{wp:lo_p,wo:lo_o,wn:0,wm:1,wret.r:wret.id('CUT2'),grp:grp+1}),(None,'HALT',None))
-e=S('CUT2'); on('CUT2',(net.ge(wn,589900,e),'RD0',{pcut:PMSG,clipn:0}),(None,'DS0',{dret.r:dret.id('AFTER_ED'),clipl:wn+1,clipn:wn,clipi:0}))
-e=S('COPYE'); on('COPYE',(net.ge(wn,589900,e),'RD0',{pcpy:PMSG,clipn:0}),(None,'HALT',{clipl:wn+1,clipn:wn,clipi:0}))
+e=S('CUT2'); on('CUT2',(net.ge(wn,589900,e),'RD0',{pcut:PMSG,clipn:0}),(None,'IMP3_CS0',{csd:1}))
+e=S('COPYE'); on('COPYE',(net.ge(wn,589900,e),'RD0',{pcpy:PMSG,clipn:0}),(None,'IMP3_CS0',{csd:0}))
 clipout.add(S('HF'),clipl); fsm.set(clipl,S('HF'),0)
 wantp=Bus(net); wantp.lin(S('HF')*0+wpaste); fsm.set(wpaste,S('HF'),0)
 e=S('W0')
@@ -629,7 +629,7 @@ on('FIND2',(None,'FN1',{fp:cp,fo:co,wrap:0}))
 net.group('paste')
 CB2=CB+200000; pi_=R()
 on('PASTE',(rdm,'HALT',None),(net.eq(mode,6,S('PASTE')),'T4_M0',{mode:0}),(net.and_(findon,net.lt(mode,3,S('PASTE'))),'IMP3_RQ',None),(has_sel,'DS0',{dret.r:dret.id('PS1'),grp:grp+1}),(None,'PS1',{grp:grp+1}))
-on('PS1',(None,'PS2',{pi_:0}))
+on('PS1',(None,'IMP3_PC',None))
 # Block paste. A window of cells is read at once. Their control characters are weighted by
 # position so one threshold layer finds how many cells lead before the first of them, and those
 # cells go to the paragraph, the styles and the undo log in a single write. A window that starts
@@ -638,7 +638,7 @@ PSN=32
 pn_=R(); PSW_=rpw.out
 e=S('PS2')
 _pe=net.or_(net.ge(pi_,evc,e),net.ge(nextb,SLOTMAX,e))
-on('PS2',(net.and_(_pe,net.step(a7_pn)),'A7_PF',None),(_pe,'AFTER_ED',None),(net.and_(net.ge(usp,UEND_-2200,e),ONE-net.step(a7_pn)),'PS2',{usp:UB,urp:UB}),(None,'PSW',{rpw:as_x(CB2)+pi_}))
+on('PS2',(net.and_(_pe,net.step(a7_pn)),'A7_PF',None),(_pe,'AFTER_ED',None),(pfm,'IMP3_PF',None),(net.and_(net.ge(usp,UEND_-2200,e),ONE-net.step(a7_pn)),'PS2',{usp:UB,urp:UB}),(None,'PSW',{rpw:as_x(CB2)+pi_}))
 e=S('PSW')
 _bad=[net.step(as_x(32)-PSW_[i_]-0.5+e*M-M)+net.step(PSW_[i_]-126.5+e*M-M) for i_ in range(PSN)]
 _score=sum((_bad[i_]*float(2**(PSN-1-i_)) for i_ in range(PSN)),X())
@@ -662,6 +662,7 @@ e=S('PS3')
 on('PS3',(net.eq(R1,10,e),'SPLIT',{pi_:pi_+1,oret.r:oret.id('PS2')}),(net.and_(net.lt(R1,32,e),ONE-net.eq(R1,9,e)),'PS2',{pi_:pi_+1}),(net.ge(clen,1000,e),'PS2',{pi_:pi_+1}),(None,'T2_PS',{ins_ch:R1,pi_:pi_+1}))
 exec(open('rv_a7_bulk.py').read())
 exec(open('imp3_find.py').read())
+exec(open('imp3_clip.py').read())
 # ---- layout and paint walk ----
 net.group('layout and paint')
 ls_=R();le_=R();lx=R();lhh=R();lasc=R();lex=R();off=R();col=R();x=R();lb=R();lbx=R();lspb=R();lsn=R();xw=R();prevsp=R();wc=R()
@@ -996,7 +997,7 @@ e=S('TB0'); measure(e,32,ty)
 home_=net.eq(tab,0,e)
 _fszv=G_(sum((h*p for h,p in zip(raw_hot,rom.SZ)),X()),ONE-net.eq(mode,7,e))+G_(td1*10+td0,net.eq(mode,7,e)); _tbk=net.relu(SD['bold']+0)+net.relu(SD['ital']+0)*2+net.relu(SD['und']+0)*4+net.relu(SD['font']+0)*16+_fszv*256+1
 # The same for the font and size boxes and the B I U buttons. A repaint of the ribbon wipes them, so it clears the memo.
-fsm.set(tbm,S('UI'),0)
+fsm.set(tbm,S('UI'),0); fsm.set(stp,S('UI'),0)
 on('TB0',(net.and_(home_,ONE-full,net.eq(_tbk,tbm,e)),'T1_POST',None),(net.eq(tab,0,e),'TB1',{tbm:_tbk,fbr:net.relu(SD['bold']+0),fir:net.relu(SD['ital']+0),fur:net.relu(SD['und']+0),ffn:net.relu(SD['font']+0),fszv:_fszv}),(None,'T1_POST',None))
 T1('biu')
 on('TB6',(None,'TB6B',{rA:(113,65,110,20,(255,255,255),206)}))
