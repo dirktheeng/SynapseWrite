@@ -103,7 +103,7 @@ b+=f'<rect x="30" y="58" width="560" height="350" rx="12" fill="{TINT[BLUE]}" st
 it=['Key names to editing commands','Hit testing from the screen id plane','Layout, line breaking, pagination','Drawing every glyph, icon and widget','Undo log, find, spell check, tables','Zip, inflate, deflate, CRC, XML, PNG, PDF','Every memory address, read, write and mask','File names, messages, when to set a timer']
 for i,s_ in enumerate(it): b+=t(50,118+i*33,'+',16,BLUE,'start',700)+t(70,118+i*33,s_,14.5)
 b+=t(50,396,f"{P['neurons']:,} neurons, written by a deterministic generator",13,MUT)
-b+=f'<rect x="610" y="58" width="360" height="172" rx="12" fill="{TINT[MUT]}" stroke="{MUT}" stroke-width="2"/>'+t(630,88,'host/glue.js: 81 lines',16,INK,'start',700)
+b+=f'<rect x="610" y="58" width="360" height="172" rx="12" fill="{TINT[MUT]}" stroke="{MUT}" stroke-width="2"/>'+t(630,88,'host/glue.js: 83 lines',16,INK,'start',700)
 for i,s_ in enumerate(['Start inference, repeat ticks to halt','Encode events and bytes as vectors','Show the output tensor with putImageData','Execute named commands from output neurons']): b+=t(630,116+i*26,s_,13.5)
 b+=f'<rect x="610" y="240" width="360" height="168" rx="12" fill="{TINT[TEAL]}" stroke="{TEAL}" stroke-width="2"/>'+t(630,270,'host/engine.c: 140 lines',16,INK,'start',700)
 for i,s_ in enumerate(['Sparse layered neuron evaluation','Passive ports: bank, image, patch, copy','Zero-rest live lists and lazy pulls','No character codes, no document logic']): b+=t(630,298+i*26,s_,13.5)
