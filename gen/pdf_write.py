@@ -81,7 +81,7 @@ Wl=rl.out
 gx7=G_(qcx+6,net.step(qcols))
 tb7=net.step(qcols)
 qnx_=qfh+Wl[7]+net.step(qfh+Wl[7])*14
-ovf=net.or_(net.and_(net.gt(qyy+Wl[3]+qnx_,qtop+qmt+qth,e),net.gt(qyy,qtop+qmt,e)),net.and_(ONE-tb7,keep_lines(e,qyy,qtop,Wl[3],R2,qlj,qnl,qmt,qth,qnx_)))
+ovf=net.or_(net.and_(net.gt(qyy+Wl[3]+qnx_,qtop+qmt+qth,e),net.gt(qyy,qtop+qmt,e)),net.and_(ONE-tb7,ONE-f1qnwc,keep_lines(e,qyy,qtop,Wl[3],R2,qlj,qnl,qmt,qth,qnx_)))
 lmv={qs:Wl[0],qe:Wl[1],rv_qm:gx7+qml,qx:Wl[2]-48+gx7+qml,qh:Wl[3],qa:Wl[4],qo:Wl[0],qex:Wl[5]}
 col2=net.and_(ovf,net.eq(qnc,2,e),ONE-net.step(qxc))
 on('PD_7',(col2,'PD_8',{**lmv,qyy:qtop+qmt,qxc:(qtw-24)*0.5+24}),(ovf,'PD_C2',{**lmv,qyy:qtop+qps+qmt,qtop:qtop+qps,qxc:0}),(None,'PD_8',lmv))

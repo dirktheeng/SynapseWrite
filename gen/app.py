@@ -142,6 +142,7 @@ MATHFAM=1; MATHRAW=rom.font_raw(MATHFAM)   # an equation character carries the m
 def is_math(D): return net.and_(D['fb'][0],ONE-D['fb'][1],ONE-D['fb'][2],D['math'])
 g_fl=Bus(net)
 SD=style_decode(g_st.w,GE); SD.update(flag_decode(g_fl.w,GE))
+exec(open('feat1_glyph.py').read())
 # Glyph addressing is a decision tree: each node is enabled by its parent and reads its
 # selector lazily, so a lookup visits a path through the tree and not all of the table.
 def tnode(parent,sel,neg=False):
@@ -156,7 +157,7 @@ NS=rom.NSZ
 _leaf=_tree(GE,SD['sb'],NS)
 raw_hot=_leaf[:NS]
 # character index in binary; values past the table (code 255) clamp to an empty entry
-UO_=1<<20; _chv=net.relu(g_ch.w-32+1+GE*M-M)
+UO_=1<<20; _chv=net.relu(F1_CH-32+1+GE*M-M)
 _chok=net.step(_chv)
 _chbits=net.bits(_chv-1-net.relu(_chv-225),8,_chok)
 def chartree(root,bits,k,idxs,leaf):
@@ -175,7 +176,7 @@ def script_size(i):
 vflag=net.step(SD['sup']+SD['sub'])
 size_hot=[X() for _ in range(NS)]
 for i_ in range(NS):
-    n_,s_=tsplit(raw_hot[i_],vflag); size_hot[i_]=size_hot[i_]+n_; size_hot[script_size(i_)]=size_hot[script_size(i_)]+s_
+    n_,s_=tsplit(F1_VIS(raw_hot[i_]),vflag); n_,c_=tsplit(n_,F1_SMCL); size_hot[i_]=size_hot[i_]+n_; size_hot[script_size(i_)]=size_hot[script_size(i_)]+s_; size_hot[F1_SCS(i_)]=size_hot[F1_SCS(i_)]+c_
 for si,h in enumerate(raw_hot):
     px=round(rom.SZ[si]*96/72); net.connect(strk,h*round(px*0.28))
     net.connect(rise,net.and_(h,SD['sup'])*round(px*0.36)); net.connect(rise,net.and_(h,SD['sub'])*(-round(px*0.16)))
@@ -219,6 +220,7 @@ for p_ in rom.EXT_PAGES:
 _xhb=net.step(_xhit); _xno=net.step(_xuk-_xhb-0.5); net.connect(aem,_xno*0.6)
 _xlow=sum((_xb[b_]*(1<<b_) for b_ in range(7)),X())
 for si,h in enumerate(size_hot): net.connect(adv,net.gate(aem*round(rom.SZ[si]*96/72),h))
+net.connect(adv,F1_SPX)
 # kerning: a tree over the previous character, then over the current one. A pair that exists fires kany.
 kp_en=Bus(net); kp_in=Bus(net)
 kp_ok=net.and_(kp_en.w,net.lt(kp_in.w,127,kp_en.w))
@@ -263,15 +265,15 @@ _A=glyph_unit.A
 _face=net.wire(); _sz=net.wire(); _ppem=net.wire(); _pt=net.wire(); _fg=net.wire(); _bg=net.wire(); _base=net.wire(); g_nc=Bus(net); g_fx=Bus(net); g_fc=Bus(net)
 for f_ in FACES: net.connect(_face,FH[f_]*FACES.index(f_))
 net.connect(_face,g_fx.w)
-_gdr=net.step(g_draw.w); _facef=net.wire(); net.connect(_facef,net.gate(_face,_gdr)-net.gate(_face,_xuk)+_xno*XFT)   # measuring needs neither of these, so they wake only to draw
+_gdr=net.step(g_draw.w-F1_HID); _facef=net.wire(); net.connect(_facef,net.gate(_face,_gdr)-net.gate(_face,_xuk)+_xno*XFT)   # measuring needs neither of these, so they wake only to draw
 for k_,ln_ in _xfl.items(): net.connect(_facef,net.and_(ln_,_xhb)*XF[k_])
-_gch=net.wire(); net.connect(_gch,net.gate(g_ch.w,_gdr)-net.gate(g_ch.w-128-G_(_xlow,_xhb),_xuk))
+_gch=net.wire(); net.connect(_gch,net.gate(F1_CH,_gdr)-net.gate(g_ch.w-128-G_(_xlow,_xhb),_xuk))
 for si,h in enumerate(zoom_sizes(size_hot)):
     px=round(rom.SZ[si]*96/72); net.connect(_sz,h*si); net.connect(_ppem,h*px); net.connect(_pt,h*rom.SZ[si])
 for j,b_ in enumerate(fg): net.connect(_fg,b_.w*(j+1))
 for j,b_ in enumerate(bg): net.connect(_bg,b_.w*(j+1))
 net.connect(_base,zgy(g_y.w+asc_e))
-GCALL=CallPort(net.step(g_draw.w),glyph_unit.fin,[(net.step(g_draw.w),_A['go']),(_gch,_A['ch']),(_facef,_A['face']),(_sz,_A['sz']),(_ppem,_A['ppem']),(_pt,_A['pt']),(zgx(g_x.w),_A['x']),(_base,_A['y']),(_fg,_A['fg']),(_bg,_A['bg']),(g_nc.w,_A['nc']),(g_fc.w,_A['fc'])])
+GCALL=CallPort(_gdr,glyph_unit.fin,[(_gdr,_A['go']),(_gch,_A['ch']),(_facef,_A['face']),(_sz,_A['sz']),(_ppem,_A['ppem']),(_pt,_A['pt']),(zgx(g_x.w),_A['x']),(_base,_A['y']),(_fg,_A['fg']),(_bg,_A['bg']),(g_nc.w,_A['nc']),(g_fc.w,_A['fc'])])
 # the style table's interner: its own domain too, called with a record value, returns the record's index
 net.domain(1); net.group('style interner')
 I_go=net.input(); I_val=net.input(); I_fb=net.input(); I_k=net.input(); I_n=net.input(); I_y=net.input(); I_e=[net.input() for _ in range(3)]
@@ -329,6 +331,7 @@ def T1(n): exec(T1S[n],globals())
 T1('regs')
 exec(open('rv_a4_regs.py').read())
 exec(open('imp3_regs.py').read()); exec(open('imp4_regs.py').read()); exec(open('imp5_regs.py').read()); exec(open('imp4_list.py').read())
+exec(open('feat1_regs.py').read())
 cbb=R();qrep=R();a7_vw=R();a7_far=R();a7_jmp=R();a7_wb=R();impf=R();impk=R();impc=R();impsc=R();impyt=R();stp=R();stg=R();stw=R();stm=R();tbm=R();A7BUD=15000   # characters of layout one event may do before the rest goes to the background
 # dispatch tables for subroutine returns
 class Ret:
@@ -775,7 +778,7 @@ def bcv(k): return sum((shh[i_]*PAL_B[i_][k] for i_ in range(len(PAL_B))),X())
 meta0={ptoc:MT[4],ptsrc:MT[5],ptpg:MT[6],bc0:bcv(0),bc1:bcv(1),bc2:bcv(2),pbg:MT[2],pim:rim.out[0],pih:rim.out[1],pio:rim.out[2],pfn:rf.out[2],tcols:rc.out[0],tci:rc.out[1],rw:geom_w,rx0:geom_x,rleft:G_(s_px,nt3)+G_(s_tx+xcol+1+MT[1],tb3),rright:G_(s_px+s_pw,one3)+G_(s_tx+col2,two)+G_(s_tx+xcol+MT[1]+MT[0],tb3)}
 newsec=net.and_(e3,net.step(MT[3]),net.step(net.step(MT[3]-1-cursec-0.5)+net.step(cursec-MT[3]+1-0.5)))
 lb3=net.bits(RL[3],9,e3)
-meta={lfm:sum((lb3[4+k_]*(1<<k_) for k_ in range(5)),X()),**A4_META(e3),**meta0,plen_:RL[0],al:RL[2],lsf:lb3[0]+lb3[1]*2,plvl:lb3[2]+lb3[3]*2,pind:rp6.out[0],pfirst_:rp6.out[1],plsp:rp6.out[2],pspb:rp6.out[3],pspa:rp6.out[4],psty:rp6.out[5],lfi:rp6.out[1],nl:RL[4],wdp:RL[5],oend:RL[6],pbk:RL[7],a6pm:R2}
+meta={lfm:sum((lb3[4+k_]*(1<<k_) for k_ in range(5)),X()),**A4_META(e3),**F1_META(e3),**meta0,plen_:RL[0],al:RL[2],lsf:lb3[0]+lb3[1]*2,plvl:lb3[2]+lb3[3]*2,pind:rp6.out[0],pfirst_:rp6.out[1],plsp:rp6.out[2],pspb:rp6.out[3],pspa:rp6.out[4],psty:rp6.out[5],lfi:rp6.out[1],nl:RL[4],wdp:RL[5],oend:RL[6],pbk:RL[7],a6pm:R2}
 on('R3',(newsec,'T3_SB0',{cursec:MT[3]-1,rl:as_x(SECB)+(MT[3]-1)*8}),(net.step(RL[1]),'LAY0',{**meta,lfn:0,lfb:0,lfh:0,lfnb:0,lfhb:0,lj:0,ls_:0,off:0,lx:0,lb:0,lbx:0,lsn:0,lspb:0,lasc:0,lhh:0,wc:0,prevsp:1,llast:0}),(None,'R3B',meta))
 e=S('R3B')
 pb_=net.and_(ONE-net.eq(a4hlast,pi+1,e),net.or_(a4kbr,net.and_(net.step(pbk),net.gt(yy,ptop+s_mt,e)),net.and_(net.step(tcols),net.eq(tci,0,e),net.gt(yy+60,ptop+s_mt+s_th,e))))
@@ -807,7 +810,7 @@ def keep_lines(e,y,top,h0,h1,j,n,mt,th,extra=0):
     n2=net.eq(n,2,e);n3=net.eq(n,3,e);n4=net.ge(n,4,e);j0=net.eq(j,0,e)
     return net.and_(net.gt(y,as_x(top)+mt,e),net.or_(net.and_(j0,n2,over2),net.and_(j0,n3,over3),net.and_(j0,n4,over2),net.and_(n4,net.eq(as_x(j)+2,n,e),over2)))
 e=S('R6'); fnx_=fnh+RL[7]+net.step(fnh+RL[7])*14
-ne=net.or_(net.and_(net.gt(yy+RL[3]+fnx_,ptop+s_mt+s_th,e),net.gt(yy,ptop+s_mt,e)),net.and_(ONE-net.step(tcols),keep_lines(e,yy,ptop,RL[3],R2,lj,nl,s_mt,s_th,fnx_)))
+ne=net.or_(net.and_(net.gt(yy+RL[3]+fnx_,ptop+s_mt+s_th,e),net.gt(yy,ptop+s_mt,e)),net.and_(ONE-net.step(tcols),ONE-f1nwc,keep_lines(e,yy,ptop,RL[3],R2,lj,nl,s_mt,s_th,fnx_)))
 lm={lnfh:RL[7],ls_:RL[0],le_:RL[1],lx:RL[2],lhh:RL[3],lasc:RL[4],lex:RL[5]}
 c1=net.and_(ne,net.eq(ncol,2,e),ONE-net.step(xcol))
 on('R6',(c1,'T3_R6X',{**lm,yy:ptop+s_mt,xcol:col2+24}),(net.and_(ne,full),'PSH_N',{**pfsave,**lm,fnp:0,xcol:0,ptop:ptop+s_ps,yy:ptop+s_ps+s_mt,pages:pages+1,rB:(s_px-2,ptop+s_ps+DOCY-scroll-1,s_pw+5,s_ph+4,(216,216,216),0),rC:(s_px-1,ptop+s_ps+DOCY-scroll,s_pw+3,s_ph+2,(198,198,198),0)}),(ne,'T3_R6X',{**pfsave,**lm,fnp:0,xcol:0,ptop:ptop+s_ps,yy:ptop+s_ps+s_mt,pages:pages+1}),(None,'T3_R6X',lm))
@@ -852,7 +855,7 @@ e=S('C1')
 Kp=pi*2048+off; insel=net.and_(net.ge(Kp,Lo,e),net.lt(Kp,Hi,e)); rv_mh=net.and_(rv_hl,ONE-insel,net.lt(off,rv_mhe,e)); nosel=e-insel-rv_mh
 _hi8=net.ge(R1,127,e); _xue=net.ge(R1,UO,_hi8); isfnc=net.and_(net.ge(R1,1000,_hi8),ONE-_xue); isp=net.eq(R1,32,e); xtra=G_(lex,isp)+rv_tabw(x-(tx0+48),net.eq(R1,9,e)); _rv_ne=net.and_(e,rv_eol); chere=net.and_(net.eq(pi,cp,e),net.eq(off,co,e),ONE-net.eq(off,ls_,_rv_ne))
 fsm.set(cx,chere,x);fsm.set(cacol,chere,col)
-g_en.lin(e);g_ch.add(e,R1);g_st.add(e,RSR);g_fl.add(e,RSC);g_x.add(e,x+kern+0.5);g_y.add(e,gly_y+YB)
+g_en.lin(e);g_ch.add(e,R1);g_st.add(e,RSR);g_fl.add(e,RSC);g_ex.add(e,RSX);g_x.add(e,x+kern+0.5);g_y.add(e,gly_y+YB)
 ke2=net.and_(e,net.step(kprev));kp_en.lin(ke2);kp_in.add(ke2,kprev)
 _sh0=net.eq(R1,173,_hi8); _shh=net.and_(_sh0,net.or_(net.lt(off+1,le_,_sh0),net.ge(le_,plen_,_sh0))); g_draw.lin(e-isp-isfnc-_shh)
 und_w=net.and_(e,net.or_(SD['und'],SD['ins'])); ske_w=net.and_(e,net.or_(SD['strike'],SD['dele'])); trk_=net.and_(e,net.or_(SD['ins'],SD['dele'])); a2_chg=R(); fsm.set(a2_chg,trk_,1)   # tracked text is drawn in the review color
@@ -862,10 +865,11 @@ g_fc.add(e,G_(RSK,ONE-trk_))   # an exact color goes to the glyph unit beside th
 _ckb=net.bits(RSK-1,24,net.and_(net.or_(und_w,ske_w),net.step(RSK),ONE-trk_)); _ck=[sum((_ckb[16-8*k_+b_]*(1<<b_) for b_ in range(8)),X()) for k_ in range(3)]; _cke=net.step(sum(_ckb,X()))
 hlh=net.decode_z(SD['hl'],8,e); nohl=net.and_(nosel,hlh[0])
 fld_=net.and_(nohl,net.or_(SD['f0'],SD['f1']))    # fields get a light shade
-bg[1].lin(insel);bg[3].lin(fld_)
-nsh_=nohl-fld_; bgh_=net.decode_z(pbg,len(PAL_B),nsh_)   # the plain background is the cell shade
+f1sh_=net.and_(nohl,ONE-net.or_(SD['f0'],SD['f1']),net.step(RSZ)); _f1zb=net.bits(RSZ-1,24,f1sh_)   # feat1: a run shade, under the darker wins rule as selection is
+bg[1].lin(insel+f1sh_);bg[3].lin(fld_)
+nsh_=nohl-fld_-f1sh_; bgh_=net.decode_z(pbg,len(PAL_B),nsh_)   # the plain background is the cell shade
 for j in range(len(PAL_B)): bg[j].lin(bgh_[j])
-hlcol=[insel*SEL[i]+fld_*PAL_B[3][i] for i in range(3)]
+hlcol=[insel*SEL[i]+fld_*PAL_B[3][i]+sum((_f1zb[16-8*i+b_]*(1<<b_) for b_ in range(8)),X()) for i in range(3)]
 for h_i in range(1,8):
     hn=net.and_(nosel,hlh[h_i]); bg[5+h_i].lin(hn)
     for i in range(3): hlcol[i]=hlcol[i]+hn*PAL_B[5+h_i][i]
@@ -877,8 +881,8 @@ for rr,xx,ww,aa in ((rA,x,adv2+1,col),(rB,x+adv2,adv2+1+xtra+kern,col+1)):
     for i in range(3): rr.b[5+i].lin(hlcol[i])
     rr.b[5].lin(nsh_*(-1))
     rr.b[8].add(e,aa)
-und=net.and_(e,net.or_(SD['und'],SD['ins'])); ske=net.and_(e,net.or_(SD['strike'],SD['dele']))
-for rr,en_,yv in ((rC,und,sy+lasc+2-rise),(rD,ske,sy+lasc-strk-rise)):
+und=net.and_(e,net.or_(SD['und'],SD['ins'])); ske=net.and_(e,net.or_(SD['strike'],SD['dele'],F1G['dst'])); f1dk=net.and_(e,F1G['dst'])   # feat1: double strike is a second line below the first
+for rr,en_,yv in ((rC,und,sy+lasc+2-rise),(rD,ske,sy+lasc-strk-rise-F1G['dst']),(rZ,f1dk,sy+lasc-strk-rise+1)):
     rr.b[0].lin(en_)
     for b,val in zip(rr.b[1:5],(x+kern,as_x(yv)+YB,adv+xtra+1,X(c=1))): b.add(en_,val)
     for i in range(3):
@@ -926,6 +930,7 @@ ww=rw-a4rr-net.step(tcols)*12-indb-pind-pf_val(lfi)-net.step(ptoc)*44
 def measure(c,ch,st,cell=None):
     g_en.lin(c);g_ch.add(c,ch);g_st.add(c,rom.lit(st) if isinstance(st,int) else st)
     if cell is not None: g_fl.add(c,cell)
+    if st is RSR: g_ex.add(c,RSX)   # feat1: the extended field rides with the record
 e=S('LAY0')
 on('LAY0',(net.step(pim),'EM',{lasc:0,lhh:pih,lend:0,lwid:pim,lspc:0,llast:1}),(net.eq(plen_,0,e),'LE0',None),(None,'L1',None))
 e=S('LE0'); measure(e,32,ty)
@@ -1157,6 +1162,7 @@ net.group('late commands')
 exec(open('rv_a2_canvas.py').read())
 exec(open('rv_a4_features.py').read())
 exec(open('rv_a5_docx.py').read())
+exec(open('feat1_docx.py').read())
 exec(open('rv_a6_spell.py').read())
 # ---- ribbon commands: id plus tab select the command, first rule wins ----
 _L0=[(PIND,-24,0),(PIND,24,0),(PFIRST,-24,1),(PFIRST,24,1),(PSPB,-8,0),(PSPB,8,0),(PSPA,-8,0),(PSPA,8,0)]
