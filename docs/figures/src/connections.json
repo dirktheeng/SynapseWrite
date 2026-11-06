@@ -11,11 +11,6 @@
 77704
 ],
 [
-"snapping layer",
-"glyph weights (outline edges)",
-65743
-],
-[
 "glyph metrics",
 "glyph metrics",
 42222
@@ -28,7 +23,7 @@
 [
 "glyph unit",
 "glyph unit",
-40029
+40025
 ],
 [
 "glyph pixel records",
@@ -51,9 +46,14 @@
 16609
 ],
 [
+"snapping layer",
+"glyph weights (outline edges)",
+15419
+],
+[
 "docx reader",
 "docx reader",
-14187
+14313
 ],
 [
 "docx reader rv_a5",
@@ -68,17 +68,17 @@
 [
 "ramp bank",
 "ramp bank",
-10735
-],
-[
-"compiled control",
-"compiled control",
-7464
+10875
 ],
 [
 "ramp bank",
 "coverage",
-6936
+8528
+],
+[
+"compiled control",
+"compiled control",
+7459
 ],
 [
 "bulk edits",
@@ -93,7 +93,7 @@
 [
 "coverage",
 "coverage",
-5374
+5647
 ],
 [
 "docx writer",
@@ -231,14 +231,14 @@
 1496
 ],
 [
+"docx reader",
+"compiled control",
+1494
+],
+[
 "feat2 built up math",
 "compiled control",
 1486
-],
-[
-"docx reader",
-"compiled control",
-1445
 ],
 [
 "layout and paint",
@@ -323,7 +323,7 @@
 [
 "bank and port wiring",
 "compiled control",
-923
+925
 ],
 [
 "png reader",
@@ -333,7 +333,7 @@
 [
 "bank and port wiring",
 "docx reader",
-891
+895
 ],
 [
 "extended characters",
@@ -359,11 +359,6 @@
 "rv a3 interaction",
 "glyph network",
 800
-],
-[
-"snapping layer",
-"snapping layer",
-769
 ],
 [
 "shared control registers",
@@ -398,7 +393,7 @@
 [
 "compiled control",
 "docx reader",
-630
+641
 ],
 [
 "layout and paint",
@@ -424,6 +419,11 @@
 "shared control registers",
 "layout and paint",
 595
+],
+[
+"snapping layer",
+"snapping layer",
+592
 ],
 [
 "a4 commands",
@@ -528,7 +528,7 @@
 [
 "glyph geometry",
 "glyph geometry",
-423
+427
 ],
 [
 "docx reader tier 2",
@@ -646,6 +646,11 @@
 324
 ],
 [
+"docx reader",
+"bank and port wiring",
+322
+],
+[
 "screenshot hit test",
 "docx crc",
 321
@@ -693,11 +698,6 @@
 [
 "sections",
 "compiled control",
-294
-],
-[
-"docx reader",
-"bank and port wiring",
 294
 ],
 [
@@ -911,12 +911,12 @@
 197
 ],
 [
-"glyph pixel records",
+"glyph unit",
 "glyph geometry",
 193
 ],
 [
-"glyph unit",
+"glyph pixel records",
 "glyph geometry",
 193
 ],
@@ -2636,11 +2636,6 @@
 18
 ],
 [
-"row sequencer",
-"coverage",
-18
-],
-[
 "glyph pixel records",
 "ramp bank",
 18
@@ -3253,6 +3248,11 @@
 [
 "tier 4 features",
 "glyph patch",
+9
+],
+[
+"row sequencer",
+"coverage",
 9
 ],
 [
