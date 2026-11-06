@@ -22,7 +22,7 @@ def pat(st,e,offs=0):
     c=[]
     for i,ch in enumerate(st): c.append(net.eq(W[i+offs],ord(ch),e))
     return net.and_(*c)
-ztarget=R();zp0=R();zk=R();ibase=R();obase=R(OUTB);mth=R();csz=R();nm=R();ext=R();cmt=R();loff=R()
+ilim=R();oblim=R();ztarget=R();zp0=R();zk=R();ibase=R();obase=R(OUTB);mth=R();csz=R();nm=R();ext=R();cmt=R();loff=R()
 # locate the end record by scanning back, then walk the central directory
 on('OP1',(None,'ZE0',{zp:net.relu(evc-22)}))
 on('ZE0',(None,'ZE1',{rl:FA+zp}))
@@ -30,23 +30,25 @@ e=S('ZE1')
 sig=net.and_(net.eq(W[0],80,e),net.eq(W[1],75,e),net.eq(W[2],5,e),net.eq(W[3],6,e))
 on('ZE1',(sig,'ZE2',{rl:FA+zp+16}),(net.eq(zp,0,e),'OPEND',None),(None,'ZE0',{zp:zp-1}))
 on('ZE2',(None,'T3_Z0',{zp0:W[0]+W[1]*256+W[2]*65536}))
-on('X_C0',(None,'X_C1',{rl:FA+zp}))
+e=S('X_C0'); on('X_C0',(net.ge(zp,evc,e),'T3_ZN',None),(None,'X_C1',{rl:FA+zp}))
 e=S('X_C1')
 on('X_C1',(net.and_(net.eq(W[0],80,e),net.eq(W[1],75,e),net.eq(W[2],1,e),net.eq(W[3],2,e)),'C2',{rl:FA+zp+8}),(None,'T3_ZN',None))
 on('C2',(None,'C3',{mth:W[2]+W[3]*256,rl:FA+zp+20}))
 on('C3',(None,'C4',{csz:W[0]+W[1]*256+W[2]*65536,rl:FA+zp+28}))
 on('C4',(None,'C5',{nm:W[0]+W[1]*256,ext:W[2]+W[3]*256,cmt:W[4]+W[5]*256,rl:FA+zp+42}))
 on('C5',(None,'C6',{loff:W[0]+W[1]*256+W[2]*65536,rl:FA+zp+46+nm-8}) if False else (None,'C5b',{loff:W[0]+W[1]*256+W[2]*65536}))
-on('C5b',(None,'C6',{rl:FA+zp+46+nm-8}))
+on('C5b',(net.ge(loff,evc,S('C5b')),'T3_ZN',None),(None,'C6',{rl:FA+zp+46+nm-8}))
 e=S('C6')
 ztg=net.decode(ztarget,8,e)
 on('C6',(net.or_(net.and_(ztg[4],pat('ment.xml',e),net.eq(nm,17,e)),net.and_(ztg[1],pat('xml.rels',e),net.eq(nm,28,e)),net.and_(ztg[2],pat('otes.xml',e),net.eq(nm,18,e)),net.and_(ztg[3],pat('ents.xml',e),net.eq(nm,17,e)),net.and_(ztg[7],pat('yles.xml',e),net.eq(nm,15,e)),net.and_(ztg[6],pat('ring.xml',e),net.eq(nm,18,e))),'C7',{rl:FA+loff+26}),(ztg[5],'T3_ZC',{zk:0}),(None,'X_C0',{zp:zp+46+nm+ext+cmt}))
 on('C7',(None,'Z7',{ip:loff+30+W[0]+W[1]*256+W[2]+W[3]*256,ob:0,nb:0,cur:0}))
 e=S('Z7')
-on('Z7',(net.eq(mth,8,e),'BH',{ibase:FA,iret.r:iret.id('T3_ZX')}),(None,'ZS',{oi:0,ibase:FA}))
+_olim=X()
+for b_,t_ in ((OUTB,IMG0),(AUXB,RELB),(PNGB,AUXB),(OUTP,PNGB)): _olim=_olim+net.eq(obase,b_,e)*(t_-b_-1000)
+on('Z7',(net.eq(mth,8,e),'BH',{ibase:FA,iret.r:iret.id('A12_S0'),ilim:evc,oblim:_olim}),(None,'ZS',{oi:0,ibase:FA,oblim:_olim}))
 # stored member
 OA=obase
-e=S('ZS'); on('ZS',(net.ge(oi,csz,e),'T3_ZX',{oi:0}),(None,'ZS1',{r1:FA+ip+oi}))
+e=S('ZS'); on('ZS',(net.or_(net.ge(oi,csz,e),net.ge(oi,oblim,e),net.ge(ip+oi,evc,e)),'A12_S0',{oi:0}),(None,'ZS1',{r1:FA+ip+oi}))
 wo=WPort(1)
 on('ZS1',(None,'ZS',{wo:(OA+oi,R1),oi:oi+1,ob:oi+1}))
 # bit reader: the current byte is kept bit reversed, so the next bit is one threshold and
@@ -59,12 +61,12 @@ def getn(st,n,ret):
     on(st,(None,'GBL',{gbn:n,gbv:0,gbw:1,gbi:0,gret.r:gret.id(ret)}))
 e=S('GBL'); hbit=nextbit(e)
 on('GBL',(net.ge(gbi,gbn,e),'GR',None),(net.eq(nb,0,e),'GBR',{r1:ibase+ip,ip:ip+1}),(None,'GBL',{gbv:gbv+G_(gbw,hbit),gbw:gbw*2,gbi:gbi+1,cur:(cur-hbit*128)*2,nb:nb-1}))
-on('GBR',(None,'GBL',{cur:reversed_(S('GBR')),nb:8}))
+on('GBR',(net.gt(ip,ilim,S('GBR')),'A12_IE',None),(None,'GBL',{cur:reversed_(S('GBR')),nb:8}))
 # Huffman decode, after puff: count[] at hb, symbols at hb+16
 on('DEC',(None,'X_Dl',{code:0,first:0,index:0,hlen:1}))
 e=S('X_Dl'); hbit=nextbit(e)
 on('X_Dl',(net.eq(nb,0,e),'XDR',{r1:ibase+ip,ip:ip+1}),(None,'X_D3',{code:code+hbit,cur:(cur-hbit*128)*2,nb:nb-1,r1:hb+hlen}))
-on('XDR',(None,'X_Dl',{cur:reversed_(S('XDR')),nb:8}))
+on('XDR',(net.gt(ip,ilim,S('XDR')),'A12_IE',None),(None,'X_Dl',{cur:reversed_(S('XDR')),nb:8}))
 e=S('X_D3'); hbit=nextbit(e)
 on('X_D3',(net.lt(code,first+R1,e),'D4',{r2:hb+16+index+code-first}),(net.ge(hlen,15,e),'OPEND',None),
  (net.eq(nb,0,e),'X_Dl',{index:index+R1,first:(first+R1)*2,code:code*2,hlen:hlen+1}),
@@ -97,7 +99,7 @@ on('BH2',(ty_h[0],'ST0',{nb:0}),(ty_h[1],'FX0',{idx:0}),(ty_h[2],'DY0',None),(No
 on('ST0',(None,'X_ST1',{rl:ibase+ip}))
 on('X_ST1',(None,'ST2',{copyn:W[0]+W[1]*256,ip:ip+4}))
 e=S('ST2')
-on('ST2',(net.step(copyn),'ST3',{r1:ibase+ip}),(None,'BEND',None))
+on('ST2',(net.or_(net.ge(ip,ilim,e),net.ge(ob,oblim,e)),'A12_IE',None),(net.step(copyn),'ST3',{r1:ibase+ip}),(None,'BEND',None))
 on('ST3',(None,'ST2',{wo:(OA+ob,R1),ob:ob+1,ip:ip+1,copyn:copyn-1}))
 # fixed tables
 e=S('FX0')
@@ -135,7 +137,7 @@ on('DYl',(net.step(rept),'DYl',{w1:(as_x(LN)+idx,rval),idx:idx+1,rept:rept-1,pre
 on('DYA',(None,'BLD',{hb:LH,lb:0,ln:nlen,cret.r:cret.id('DYB')}))
 on('DYB',(None,'BLD',{hb:DH,lb:nlen,ln:ndist,cret.r:cret.id('CODES')}))
 # literal and length codes
-on('CODES',(None,'DEC',{hb:LH,hret.r:hret.id('CS')}))
+on('CODES',(net.ge(ob,oblim,S('CODES')),'A12_IE',None),(None,'DEC',{hb:LH,hret.r:hret.id('CS')}))
 LB=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258]
 LE=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0]
 DB=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577]
@@ -152,7 +154,7 @@ e=S('CD_'); dh=net.decode(sym,30,e); db_=X();dx_=X()
 for i_ in range(30): db_=db_+dh[i_]*DB[i_]; dx_=dx_+dh[i_]*DE[i_]
 on('CD_',(None,'CD1',{lb:db_,gbn:dx_,gbv:0,gbw:1,gbi:0,gret.r:gret.id('CD2')}))
 on('CD1',(None,'GBL',None))
-on('CD2',(None,'CC',{dist:lb+gbv}))
+e=S('CD2'); on('CD2',(net.or_(net.eq(lb,0,e),net.gt(lb+gbv,ob,e)),'A12_IE',None),(None,'CC',{dist:lb+gbv}))
 e=S('CC')
 # match copy: a block up to the distance at a time, overlapping copies repeat
 ncp=R(); nc_=net.min_(copyn,dist)
@@ -265,26 +267,26 @@ picout=Bus(net); picout.add(S('HF'),wpic); fsm.set(wpic,S('HF'),0)
 pbase=R();pgdoc=R();pgl=R();pw=R();ph=R();pdep=R();pct=R();pbp=R();pst=R();dst=R();cl2=R();ck=R();psz=R();pcy=R();pos=R();ix=R();rowf=R();ky=R();kx=R();dw=R();dh=R();dcnt=R();pst0=R();rstart=R()
 on('PG_0',(None,'PG_1',{rl:FA,pbase:FA,pgdoc:0,pgl:evc}))
 e=S('PG_1')
-on('PG_1',(net.and_(net.eq(W[1],80,e),net.eq(W[2],78,e),net.eq(W[3],71,e)),'PG_C',{ip:8,dst:0,grp:grp+1}),(None,'T3_PF',None))
-on('PG_C',(None,'PG_D',{rl:pbase+ip}))
+on('PG_1',(net.and_(net.eq(W[1],80,e),net.eq(W[2],78,e),net.eq(W[3],71,e)),'PG_C',{ip:8,dst:0,grp:grp+1,pw:0,ph:0}),(None,'T3_PF',None))
+on('PG_C',(net.ge(ip,pgl,S('PG_C')),'T3_PF',None),(None,'PG_D',{rl:pbase+ip}))
 e=S('PG_D'); ihdr=pat('IHDR',e,4);idat=pat('IDAT',e,4);iend=pat('IEND',e,4)
 lenv=W[1]*65536+W[2]*256+W[3]
-on('PG_D',(ihdr,'PG_H',{rl:pbase+ip+8}),(idat,'PG_I',{cl2:lenv,ip:ip+8}),(iend,'PG_Z',None),(net.ge(ip,pgl,e),'T3_PF',None),(None,'PG_C',{ip:ip+12+lenv}))
+on('PG_D',(ihdr,'PG_H',{rl:pbase+ip+8}),(idat,'PG_I',{cl2:lenv,ip:ip+8}),(iend,'PG_Z',None),(None,'PG_C',{ip:ip+12+lenv}))
 on('PG_H',(None,'PG_H2',{pw:W[2]*256+W[3],ph:W[6]*256+W[7],rl:pbase+ip+16}))
 e=S('PG_H2'); ok=net.and_(net.eq(W[0],8,e),net.eq(W[4],0,e),net.or_(net.eq(W[1],0,e),net.eq(W[1],2,e),net.eq(W[1],4,e),net.eq(W[1],6,e)))
 on('PG_H2',(ok,'PG_C',{pct:W[1],pbp:net.eq(W[1],0,e)+net.eq(W[1],2,e)*3+net.eq(W[1],4,e)*2+net.eq(W[1],6,e)*4,ip:ip+25}),(None,'T3_PF',None))
-e=S('PG_I'); nc2=cl2-net.relu(cl2-1100); on('PG_I',(net.step(cl2),'PG_J',{rb:(pbase+ip,nc2),ncp:nc2}),(None,'PG_C',{ip:ip+4}))
+e=S('PG_I'); nc2=cl2-net.relu(cl2-1100); on('PG_I',(net.ge(ip,pgl,e),'PG_Z',None),(net.step(cl2),'PG_J',{rb:(pbase+ip,nc2),ncp:nc2}),(None,'PG_C',{ip:ip+4}))
 on('PG_J',(None,'PG_I',{wb:(pbase+dst,ncp),dst:dst+ncp,ip:ip+ncp,cl2:cl2-ncp}))
 # inflate the concatenated stream after its two byte header
-on('PG_Z',(None,'PG_Y',{ibase:pbase,obase:OUTP,ip:2,ob:0,nb:0,cur:0,iret.r:iret.id('PG_U')}))
+on('PG_Z',(None,'PG_Y',{ibase:pbase,obase:OUTP,ip:2,ob:0,nb:0,cur:0,iret.r:iret.id('PG_U'),ilim:dst,oblim:PNGB-OUTP-300000}))
 on('PG_Y',(None,'BH',None))
 # stride by repeated addition
 on('PG_U',(None,'PG_U1',{pst:0,dcnt:0}))
 e=S('PG_U1'); on('PG_U1',(net.ge(dcnt,pbp,e),'PG_U2',{pst:pst+1}),(None,'PG_U1',{pst:pst+pw,dcnt:dcnt+1}))
-on('PG_U2',(None,'PG_R',{pos:0,pcy:0}))
+e=S('PG_U2'); on('PG_U2',(net.or_(net.eq(pw,0,e),net.eq(ph,0,e)),'T3_PF',None),(None,'PG_R',{pos:0,pcy:0}))
 # row filters
 OAp=as_x(OUTP)
-e=S('PG_R'); on('PG_R',(net.ge(pcy,ph,e),'PG_K',{ck:1,psz:624}),(None,'PG_F',{r1:OAp+pos}))
+e=S('PG_R'); on('PG_R',(net.ge(pcy,ph,e),'PG_K',{ck:1,psz:624}),(net.ge(pos,ob,e),'T3_PF',None),(None,'PG_F',{r1:OAp+pos}))
 on('PG_F',(None,'PG_X',{rowf:R1,pos:pos+1,ix:0,rstart:pos+1}))
 e=S('PG_X')
 on('PG_X',(net.ge(ix,pst-1,e),'PG_R',{pcy:pcy+1}),(None,'PG_P',{r1:OAp+pos,r2:G_(OAp+pos-pbp,net.ge(ix,pbp,e)),rU:G_(OAp+pos-pst,net.step(pcy)),rV:G_(OAp+pos-pst-pbp,net.and_(net.ge(ix,pbp,e),net.step(pcy)))}))
@@ -328,7 +330,7 @@ def blend(c_):
 rv=blend(rv0);gv=blend(gv0);bv=blend(bv0)
 imw=WPort(1); wl_i=WPort(3)
 imw.drive(e,(as_x(IMG0)+dst,rv*65536+gv*256+bv))
-on('PG_N3',(net.ge(ck,2,e),'PG_N',{dst:dst+1,dw:dw+1,dcnt:dcnt+pbp,ix:ix+1,kx:1}),(None,'PG_N',{dst:dst+1,dw:dw+1,dcnt:dcnt+pbp,ix:ix+1,kx:0}))
+on('PG_N3',(net.ge(dst,SAVEB-IMG0-2000,e),'T3_PF',None),(net.ge(ck,2,e),'PG_N',{dst:dst+1,dw:dw+1,dcnt:dcnt+pbp,ix:ix+1,kx:1}),(None,'PG_N',{dst:dst+1,dw:dw+1,dcnt:dcnt+pbp,ix:ix+1,kx:0}))
 # insert a picture paragraph at the caret
 on('PG_Q',(pgdoc,'T3_PQ',None),(None,'SPLIT',{oret.r:oret.id('PG_Q2')}))
 on('PG_Q2',(None,'T3_PG0',None))
