@@ -581,18 +581,27 @@ class GlyphUnit:
             return o_
         ox=latch(OX)
         w=[X() for _ in range(LW)]; nbank=0; blockfull={a_:net.wire() for a_ in range(0,LW,BLK)}
+        _ct={t_:c_ for t_,c_ in zip(TIERS,ctier)}
+        cbl={a_:_ct[a_] if a_ in _ct else latch(net.step(cells-a_-0.5)) for a_ in range(BLK,LW,BLK)}     # block a_ holds a stored column
         for gp in (slots,aslots):
             for sg,L_ in gp.items():
                 for xk in L_:
-                    en=net.step(xk); et=tiers(en)
-                    xs=net.wire(); net.connect(xs,net.relu(xk+ox+en*M-M))
-                    # Blocks of columns. Left of the crossing nothing opens. Right of it every column gains the same whole unit, from one neuron. Only the block holding the crossing needs its ramps.
-                    for a_ in range(0,LW,BLK):
-                        b_=min(a_+BLK,LW); e_=et[tier_of(a_+1)]
-                        full=net.step(e_*M-M+(a_+PAD+OFF)-xs); pe=net.and_(e_,net.step(e_*M-M+(b_+PAD+OFF)-xs),ONE-full)
+                    en=net.step(xk)
+                    xs=net.relu(xk+ox+en*M-M)
+                    # Blocks of columns, found left to right: a block is tested only once the crossing is known to lie at
+                    # or right of its start, so the tests stop at the crossing's block, which alone needs its ramps.
+                    # Right of it every column gains the same whole unit, one neuron per block, only while the glyph is that wide.
+                    A_=list(range(0,LW,BLK)); gl={0:en}
+                    for a_ in A_[1:]: gl[a_]=net.step(gl[a_-BLK]*M-M+xs-(a_+PAD+OFF))
+                    fu={}
+                    for a_ in A_:
+                        b_=min(a_+BLK,LW)
+                        pe=net.step(gl[a_]*M-M-gl[b_]*M+0.5) if b_ in gl else gl[a_]
                         R={q:net.relu(pe*M-M+(q+PAD+OFF)-xs) for q in range(a_+1,b_+1)}; nbank+=b_-a_
-                        net.connect(blockfull[a_],full*sg)     # whole columns meet in one sum per block: edges that cancel there wake no column
                         for p_ in range(a_,b_): w[p_]=w[p_]+(R[p_+1]-R.get(p_,X()))*sg
+                        if b_<LW:
+                            fu[b_]=net.step((pe+fu.get(a_,X()))*M-M+cbl[b_]-0.5)
+                            net.connect(blockfull[b_],fu[b_]*sg)     # whole columns meet in one sum per block: edges that cancel there wake no column
         for a_,f_ in blockfull.items():
             for p_ in range(a_,min(a_+BLK,LW)): w[p_]=w[p_]+f_
         g.nbank=nbank
@@ -601,11 +610,11 @@ class GlyphUnit:
         out=[net.wire() for _ in range(LW)]
         clrt=tiers(clr); wrt=tiers(wr)
         for p_ in range(LW):
-            wp=net.wire(); net.connect(wp,w[p_])
-            cov=net.relu(wp)-net.relu(wp-1)
-            net.rec(ac[p_],ac[p_]-net.relu(ac[p_]+clrt[tier_of(p_+1)]*M-M)+cov*(1.0/K))
+            # The winding of a sample line is 0 or 1 inside one outline, so the K lines sum straight into the pixel and
+            # only the row's sum is clamped (where two contours overlap the winding reaches 2).
+            net.rec(ac[p_],ac[p_]-net.relu(ac[p_]+clrt[tier_of(p_+1)]*M-M)+w[p_]*(1.0/K))
             # darkening curve, the same one the old rasterizer used, written as a piecewise linear map of final coverage
-            a_=net.relu(ac[p_]+wrt[tier_of(p_+1)]*M-M)
+            a0_=net.relu(ac[p_]+wrt[tier_of(p_+1)]*M-M); a_=a0_-net.relu(a0_-1)
             net.connect(out[p_],a_*GAMMA_K[0]-net.relu(a_-0.25)*GAMMA_K[1]-net.relu(a_-0.5)*GAMMA_K[2]-net.relu(a_-0.75)*GAMMA_K[3])
         net.aligned.append([next(iter(w_.t)) for w_ in out])
         p=_Write(wr,addr,out[0],LW,cl); net.ports.append(p); p.dom=1
