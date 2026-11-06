@@ -236,8 +236,9 @@ on('T2_RS3',(None,'PX',{ics:(style_over(cs,style_decode(cs,e),style_decode(W[0],
 on('T2_PS1',(None,'T2_FS',{t2i:0,t2jj:0,t2rr.r:t2rr.id('T2_PS2')}))
 on('T2_PS2',(t2fnd,'T2_AP',None),(None,'PX',None))
 on('T2_PR',(None,'T2_AP',{t2i:G_(a5ts,incell),a5ns:incell,a4rsn:0,a4inb:0,a4inr:0,wvl:(cb+A4K,0,0,0,a4rhc,0,0),wht:(cb+A4T,0,0,0,0,0,0)}))
-on('T2_AP',(None,'T2_AP1',{rl:as_x(STY)+t2i*STYN,r1:as_x(STYX)+t2i*4,r2:as_x(STYX)+t2i*4+1}))
-on('T2_AP1',(None,'PX',{t2il:0,t2ps:W[0],t2pK:R1,t2pN:R2,ics:(W[0],R1,R2,X()),w1:(cb+ALIGN,W[1]),w2:(cb+LIST,W[7]),a5ns:0,wln:(cb+PIND,W[2],W[3],W[4],W[5],W[6],G_(t2i,ONE-a5ns))}))
+on('T2_AP',(None,'T2_AP1',{rl:as_x(STY)+t2i*STYN,r1:as_x(STYX)+t2i*4,r2:as_x(STYX)+t2i*4+1,rU:as_x(STYX)+t2i*4+2}))
+e=S('T2_AP1'); _p2bm=net.bits(rU.out[0],9,e)   # p2: a style based on a character style also takes the fields its base sets
+on('T2_AP1',(None,'PX',{**{m_:net.or_(m_,b_) for m_,b_ in zip(v4m,_p2bm)},t2il:0,t2ps:W[0],t2pK:R1,t2pN:R2,ics:(W[0],R1,R2,X()),w1:(cb+ALIGN,W[1]),w2:(cb+LIST,W[7]),a5ns:0,wln:(cb+PIND,W[2],W[3],W[4],W[5],W[6],G_(t2i,ONE-a5ns))}))
 # PDF list markers, in the page's pixel coordinates
 e=S('T2_PM'); on('T2_PM',(net.and_(net.eq(qs,0,e),net.step(qk)),'T2_PMa',None),(None,'PD_R',None))
 lit('T2_PMa',b'BT /F0 15 Tf 0 0 0 rg 1 0 0 1 ','T2_PMb')

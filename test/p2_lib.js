@@ -23,4 +23,15 @@ module.exports=async(ok,only)=>{
   A.key(122,1);A.settle();A.click(600,700);A.settle();const s2=part(A,'word/styles.xml'),x2=part(A,'word/document.xml');
   ok('one undo takes back the definition and the second run',!/<w:i\/>/.test((s2.match(/w:styleId="Em9".*?<\/w:style>/s)||[''])[0])&&runs(x2).filter(t=>/Em9/.test(t)&&/<w:i\/>/.test(t)).length==1,runs(x2).join(' | '));
  }
+
+ if(!only||only=='based'){
+  // a character style based on another takes the fields its base sets, not only their values
+  const sty=`<w:styles ${W}><w:docDefaults><w:rPrDefault><w:rPr><w:sz w:val="22"/></w:rPr></w:rPrDefault></w:docDefaults><w:style w:type="character" w:styleId="Base1"><w:name w:val="Base One"/><w:rPr><w:color w:val="00A0A0"/></w:rPr></w:style><w:style w:type="character" w:styleId="Kid1"><w:name w:val="Kid One"/><w:basedOn w:val="Base1"/><w:rPr><w:b/></w:rPr></w:style></w:styles>`;
+  let A=await lib();A.file(9,doc('<w:p><w:r><w:t xml:space="preserve">plain </w:t></w:r><w:r><w:rPr><w:rStyle w:val="Kid1"/></w:rPr><w:t>child words here</w:t></w:r></w:p>',{'word/styles.xml':sty}));A.settle();A.click(600,700);A.settle();A.shot('build/p2/based.png');
+  const n=count(A,223,1039,174,776,(r,g,b)=>Math.abs(r-0)<=2&&Math.abs(g-0xa0)<=2&&Math.abs(b-0xa0)<=2);
+  ok('a run of a style based on a colored character style draws in the base color',n>20,n);
+  const s=part(A,'word/styles.xml'),x=part(A,'word/document.xml');const d=(s.match(/w:styleId="Kid1".*?<\/w:style>/s)||[''])[0];
+  ok('the child style is saved with its own and its base\'s fields',/<w:b\/>/.test(d)&&/00A0A0/.test(d),d);
+  ok('the run is saved with the base color',/Kid1[^]*00A0A0[^]*child/.test(x),runs(x).join(' | '));
+ }
 };
