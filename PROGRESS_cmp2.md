@@ -84,3 +84,7 @@ Open screenshots a01, a02, a05 (pictures, PNG inflate: 121.3 M to 95.7 M edges),
 - First key in a new place (type at end) 723,101 to 718,683: it is mostly the status bar and zoom digits drawn through
   the glyph hit path in colour (per pixel, one relu per palette bit line of fg and bg, lines 359 and 364 of glyphnet.py,
   about 8 to 10 K work per digit). Not changed here; a line per (fg, bg) pair would cut it.
+
+## Full run (head before this log commit): all exit 0. e2e 210/210, tier2 49/49, look 31/31, t3_table, t3_pic, t3_misc (no false),
+t4_docx 18/18, t4_pdf 7/7, roundtrip, touch, a4 0 failed of 50, a5_docx no FAIL, fonts 23/23, imp2 all, imp3 49/49, imp4 101/101,
+imp5 49, imp6 20, feat1 24/24, t4, flops; audit 67/67.
