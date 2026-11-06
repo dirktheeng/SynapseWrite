@@ -2,7 +2,7 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-442591 neurons, 959404 edges, 164 layers, 3371 control states.
+442592 neurons, 959404 edges, 164 layers, 3371 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
@@ -67,7 +67,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | a4 borders | Paragraph borders and shading on screen and in PDF. | gen/rv_a4_features.py (387) | 387 | 1414 |
 | a4 docx | Reads and writes the a4 paragraph properties. | gen/rv_a4_features.py (268) | 268 | 694 |
 | a4 tabs | Tab stops. | gen/rv_a4_features.py (160) | 160 | 509 |
-| a4 ruler | Ruler display and drag. | gen/rv_a4_features.py (306) | 306 | 950 |
+| a4 ruler | Ruler display and drag. | gen/rv_a4_features.py (307) | 307 | 952 |
 | a4 merge | Merged table cells. | gen/rv_a4_features.py (639) | 639 | 1415 |
 | a4 pagenum | Page number formats and section start values. | gen/rv_a4_features.py (254) | 254 | 581 |
 | docx reader rv_a5 | Reader fidelity: nested tables, row spans, spacing, truncation and others. | gen/rv_a6_spell.py (845), gen/rv_a5_docx.py (315), gen/app.py (260) | 1420 | 12295 |

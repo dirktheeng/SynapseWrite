@@ -232,7 +232,7 @@ a4tkind=R();a4so=R();a4sk=R();a4dm=R()
 on('A4_RM0',(None,'A4_RM1',{ra4t:cb+A4T,ra4:cb+A4C,rp6:cb+PIND,rc:cb+2062}))
 e=S('A4_RM1')
 def _near(v,e): return net.and_(net.lt(hx_,as_x(v)+6,e),net.gt(hx_,as_x(v)-6,e))
-_Lx=t1_rL+t1_rI; _Fx=_Lx+pf_val(rp6.out[1]); _Rx=t1_rL+t1_rW-A4O[6]; _top=net.lt(hy_,157,e); _low=net.ge(hy_,166,e); _mid=e-_top-_low; _notb=e-net.step(rc.out[0])
+_Lx=t1_rL+t1_rI; _Fx=_Lx+pf_val(rp6.out[1]); _Rx=t1_rL+t1_rW-A4O[6]; _top=net.lt(hy_,157,e); _low=net.ge(hy_,166,e); _mid=e-_top-_low; _notb=net.and_(e,ONE-net.step(rc.out[0]))
 _kd=[net.ge(A4TO[i_],4096,e)+net.ge(A4TO[i_],8192,e) for i_ in range(4)]; _p=[A4TO[i_]-_kd[i_]*4096 for i_ in range(4)]
 _st=[net.and_(net.step(A4TO[i_]),_near(t1_rL+_p[i_],e),e-_top) for i_ in range(4)]
 _drag=lambda k_:{tdk:k_,tdx:hx_,tmx:hx_,drag:0}
