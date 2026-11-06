@@ -78,3 +78,9 @@ Open screenshots (a01, a02, a16, a27) against the base build: max difference 4 l
 Callers enter X_D3 directly (DEC gone: 6,983,911 to 6,954,511) and D4, where the symbol arrives, is also the return: it
 dispatches on hret itself, so the HR tick is gone (6,954,511 to 6,796,354 edges, 341,895 ticks).
 Open screenshots a01, a02, a05 (pictures, PNG inflate: 121.3 M to 95.7 M edges), a16, a27: max difference 4 levels.
+
+## Checks before the full run
+- Two builds byte identical (index.html, net.bin.gz, engine.wasm). audit 67 of 67. Page 2,929,477 bytes.
+- First key in a new place (type at end) 723,101 to 718,683: it is mostly the status bar and zoom digits drawn through
+  the glyph hit path in colour (per pixel, one relu per palette bit line of fg and bg, lines 359 and 364 of glyphnet.py,
+  about 8 to 10 K work per digit). Not changed here; a line per (fg, bg) pair would cut it.
