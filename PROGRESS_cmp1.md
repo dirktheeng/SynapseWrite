@@ -34,3 +34,14 @@ Per char of a repaint, three pulled wires read a lazy list as long as the size t
 Run: select all 9.74 M to 7.34 M FLOPs, jump 10.28 to 7.34, enter 10.42 to 7.46, undo 10.95 to 7.82,
 wheel 12.23 to 8.70, click 12.48 to 8.95, typing repeat 80,866 to 70,499, background layout 1.07 G to 0.76 G.
 Page 3,059,481.
+
+## 3. More size and FLOP work
+- sel_sum through the size tree's groups of 8 (SZG: tree nodes three levels above the leaves), for adv and kern;
+  the script size path behind vflag. Select all 7.34 to 6.75 M, jump 6.61 M, wheel 7.83 M.
+- rv_tabw (tab width, 29 stop thresholds) read behind the tab flag: select all 6.42 M, jump 6.21 M, enter 6.27 M,
+  undo 6.58 M, wheel 7.34 M, click 7.59 M, typing repeat 68,363, background layout 546 M.
+- SLOPE_BITS 9 to 8: wtab 68 K to 51 K gz; page 3,059,209 to 2,991,165. Title style text compared with the base: same.
+- Huffman decode: limit and offset per code length in tables (hb+320+2*len) built in BE; X_D3 reads one cell
+  pair per bit and no longer carries first and index. a01_format open 9,225,834 to 8,981,411 edges, same ticks.
+- getn: a field the current byte still holds is taken in one tick. 8,981,411 to 8,936,561 edges, 466,299 to 454,606 ticks.
+- Two builds byte identical; audit 67 of 67.
