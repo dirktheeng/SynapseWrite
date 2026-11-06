@@ -20,7 +20,7 @@ It is an independent project with its own name and icons, modeled on the feature
 
 ## Contents
 
-[One tick](#the-whole-program-is-one-function) · [Neurons](#from-neurons-to-logic) · [Control flow](#control-flow-a-token-in-the-weights) · [Sparsity](#why-half-a-million-neurons-can-feel-instant) · [Memory](#memory-the-network-holds-the-pointers) · [The screen](#the-screen-is-also-an-input) · [Text](#how-a-letter-gets-drawn) · [File formats](#file-formats-are-networks-too) · [Boundaries](#what-is-not-the-network) · [Building](#build-it) · [Verification](#how-it-is-checked) · [Status](#status)
+[One tick](#the-whole-program-is-one-function) · [Neurons](#from-neurons-to-logic) · [Control flow](#control-flow-a-token-in-the-weights) · [Sparsity](#why-half-a-million-neurons-can-feel-instant) · [Memory](#memory-the-network-holds-the-pointers) · [The screen](#the-screen-is-also-an-input) · [Text](#how-a-letter-gets-drawn) · [File formats](#file-formats-are-networks-too) · [Every sub-network](#every-sub-network-and-why-it-exists) · [Boundaries](#what-is-not-the-network) · [Building](#build-it) · [Verification](#how-it-is-checked) · [Status](#status)
 
 ## The whole program is one function
 
@@ -130,6 +130,125 @@ Opening a `.docx` means inflating a zip file and parsing XML. Saving means writi
 <p align="center"><img src="docs/figures/docx_pipeline.svg" alt="Animated open and save pipelines"></p>
 
 The same is true of PNG pictures and PDF export. The network also chooses the file name and tells the glue when to offer the download.
+
+<!-- networks:start -->
+## Every sub-network, and why it exists
+
+The build traces each neuron to one of 68 named sub-networks. This is the whole list, with neuron counts from the current build. Names are the exact labels in [`PROVENANCE.md`](PROVENANCE.md), and some keep working labels from when they were written (`a4`, `rv a3`, `tier 2`).
+
+<p align="center"><img src="docs/figures/network_path.svg" alt="Animated path of a key press through the sub-networks"></p>
+
+### Getting events in (5,759 neurons)
+
+The browser reports raw facts, such as a key name or a button mask. Deciding what those facts mean is application logic, so it has to happen in neurons.
+
+| Sub-network | Neurons | What it does | Why it exists |
+|---|---:|---|---|
+| `rv a3 interaction` | 2,665 | Handles word and page motion, right click, autoscroll while dragging and the context menu. | These editing motions need more than a single key rule, because they scan text and follow the pointer over many ticks. |
+| `bank and port wiring` | 1,287 | Holds the shared wires that drive the memory, image and event ports, including the input neurons the glue writes into. | Ports are the only way out of the network. Several sub-networks use each port, so one place sums their addresses and enables. That avoids a duplicate port per feature. |
+| `key handling` | 485 | Maps each key and modifier combination to an editing command. | Shortcuts are behavior, so they live in weights instead of a key table in the glue. |
+| `shared control registers` | 404 | Holds editor state such as caret, selection and typing format, plus the comparators that order a selection. | Many features read the same state. Shared registers mean each feature does not keep its own copy that could fall out of step. |
+| `screenshot hit test` | 376 | Reads the object id under the pointer from the last screen and converts a click into a document position. | The screen already knows what was drawn where. Reading it back means no separate layout tree has to be kept in memory. |
+| `raw event interpretation` | 300 | Turns key name code units, button masks, pointer types, field text and touch positions into cooked events. It also tells the browser whether its default action stands. | The glue is forbidden from knowing what Enter or a right click is. This network is what makes that rule possible. |
+| `ribbon actions` | 152 | Maps a clicked button id to its command. | The ribbon has many targets. One map lets the pointer path stay the same for all of them. |
+| `character maps` | 89 | Converts between Unicode and the internal character codes, using the Windows-1252 block. | Keeping internal codes small keeps glyph, metric and spelling tables small. Files and the clipboard still need Unicode. |
+| `event dispatch` | 1 | Starts the handler for each cooked event. | Every event enters at one point, so the rest of the network can stay asleep until it is called. |
+
+### Changing the document (3,495 neurons)
+
+These networks are the only ones that write document text. They all go through the same edit and undo paths, so everything stays undoable.
+
+| Sub-network | Neurons | What it does | Why it exists |
+|---|---:|---|---|
+| `tier 4 features` | 699 | Implements tracked changes, fields, equations and mail merge. | These change what a run of text means, rather than how it looks. |
+| `bulk edits` | 656 | Processes windows of many cells per tick for large formatting, copy, save, paste and find operations. | Going one cell per tick is too slow on a 100 page document. These walkers keep large operations usable. |
+| `range walker` | 384 | Walks a selection for copy, cut, delete and formatting. | Selections cross paragraphs and slots. One walker holds that hard logic, and each command just supplies the action. |
+| `tier 2` | 354 | Implements style commands, paragraph commands, lists and typed font sizes. | These commands share paragraph records and a style table, so they are grouped around that data. |
+| `a4 commands` | 320 | Implements repeat, format painter and keep rules, among others. | These are small commands that reuse existing registers, and each needs only a few rules. |
+| `find and replace` | 278 | Runs a search automaton over the document, counts matches and replaces them. | Search needs its own scanning state, which is separate from the caret. |
+| `paste` | 199 | Inserts clipboard text and splits it into paragraphs. | Pasted text arrives as a flat vector of code units, and the document stores paragraphs. |
+| `edit primitives` | 196 | Inserts and deletes characters and paragraphs, and logs each change for undo. | It is the single choke point for edits, so undo cannot be bypassed by accident. |
+| `a4 tabs` | 160 | Handles tab stops. | A tab has no fixed width. Its advance depends on the current position, so layout needs a dedicated rule. |
+| `undo` | 107 | Walks the log backward and forward to undo and redo. | The log format is shared, so any feature that logs correctly gets undo with no extra network. |
+| `spell dictionary` | 67 | Stores the word list as an automaton, and marks misspelled words. | A word list in weights is a state machine. Checking a word costs one step per letter, with no search through a table. |
+| `style interner` | 53 | Finds or adds a style record in the interned table, in its own clock domain. | Each character stores a short index instead of a full record. That makes the text compact and makes comparing two styles a single check. |
+| `tier3` | 22 | Holds the remaining tier 3 commands, plus undo for their operations. | It connects tier 3 features to the shared undo log. |
+
+### Laying out and painting the page (16,567 neurons)
+
+These networks decide where everything goes, then draw it.
+
+| Sub-network | Neurons | What it does | Why it exists |
+|---|---:|---|---|
+| `ribbon display list` | 9,300 | Holds ribbon draw items as a token chain and plays them. | Drawing a ribbon is data more than logic. One sequencer plays the lists, instead of separate circuits for every button. |
+| `chrome` | 1,894 | Draws the caret, scrollbar and status bar, and handles autoscroll. | These change on most events and must update without repainting the page. |
+| `layout and paint` | 1,037 | Walks paragraphs and places lines and words. It draws text, selection and pictures. | It is the main drawing loop. Most features add to this one walk, so they do not repaint separately. |
+| `pictures` | 926 | Draws picture handles, resizes pictures by resampling, writes PNG and reads pictures from a file. | A picture is the one document object that is not text, so it has its own storage and drawing path. |
+| `a4 merge` | 639 | Handles merged table cells. | Merging breaks the simple grid that the table walker assumes, so it needs its own rules. |
+| `tables` | 619 | Scans tables, inserts them, edits rows and columns, applies shading, and handles border hit zones and dragging. | A table has structure that must stay consistent as rows and columns change, and borders are also click targets. |
+| `a4 borders` | 387 | Draws paragraph borders and shading, on screen and in PDF. | Neighboring paragraphs can join borders, so this cannot be drawn one paragraph at a time. |
+| `a4 ruler` | 307 | Draws the ruler and handles dragging its markers. | The ruler both displays and edits paragraph properties, so it needs its own drawing and pointer logic. |
+| `line breaking` | 279 | Finds where lines break, and handles alignment. | Every paragraph needs it, and it runs on each edit, so it has to be small. |
+| `a4 pagenum` | 254 | Handles page number formats and section start values. | Page numbers depend on sections, and they have to come out the same on screen and in a PDF. |
+| `notes and balloons` | 253 | Draws wrapped text, comment balloons and footnotes. | These flow outside the normal text column, and they take space from the page or margin. |
+| `table of contents` | 175 | Builds and updates the table of contents. | It has to scan headings and their final page numbers, which are known only after layout. |
+| `pointer` | 118 | Draws the mouse pointer, saves and restores the colors under it, and chooses its shape from the screen. | The output is one image, with no system cursor over it. So the network has to draw the pointer and clean up after it. |
+| `headers and footers` | 112 | Holds header and footer strings and their edit bar. | They repeat on each page, and they are edited separately from the main text. |
+| `sections` | 106 | Holds section records, section breaks and page setup. | Page size, margins and columns can change partway through a document. |
+| `canvas look` | 82 | Draws the page shadow and the canvas around the page. | This is the appearance around the page, kept separate because it does not depend on the document. |
+| `a4 keep` | 56 | Applies keep with next and keep lines during pagination. | It has to add up the height a paragraph must share a page with before placing its first line. |
+| `screen check` | 23 | Compares one line of the id plane with the line table on each blink tick, and repairs it by repainting. | The project requires checking the screen against document state. This catches drawing damage as the app runs. |
+
+### Drawing text (405,626 neurons)
+
+This is the largest family. It is what replaces a font engine. The method is described in [How a letter gets drawn](#how-a-letter-gets-drawn).
+
+| Sub-network | Neurons | What it does | Why it exists |
+|---|---:|---|---|
+| `glyph weights (outline edges)` | 360,490 | Holds the font outlines as edge neurons, one small program per glyph. | This is the font itself, written as weights. It accounts for most of the neurons, since eight families with their faces hold many edges. |
+| `glyph unit` | 19,503 | Runs the drawing of one glyph, in its own clock domain. | Paint can stall while a glyph is generated, and that keeps the paint loop simple. |
+| `glyph metrics` | 17,875 | Holds advance widths and kerning as decision trees. | Layout needs widths for each character, and it should not have to draw a glyph to learn one. |
+| `ramp bank` | 4,978 | Provides shared ramps, `R_q = relu(q - x)`, that turn a crossing into pixel shares. | Ramps are the same for all glyphs, so one bank serves every edge. Each glyph does not need its own. |
+| `coverage` | 1,827 | Adds edge shares into pixel coverage. | It turns signed crossings into how much of a pixel is ink, which gives smooth edges. |
+| `glyph network` | 507 | Selects and addresses a character cell for drawing. | It is the junction between layout and drawing, whichever way the glyph is produced. |
+| `snapping layer` | 236 | Fits outline coordinates to the pixel grid for a given size. | Unsnapped text looks blurry at small sizes, so heights move to whole pixels using font metrics. |
+| `glyph geometry` | 159 | Scales outline coordinates by the drawn size. | A single set of weights can then serve any size, rather than storing outlines per size. |
+| `row sequencer` | 29 | Steps the glyph unit through the rows of a character. | Coverage builds one sample line per tick, so something has to count them. |
+| `glyph store` | 16 | Keeps drawn glyphs in memory and copies them to the screen. | Generating a glyph costs far more than copying one, and most letters repeat. |
+| `glyph patch` | 6 | Assembles coverage and color into a patch for the patch port. | Text color is applied here, so a cached glyph works in any color. |
+| `stem units` | 0 | Would hold stem positions for horizontal snapping. It has no neurons in the current build, because no stems are compiled in. | It is listed so that the provenance record stays complete. |
+
+### Reading files (6,758 neurons)
+
+Each of these exists because no parser library is allowed. XML, zip and PNG bytes are consumed one state at a time.
+
+| Sub-network | Neurons | What it does | Why it exists |
+|---|---:|---|---|
+| `docx reader` | 1,847 | Unzips the file, inflates it and parses the document XML. | It is the core of opening a file. The goal requires that networks do parsing and decompression. |
+| `docx reader rv_a5` | 1,442 | Improves fidelity on files from other programs: nested tables, row spans, spacing and truncated content. | Real files use forms that a simple reader misses. This keeps them from breaking on open. |
+| `docx reader tier 4` | 1,368 | Reads tracked marks and fields. | These wrap ordinary runs in extra elements, so they add state to the parser. |
+| `docx reader notes` | 819 | Reads footnote, comment and header parts. | Each of these has its own XML part that must be connected back to the main text. |
+| `docx reader tier 2` | 535 | Reads styles, numbering, and run and paragraph properties. | Formatting in `.docx` is scattered across several parts and elements. |
+| `png reader` | 373 | Decodes PNG files to pixel words, with limits on bad input. | Pictures in a `.docx` are usually PNG, and they have to become pixels the network can draw. |
+| `a4 docx` | 268 | Reads and writes the paragraph properties added by the commands above. | Anything the app can do must survive a save and open, so features carry their own file code. |
+| `docx reader tier 3` | 106 | Adds walking between the parts of a file. | Tier 3 content lives in separate parts of the zip file. |
+
+### Writing files (5,861 neurons)
+
+Saving runs the same idea in reverse. The network produces every byte, and the glue only offers the download.
+
+| Sub-network | Neurons | What it does | Why it exists |
+|---|---:|---|---|
+| `docx crc` | 2,775 | Computes CRC32 of the bytes written to the zip file. | Zip readers reject a file with a wrong checksum. It holds four 256 entry tables as weights, so it can process four bytes at once. |
+| `pdf writer` | 1,236 | Writes PDF objects, text and pictures. | Print to PDF is in the goal, and PDF has its own structure of objects and offsets. |
+| `docx writer` | 1,032 | Writes the document XML parts. | A saved file needs XML text with the values of this document filled in. |
+| `docx writer tier 3` | 306 | Writes section properties, tabs, markers, comments, notes, headers and footers. | These features add elements and whole parts to the saved file. |
+| `docx deflate` | 242 | Compresses with LZ77 and fixed Huffman codes. | `.docx` files are compressed zip files, and compression has to happen in the network too. |
+| `zip container` | 210 | Keeps the member table, and writes the central directory and table XML. | The directory at the end of a zip file has to list the size and offset of each part. |
+| `pdf tables` | 55 | Writes PDF page size, table rules and shading. | Table lines are drawn as PDF commands, not as characters. |
+| `file output command` | 5 | Selects the length, data start and file name that the glue saves. | The glue must not decide what to save, or under what name. It reads these neurons and acts. |
+
+<!-- networks:end -->
 
 ## What is not the network
 

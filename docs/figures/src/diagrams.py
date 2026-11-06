@@ -142,6 +142,26 @@ for i,(a,s_,c) in enumerate(R_):
     y=78+i*38;b+=f'<rect x="30" y="{y}" width="150" height="32" rx="6" fill="{TINT[c]}" stroke="{c}"/>'+t(105,y+21,a,13,INK,'middle',600)+t(196,y+21,s_,14)
 b+=t(30,y+60,'The build fails if any two declared regions overlap: region() in gen/nn.py.',13,MUT)
 write('memory_map',svg(800,y+74,b,'Memory bank map'))
+# ---------- how the families connect ----------
+T=12;b=defs(LINE)
+b+=t(30,38,'The path of one key press through the sub-networks',20,INK,'start',700)+t(30,60,'The main stops, simplified. Each box is a named sub-network.',14,MUT)
+A=[('raw event interpretation','names the key',AMB),('event dispatch','picks a handler',AMB),('key handling','chooses the command',BLUE),('edit primitives','changes memory, logs undo',TEAL)]
+B=[('line breaking','finds where lines end',BLUE),('layout and paint','walks lines and words',BLUE),('glyph network','selects the character',VIO),('glyph store','cached rows, or glyph unit',VIO)]
+W_=215;G_x=21
+for i,(n,s_,c) in enumerate(A):
+    x=30+i*(W_+G_x);b+=box(x,86,W_,76,c,n,s_,14)
+    if i<3:b+=arrow(f'M{x+W_} 124H{x+W_+G_x-2}')
+for i,(n,s_,c) in enumerate(B):
+    x=30+i*(W_+G_x);b+=box(x,206,W_,76,c,n,s_,14)
+    if i<3:b+=arrow(f'M{x+W_} 244H{x+W_+G_x-2}')
+b+=arrow(f'M{30+3*(W_+G_x)+W_/2} 162V184H{30+W_/2}V204')
+b+=box(30,326,W_,64,VIO,'glyph patch','coverage becomes color',14)+box(266,326,W_,64,BLUE,'chrome','caret, scrollbar, status',14)+box(502,326,W_,64,VIO,'pointer','redrawn on top',14)+box(738,326,232,64,RED,'halt neuron','the glue stops ticking',14)
+b+=arrow(f'M{30+3*(W_+G_x)+W_/2} 282V304H{30+W_/2}V324')
+for i in range(3):
+    x=30+i*(W_+G_x);b+=arrow(f'M{x+W_} 358H{x+W_+G_x-2}')
+d=f'M{30+W_/2} 124H{30+3*(W_+G_x)+W_/2}V184H{30+W_/2}V244H{30+3*(W_+G_x)+W_/2}V304H{30+W_/2}V358H850'
+b+=pulse(d,AMB,0,10.5,T,7)
+write('network_path',svg(1000,410,b,'Path of a key press through the sub-networks'))
 # ---------- charts ----------
 G_=P['groups'];fam={'Font outlines as neurons':['glyph weights (outline edges)'],'Glyph machinery and metrics':['glyph unit','glyph metrics','ramp bank','coverage','glyph network','snapping layer','glyph geometry','row sequencer','glyph store','glyph patch','style interner'],'Ribbon and chrome':['ribbon display list','chrome','ribbon actions','pointer','canvas look','a4 ruler'],'File formats':[k for k in G_ if k.startswith(('docx','pdf','zip','png'))]}
 used=set(sum(fam.values(),[]));fam['Editing, layout and everything else']=[k for k in G_ if k not in used]
