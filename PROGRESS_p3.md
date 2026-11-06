@@ -36,3 +36,9 @@ Design: the scan takes a third and more groups after `mat(..)(..)`: the record's
 - test/feat2.js eq 25/25, test/rv_a6_eq.js 9/9 (two row matrices now use the aligned layout too).
 - Nesting not done: it needs measure, paint, print and the OMML writer of a form to call themselves on an inner record with all their registers saved and restored; not built in this pass. PARITY says so.
 - Secondary part CRC: a01's secondary XML parts are 57,447 bytes; at about 67 edges a byte that is about 3.8 M edges, against 216 K left under the 7 M limit. Not done; PARITY states the blocker.
+
+## Step 4: FLOPs and the final run
+- First full run: all suites passed except test/p3.js eq 34/36, a test isolation bug (the eq part typed into the document the docx part had left open). The eq part now opens a blank file first.
+- flops.js after step 3: every event +20 to +1,082 FLOPs over base. gprof wheel, base vs p3: compiled control +77. Neuron traced through NETDBG to fsm.finish: the reader's trap level fans out to every guarded edge, and my new reader states added guarded edges. Generator change in nn.py: guard only the back edges of a depth first walk from the trap roots, plus edges into the bar. Every cycle still holds a guarded edge. Guarded edges 3,147 (base) to 1,391. Also gated two expressions of mine that read port outputs ungated.
+- After: every event at or below base (background layout -158,109, wheel -642, type at end -34). Page 2,946,417 bytes (base 2,953,717). a5 a01 open 6,761,936 edges (base 6,784,308). Two builds byte identical.
+- Final full run, one at a time: e2e 210/210, tier2 49/49, look, t3_table, t3_pic, t3_misc, roundtrip, touch, t4 exit 0 with no FAIL, t4_docx 18/18, t4_pdf 7/7, a4 0 failed of 50, a5_docx no FAIL, fonts, imp2, imp4 no FAIL, imp3 49/49, imp5 49/0, imp6 20/0, feat1 24/24, feat2 35/35, rv_a6_eq 9/9, rv_a6_pdf 4/4, p3 36/36, flops all events at or below base, audit 67/67.
