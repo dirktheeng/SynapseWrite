@@ -1,0 +1,3 @@
+// Copy of a document too long for one call's argument list, in the real page: the text must reach the clipboard.
+const d=require('./drive');(async()=>{const {b,p}=await d();await p.evaluate(()=>{window.annMax=30000000;let s='';for(let i=0;i<1900;i++)s+='This paragraph number '+i+' exists to make a long document that spans well over one hundred pages so we can measure how the network behaves at that scale with real line breaking and pagination work.\n';annPaste(s.slice(0,390000));});
+ await p.keyboard.press('Control+a');await p.keyboard.press('Control+c');await p.waitForTimeout(500);const n=await p.evaluate(()=>(window.annClip||'').length);console.log(n>380000?'PASS':'FAIL','copy of a long document reaches the host',n);await b.close();})();

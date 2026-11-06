@@ -30,3 +30,8 @@ Records may now hold a payload: [header][payload][footer], footer equal to heade
 
 ## Runs
 See the report at the end of this file once finished.
+
+## Final counts, 1900 paragraphs unless stated (work before -> after)
+bold all 452M -> 16M, undo 692M -> 7.8M. delete all 477M -> 0.36M, undo 1088M -> 11M, redo 967M -> 0.31M. copy 98M -> 9.8M. paste 217M -> 24M, undo paste 8.8M. tracked delete all 341M -> 36M. center all 200M -> 4.8M. heading style 352M -> 40M. save 4526M -> 390M. open 300 paragraphs 150M -> 52M.
+Typing while the background has not reached the caret costs 11M, up from 0.3M.
+Test notes: browser suites at load 30 to 37 with no free memory crashed or raced. Differences seen were caret columns only (blink). Footnote and resize redo pass headless by exact framebuffer.
