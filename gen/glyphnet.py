@@ -461,7 +461,7 @@ class GlyphUnit:
             for c_ in ctier: o_.append(net.and_(o_[-1],c_))
             return o_
         ox=latch(OX)
-        w=[X() for _ in range(LW)]; nbank=0
+        w=[X() for _ in range(LW)]; nbank=0; blockfull={a_:net.wire() for a_ in range(0,LW,BLK)}
         for gp in (slots,aslots):
             for sg,L_ in gp.items():
                 for xk in L_:
@@ -472,7 +472,10 @@ class GlyphUnit:
                         b_=min(a_+BLK,LW); e_=et[tier_of(a_+1)]
                         full=net.step(e_*M-M+(a_+PAD+OFF)-xs); pe=net.and_(e_,net.step(e_*M-M+(b_+PAD+OFF)-xs),ONE-full)
                         R={q:net.relu(pe*M-M+(q+PAD+OFF)-xs) for q in range(a_+1,b_+1)}; nbank+=b_-a_
-                        for p_ in range(a_,b_): w[p_]=w[p_]+(full+R[p_+1]-R.get(p_,X()))*sg
+                        net.connect(blockfull[a_],full*sg)     # whole columns meet in one sum per block: edges that cancel there wake no column
+                        for p_ in range(a_,b_): w[p_]=w[p_]+(R[p_+1]-R.get(p_,X()))*sg
+        for a_,f_ in blockfull.items():
+            for p_ in range(a_,min(a_+BLK,LW)): w[p_]=w[p_]+f_
         g.nbank=nbank
         net.group('coverage')
         ac=[net.reg() for _ in range(LW)]
