@@ -182,7 +182,7 @@ def common():
     # search box opens the find bar
     u.r(460,5,360,22,_PB[16],225,_PB[17]); u.art(466,8,'srch',225); u.t(488,9,'Search',9,2,16,17)
     # status bar: the left part is live, the right part is static
-    u.r(0,776,1280,1,BD); u.r(640,777,640,23,LG)
+    u.r(0,776,1280,1,BD); u.r(640,777,446,19,LG)
     x=1000
     for i,ic_ in enumerate(('vread','vprint')):
         u.art(x+i*26+4,780,ic_)

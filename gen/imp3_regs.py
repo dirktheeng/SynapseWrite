@@ -7,3 +7,4 @@ region('CBS clipboard styles',CBS,CBS+CBSMAX+1100); region('CBP clipboard paragr
 clcn=R();csp=R();cso=R();csn=R();csb=R();csl=R();csk=R();csc=R();csd=R();pfm=R();pfst=R();pfk=R();pfi=R();pfj=R();pff=R();pfb=R()
 t2lk=R();t2lnv=R();t2lh=R()   # line rule read before or after w:line
 region('glyph pixel records',glyphnet.RECB,glyphnet.RECE)
+zso=R();zr=R();zc=R()   # the all styles menu

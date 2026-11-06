@@ -20,9 +20,9 @@ net=Net(); fsm=FSM(net); on=fsm.on; ONE=net.ONE; G_=net.gate
 # STYT 1100000 is the interned style table; PUS 999000 and PFT 999100 hold PDF face use and offsets. Glyph tag table TAGB 61000000, glyph store GSTORE 61500000, PDF font bytes FROMB 63000000.
 # The bank is paged by the engine: a page takes wasm memory only when first written, so far apart regions cost nothing until used.
 # High cells: undo 14500000, OUTB 20000000, IMG0 24000000, SAVEB 32000000 and everything from OUTP up only matters while reading, so a large save may run over it.
-PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; SAVEB=32000000; OUTP=40000000; PNGB=46000000; AUXB=50000000; RELB=51000000; CMB=51200000; FILE=53000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000; TAGB=61000000; GSTORE=61500000; GSTORE_END=63000000; FROMB=63000000; BANK=67108864
+PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; SAVEB=32000000; OUTP=40000000; PNGB=46000000; AUXB=50000000; RELB=51000000; CMB=51200000; FILE=53000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000; TAGB=61000000; GSTORE=61600000; GSTORE_END=63000000; FROMB=63000000; BANK=67108864
 # Regions fail the build if they overlap: see region() in nn.py. Bounds are exclusive at the end.
-for r_ in (('undo',14500000,20000000),('STYT interned styles',1100000,1100000+4096),('TAGB glyph tags',61000000,61500000),('GSTORE glyph store',61500000,63000000),('FROMB PDF fonts',63000000,64000000),
+for r_ in (('undo',14500000,20000000),('STYT interned styles',1100000,1100000+4096),('TAGB glyph tags',61000000,61600000),('GSTORE glyph store',61600000,63000000),('FROMB PDF fonts',63000000,64000000),
  ('a4 PDF numbering table',23800,25000),('a6 PDBM bookmarks',1200000,1264016),('a6 SGB suggestions',1302000,1310000),('a6 DICTB user words',1310000,1320000),('a6 AUTHB authors',1320000,1330000),('a6 EQT math records',1330000,1375000),
  ('a7 free slots and zero cells',1384000,1389100),('PTRB pointer',1390000,1391000),('a11 reserved',1391000,1393200),('CB clipboard',1400000,1600000),('CB2',1600000,2000000),('slots',2000000,14400000),
  ('MGB mail merge',100000,500000),('FNB',500000,900000),('XR',900000,999000),('PUS and PFT',999000,1000000),('ZT and PDFN',1000000,1020000)): region(*r_)
@@ -1027,7 +1027,7 @@ rules+= [(B[15],'SETAL',{alv:0}),(B[16],'SETAL',{alv:1}),(B[17],'SETAL',{alv:2})
 for i in range(4): rules.append((B[21+i],'T2_SA0',{t2si:i}))
 rules+=[(B[25],'RD0',{mode:1,field:0,qrep:1}),(B[26],'UI',{bstg:1,t1_hov:0,clip0:0,clip1:0}),(B[27],'UNDO',None),(B[28],'REDO',None)]
 for i in range(6): rules.append((B[29+i],'UI',{tab:i,clip0:0,clip1:0}))
-rules+=[(B[36],'HALT',{wpaste:1}),(B[37],'COPY',None),(B[38],'CUT',None),(B[39],'RALL',None),(B[50],'SB',None)]
+rules+=[(B[36],'HALT',{wpaste:1}),(B[37],'COPY',None),(B[38],'CUT',None),(net.and_(net.step(B[39]),net.ge(hy_,150,S('BTN'))),'RALL',None),(B[50],'SB',None)]
 for i,n_ in enumerate((2,3,4)): rules.append((B[40+i],'TI0',{tin:n_,tic:0,tir:n_*n_-1,grp:grp+1}))
 rules+=[(B[53],'PDF',None),(B[52],'HALT',{wpic:1}),(B[51],'T3_C_FN',None),(B[49],'RD0',{mode:4,field:0}),(B[48],'HALT',{wopen:1}),(B[47],'SAVE',None),(B[43],'T3_SP0',{tsop:6}),(B[44],'T3_SP0',{tsop:7}),(B[45],'TC0',{ti_:0,grp:grp+1}),(B[46],'T3_C_H0',None)]
 T1('btn')

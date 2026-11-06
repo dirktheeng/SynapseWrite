@@ -1,3 +1,4 @@
+TAGB_SPAN=600000
 # Zoom: a linear map between the document's own pixels and the screen, sitting between the paint buses and the ports.
 # Levels are one-hot registers; at 100 percent none is on, so every gate here stays closed and adds no work.
 # Layout, hit lists and saved files keep document pixels; only what reaches the ports and what comes back from the mouse is mapped.
@@ -39,3 +40,4 @@ def zoom_sizes(size_hot):
         for z_h,z_ in zip(_zgy_h,ZL):
             t_=rom.SZ.index(max(4,min(72,round(rom.SZ[i_]*z_+0.01)))); out[t_]=out[t_]+net.and_(s_,z_h)
     return out
+assert (len(rom.FACES)+1)*rom.NSZ*256<TAGB_SPAN,'tag table too small for the glyph keys'

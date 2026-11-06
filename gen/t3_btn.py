@@ -31,3 +31,4 @@ for i_,(lb_,st_) in enumerate((('One Page','IMP3_ZP'),('Page Width','IMP3_ZW'),(
 # Commands that already exist in the network and had no button
 add(1,6,1058,R0,92,RH,'Page Break','PB0')
 add(4,9,392,R0,84,RH,'Show Marks','IMP3_MK')
+add(0,39,1066,R0+44,80,RH,'All Styles','IMP3_SM')

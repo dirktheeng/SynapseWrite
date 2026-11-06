@@ -13,3 +13,22 @@ test/imp3.js zoom 12/12.
 
 ## Clipboard
 Copy and cut keep style cells at CBS and one 8-cell paragraph record per mark at CBP (100,000 characters). Paste compares CB2 with CB, one tick per character, skipping CR. Equal: single character path with kept cells, and after each mark the paragraph before it takes the record, logged as op 6 so undo restores it. Other text: as before. test/imp3.js clip 8/8 after two test fixes (my selection in a centered paragraph ran past the mark; bold typing style at a run end is existing behaviour).
+
+## Exact line heights
+PLSP 4096+twips is exact, 8192+twips at least; rule read before or after w:line. Layout adds the difference to the line's extra; at least floors at the single height, not the 1.08 height (first run of the 6 pt case gave 20 px, wanted 18). Saved with its lineRule, reopens the same. test/imp3.js line 12/12.
+
+## Repaint cost
+Traced jump to top per state: C1 is 94 percent, 960 edges per glyph; the group split said 1.52 M of 1.99 M is the glyph unit: about 21 rows a glyph at 20 edges a row, plus 9 edges per ink cell in the row plane, though every pixel was already computed once.
+Rewrite: the first black on white draw of a glyph up to 32 by 32 records the row plane's output to a ring (RECB 68 M to 75 M), and its store header takes the record's offset and generation. Later draws are one read and one patch, two ticks in the unit and no plane. No change to the generator or the store. First build no hit: fast latched one tick after the tag check; a wire fixed it. Engine page table grew from 1024 to 1152 pages. A test shows both paths give identical pixels.
+Trace after: jump 1,986,258 to 788,351 edges, 2,386 ticks same paint state count; enter 2.06 M to 793,535; undo 2.18 M to 846,077; type at top 228,657 to 108,825; down 196,783 to 76,951.
+Zoom gates: zdoc was waking on clip0 every glyph; it now reads clip0 only when a level is on.
+
+## Full run 1 at 09a95fc
+e2e, tier2, t3_table, t3_pic, t3_misc, t4_docx, t4_pdf, roundtrip, touch, a4, rv_a3, fonts, a5_docx, a7_type, imp_far, imp_misc, imp2, rv_a1, t4 exit 0. look 23/31, imp3 stopped on an unbuilt id (All Styles written after the build), audit 64/67 (new groups without a purpose, one ternary in the wheel listener).
+look causes, in order found:
+1. The right part of the status bar: a hover display list wipes it and halts with no status paint. The static rect now stops short of those cells and the zoom painter owns them.
+2. Records one row low: rrow took +128 on the last row and kept it past the clear. Now counts bwr-blast, as bpy does.
+3. A stray two pixels under the + of A+. Wrong guesses first (records, small sizes in sz_near, header cells); bisect pointed at the record commit, disabling records did not cure it. Watching the cell showed a pointer draw writing into the store: the tag table (500,000 keys) was too small once NSZ went from 66 to 69, as key = face*NSZ*256 + size*256 + code, so the pointer's face landed in the store. The tag table is now 600,000 cells, GSTORE starts at 61.6 M, and the build asserts the keys fit.
+sz_near still leaves 4, 5, 6 pt out, so those sizes exist only for drawing at small zoom. Header zero cells now come from the resting record plane, as two plain zero wires could be merged by the optimizer.
+All Styles menu: rows written from the style table, ten at a time, More styles moves on.
+After: look 31/31, imp3 49/49, audit 67/67.

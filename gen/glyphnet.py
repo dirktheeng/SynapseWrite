@@ -292,7 +292,7 @@ class GlyphUnit:
         p1.dom=1;p2.dom=1;p3.dom=1
         # ---- pixel records ----
         net.group('glyph pixel records')
-        recin=net.input(4*RECW*RECH)
+        recin=g.recin=net.input(4*RECW*RECH)
         rp=net.reg(init=1.0); net.rec(recg,recg+net.step(blast*M-M+rp-(RECE-RECB-RECW*RECH*4-8)))   # the ring wraps: older records are stale by generation
         rd4=_RowRead(blk,net.gate(H[5]-1+RECB,blk),recin[0],4*RECW*RECH,net.gate(H[1]*(4*RECW),blk)); net.ports.append(rd4); rd4.dom=1
         rbx=L(Lx-H[3]+OFF+OFF,blk); rby=L(Ly-H[4]+OFF,blk)
@@ -301,7 +301,7 @@ class GlyphUnit:
         # a first draw records: rows are written from the row plane, then the block's header takes the record's place
         small=net.and_(start,ONE-net.step(H[1]-RECH-0.5),ONE-net.step(H[2]-RECW-0.5),fast_,ONE-fnc_)
         rcn=L(small,start); rtag=L(tag+g.STORE,start)
-        rrow=net.reg(); net.rec(rrow,rrow-net.relu(rrow+fin*M-M)+net.gate(rp,start)+bwr*(4*RECW))
+        rrow=net.reg(); net.rec(rrow,rrow-net.relu(rrow+fin*M-M)+net.gate(rp,start)+(bwr-blast)*(4*RECW))
         wren=net.step(bwr+rcn-1.5)
         ra_=net.wire(); net.connect(ra_,net.gate(rrow+RECB-1,wren))
         p=_Write(wren,ra_,data[0],4*RECW); net.ports.append(p); p.dom=1
@@ -398,12 +398,14 @@ class GlyphUnit:
         maxb=LW*220+HDR+8
         flush=net.step(st*M-M+bp-(g.STORE_END-maxb))
         a0=net.gate(bp,st-flush)+flush*(g.STORE+8)
-        hw=[net.wire() for _ in range(HDR)]
+        hw=[net.wire() for _ in range(5)]
         for w_,v_ in zip(hw,(net.gate(key+1,st),rowsv,net.gate(cells,st),net.gate(OX,st),net.gate(T,st))): net.connect(w_,v_)
         net.aligned.append([next(iter(w.t)) for w in hw])
         a0w=net.wire(); net.connect(a0w,a0)
         tagv=net.wire(); net.connect(tagv,a0-st*g.STORE); tkw=net.wire(); net.connect(tkw,net.gate(key+g.TAG,st))
-        p=_Write(st,a0w,hw[0],HDR); net.ports.append(p); p.dom=1
+        p=_Write(st,a0w,hw[0],5); net.ports.append(p); p.dom=1
+        # a new block has no record yet: two cells from the record plane, which is at rest here
+        a5w=net.wire(); net.connect(a5w,a0+st*5); p=_Write(st,a5w,g.recin[0],2); net.ports.append(p); p.dom=1
         p=_Write(st,tkw,tagv,1); net.ports.append(p); p.dom=1
         g.a0=a0;
         # stem units: a stem's rounded position, then its edge shifts, held in registers

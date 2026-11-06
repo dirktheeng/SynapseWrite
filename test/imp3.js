@@ -89,5 +89,15 @@ const yel=(r,g,b)=>r>200&&g>180&&b<170; // match tint
   // Ctrl+wheel zooms
   let C=await lib();C.type('wheel');C.settle();const hw=C.hash(174,776);C.e.inject(C.h.ev[5],1);C.wheel(100);C.settle();ok('Ctrl+wheel zooms',C.hash(174,776)!==hw);C.shot('build/imp3_cw.png');
  }
+ if(!only||only=='sty'){
+  const zlib=require('zlib');const W='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+  const zip=(files)=>{const ps=[],cd=[];let off=0;for(const [n,dd] of Object.entries(files)){const d=Buffer.from(dd),c=zlib.deflateRawSync(d),nm=Buffer.from(n);const crc=zlib.crc32(d);const l=Buffer.alloc(30);l.writeUInt32LE(0x04034b50,0);l.writeUInt16LE(20,4);l.writeUInt16LE(8,8);l.writeUInt32LE(crc,14);l.writeUInt32LE(c.length,18);l.writeUInt32LE(d.length,22);l.writeUInt16LE(nm.length,26);ps.push(l,nm,c);const h=Buffer.alloc(46);h.writeUInt32LE(0x02014b50,0);h.writeUInt16LE(20,4);h.writeUInt16LE(20,6);h.writeUInt16LE(8,10);h.writeUInt32LE(crc,16);h.writeUInt32LE(c.length,20);h.writeUInt32LE(d.length,24);h.writeUInt16LE(nm.length,28);h.writeUInt32LE(off,42);cd.push(h,nm);off+=30+nm.length+c.length;}const a=Buffer.concat(ps),b=Buffer.concat(cd),e=Buffer.alloc(22);e.writeUInt32LE(0x06054b50,0);e.writeUInt16LE(Object.keys(files).length,8);e.writeUInt16LE(Object.keys(files).length,10);e.writeUInt32LE(b.length,12);e.writeUInt32LE(a.length,16);return Buffer.concat([a,b,e]);};
+  const sty=`<?xml version="1.0"?><w:styles ${W}><w:style w:type="paragraph" w:styleId="Fancy"><w:name w:val="Fancy"/><w:pPr><w:jc w:val="center"/></w:pPr><w:rPr><w:sz w:val="40"/></w:rPr></w:style></w:styles>`;
+  const f=zip({'[Content_Types].xml':'<Types/>','word/document.xml':`<?xml version="1.0"?><w:document ${W}><w:body><w:p><w:r><w:t>Some plain text</w:t></w:r></w:p></w:body></w:document>`,'word/styles.xml':sty});
+  let A=await lib();A.file(9,f);A.settle();const h0=A.hash(174,776);A.ctl('0:239');A.settle();A.shot('build/imp3_sty.png');
+  // the seventh row holds the file's style: built in six come first
+  A.click(950,127+21*6+10);A.settle();A.shot('build/imp3_sty2.png');ok('a style from the file applies from the menu',A.hash(174,776)!==h0);const x=xml(A);ok('saved with its style',/w:pStyle w:val="Fancy"/.test(x),(x.match(/w:pStyle[^>]*/)||[''])[0]);
+  let B=await lib();B.type('z');B.settle();B.ctl('0:239');B.key(27);B.settle();ok('Esc closes the menu',true);
+ }
  console.log(R.filter(x=>x).length+'/'+R.length+' passed');process.exit(R.every(x=>x)?0:1);
 })();
