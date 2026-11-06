@@ -598,8 +598,12 @@ class GlyphUnit:
                     for a_ in A_:
                         b_=min(a_+BLK,LW)
                         pe=net.step(gl[a_]*M-M-gl[b_]*M+0.5) if b_ in gl else gl[a_]
-                        R={q:net.relu(pe*M-M+(q+PAD+OFF)-xs) for q in range(a_+1,b_+1)}; nbank+=b_-a_
-                        for p_ in range(a_,b_): w[p_]=w[p_]+(R[p_+1]-R.get(p_,X()))*sg
+                        # the crossing's half of the block takes the ramps; right of it, the other half is whole
+                        m_=a_+(b_-a_)//2; hi=net.step(pe*M-M+xs-(m_+PAD+OFF)); lo=net.step(pe*M-M-hi*M+0.5)
+                        for e_,c0,c1 in ((lo,a_,m_),(hi,m_,b_)):
+                            R={q:net.relu(e_*M-M+(q+PAD+OFF)-xs) for q in range(c0+1,c1+1)}; nbank+=c1-c0
+                            for p_ in range(c0,c1): w[p_]=w[p_]+(R[p_+1]-R.get(p_,X()))*sg
+                        for p_ in range(m_,b_): w[p_]=w[p_]+lo*sg
                         if b_<LW:
                             fu[b_]=net.step((pe+fu.get(a_,X()))*M-M+cbl[b_]-0.5)
                             net.connect(blockfull[b_],fu[b_]*sg)     # whole columns meet in one sum per block: edges that cancel there wake no column
@@ -609,13 +613,14 @@ class GlyphUnit:
         net.group('coverage')
         ac=[net.reg() for _ in range(LW)]
         out=[net.wire() for _ in range(LW)]
-        clrt=tiers(clr); wrt=tiers(wr)
+        clrt=tiers(clr)
         for p_ in range(LW):
             # The winding of a sample line is 0 or 1 inside one outline, so the K lines sum straight into the pixel and
-            # only the row's sum is clamped (where two contours overlap the winding reaches 2).
-            net.rec(ac[p_],ac[p_]-net.relu(ac[p_]+clrt[tier_of(p_+1)]*M-M)+w[p_]*(1.0/K))
+            # only the row's sum is clamped (where two contours overlap the winding reaches 2). The neuron that reads the
+            # row's sum also takes it out of the accumulator; the row is written on wr, and clr is wr or the tick after done.
+            a0_=net.relu(ac[p_]+clrt[tier_of(p_+1)]*M-M); a_=a0_-net.relu(a0_-1)
+            net.rec(ac[p_],ac[p_]-a0_+w[p_]*(1.0/K))
             # darkening curve, the same one the old rasterizer used, written as a piecewise linear map of final coverage
-            a0_=net.relu(ac[p_]+wrt[tier_of(p_+1)]*M-M); a_=a0_-net.relu(a0_-1)
             net.connect(out[p_],a_*GAMMA_K[0]-net.relu(a_-0.25)*GAMMA_K[1]-net.relu(a_-0.5)*GAMMA_K[2]-net.relu(a_-0.75)*GAMMA_K[3])
         net.aligned.append([next(iter(w_.t)) for w_ in out])
         p=_Write(wr,addr,out[0],LW,cl); net.ports.append(p); p.dom=1

@@ -2,7 +2,7 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-234768 neurons, 456724 edges, 187 layers, 4040 control states.
+235500 neurons, 458796 edges, 187 layers, 4040 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
@@ -18,8 +18,8 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | stem units | Stem position units for the hinting of letters. | gen/glyphnet.py (1) | 1 | 0 |
 | row sequencer | Steps the glyph unit through the rows of a character. | gen/glyphnet.py (29) | 29 | 72 |
 | glyph weights (outline edges) | Font outlines as edges in weights, one group per glyph program. | gen/glyphnet.py (130598) | 130598 | 609146 |
-| ramp bank | Coverage ramps for the edge network. | gen/glyphnet.py (5073) | 5073 | 10971 |
-| coverage | Adds edge coverage into pixel coverage. | gen/glyphnet.py (1456), gen/imp3_zoom_pre.py (583), gen/app.py (36) | 2075 | 13139 |
+| ramp bank | Coverage ramps for the edge network. | gen/glyphnet.py (5993) | 5993 | 12811 |
+| coverage | Adds edge coverage into pixel coverage. | gen/glyphnet.py (1268), gen/imp3_zoom_pre.py (583), gen/app.py (36) | 1887 | 14103 |
 | style interner | Finds or adds a style record in the interned table, in its own clock domain. | gen/app.py (151) | 151 | 340 |
 | glyph patch | Assembles glyph coverage into a color patch for the patch port. | gen/app.py (12) | 12 | 185 |
 | shared control registers | Editor state registers and the selection order comparators. | gen/app.py (245), gen/rv_a4_regs.py (81), gen/imp4_regs.py (55), gen/t1_features.py (45), gen/imp3_regs.py (40), gen/rv_a3_pre.py (38), gen/feat1_regs.py (26), gen/imp3_zoom_pre.py (13), gen/imp5_regs.py (12), gen/imp4_list.py (3) | 558 | 5150 |

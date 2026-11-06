@@ -28,3 +28,27 @@ block; one neuron per block for "crossing is in this block"; whole blocks right 
 behind a latch "glyph is this wide". Repeat key 69,183 to 64,449. Page 2,922,661.
 Screenshots (11 lines: Carlito 9/11/24, Arimo 11, Tinos 11/36, Caladea 14, Open Sans 14, Caveat 14, Cousine 11, Oswald 18)
 against the base build: 16 pixels differ by more than 10 levels, 4 by more than 40 (max 74); by eye identical.
+
+## 3. Glyph unit idle work
+During the ~113 ticks of a glyph's own clock, the latch "fast" (black on white) woke a wire, an AND, a step and two port
+enables every tick, and slow0 was an AND over a step of (ONE - empty) that the domain's constant woke every tick. Now
+those read the latches behind the gates that open them (hit, s1g, bwr). Repeat key 64,449 to 61,190.
+
+## 4. Per face sums pushed by the open face
+per_face(), fx() and the descender sum were read lazily by their floors, which pulled one closed gate per face (47 to 188
+of them) each time. New helper net.pushed(e) (gen/nn.py): a wire that its inputs push (kept from the pull pass through
+the duplicate merger's representative), so only the drawn face's gate fires. Repeat key 61,190 to 59,392; page smaller
+(2,921,533).
+
+## 5. Coverage: the row read also clears
+The neuron that reads a pixel's row sum (gated by clr = wr or the tick after done) now also subtracts it from the
+accumulator, so the separate clear relu and the second tier chain (wr) are gone. Repeat key 59,392 to 56,557.
+
+## 6. Half blocks
+The crossing's block is split once more: only the crossing's half takes ramps (4 instead of 8), the other half is whole.
+Repeat key 56,557 to 55,193; page 2,929,165 (+7.7 K).
+
+flops.js after 1 to 6 (before, after, ratio): start 7,479,327 6,539,911 0.874; paste 0.995; background 1.000;
+type at end 723,101 718,683; repeat key 69,995 55,193 0.789; select all 0.988; jump 0.982; type at top 0.970; down 0.981;
+enter 0.983; undo 0.982; wheel 0.982; click 0.975; mouse move 0.961; bold 0.982. Every event is cheaper.
+Screenshots again: same 16 pixels as after step 2.
