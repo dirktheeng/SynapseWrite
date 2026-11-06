@@ -147,7 +147,7 @@ _qrect('A4_QU0',_qx,_qy,_qw,1,'T2_PM')
 net.group('a4 docx')
 lit('A4_WK',b'<w:keepNext/>','A4_W2'); lit('A4_WL',b'<w:keepLines/>','A4_W3')
 on('A4_W2',(a4wl,'A4_WL',None),(None,'A4_W3',None))
-on('A4_W3',(pbk,'T2W3',None),(None,'T2W4',None))
+on('A4_W3',(net.eq(pbk,1,S('A4_W3')),'T2W3',None),(None,'T2W4',None))
 e=S('A4_W0'); _wb=net.bits(a4wb,4,e)
 a4wq=[R() for _ in range(4)]
 on('A4_W0',(net.step(a4wb),'A4_Wb',{a4wq[0]:_wb[0],a4wq[1]:_wb[1],a4wq[2]:_wb[2],a4wq[3]:_wb[3]}),(None,'A4_Ws',None))

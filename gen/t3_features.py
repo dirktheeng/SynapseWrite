@@ -770,7 +770,7 @@ on('T3_SNC',(None,'T3_SND',{snext:R2}))
 e=S('T3_SND')
 on('T3_SND',(net.step(snext),'T3_SX',{sxr.r:sxr.id('T3_SNF')}),(None,'T3_SNE',None))
 on('T3_SNF',(None,'T3_SNE',{qsec:snext-1}))
-lit('T3_SNE',b'</w:pPr>','T3_SNG')
+lit('T3_SNE',b'</w:pPr>','IMP5_SC')
 on('T3_SNG',(None,'T3_SNH',{r1:pbs+CMTL}))
 e=S('T3_SNH')
 on('T3_SNH',(net.step(R1),'T3_SNI',{ctl:R1}),(None,'SVC',{ctl:0}))
@@ -944,7 +944,7 @@ on('T3_RH3',(net.ge(rid_n,900,e),'PX',None),(net.and_(net.eq(R1,34,e),net.step(h
 
 on('T3_RB0',(None,'T3_RB1',{rl:OA+oi}))
 e=S('T3_RB1')
-on('T3_RB1',(pat('"page"',e),'A5_PB',None),(pat('"column',e),'PX',None),(net.eq(W[0],62,e),'A5_BR',None),(None,'T3_RB0',{oi:oi+1}))
+on('T3_RB1',(pat('"page"',e),'A5_PB',None),(pat('"column',e),'IMP5_CR',None),(net.eq(W[0],62,e),'A5_BR',None),(None,'T3_RB0',{oi:oi+1}))
 on('T3_RB2',(None,'PX',{w1:(cb+PBRK,1)}))
 
 # ---- paragraph merge by the user: metadata goes through the log first, so undo brings it back ----

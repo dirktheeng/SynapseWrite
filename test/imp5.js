@@ -55,5 +55,23 @@ const thumb=A=>{const f=A.fb();let a=-1,b=-1;for(let x=0;x<1262;x++){const i=(77
   A=await lib();A.key('f',3);A.settle();A.shot('build/imp5_k3.png');B=await lib();B.click(231,75);B.settle();ok('Ctrl+Shift+F opens the font menu',A.hash(95,600)===B.hash(95,600)&&A.hash(95,600)!==(await lib()).hash(95,600));
   A=await lib();A.key('p',3);A.settle();B=await lib();B.click(282,75);B.settle();B.shot('build/imp5_k4.png');ok('Ctrl+Shift+P opens the size menu',A.hash(95,600)===B.hash(95,600));
  }
+
+ if(!only||only=='colbr'){
+  const sect='<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/><w:cols w:num="2" w:space="720"/></w:sectPr>';
+  const right=A=>count(A,640,1030,190,330,(r)=>r<120),left=A=>count(A,230,620,190,330,(r)=>r<120);
+  let A=await lib();A.file(9,doc('<w:p><w:r><w:t>left words</w:t></w:r></w:p><w:p><w:r><w:br w:type="column"/><w:t>right words</w:t></w:r></w:p>'+sect));A.settle();A.shot('build/imp5_cb1.png');
+  ok('a column break in a file starts the second column',right(A)>100&&left(A)>100,[left(A),right(A)]);
+  let x=part(A,'word/document.xml');ok('saved as a column break run',/<w:r><w:br w:type="column"\/><\/w:r>/.test(x)&&!/pageBreakBefore/.test(x),x.slice(x.indexOf('<w:body'),x.indexOf('<w:body')+300));
+  let B=await lib();B.file(9,A.savedBytes());B.settle();A.click(600,700);A.settle();B.click(600,700);B.settle();ok('reopens pixel equal',A.hash(174,776)===B.hash(174,776));
+  // typed: Ctrl+Shift+Enter
+  A=await lib();A.file(9,doc('<w:p><w:r><w:t>left words</w:t></w:r></w:p>'+sect));A.settle();A.key(133,1);A.settle();const r0=right(A);A.key(13,3);A.settle();A.type('typed right');A.settle();A.shot('build/imp5_cb2.png');
+  ok('Ctrl+Shift+Enter moves the rest to the next column',r0==0&&right(A)>100,[r0,right(A)]);
+  x=part(A,'word/document.xml');ok('typed break saved',/<w:br w:type="column"\/>[^]*typed right/.test(x));
+  let nu=0;for(;nu<20;nu++){x=part(A,'word/document.xml');if(!/type="column"/.test(x))break;A.key(122,1);A.settle();}A.click(600,700);A.settle();A.shot('build/imp5_cb3.png');x=part(A,'word/document.xml');ok('undo takes the break away, after the typing',!/type="column"/.test(x)&&!/typed/.test(x)&&/left words/.test(x)&&right(A)==0,[nu,right(A)]);
+  A.key(121,1);A.settle();x=part(A,'word/document.xml');ok('redo puts it back',/type="column"/.test(x)&&!/typed/.test(x),'');
+  // one column: it acts as a page break
+  A=await lib();A.type('first');A.key(13,3);A.type('second');A.settle();x=part(A,'word/document.xml');A.shot('build/imp5_cb4.png');
+  B=await lib();B.type('first');B.key(13,1);B.type('second');B.settle();B.shot('build/imp5_cb5.png');ok('in one column it breaks the page, drawn as Ctrl+Enter draws',/type="column"/.test(x)&&A.hash(0,800)===B.hash(0,800));
+ }
  const f=R.filter(x=>!x).length;console.log(`imp5: ${R.length-f} passed, ${f} failed`);process.exit(f?1:0);
 })();

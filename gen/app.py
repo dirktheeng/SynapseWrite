@@ -772,10 +772,10 @@ lb3=net.bits(RL[3],9,e3)
 meta={lfm:sum((lb3[4+k_]*(1<<k_) for k_ in range(5)),X()),**A4_META(e3),**meta0,plen_:RL[0],al:RL[2],lsf:lb3[0]+lb3[1]*2,plvl:lb3[2]+lb3[3]*2,pind:rp6.out[0],pfirst_:rp6.out[1],plsp:rp6.out[2],pspb:rp6.out[3],pspa:rp6.out[4],psty:rp6.out[5],lfi:rp6.out[1],nl:RL[4],wdp:RL[5],oend:RL[6],pbk:RL[7],a6pm:R2}
 on('R3',(newsec,'T3_SB0',{cursec:MT[3]-1,rl:as_x(SECB)+(MT[3]-1)*8}),(net.step(RL[1]),'LAY0',{**meta,lfn:0,lfb:0,lfh:0,lfnb:0,lfhb:0,lj:0,ls_:0,off:0,lx:0,lb:0,lbx:0,lsn:0,lspb:0,lasc:0,lhh:0,wc:0,prevsp:1,llast:0}),(None,'R3B',meta))
 e=S('R3B')
-pb_=net.and_(ONE-net.eq(a4hlast,pi+1,e),net.or_(a4kbr,net.and_(pbk,net.gt(yy,ptop+s_mt,e)),net.and_(net.step(tcols),net.eq(tci,0,e),net.gt(yy+60,ptop+s_mt+s_th,e))))
+pb_=net.and_(ONE-net.eq(a4hlast,pi+1,e),net.or_(a4kbr,net.and_(net.step(pbk),net.gt(yy,ptop+s_mt,e)),net.and_(net.step(tcols),net.eq(tci,0,e),net.gt(yy+60,ptop+s_mt+s_th,e))))
 pfsave={pfc:fnp,pff:fnn-fnp,pfh:fnh,pfy:ptop+s_mt+s_th,pfx:s_tx,pfw:s_tw,fnh:0}
 pnew={**pfsave,fnp:0,ptop:ptop+s_ps,yy:ptop+s_ps+s_mt,pages:pages+1,xcol:0}
-on('R3B',(net.and_(net.step(tcols),net.eq(tci,0,e),ONE-a4hw,net.gt(yy,ptop+s_mt,e),net.step(net.step(pi+1-a4kd-0.5)+net.step(a4kd-pi-1-0.5))),'A4_KR0',None),(net.and_(a4kf,ONE-net.step(tcols),net.gt(yy,ptop+s_mt,e),net.step(net.step(pi+1-a4kd-0.5)+net.step(a4kd-pi-1-0.5))),'A4_K0',None),(net.and_(pb_,full),'PSH_B',{**pnew,rB:(s_px-2,ptop+s_ps+DOCY-scroll-1,s_pw+5,s_ph+4,(216,216,216),0),rC:(s_px-1,ptop+s_ps+DOCY-scroll,s_pw+3,s_ph+2,(198,198,198),0)}),(pb_,'A4_H0',pnew),(None,'R4',None))
+on('R3B',(net.and_(net.eq(pbk,2,e),net.eq(ncol,2,e),ONE-net.step(xcol),ONE-net.step(tcols),net.gt(yy,ptop+s_mt,e)),'R4',{yy:ptop+s_mt,xcol:col2+24}),(net.and_(net.step(tcols),net.eq(tci,0,e),ONE-a4hw,net.gt(yy,ptop+s_mt,e),net.step(net.step(pi+1-a4kd-0.5)+net.step(a4kd-pi-1-0.5))),'A4_KR0',None),(net.and_(a4kf,ONE-net.step(tcols),net.gt(yy,ptop+s_mt,e),net.step(net.step(pi+1-a4kd-0.5)+net.step(a4kd-pi-1-0.5))),'A4_K0',None),(net.and_(pb_,full),'PSH_B',{**pnew,rB:(s_px-2,ptop+s_ps+DOCY-scroll-1,s_pw+5,s_ph+4,(216,216,216),0),rC:(s_px-1,ptop+s_ps+DOCY-scroll,s_pw+3,s_ph+2,(198,198,198),0)}),(pb_,'A4_H0',pnew),(None,'R4',None))
 e=S('R4'); e_=net.and_(e,ONE-a4hw)
 w4.drive(e_,(pbs+FNHT,fnh))
 def list_step(ln_,kind,lvl,e):
@@ -1146,7 +1146,7 @@ exec(open('imp4_prompt.py').read())
 exec(open('t4_features.py').read())
 exec(open('t2_features.py').read())
 exec(open('t3_features.py').read())
-exec(open('imp4_style.py').read()); exec(open('imp4_list2.py').read())
+exec(open('imp4_style.py').read()); exec(open('imp4_list2.py').read()); exec(open('imp5_breaks.py').read())
 net.group('late commands')
 exec(open('rv_a2_canvas.py').read())
 exec(open('rv_a4_features.py').read())
