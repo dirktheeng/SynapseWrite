@@ -13,11 +13,13 @@ def a7_m5(e): w1.drive(e,(as_x(A7FREE)+a7_fs,cb)); fsm.set(a7_fs,e,a7_fs+1)
 def a7_undo_rules(h):
     return [(h[9],'A7_U9',{usp:usp-uch-6,a7_n:uch,a7_ss:npar,a7_sd:up,a7_dd:uch,a7sr.r:a7sr.id('A7_U9B')}),
      (h[10],'UJ',{usp:usp-uch*2-6,a7_pa:usp-uch*2,a7_n:uch,a7_sb:1,jp:up,jo:uo,jret.r:jret.id('A7_BI0'),a7r.r:a7r.id('UCK')}),
-     (h[11],'A7_U11',{rc:usp-2,usp:usp-8,a7_fk:uch,a7_fo:uo,jp:up,jo:uo,a7r.r:a7r.id('UCK')}),
+     (h[11],'A7_U11',{a7_nd:ust,rc:usp-2,usp:usp-8,a7_fk:uch,a7_fo:uo,jp:up,jo:uo,a7r.r:a7r.id('UCK')}),
      (h[12],'UJ',{usp:usp-uch-6,a7_n:uch,jp:up,jo:uo,jret.r:jret.id('A7_BD0'),a7r.r:a7r.id('UCK')})]
 def a7_redo_rules(h):
     return [(h[9],'A7_V9',{usp:usp+uch+6,npar:npar-uch,a7_ss:up+uch,a7_sd:up,a7_sk:npar-up-uch,a7sr.r:a7sr.id('A7_V9B')}),
      (h[10],'UJ',{usp:usp+uch*2+6,a7_n:uch,jp:up,jo:uo,jret.r:jret.id('A7_BD0'),a7r.r:a7r.id('VCK')}),
-     (h[11],'A7_U11',{rc:usp+0,usp:usp+8,a7_fk:uch,a7_fo:uo,a7_sb:1,jp:up,jo:uo+uch-1,a7r.r:a7r.id('VCK')}),
+     (h[11],'A7_U11',{a7_nd:ust,rc:usp+0,usp:usp+8,a7_fk:uch,a7_fo:uo,a7_sb:1,jp:up,jo:uo+uch-1,a7r.r:a7r.id('VCK')}),
      (h[12],'UJ',{usp:usp+uch+6,a7_pa:usp,a7_n:uch,a7_sb:0,jp:up,jo:uo,jret.r:jret.id('A7_BI0'),a7r.r:a7r.id('VCK')})]
 PSN=32; rpw=RPort(PSN); wpch=WPort(PSN,rpw.out[0],True); wpst=WPort(PSN,None,True)
+a7_rs=R();a7_nd=R()
+a7_png=R(); a7_rw2=RPort(PSN)

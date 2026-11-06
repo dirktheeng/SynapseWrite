@@ -210,7 +210,8 @@ def fixed(sym):
     return rev(0xC0+sym-280,8),8
 on('T4_Z0',(None,'T4_Z0a',{zi:0,zcur:0,zn:0,zw:1,zhi:0,zus:fp}))
 e=S('T4_Z0a')
-on('T4_Z0a',(net.ge(zhi,4096,e),'T4_ZH',None),(None,'T4_Z0a',{w1:(as_x(HT)+zhi,0),zhi:zhi+1}))
+on('T4_Z0a',(net.ge(zhi,4096,e),'T4_ZH',None),(None,'A7_ZC',{rb:(as_x(A7Z),1024)}))
+on('A7_ZC',(None,'T4_Z0a',{wb:(as_x(HT)+zhi,1024),zhi:zhi+1024}))
 on('T4_ZH',(None,'T4_ZP',{zc:3,zk:3,zret.r:zret.id('T4_Z1')}))
 e=S('T4_ZP'); zlow=net.bits(zc,14,e)[0]; full7=net.eq(zn,7,e)
 newcur=zcur+G_(zw,zlow)
@@ -259,7 +260,7 @@ on('T4_ZL3',(None,'T4_ZP',{zc:dv,zk:5,zx:dist_-dx,zxn:dxn,zret.r:zret.id('T4_ZL4
 on('T4_ZL4',(None,'T4_ZP',{zc:zx,zk:zxn,zret.r:zret.id('T4_ZL5')}))
 on('T4_ZL5',(None,'T4_ZI',{zj:1}))
 e=S('T4_ZI')
-on('T4_ZI',(net.ge(zj,zm,e),'T4_Z1',{zi:zi+zm}),(None,'T4_ZI2',{rl:RA+zi+zj}))
+on('T4_ZI',(net.or_(net.ge(zj,zm,e),net.ge(zj,6,e)),'T4_Z1',{zi:zi+zm}),(None,'T4_ZI2',{rl:RA+zi+zj}))
 e=S('T4_ZI2')
 on('T4_ZI2',(None,'T4_ZI',{w1:(as_x(HT)+hash3(e),zi+zj+1),zj:zj+1}))
 on('T4_ZE',(None,'T4_ZP',{zc:0,zk:7,zret.r:zret.id('T4_ZF')}))

@@ -136,7 +136,7 @@ e=S('T2W8'); vnum('T2W8',G_(net.min_(t2run,docx_tpl.NUMRUNS)+1,net.eq(lsf,2,e))+
 lit('T2W8b',b'"/></w:numPr>','T2W9')
 on('T2W9',(None,'T3_TA0',None))
 on('T2Wa',(None,'T3_SNA',None))
-e=S('SVC'); on('SVC',(net.step(pim),'T3_SD0',None),(net.ge(off,plen_,e),'SVe',None),(None,'SVr',{r1:pbs+off,r2:pbs+1024+off}))
+e=S('SVC'); on('SVC',(net.step(pim),'T3_SD0',None),(net.ge(off,plen_,e),'SVe',None),(None,'A7_SW',{rpw:pbs+off,a7_rw2:pbs+1024+off}))
 e=S('SVr'); chg=net.step(net.step(R2-t2psv)+net.step(t2psv-R2))
 on('SVr',(net.ge(R1,1000,e),'T3_SF0',{ins_ch:R1}),(chg,'SVx',{ins_ch:R1,ins_st:R2}),(None,'SVch',{ins_ch:R1,ins_st:R2}))
 e=S('SVx'); first=net.eq(t2psv,99999,e)

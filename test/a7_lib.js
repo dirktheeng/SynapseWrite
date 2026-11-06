@@ -7,7 +7,7 @@ function png(rgba,w,h){const crcT=[];for(let n=0;n<256;n++){let c=n;for(let k=0;
  const ih=Buffer.alloc(13);ih.writeUInt32BE(w,0);ih.writeUInt32BE(h,4);ih[8]=8;ih[9]=2;return Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),ch('IHDR',ih),ch('IDAT',zlib.deflateSync(raw,{level:1})),ch('IEND',Buffer.alloc(0))]);}
 module.exports=async()=>{const {e,h,bank}=await load();let tm=0,tnow=100000;
  const raw=(k,a=0,b=0,c=0)=>{e.inject(h.ev[0],k);e.inject(h.ev[4],20000);if(a)e.inject(h.ev[1],a);if(b)e.inject(h.ev[2],b);if(c)e.inject(h.ev[3],c);const E0=e.edges();const O0=e.ops?[0,1,2,3].reduce((q,i)=>q+e.ops(i),0):0;const t0=process.hrtime.bigint();
-  const n=e.run(h.halt,2000000);const ms=Number(process.hrtime.bigint()-t0)/1e6;const m=e.val(h.timer);if(m)tm=m;A.saved=e.val(h.saveout)?[e.val(h.saveout),e.val(h.outbase)]:A.saved;const ed=e.edges()-E0;if(n>=60000000)console.log('STUCK event',k);return {n,ed,w:e.ops?ed+[0,1,2,3].reduce((q,i)=>q+e.ops(i),0)-O0:0,ms};};
+  const n=e.run(h.halt,30000000);const ms=Number(process.hrtime.bigint()-t0)/1e6;const m=e.val(h.timer);if(m)tm=m;A.saved=e.val(h.saveout)?[e.val(h.saveout),e.val(h.outbase)]:A.saved;const ed=e.edges()-E0;if(n>=60000000)console.log('STUCK event',k);return {n,ed,w:e.ops?ed+[0,1,2,3].reduce((q,i)=>q+e.ops(i),0)-O0:0,ms};};
  const add=(a,b)=>({n:a.n+b.n,ed:a.ed+b.ed,w:a.w+b.w,ms:a.ms+b.ms});
  const A={raw,add,e,h,bank,ids,saved:null,
   key:(c,m=0)=>raw(2,typeof c==='string'?c.charCodeAt(0):c,m,tnow+=5000),

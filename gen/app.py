@@ -664,7 +664,7 @@ for i,st_ in enumerate(steps):
 e=S('R1')
 saveb={bfnh:fnh,bsec:cursec,bfn:fnn,bfp:fnp,bxc:xcol,bpi:pi,byy:yy,bptop:ptop,bpg:pages,bws:wsum,bln:listn}
 on('R1',(net.and_(bgm,net.ge(pi,npar,e)),'BGD',None),(net.and_(net.ge(pi,npar,e),full,ONE-vm,net.step(fnp)),'T3_PFE',{pfc:fnp,pff:fnn-fnp,pfh:fnh,pfy:ptop+s_mt+s_th,pfx:s_tx,pfw:s_tw}),(net.and_(net.ge(pi,npar,e),full,vm,net.step(fnp)),'T3_PFE',{pfc:fnp,pff:fnn-fnp,pfh:fnh,pfy:ptop+s_mt+s_th,pfx:s_tx,pfw:s_tw}),(net.ge(pi,npar,e),'RE0',None),
- (net.and_(bgm,net.ge(bcnt,60,e)),'HALT',{**saveb,bgm:0}),
+ (net.and_(bgm,net.ge(bcnt,60,e)),'HALT',{**saveb,bgm:0}),(net.and_(full,ONE-vm,ONE-bgm,autos,net.gt(pi,cp,e),net.lt(cy,scroll+40,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1}),(net.and_(full,ONE-vm,ONE-bgm,ONE-autos,has_sel,net.gt(yy,scroll+VH,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1}),
  (net.and_(full,ONE-vm,ONE-bgm,net.gt(yy,scroll+VH,e),net.gt(pi,cp,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',{**saveb,bgp:1}),(net.and_(ONE-full,net.gt(pi,maxc,e)),'RE0',None),(net.and_(vm,net.gt(yy,scroll+VH,e),net.or_(xc_,net.lt(ncol,2,e))),'RE0',None),(None,'R2',{r1:as_x(PT)+pi}))
 on('R2',(None,'R3',{rmeta:R1+META,rim:R1+IMF,pbs:R1,rl:R1+LEN,rc:R1+2062,rf:R1+FNS,rp6:R1+PIND}))
 on('R2X',(None,'R3',{rmeta:pbs+META,rim:pbs+IMF,rl:pbs+LEN,rc:pbs+2062,rf:pbs+FNS,rp6:pbs+PIND}))
@@ -962,7 +962,7 @@ fsm.set(fp,em_en.w,fp+1)
 # CRC32 is linear over GF(2): each next bit is the parity of a fixed subset of bits.
 def crc_next(c,b):
     return (zlib.crc32(bytes([b]),c^0xffffffff)^0xffffffff)&0xffffffff
-ens=em_en.w; bb=net.bits(em_b.w,8,ens)
+a7_cen=Bus(net); a7_cby=Bus(net); ens=a7_cen.w; bb=net.bits(a7_cby.w,8,ens)
 crcr=[R(1) for _ in range(32)]
 gc=[net.gate(c_,ens) for c_ in crcr]
 rows=[[] for _ in range(32)]
@@ -988,6 +988,7 @@ def lit(name,data,nxt):
         em_en.lin(seq[i]); em_b.lin(seq[i]*b_); net.rec(seq[i+1],seq[i])
     net.rec(S(nxt),seq[-1])
 exec(open('t2_write.py').read())
+exec(open('rv_a7_save.py').read())
 saveout=Bus(net); saveout.add(S('HF'),savel); fsm.set(savel,S('HF'),0)
 outbase=Bus(net); outbase.add(S('HF'),embase)
 exec(open('t3_pre.py').read())
@@ -1023,7 +1024,7 @@ T1('late')
 ui.build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,t1_hov,t1_hb,t1_hvo,bstg,t1_prs)
 exec(open('pointer3.py').read())
 # ---- finish ----
-for r in (a7r,a7sr,jret,oret,dret,wret,bret,gret,hret,cret,iret,nret,t4r,fvr,t4cr,zret,zdr,pfr,pfcr,t2nr,t2pr,t2rr,t2pp,t2sr,t2ur,pgret,wret_)+tuple(T3_RETS): r.gen()
+for r in (a7r,a7sr,a7cr,jret,oret,dret,wret,bret,gret,hret,cret,iret,nret,t4r,fvr,t4cr,zret,zdr,pfr,pfcr,t2nr,t2pr,t2rr,t2pp,t2sr,t2ur,pgret,wret_)+tuple(T3_RETS): r.gen()
 _undef={nx_ for _,(r_,o_) in fsm.states.items() for _c,nx_ in o_ if nx_ is not None and nx_ not in fsm.states}
 assert not _undef,_undef
 _dead=[k_ for k_,(r_,o_) in fsm.states.items() if not o_]
