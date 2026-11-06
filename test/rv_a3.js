@@ -54,7 +54,7 @@ const lines=n=>Array.from({length:n},(_,i)=>'line '+i).join('\n');
  await same('shift f3 undo',['abc',K('Control+a'),K('Shift+F3'),K('Control+z'),K('End')],['abc']);
  await same('f3 finds next',['ab ab',K('Control+Home'),K('Control+f'),'ab',K('Enter'),K('Escape'),K('F3'),'X',K('End')],['ab X',K('End')]);
  await diff('find highlights all matches',['cat dog cat',K('Control+f'),'cat'],['cat dog dog',K('Control+f'),'cat']);
- await same('highlight goes when bar closes',['cat cat',K('Control+f'),'cat',K('Escape')],['cat cat']);
+ await same('highlight goes when bar closes',['cat cat',K('Control+f'),'cat',K('Escape'),K('End')],['cat cat',K('End')]);
  // margin click selects the line, and a double click the paragraph
  await same('margin click selects line',['abc',K('Enter'),'def',click(260,296),K('Delete')],['abc',K('Enter'),'def',K('ArrowUp'),K('Home'),K('Shift+End'),K('Delete')]);
  // context menu
