@@ -111,6 +111,7 @@ w1=WPort(1);w2=WPort(1);w3=WPort(1);w4=WPort(1);wlog=WPort(6);wvl=WPort(6);wln=W
 rmeta=RPort(8);MT=rmeta.out;wht=WPort(6);imr=CopyPort(clip0,clip1);rim=RPort(3);rU=RPort(1);rV=RPort(1);rA=RectPort();rB=RectPort();rC=RectPort();rD=RectPort();rZ=RectPort();pix=PixPort()
 R1=r1.out[0];R2=r2.out[0]
 rs=StylePort(); RSC=rs.out[0]; RSR=rs.out[1]; RSK,RSN,RSY=rs.out[2:5]; RSX,RSH,RSZ=rs.out[5:8]
+F1_EX=RSX   # feat1: the glyph network reads the extended field straight from the style port, so text without one wakes nothing
 ev_kind,ev_a,ev_b,ev_c=net.input(4); ev_t=net.input(); evt=net.reg(); ev_m=net.input()
 kv=net.input(6); kvl=net.input()
 KBV=1391000; KBL=1392000; KBQ=1393000; NAMEB=1393100; KBMAX=1000; KBSEN=8; NAME_DOCX='Document1.docx'; NAME_PDF='Document1.pdf'   # field text from the glue, last field text, field sentinel, file names
@@ -176,7 +177,7 @@ def script_size(i):
 vflag=net.step(SD['sup']+SD['sub'])
 size_hot=[X() for _ in range(NS)]
 for i_ in range(NS):
-    n_,s_=tsplit(F1_VIS(raw_hot[i_]),vflag); n_,c_=tsplit(n_,F1_SMCL); size_hot[i_]=size_hot[i_]+n_; size_hot[script_size(i_)]=size_hot[script_size(i_)]+s_; size_hot[F1_SCS(i_)]=size_hot[F1_SCS(i_)]+c_
+    n_,s_=F1_SPLIT(raw_hot[i_],vflag); size_hot[i_]=size_hot[i_]+n_; size_hot[script_size(i_)]=size_hot[script_size(i_)]+s_
 for si,h in enumerate(raw_hot):
     px=round(rom.SZ[si]*96/72); net.connect(strk,h*round(px*0.28))
     net.connect(rise,net.and_(h,SD['sup'])*round(px*0.36)); net.connect(rise,net.and_(h,SD['sub'])*(-round(px*0.16)))
@@ -855,7 +856,7 @@ e=S('C1')
 Kp=pi*2048+off; insel=net.and_(net.ge(Kp,Lo,e),net.lt(Kp,Hi,e)); rv_mh=net.and_(rv_hl,ONE-insel,net.lt(off,rv_mhe,e)); nosel=e-insel-rv_mh
 _hi8=net.ge(R1,127,e); _xue=net.ge(R1,UO,_hi8); isfnc=net.and_(net.ge(R1,1000,_hi8),ONE-_xue); isp=net.eq(R1,32,e); xtra=G_(lex,isp)+rv_tabw(x-(tx0+48),net.eq(R1,9,e)); _rv_ne=net.and_(e,rv_eol); chere=net.and_(net.eq(pi,cp,e),net.eq(off,co,e),ONE-net.eq(off,ls_,_rv_ne))
 fsm.set(cx,chere,x);fsm.set(cacol,chere,col)
-g_en.lin(e);g_ch.add(e,R1);g_st.add(e,RSR);g_fl.add(e,RSC);g_ex.add(e,RSX);g_x.add(e,x+kern+0.5);g_y.add(e,gly_y+YB)
+g_en.lin(e);g_ch.add(e,R1);g_st.add(e,RSR);g_fl.add(e,RSC);g_x.add(e,x+kern+0.5);g_y.add(e,gly_y+YB)
 ke2=net.and_(e,net.step(kprev));kp_en.lin(ke2);kp_in.add(ke2,kprev)
 _sh0=net.eq(R1,173,_hi8); _shh=net.and_(_sh0,net.or_(net.lt(off+1,le_,_sh0),net.ge(le_,plen_,_sh0))); g_draw.lin(e-isp-isfnc-_shh)
 und_w=net.and_(e,net.or_(SD['und'],SD['ins'])); ske_w=net.and_(e,net.or_(SD['strike'],SD['dele'])); trk_=net.and_(e,net.or_(SD['ins'],SD['dele'])); a2_chg=R(); fsm.set(a2_chg,trk_,1)   # tracked text is drawn in the review color
@@ -865,7 +866,7 @@ g_fc.add(e,G_(RSK,ONE-trk_))   # an exact color goes to the glyph unit beside th
 _ckb=net.bits(RSK-1,24,net.and_(net.or_(und_w,ske_w),net.step(RSK),ONE-trk_)); _ck=[sum((_ckb[16-8*k_+b_]*(1<<b_) for b_ in range(8)),X()) for k_ in range(3)]; _cke=net.step(sum(_ckb,X()))
 hlh=net.decode_z(SD['hl'],8,e); nohl=net.and_(nosel,hlh[0])
 fld_=net.and_(nohl,net.or_(SD['f0'],SD['f1']))    # fields get a light shade
-f1sh_=net.and_(nohl,ONE-net.or_(SD['f0'],SD['f1']),net.step(RSZ)); _f1zb=net.bits(RSZ-1,24,f1sh_)   # feat1: a run shade, under the darker wins rule as selection is
+f1sh_=net.gate(nohl-fld_,net.step(RSZ)); _f1zb=net.bits(RSZ-1,24,f1sh_)   # feat1: a run shade, under the darker wins rule as selection is
 bg[1].lin(insel+f1sh_);bg[3].lin(fld_)
 nsh_=nohl-fld_-f1sh_; bgh_=net.decode_z(pbg,len(PAL_B),nsh_)   # the plain background is the cell shade
 for j in range(len(PAL_B)): bg[j].lin(bgh_[j])
@@ -881,7 +882,7 @@ for rr,xx,ww,aa in ((rA,x,adv2+1,col),(rB,x+adv2,adv2+1+xtra+kern,col+1)):
     for i in range(3): rr.b[5+i].lin(hlcol[i])
     rr.b[5].lin(nsh_*(-1))
     rr.b[8].add(e,aa)
-und=net.and_(e,net.or_(SD['und'],SD['ins'])); ske=net.and_(e,net.or_(SD['strike'],SD['dele'],F1G['dst'])); f1dk=net.and_(e,F1G['dst'])   # feat1: double strike is a second line below the first
+und=net.and_(e,net.or_(SD['und'],SD['ins'])); ske=net.and_(e,net.or_(SD['strike'],SD['dele'],F1G['dst'])); f1dk=net.gate(e,F1G['dst'])   # feat1: double strike is a second line below the first
 for rr,en_,yv in ((rC,und,sy+lasc+2-rise),(rD,ske,sy+lasc-strk-rise-F1G['dst']),(rZ,f1dk,sy+lasc-strk-rise+1)):
     rr.b[0].lin(en_)
     for b,val in zip(rr.b[1:5],(x+kern,as_x(yv)+YB,adv+xtra+1,X(c=1))): b.add(en_,val)
@@ -930,7 +931,6 @@ ww=rw-a4rr-net.step(tcols)*12-indb-pind-pf_val(lfi)-net.step(ptoc)*44
 def measure(c,ch,st,cell=None):
     g_en.lin(c);g_ch.add(c,ch);g_st.add(c,rom.lit(st) if isinstance(st,int) else st)
     if cell is not None: g_fl.add(c,cell)
-    if st is RSR: g_ex.add(c,RSX)   # feat1: the extended field rides with the record
 e=S('LAY0')
 on('LAY0',(net.step(pim),'EM',{lasc:0,lhh:pih,lend:0,lwid:pim,lspc:0,llast:1}),(net.eq(plen_,0,e),'LE0',None),(None,'L1',None))
 e=S('LE0'); measure(e,32,ty)

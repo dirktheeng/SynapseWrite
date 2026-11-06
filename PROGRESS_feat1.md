@@ -20,3 +20,9 @@ Why: the style record is a 24 bit float32 integer and every bit is used, and the
 - Writer: rPr in schema order (caps, smallCaps before strike, dstrike after, vanish after noProof, spacing after color, shd after u); links and bookmarks opened and closed around runs; external targets listed in document.xml.rels as rIdL<n>; contextualSpacing and widowControl w:val="0" from slot cell 4095.
 - First run of test/feat1.js: 15/22. Fixes: number() pads with zeros and has no sign, so spacing is written as an optional minus and vnum; test pixel helpers had swapped arguments. Then 22/22.
 - Contextual spacing is applied the way rv_a5 applies a style's: the gap is dropped at the end of open (values lost on save, flag kept).
+
+## Step 3: FLOPs per event (coordinator request; main merged in for test/flops.js)
+- First measure: background layout +14%, most events +8%. gprof wheel: glyph metrics +15% (small caps had its own size leaf, so every size's gate gained inputs), feat1 group 86k (enable neuron on every glyph call), paint +27k.
+- Fixes: small capitals share the script size leaf (0.72, not 0.8; one split before the normal leaf, so plain text pays nothing); the glyph network reads RSX from the style port directly (no bus gate woken per character); every decoded flag is a gate on the one nonzero test, so pulls stop there; paint gates on the shade and double strike flags.
+- After: gprof wheel work 5,658,461 vs 5,618,241 on main (+0.7%); flops.js: every event within +1.0% of docs/flops_baseline.json (background layout +0.98%, typing +0.24 to 0.78%).
+- test/feat1.js 22/22 after the changes.
