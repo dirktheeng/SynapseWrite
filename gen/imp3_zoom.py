@@ -18,6 +18,7 @@ on('IMP3_ZS0',(None,'IMP3_ZS1',{rA:(1086,778,194,21,_bk,0),rB:(1110,788,112,1,_g
 on('IMP3_ZS1',(None,'IMP3_ZS2',{rA:(1232,784,1,9,_d,0),rB:(zt*28+1109,782,3,13,_d,0),rC:(1000,796,50,2,_bk,0),rD:(1000+(ONE-rdm)*26,796,24,2,_bl,0),sx:1244}))
 text_chain('IMP3_ZS2',[zpct,'%'],'IMP3_ZS6')
 on('IMP3_ZS6',(None,'ST1',{sx:12}))
+on('IMP3_MK',(None,'UI',{t1_marks:ONE-t1_marks,clip0:0,clip1:0}))
 # read mode: the bars are covered, the ruler goes, and only moving, finding, copying and printing keys act
 on('IMP3_RE',(None,'UI',{rdm:1,zvr:t1_ruler,t1_ruler:0,t1_rv:0,clip0:0,clip1:0}))
 on('IMP3_RX',(None,'UI',{rdm:0,t1_ruler:zvr,t1_rv:0,clip0:0,clip1:0}))

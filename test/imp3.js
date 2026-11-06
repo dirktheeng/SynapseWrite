@@ -83,5 +83,11 @@ const yel=(r,g,b)=>r>200&&g>180&&b<170; // match tint
   // selected and colored text stays right after a record exists
   A.key(97,1);A.settle();B.key(97,1);B.settle();ok('selection repaint equal',A.hash(174,776)===B.hash(174,776));A.shot('build/imp3_recsel.png');
  }
+ if(!only||only=='btn'){
+  let A=await lib();A.type('one');A.ctl('0:230');A.ctl('1:206');A.settle();A.type('two');A.settle();A.shot('build/imp3_btn.png');const x=xml(A);ok('Insert Page Break button',/w:br w:type="page"|pageBreakBefore/.test(x));
+  let B=await lib();B.type('m');const h=B.hash(174,776);B.ctl('0:233');B.ctl('4:209');B.settle();B.key(128);B.key(130);ok('Show Marks button draws the mark',B.hash(174,776)!==h);
+  // Ctrl+wheel zooms
+  let C=await lib();C.type('wheel');C.settle();const hw=C.hash(174,776);C.e.inject(C.h.ev[5],1);C.wheel(100);C.settle();ok('Ctrl+wheel zooms',C.hash(174,776)!==hw);C.shot('build/imp3_cw.png');
+ }
  console.log(R.filter(x=>x).length+'/'+R.length+' passed');process.exit(R.every(x=>x)?0:1);
 })();

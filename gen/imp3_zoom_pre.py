@@ -2,9 +2,8 @@
 # Levels are one-hot registers; at 100 percent none is on, so every gate here stays closed and adds no work.
 # Layout, hit lists and saved files keep document pixels; only what reaches the ports and what comes back from the mouse is mapped.
 ZL=[0.5,0.75,1.25,1.5]; ZLH=[net.reg() for _ in ZL]; ZCX=631
-zdoc=net.step(clip0-173.5); zrul=net.reg(); VHZ=net.reg(DOCB-DOCY); zt=net.reg(2); zpct=net.reg(100); rdm=net.reg()
+zany=net.or_(*ZLH); zdoc=net.step(zany*M-M+clip0-173.5); zrul=net.reg(); VHZ=net.reg(DOCB-DOCY); zt=net.reg(2); zpct=net.reg(100); rdm=net.reg()
 _zx=[net.and_(h_,net.or_(zdoc,zrul)) for h_ in ZLH]; _zy=[net.and_(h_,zdoc) for h_ in ZLH]
-zany=net.or_(*ZLH)
 def _zmap(e,hs,factor,a):
     e=as_x(e); o=e
     for h_,z_ in zip(hs,ZL): o=o+(factor(z_)-1)*(net.gate(e,h_)-h_*a)
