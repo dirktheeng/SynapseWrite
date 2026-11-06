@@ -4,7 +4,7 @@
 net.group('pointer')
 PTW,PTH,PTHX,PTHY=28,30,12,10; PTRB=1390000       # patch size, hot spot in the patch, saved colors in the bank
 bstg=R();bsq=R();bsn=R();clipn=R();clipi=R();pmsg=R();t1_prs=R();cli=R();mp_ptx=R();mp_pty=R();mp_pts_x=R();mp_pts_y=R();mp_ptr_on=R();mp_ptr_dr=R();mp_ptr_lock=R();mp_ptq=R();mp_pta=R();mp_ptc=R();mp_ptk=R();mp_ptv=R()
-ptsave=BlitPort(PTRB,0,PTW,PTH); ptrest=BlitPort(PTRB,1,PTW,PTH)
+_ptz=net.reg(); ptsave=CopyPort(_ptz,_ptz); ptrest=CopyPort(_ptz,_ptz)   # no clip, whole screen
 _PA=["K","KK","KWK","KWWK","KWWWK","KWWWWK","KWWWWWK","KWWWWWWK","KWWWWWWWK","KWWWWWWWWK","KWWWWWKKKKK","KWWKWWK","KWK.KWWK","KK..KWWK","K....KWWK",".....KWWK","......KK"]
 _PI=["KKK.KKK","...K...","...K...","...K...","...K...","...K...","...K...","...K...","...K...","...K...","...K...","...K...","...K...","...K...","...K...","...K...","...K...","KKK.KKK"]
 _PH=["...K.........K...","..KK.........KK..",".KKK.........KKK.","KKKKKKKKKKKKKKKKK",".KKK.........KKK.","..KK.........KK..","...K.........K..."]
@@ -49,5 +49,5 @@ e=S('PTD')
 ptbx=net.wire(); ptby=net.wire()
 net.connect(ptbx,net.gate(mp_ptx+64,e)-e*(64+PTHX)); net.connect(ptby,net.gate(mp_pty+64,e)-e*(64+PTHY)+e*YB)
 SpritePort(net.step(e),ptbx,ptby,dat_p,PTW,PTH)
-on('HALT',(a11busy,'A11_T3',None),(bsq,'UI',{bsq:0,bstg:0,clip0:0,clip1:0}),(mp_ptr_on,'PT0',{mp_pts_x:mp_ptx,mp_pts_y:mp_pty,mp_ptr_dr:1,pix:(mp_ptx,mp_pty),ptsave:(mp_ptx-PTHX,mp_pty-PTHY)}),(None,'HF',None))
+on('HALT',(a11busy,'A11_T3',None),(bsq,'UI',{bsq:0,bstg:0,clip0:0,clip1:0}),(mp_ptr_on,'PT0',{mp_pts_x:mp_ptx,mp_pts_y:mp_pty,mp_ptr_dr:1,pix:(mp_ptx,mp_pty),ptsave:(mp_ptx-PTHX,mp_pty-PTHY,PTRB,PTW,PTH,0)}),(None,'HF',None))
 on('HF',(None,'IDLE',None)); halt.lin(S('HF'))

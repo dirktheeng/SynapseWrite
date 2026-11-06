@@ -327,7 +327,7 @@ def blend(c_):
     return o_
 rv=blend(rv0);gv=blend(gv0);bv=blend(bv0)
 imw=WPort(1); wl_i=WPort(3)
-imw.drive(e,(as_x(IMG0)+dst,rv*65536+gv*256+bv))
+imw.drive(e,(as_x(IMG0)+dst,rv+gv*256+bv*65536))
 on('PG_N3',(net.ge(ck,2,e),'PG_N',{dst:dst+1,dw:dw+1,dcnt:dcnt+pbp,ix:ix+1,kx:1}),(None,'PG_N',{dst:dst+1,dw:dw+1,dcnt:dcnt+pbp,ix:ix+1,kx:0}))
 # insert a picture paragraph at the caret
 on('PG_Q',(pgdoc,'T3_PQ',None),(None,'SPLIT',{oret.r:oret.id('PG_Q2')}))
