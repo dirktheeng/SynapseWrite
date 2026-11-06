@@ -24,7 +24,7 @@ on('V4_HW',(None,'FMTS',{fm:7,fcol:R1,fck:v4h+1,t1_uid:1}))
 # a font name: a name in the table comes back as its id; a new one is added. Names the family tables already know need no id.
 e=S('V4_FS'); on('V4_FS',(net.ge(v4i,v4fc,e),'V4_FA',{v4j:0}),(None,'V4_FS1',{r1:as_x(FNT)+v4i*32+v4j,r2:OA+oi+v4j}))
 e=S('V4_FS1'); _q=net.eq(R2,34,e)
-on('V4_FS1',(net.and_(_q,net.eq(R1,0,e)),'V4_FE',{t2nx:net.relu(v4i-FNSD)}),(net.and_(ONE-_q,net.eq(R1,R2,e),net.lt(v4j,31,e)),'V4_FS',{v4j:v4j+1}),(None,'V4_FS',{v4i:v4i+1,v4j:0}))
+on('V4_FS1',(net.and_(_q,net.eq(R1,0,e)),'V4_FE',{t2nx:net.relu(v4i-FNSD),v4f:0}),(net.and_(ONE-_q,net.eq(R1,R2,e),net.lt(v4j,31,e)),'V4_FS',{v4j:v4j+1}),(v4f,'V4_FS',{v4i:1,v4j:0,v4f:0}),(None,'V4_FS',{v4i:v4i+1,v4j:0}))
 e=S('V4_FA'); on('V4_FA',(net.ge(v4fc,FNMAXN,e),'V4_FE',{t2nx:0}),(None,'V4_FA1',{r2:OA+oi+v4j}))
 e=S('V4_FA1'); on('V4_FA1',(net.or_(net.eq(R2,34,e),net.ge(v4j,31,e),net.eq(R2,0,e)),'V4_FE',{w1:(as_x(FNT)+v4fc*32+v4j,0),t2nx:v4fc-FNSD,v4fc:v4fc+1}),(None,'V4_FA',{w1:(as_x(FNT)+v4fc*32+v4j,R2),v4j:v4j+1}))
 on('V4_FE',(v4ty,'FMTS',{fm:10,fcol:t2v,fnx:t2nx,t2nx:0,obase:OUTB,v4ty:0,oi:0,t1_uid:1}),(None,'T2_C',{oi:oi+8}))

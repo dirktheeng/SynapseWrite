@@ -1,7 +1,7 @@
 # ---- provenance record, written at build: every sub-network, its purpose, and the generator files that wrote it ----
 PURPOSE={
  'glyph unit':'Draws a character from its edge network into the glyph store, in its own clock domain.',
- 'snapping layer':'Fits outline coordinates to the pixel grid for a given size.',
+ 'snapping layer':'Fits outline heights to the pixel grid for a given size.',
  'glyph geometry':'Scales outline coordinates by the drawn size.',
  'glyph store':'Keeps drawn glyphs in memory and copies them to the screen.',
  'stem units':'Stem position units for the hinting of letters.',
@@ -21,8 +21,8 @@ PURPOSE={
  'a4 ruler':'Ruler display and drag.',
  'a4 merge':'Merged table cells.',
  'a4 pagenum':'Page number formats and section start values.',
- 'docx reader rv_a5':'Reader fidelity: nested tables, row spans, spacing, truncation and others.',
- 'rv a3 interaction':'Editing keys, word and page motion, right click, autoscroll, context menu.',
+ 'docx reader rv_a5':'Reader fidelity (nested tables, row spans, spacing, truncation), plus spell suggestions and the saved list of added words.',
+ 'rv a3 interaction':'Editing keys, word and page motion, right click, autoscroll, context menu, and the late tier 1 features.',
  'window comparator':'Thresholds over packed window words: the tag patterns of the reader.',
  'string rom':'Reads literal bytes from memory and emits them.',
  'number writer':'Writes decimal digits and binary fields into a file.',
@@ -37,7 +37,7 @@ PURPOSE={
  'glyph metrics':'Character advance and kerning trees.',
  'glyph weights (font outlines)':'Font outlines stored as weights, drawn by the glyph network.',
  'shared control registers':'Editor state registers and the selection order comparators.',
- 'event dispatch':'Routes each cooked event to its handler; timer, wheel and move handling.',
+ 'event dispatch':'One neuron left from the first dispatcher; routing now lives in raw event interpretation and the state rules.',
  'pointer':'Draws the mouse pointer, saves and restores the colors under it, and chooses its shape from the screen.',
  'character maps':'Unicode to internal code tables and back (Windows-1252 block).',
  'key handling':'Maps each key and modifier to its editing command.',
@@ -57,7 +57,7 @@ PURPOSE={
  'find and replace':'Search automaton over the document and replace.',
  'paste':'Inserts clipboard text with paragraph splitting.',
  'layout and paint':'Walks paragraphs, places lines and words, draws text, selection, pictures.',
- 'spell dictionary':'Word list stored as an automaton in weights, with word marks.',
+ 'spell dictionary':'Walks a word automaton held as a read only table, one read per painted letter, and marks words.',
  'line breaking':'Greedy line breaker and alignment.',
  'chrome':'Autoscroll, caret, scrollbar and status bar.',
  'ribbon actions':'Maps button ids to commands.',
@@ -84,7 +84,8 @@ PURPOSE={
  'tier3':'Remaining tier 3 commands and undo op 8.',
  'late commands':'File screen, table and picture ribbon commands, clipboard notices.',
  'screen check':'Compares one line of the screen id plane against the line table on each blink tick and repairs by repainting.',
- 'ribbon display list':'Token chain whose weights hold each ribbon draw item.',
+ 'compiled control':'Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers.',
+ 'ribbon display list':'One sequencer that plays draw records for the ribbon, menus and labels from read only memory, one item per tick.',
 }
 _edges={g_:sum(len(net.inp[i_]) for i_ in ids_) for g_,ids_ in net.groups.items()}
 _gfiles={}

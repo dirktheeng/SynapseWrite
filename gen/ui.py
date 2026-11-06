@@ -1,4 +1,4 @@
-"""Ribbon display list. Each draw item becomes outgoing weights of one token neuron.
+"""Ribbon, menu and label contents, written as display lists that gen/rv_a9_dl.py stores in read only memory and plays.
 All icons are original pixel art written below as text rows; each run becomes a rectangle."""
 import rom
 import t3_btn

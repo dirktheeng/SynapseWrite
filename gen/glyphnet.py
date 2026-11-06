@@ -14,7 +14,7 @@ Generator, one tick per sample line:
   ramp bank: R_q = relu(q - x), so a pixel's share of a crossing is R_(q+1) - R_q (analytic in x).
   signed sum = winding. A clamp gives coverage. K sample lines accumulate into one pixel row.
 Size scales through the s input. Vertical snapping is a piecewise linear height map whose knots are rounded font metrics.
-Horizontal snapping shifts edges by the rounded offsets of their nearest stems.
+Horizontal snapping (edges shifted by the rounded offsets of their nearest stems) exists here, but no face in the current font table uses it.
 An accented letter fires its base letter's program and its accent's program, using the font's own composite data."""
 import math
 from fontTools.pens.basePen import BasePen
@@ -259,7 +259,7 @@ class GlyphUnit:
         sg=net.reg(); s1g=net.reg(); net.rec(sg,go); net.rec(s1g,sg)      # first pass only; a retry after a miss loads nothing twice
         fcu=net.step(Lfc); fgb=net.and_(net.eq(Lfg,1,sg),ONE-fcu)
         fast=L(net.and_(fgb,net.eq(Lbg,1,sg)),sg); fsel=L(net.and_(fgb,net.eq(Lbg,2,sg)),sg)
-        net.connect(fast_,fast); net.connect(fs_,fsel); net.connect(fnc_,Lnc)   # selected text takes the same record: on the selection color the darker pixel wins, as it does for overlapping letters
+        bgw=L(net.eq(Lbg,1,sg),sg); net.connect(fast_,fast); net.connect(fs_,fsel); net.connect(fnc_,Lnc)   # selected text takes the same record: on the selection color the darker pixel wins, as it does for overlapping letters
         slow0=net.and_(s1g,ONE-fast,ONE-empty)
         def lines(pal,val,en_=None):
             h=net.decode(val-1,len(pal),slow0 if en_ is None else en_); out=[]
@@ -270,11 +270,12 @@ class GlyphUnit:
                         if gridbits(col[k])[b_]: e_=e_+h[j]
                     if e_.t: out.append((k,wt,L(net.step(e_),slow0)))
             return out
-        fce=net.and_(slow0,fcu); fxl=[]; fgl=lines(g.palF,Lfg,net.and_(slow0,ONE-fcu)); bgl=lines(g.palB,Lbg)
+        fce=net.and_(slow0,fcu); fxl=[]; fxv=[]; fgl=lines(g.palF,Lfg,net.and_(slow0,ONE-fcu)); bgl=lines(g.palB,Lbg)
         # an exact color: one line per bit of each channel, weighted as a binary number
         _fcb=net.bits(Lfc-1,24,fce)
         for k in range(3):
-            for b_ in range(8): fxl.append((k,1<<b_,L(_fcb[16-8*k+b_],fce)))
+            for b_ in range(4,8): fxl.append((k,17<<(b_-4),L(_fcb[16-8*k+b_],fce)))
+            fxv.append(L(sum((_fcb[16-8*k+b_]*(1<<b_) for b_ in range(8)),X()),fce))
         # ---- row plane ----
         data=[net.wire() for _ in range(4*LW)]
         nonw=ONE-fast
@@ -285,12 +286,16 @@ class GlyphUnit:
             sl=net.step(nw*M-M+fsel-0.5); slow=net.step(nw*M-M+(ONE-fsel)-0.5)
             cs=net.relu(sl*M-M+m-c)
             for k in range(3): o[k]=o[k]+cs*(g.palB[1][k]-255)
-            ic=net.relu(slow*M-M+m-c)
+            slb=net.step(slow*M-M+(ONE-bgw)-0.5)   # on white the base term above is already the background, so its lines rest
+            ic=net.relu(slb*M-M+m-c)
             for k in range(3): o[k]=o[k]-ic*255
-            for k,wt,ln in fgl: o[k]=o[k]+net.relu(slow*M-M+c+ln-1)*wt
-            slx=net.step(slow*M-M+fcu-0.5)   # exact color lines wake only for an exact color
-            for k,wt,ln in fxl: o[k]=o[k]+net.relu(slx*M-M+c+ln-1)*wt
-            for k,wt,ln in bgl: o[k]=o[k]+net.relu(slow*M-M+m-c+ln-1)*wt
+            slz=net.step(slow*M-M+(ONE-fcu)-0.5)   # the palette's lines rest for an exact color, whose own wake instead
+            for k,wt,ln in fgl: o[k]=o[k]+net.relu(slz*M-M+c+ln-1)*wt
+            # An exact color: a fully covered pixel takes the channel values as they are, three neurons; an edge pixel blends the top four bits of each.
+            slx=net.step(slow*M-M+fcu-0.5); fuq=net.step(slx*M-M+c-0.9); slq=net.step(slx-fuq-0.5)
+            for k in range(3): o[k]=o[k]+net.relu(fuq*M-M+fxv[k])
+            for k,wt,ln in fxl: o[k]=o[k]+net.relu(slq*M-M+c+ln-1)*wt
+            for k,wt,ln in bgl: o[k]=o[k]+net.relu(slb*M-M+m-c+ln-1)*wt
             for k in range(3): net.connect(data[4*i+k],o[k])
             net.connect(data[4*i+3],m)
         net.aligned.append([next(iter(w.t)) for w in data])
@@ -464,9 +469,15 @@ class GlyphUnit:
                     if k not in prog:
                         cs=named(*f,*pk); E=edges(cs); sl,nu,nd=g._slots(E)
                         prog[k]=dict(cs=cs,E=E,sl=sl,nup=nu,ndn=nd,acc=pk in acc,raw=False,st=stems(*f,cs) if rom.x_snap_face(*f) and pk not in acc else [],fm=face_metrics(*f),lf=net.wire())
+        _same={(f,str(p_['cs'])):k_ for k_,p_ in prog.items() for f in [g.faces[k_[0]]] if not p_['acc'] and p_['cs']}
         for fi,d in g.pseudo.items():
             for c,(cs,raw) in d.items():
+                # the same outline in the same face is one program: a Cyrillic A fires the Latin A's weights
+                if fi in PFM and cs:
+                    q_=_same.get((PFM[fi],str(cs)))
+                    if q_: comp[fi,c]=[(('alias',q_),0.0,0.0)]; continue
                 k=(fi,'pseudo',c); E=edges(cs); sl,nu,nd=g._slots(E)
+                if fi in PFM and cs: _same[PFM[fi],str(cs)]=k
                 fm=face_metrics(*g.faces[fi]) if fi<len(g.faces) else (face_metrics(*PFM[fi]) if fi in PFM else None)
                 prog[k]=dict(cs=cs,E=E,sl=sl,nup=nu,ndn=nd,acc=False,raw=raw,st=[],fm=fm,lf=net.wire()); comp[fi,c]=[(('pseudo',c),0.0,0.0)]
         nu=max([1]+[p['nup'] for p in prog.values() if not p['acc']]); nd=max([1]+[p['ndn'] for p in prog.values() if not p['acc']])
@@ -479,7 +490,7 @@ class GlyphUnit:
             lf=leaf.get((fi,c))
             if lf is None: continue
             for j,(pk,dx,dy) in enumerate(parts):
-                k=(fi,)+pk; P=prog[k]
+                k=pk[1] if pk[0]=='alias' else (fi,)+pk; P=prog[k]
                 if P['E']: net.connect(haswire,lf)
                 net.connect(P['lf'],lf)
                 if j==1:

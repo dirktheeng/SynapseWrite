@@ -1,0 +1,5032 @@
+{
+"edges": [
+[
+"glyph weights (outline edges)",
+"glyph weights (outline edges)",
+1056194
+],
+[
+"glyph pixel records",
+"glyph weights (outline edges)",
+200850
+],
+[
+"docx crc",
+"docx crc",
+73820
+],
+[
+"snapping layer",
+"glyph weights (outline edges)",
+44946
+],
+[
+"glyph metrics",
+"glyph metrics",
+32537
+],
+[
+"glyph pixel records",
+"glyph pixel records",
+30842
+],
+[
+"glyph unit",
+"glyph unit",
+27530
+],
+[
+"rv a3 interaction",
+"rv a3 interaction",
+20013
+],
+[
+"glyph network",
+"glyph metrics",
+18300
+],
+[
+"docx reader rv_a5",
+"docx reader rv_a5",
+12437
+],
+[
+"docx reader",
+"docx reader",
+12103
+],
+[
+"chrome",
+"chrome",
+11324
+],
+[
+"ramp bank",
+"ramp bank",
+10735
+],
+[
+"ramp bank",
+"coverage",
+6936
+],
+[
+"bulk edits",
+"bulk edits",
+5982
+],
+[
+"compiled control",
+"compiled control",
+5673
+],
+[
+"docx writer",
+"docx writer",
+4761
+],
+[
+"coverage",
+"coverage",
+4635
+],
+[
+"key handling",
+"key handling",
+4256
+],
+[
+"zoom",
+"zoom",
+3405
+],
+[
+"png reader",
+"compiled control",
+3118
+],
+[
+"compiled control",
+"png reader",
+2965
+],
+[
+"pdf writer",
+"pdf writer",
+2868
+],
+[
+"chrome",
+"glyph network",
+2853
+],
+[
+"pictures",
+"pictures",
+2631
+],
+[
+"compiled control",
+"shared control registers",
+2453
+],
+[
+"paste",
+"paste",
+2388
+],
+[
+"layout and paint",
+"layout and paint",
+2385
+],
+[
+"docx reader tier 4",
+"docx reader tier 4",
+2296
+],
+[
+"shared control registers",
+"compiled control",
+2198
+],
+[
+"glyph unit",
+"glyph weights (outline edges)",
+2012
+],
+[
+"pdf writer",
+"compiled control",
+1906
+],
+[
+"docx reader notes",
+"docx reader notes",
+1778
+],
+[
+"glyph metrics",
+"glyph network",
+1725
+],
+[
+"docx writer",
+"compiled control",
+1715
+],
+[
+"rv a3 interaction",
+"compiled control",
+1656
+],
+[
+"glyph network",
+"glyph network",
+1643
+],
+[
+"layout and paint",
+"compiled control",
+1339
+],
+[
+"docx reader",
+"compiled control",
+1285
+],
+[
+"tier 4 features",
+"tier 4 features",
+1232
+],
+[
+"compiled control",
+"docx writer",
+1200
+],
+[
+"a4 borders",
+"a4 borders",
+1165
+],
+[
+"docx reader tier 2",
+"docx reader tier 2",
+1139
+],
+[
+"docx reader tier 4",
+"compiled control",
+1124
+],
+[
+"a4 merge",
+"a4 merge",
+1114
+],
+[
+"pictures",
+"compiled control",
+1104
+],
+[
+"docx writer",
+"pictures",
+1081
+],
+[
+"range walker",
+"range walker",
+1065
+],
+[
+"tables",
+"tables",
+1033
+],
+[
+"raw event interpretation",
+"raw event interpretation",
+1000
+],
+[
+"chrome",
+"compiled control",
+993
+],
+[
+"docx reader rv_a5",
+"compiled control",
+991
+],
+[
+"png reader",
+"png reader",
+906
+],
+[
+"pdf writer",
+"docx writer",
+827
+],
+[
+"a4 commands",
+"a4 commands",
+802
+],
+[
+"rv a3 interaction",
+"glyph network",
+800
+],
+[
+"bank and port wiring",
+"compiled control",
+762
+],
+[
+"glyph network",
+"compiled control",
+751
+],
+[
+"docx deflate",
+"docx deflate",
+732
+],
+[
+"line breaking",
+"line breaking",
+705
+],
+[
+"tier 4 features",
+"compiled control",
+698
+],
+[
+"compiled control",
+"pdf writer",
+697
+],
+[
+"a4 ruler",
+"a4 ruler",
+689
+],
+[
+"shared control registers",
+"rv a3 interaction",
+686
+],
+[
+"tables",
+"compiled control",
+681
+],
+[
+"docx writer tier 3",
+"compiled control",
+611
+],
+[
+"rv a3 interaction",
+"bank and port wiring",
+607
+],
+[
+"shared control registers",
+"layout and paint",
+577
+],
+[
+"docx reader notes",
+"compiled control",
+570
+],
+[
+"snapping layer",
+"snapping layer",
+560
+],
+[
+"layout and paint",
+"bank and port wiring",
+548
+],
+[
+"a4 docx",
+"a4 docx",
+547
+],
+[
+"compiled control",
+"docx reader",
+540
+],
+[
+"screenshot hit test",
+"bulk edits",
+533
+],
+[
+"a4 commands",
+"compiled control",
+516
+],
+[
+"tier 2",
+"tier 2",
+514
+],
+[
+"find and replace",
+"find and replace",
+500
+],
+[
+"a4 merge",
+"compiled control",
+495
+],
+[
+"docx reader rv_a5",
+"glyph network",
+481
+],
+[
+"screenshot hit test",
+"screenshot hit test",
+478
+],
+[
+"shared control registers",
+"chrome",
+465
+],
+[
+"docx reader notes",
+"bank and port wiring",
+465
+],
+[
+"docx reader tier 4",
+"docx writer",
+450
+],
+[
+"key handling",
+"compiled control",
+441
+],
+[
+"rv a3 interaction",
+"shared control registers",
+435
+],
+[
+"a4 ruler",
+"compiled control",
+419
+],
+[
+"tier 2",
+"compiled control",
+400
+],
+[
+"table of contents",
+"table of contents",
+393
+],
+[
+"find across paragraphs",
+"find across paragraphs",
+384
+],
+[
+"tables",
+"bank and port wiring",
+384
+],
+[
+"a4 pagenum",
+"a4 pagenum",
+383
+],
+[
+"zoom",
+"glyph network",
+382
+],
+[
+"notes and balloons",
+"notes and balloons",
+380
+],
+[
+"line breaking",
+"compiled control",
+378
+],
+[
+"raw event interpretation",
+"compiled control",
+374
+],
+[
+"zip container",
+"compiled control",
+358
+],
+[
+"docx reader tier 2",
+"compiled control",
+355
+],
+[
+"compiled control",
+"docx reader tier 4",
+355
+],
+[
+"glyph network",
+"coverage",
+351
+],
+[
+"glyph geometry",
+"glyph geometry",
+351
+],
+[
+"a4 tabs",
+"a4 tabs",
+349
+],
+[
+"a4 borders",
+"compiled control",
+345
+],
+[
+"tier 4 features",
+"glyph network",
+344
+],
+[
+"undo",
+"undo",
+343
+],
+[
+"docx writer tier 3",
+"docx writer",
+340
+],
+[
+"headers and footers",
+"headers and footers",
+336
+],
+[
+"docx reader tier 4",
+"bank and port wiring",
+326
+],
+[
+"bulk edits",
+"compiled control",
+324
+],
+[
+"screenshot hit test",
+"docx crc",
+321
+],
+[
+"shared control registers",
+"docx reader rv_a5",
+311
+],
+[
+"docx writer tier 3",
+"docx writer tier 3",
+304
+],
+[
+"compiled control",
+"layout and paint",
+298
+],
+[
+"screenshot hit test",
+"compiled control",
+296
+],
+[
+"undo",
+"compiled control",
+295
+],
+[
+"shared control registers",
+"tables",
+289
+],
+[
+"docx crc",
+"compiled control",
+289
+],
+[
+"ribbon actions",
+"docx reader rv_a5",
+284
+],
+[
+"pictures",
+"bank and port wiring",
+281
+],
+[
+"docx reader rv_a5",
+"bank and port wiring",
+272
+],
+[
+"docx reader",
+"bank and port wiring",
+271
+],
+[
+"tier 4 features",
+"bank and port wiring",
+271
+],
+[
+"compiled control",
+"pictures",
+263
+],
+[
+"sections",
+"compiled control",
+262
+],
+[
+"shared control registers",
+"a4 ruler",
+260
+],
+[
+"a4 docx",
+"compiled control",
+247
+],
+[
+"shared control registers",
+"docx reader notes",
+242
+],
+[
+"find across paragraphs",
+"compiled control",
+240
+],
+[
+"edit primitives",
+"edit primitives",
+237
+],
+[
+"docx reader tier 3",
+"docx reader tier 3",
+237
+],
+[
+"compiled control",
+"docx writer tier 3",
+234
+],
+[
+"a4 borders",
+"docx writer",
+232
+],
+[
+"zip container",
+"zip container",
+230
+],
+[
+"compiled control",
+"tier 4 features",
+225
+],
+[
+"notes and balloons",
+"compiled control",
+222
+],
+[
+"bank and port wiring",
+"docx reader tier 4",
+220
+],
+[
+"zoom",
+"bank and port wiring",
+220
+],
+[
+"edit primitives",
+"compiled control",
+219
+],
+[
+"bulk edits",
+"bank and port wiring",
+219
+],
+[
+"range walker",
+"compiled control",
+216
+],
+[
+"chrome",
+"bank and port wiring",
+215
+],
+[
+"docx reader",
+"docx reader tier 2",
+212
+],
+[
+"edit primitives",
+"bank and port wiring",
+212
+],
+[
+"compiled control",
+"tables",
+212
+],
+[
+"zoom",
+"compiled control",
+206
+],
+[
+"a4 merge",
+"bank and port wiring",
+206
+],
+[
+"compiled control",
+"range walker",
+204
+],
+[
+"zip container",
+"docx writer",
+200
+],
+[
+"compiled control",
+"key handling",
+200
+],
+[
+"a4 docx",
+"docx writer",
+199
+],
+[
+"ribbon actions",
+"ribbon actions",
+198
+],
+[
+"pointer",
+"pointer",
+197
+],
+[
+"screenshot hit test",
+"docx reader",
+192
+],
+[
+"ribbon display list",
+"ribbon display list",
+190
+],
+[
+"pdf writer",
+"bank and port wiring",
+183
+],
+[
+"a4 pagenum",
+"compiled control",
+182
+],
+[
+"sections",
+"sections",
+181
+],
+[
+"glyph pixel records",
+"snapping layer",
+179
+],
+[
+"canvas look",
+"bank and port wiring",
+178
+],
+[
+"shared control registers",
+"key handling",
+174
+],
+[
+"character maps",
+"character maps",
+174
+],
+[
+"a4 ruler",
+"bank and port wiring",
+172
+],
+[
+"compiled control",
+"screenshot hit test",
+170
+],
+[
+"glyph unit",
+"snapping layer",
+169
+],
+[
+"docx reader tier 2",
+"bank and port wiring",
+167
+],
+[
+"shared control registers",
+"tier 4 features",
+165
+],
+[
+"rv a3 interaction",
+"ribbon display list",
+165
+],
+[
+"docx deflate",
+"compiled control",
+162
+],
+[
+"ribbon display list",
+"rv a3 interaction",
+157
+],
+[
+"docx reader rv_a5",
+"shared control registers",
+157
+],
+[
+"docx reader",
+"docx reader rv_a5",
+156
+],
+[
+"docx reader",
+"docx reader tier 4",
+152
+],
+[
+"shared control registers",
+"docx reader tier 4",
+150
+],
+[
+"shared control registers",
+"pictures",
+148
+],
+[
+"docx reader rv_a5",
+"pointer",
+148
+],
+[
+"compiled control",
+"a4 commands",
+147
+],
+[
+"clipboard formatting",
+"clipboard formatting",
+146
+],
+[
+"shared control registers",
+"edit primitives",
+145
+],
+[
+"bank and port wiring",
+"docx reader rv_a5",
+144
+],
+[
+"find and replace",
+"compiled control",
+144
+],
+[
+"pictures",
+"docx writer",
+141
+],
+[
+"compiled control",
+"zip container",
+140
+],
+[
+"bank and port wiring",
+"rv a3 interaction",
+139
+],
+[
+"docx writer",
+"docx crc",
+137
+],
+[
+"compiled control",
+"docx reader tier 2",
+136
+],
+[
+"shared control registers",
+"bulk edits",
+133
+],
+[
+"bank and port wiring",
+"layout and paint",
+130
+],
+[
+"layout and paint",
+"glyph network",
+130
+],
+[
+"compiled control",
+"pointer",
+130
+],
+[
+"compiled control",
+"docx reader rv_a5",
+130
+],
+[
+"key handling",
+"shared control registers",
+128
+],
+[
+"shared control registers",
+"a4 merge",
+124
+],
+[
+"a4 tabs",
+"compiled control",
+124
+],
+[
+"pdf tables",
+"compiled control",
+122
+],
+[
+"docx reader",
+"docx reader notes",
+121
+],
+[
+"glyph unit",
+"glyph geometry",
+121
+],
+[
+"shared control registers",
+"screenshot hit test",
+119
+],
+[
+"glyph pixel records",
+"glyph geometry",
+117
+],
+[
+"notes and balloons",
+"bank and port wiring",
+117
+],
+[
+"rv a3 interaction",
+"range walker",
+117
+],
+[
+"character maps",
+"compiled control",
+116
+],
+[
+"bank and port wiring",
+"docx reader",
+114
+],
+[
+"style interner",
+"style interner",
+114
+],
+[
+"tier 2",
+"bank and port wiring",
+114
+],
+[
+"headers and footers",
+"compiled control",
+109
+],
+[
+"canvas look",
+"canvas look",
+107
+],
+[
+"paste",
+"compiled control",
+105
+],
+[
+"compiled control",
+"a4 borders",
+103
+],
+[
+"docx writer",
+"pdf writer",
+101
+],
+[
+"shared control registers",
+"zoom",
+100
+],
+[
+"docx writer tier 3",
+"bank and port wiring",
+100
+],
+[
+"compiled control",
+"a4 merge",
+100
+],
+[
+"bank and port wiring",
+"find and replace",
+98
+],
+[
+"shared control registers",
+"find across paragraphs",
+98
+],
+[
+"glyph network",
+"a4 ruler",
+96
+],
+[
+"pointer",
+"compiled control",
+95
+],
+[
+"tier 4 features",
+"docx writer",
+94
+],
+[
+"table of contents",
+"compiled control",
+94
+],
+[
+"compiled control",
+"docx reader notes",
+91
+],
+[
+"clipboard formatting",
+"compiled control",
+89
+],
+[
+"compiled control",
+"tier 2",
+89
+],
+[
+"zip container",
+"bank and port wiring",
+88
+],
+[
+"glyph network",
+"chrome",
+87
+],
+[
+"docx reader rv_a5",
+"docx reader",
+86
+],
+[
+"pointer",
+"raw event interpretation",
+85
+],
+[
+"docx reader tier 2",
+"docx reader",
+85
+],
+[
+"shared control registers",
+"tier 2",
+85
+],
+[
+"bank and port wiring",
+"docx reader notes",
+84
+],
+[
+"range walker",
+"bank and port wiring",
+84
+],
+[
+"table of contents",
+"bank and port wiring",
+84
+],
+[
+"a4 keep",
+"a4 keep",
+83
+],
+[
+"bank and port wiring",
+"glyph network",
+81
+],
+[
+"shared control registers",
+"notes and balloons",
+80
+],
+[
+"shared control registers",
+"raw event interpretation",
+79
+],
+[
+"key handling",
+"pointer",
+79
+],
+[
+"spell dictionary",
+"spell dictionary",
+78
+],
+[
+"bank and port wiring",
+"tier 4 features",
+77
+],
+[
+"compiled control",
+"docx deflate",
+75
+],
+[
+"docx reader",
+"docx reader tier 3",
+73
+],
+[
+"bank and port wiring",
+"docx reader tier 2",
+70
+],
+[
+"a4 commands",
+"rv a3 interaction",
+70
+],
+[
+"docx reader",
+"shared control registers",
+70
+],
+[
+"a4 pagenum",
+"bank and port wiring",
+70
+],
+[
+"bank and port wiring",
+"screenshot hit test",
+69
+],
+[
+"shared control registers",
+"a4 commands",
+69
+],
+[
+"shared control registers",
+"find and replace",
+67
+],
+[
+"shared control registers",
+"a4 borders",
+67
+],
+[
+"clipboard formatting",
+"bank and port wiring",
+67
+],
+[
+"compiled control",
+"edit primitives",
+67
+],
+[
+"screenshot hit test",
+"paste",
+66
+],
+[
+"bank and port wiring",
+"pdf writer",
+66
+],
+[
+"pointer",
+"rv a3 interaction",
+66
+],
+[
+"key handling",
+"bank and port wiring",
+66
+],
+[
+"shared control registers",
+"table of contents",
+65
+],
+[
+"bulk edits",
+"paste",
+65
+],
+[
+"compiled control",
+"notes and balloons",
+65
+],
+[
+"shared control registers",
+"range walker",
+63
+],
+[
+"a4 keep",
+"compiled control",
+62
+],
+[
+"png reader",
+"bank and port wiring",
+62
+],
+[
+"compiled control",
+"a4 pagenum",
+62
+],
+[
+"bank and port wiring",
+"find across paragraphs",
+61
+],
+[
+"a4 pagenum",
+"docx writer",
+61
+],
+[
+"find and replace",
+"bank and port wiring",
+61
+],
+[
+"sections",
+"bank and port wiring",
+61
+],
+[
+"range walker",
+"docx reader tier 4",
+60
+],
+[
+"shared control registers",
+"clipboard formatting",
+59
+],
+[
+"docx reader notes",
+"docx reader",
+59
+],
+[
+"a4 commands",
+"shared control registers",
+58
+],
+[
+"a4 borders",
+"bank and port wiring",
+58
+],
+[
+"pictures",
+"docx reader",
+55
+],
+[
+"glyph network",
+"zoom",
+54
+],
+[
+"shared control registers",
+"a4 tabs",
+54
+],
+[
+"docx reader tier 3",
+"compiled control",
+54
+],
+[
+"canvas look",
+"compiled control",
+54
+],
+[
+"compiled control",
+"a4 docx",
+54
+],
+[
+"line breaking",
+"bank and port wiring",
+53
+],
+[
+"compiled control",
+"undo",
+53
+],
+[
+"docx reader rv_a5",
+"range walker",
+52
+],
+[
+"tables",
+"shared control registers",
+52
+],
+[
+"png reader",
+"docx reader",
+51
+],
+[
+"pdf tables",
+"docx writer",
+51
+],
+[
+"layout and paint",
+"shared control registers",
+51
+],
+[
+"shared control registers",
+"line breaking",
+50
+],
+[
+"bank and port wiring",
+"tables",
+50
+],
+[
+"shared control registers",
+"docx reader",
+49
+],
+[
+"layout and paint",
+"line breaking",
+48
+],
+[
+"docx reader tier 4",
+"glyph network",
+48
+],
+[
+"raw event interpretation",
+"pointer",
+47
+],
+[
+"find across paragraphs",
+"bank and port wiring",
+47
+],
+[
+"bank and port wiring",
+"png reader",
+45
+],
+[
+"docx reader tier 2",
+"docx writer",
+45
+],
+[
+"notes and balloons",
+"glyph network",
+45
+],
+[
+"a4 tabs",
+"bank and port wiring",
+45
+],
+[
+"compiled control",
+"find and replace",
+45
+],
+[
+"compiled control",
+"a4 tabs",
+45
+],
+[
+"shared control registers",
+"canvas look",
+44
+],
+[
+"glyph network",
+"key handling",
+43
+],
+[
+"docx reader",
+"png reader",
+42
+],
+[
+"pdf tables",
+"pdf tables",
+42
+],
+[
+"glyph unit",
+"glyph pixel records",
+42
+],
+[
+"bank and port wiring",
+"range walker",
+41
+],
+[
+"range walker",
+"bulk edits",
+41
+],
+[
+"docx reader tier 4",
+"docx reader",
+41
+],
+[
+"docx reader",
+"pictures",
+41
+],
+[
+"layout and paint",
+"docx reader tier 4",
+40
+],
+[
+"glyph weights (outline edges)",
+"ramp bank",
+40
+],
+[
+"find across paragraphs",
+"shared control registers",
+40
+],
+[
+"shared control registers",
+"shared control registers",
+39
+],
+[
+"bank and port wiring",
+"pictures",
+39
+],
+[
+"shared control registers",
+"a4 docx",
+39
+],
+[
+"ribbon actions",
+"compiled control",
+39
+],
+[
+"tier 2",
+"shared control registers",
+39
+],
+[
+"docx reader tier 3",
+"bank and port wiring",
+39
+],
+[
+"rv a3 interaction",
+"layout and paint",
+39
+],
+[
+"compiled control",
+"zoom",
+39
+],
+[
+"shared control registers",
+"paste",
+38
+],
+[
+"undo",
+"shared control registers",
+38
+],
+[
+"tier 4 features",
+"shared control registers",
+38
+],
+[
+"glyph network",
+"layout and paint",
+37
+],
+[
+"screen check",
+"screen check",
+37
+],
+[
+"range walker",
+"tier 4 features",
+37
+],
+[
+"compiled control",
+"raw event interpretation",
+36
+],
+[
+"glyph network",
+"rv a3 interaction",
+35
+],
+[
+"key handling",
+"layout and paint",
+34
+],
+[
+"shared control registers",
+"a4 pagenum",
+34
+],
+[
+"layout and paint",
+"docx reader rv_a5",
+34
+],
+[
+"undo",
+"bank and port wiring",
+34
+],
+[
+"docx reader rv_a5",
+"tier 2",
+34
+],
+[
+"compiled control",
+"rv a3 interaction",
+34
+],
+[
+"compiled control",
+"chrome",
+34
+],
+[
+"layout and paint",
+"spell dictionary",
+33
+],
+[
+"sections",
+"a4 ruler",
+33
+],
+[
+"docx reader tier 4",
+"range walker",
+33
+],
+[
+"table of contents",
+"glyph network",
+33
+],
+[
+"compiled control",
+"find across paragraphs",
+33
+],
+[
+"shared control registers",
+"docx reader tier 2",
+32
+],
+[
+"docx writer",
+"zip container",
+32
+],
+[
+"pdf writer",
+"a4 borders",
+32
+],
+[
+"docx reader tier 4",
+"shared control registers",
+32
+],
+[
+"headers and footers",
+"glyph network",
+32
+],
+[
+"compiled control",
+"pdf tables",
+32
+],
+[
+"compiled control",
+"ribbon display list",
+32
+],
+[
+"docx reader",
+"paste",
+32
+],
+[
+"bank and port wiring",
+"a4 pagenum",
+31
+],
+[
+"row sequencer",
+"row sequencer",
+31
+],
+[
+"rv a3 interaction",
+"pointer",
+31
+],
+[
+"glyph metrics",
+"coverage",
+31
+],
+[
+"bank and port wiring",
+"spell dictionary",
+30
+],
+[
+"tier3",
+"bank and port wiring",
+30
+],
+[
+"key handling",
+"range walker",
+30
+],
+[
+"ribbon display list",
+"glyph network",
+30
+],
+[
+"zip container",
+"docx writer tier 3",
+29
+],
+[
+"layout and paint",
+"a4 tabs",
+29
+],
+[
+"character maps",
+"tier 2",
+29
+],
+[
+"character maps",
+"docx reader notes",
+29
+],
+[
+"shared control registers",
+"docx writer",
+28
+],
+[
+"docx writer",
+"tier 4 features",
+28
+],
+[
+"bank and port wiring",
+"tier 2",
+28
+],
+[
+"docx writer",
+"docx writer tier 3",
+28
+],
+[
+"a4 docx",
+"bank and port wiring",
+28
+],
+[
+"compiled control",
+"docx crc",
+28
+],
+[
+"docx reader",
+"a4 pagenum",
+27
+],
+[
+"range walker",
+"shared control registers",
+27
+],
+[
+"docx writer",
+"bank and port wiring",
+27
+],
+[
+"docx deflate",
+"bank and port wiring",
+27
+],
+[
+"a4 ruler",
+"shared control registers",
+27
+],
+[
+"rv a3 interaction",
+"key handling",
+27
+],
+[
+"layout and paint",
+"chrome",
+26
+],
+[
+"bank and port wiring",
+"a4 merge",
+26
+],
+[
+"notes and balloons",
+"docx writer",
+26
+],
+[
+"screenshot hit test",
+"bank and port wiring",
+26
+],
+[
+"find and replace",
+"shared control registers",
+26
+],
+[
+"compiled control",
+"sections",
+26
+],
+[
+"key handling",
+"docx writer",
+25
+],
+[
+"docx reader",
+"a4 docx",
+25
+],
+[
+"screenshot hit test",
+"shared control registers",
+25
+],
+[
+"a4 merge",
+"shared control registers",
+25
+],
+[
+"shared control registers",
+"ribbon actions",
+24
+],
+[
+"bank and port wiring",
+"docx deflate",
+24
+],
+[
+"tier 4 features",
+"docx reader tier 4",
+24
+],
+[
+"key handling",
+"docx reader tier 4",
+24
+],
+[
+"glyph network",
+"tables",
+24
+],
+[
+"shared control registers",
+"sections",
+24
+],
+[
+"raw event interpretation",
+"bank and port wiring",
+24
+],
+[
+"docx reader tier 4",
+"glyph patch",
+24
+],
+[
+"canvas look",
+"ribbon display list",
+24
+],
+[
+"a4 commands",
+"bank and port wiring",
+24
+],
+[
+"compiled control",
+"docx reader tier 3",
+24
+],
+[
+"bank and port wiring",
+"edit primitives",
+23
+],
+[
+"layout and paint",
+"notes and balloons",
+23
+],
+[
+"spell dictionary",
+"compiled control",
+23
+],
+[
+"bank and port wiring",
+"clipboard formatting",
+22
+],
+[
+"raw event interpretation",
+"shared control registers",
+22
+],
+[
+"a4 commands",
+"pointer",
+22
+],
+[
+"shared control registers",
+"undo",
+21
+],
+[
+"bank and port wiring",
+"notes and balloons",
+21
+],
+[
+"screenshot hit test",
+"key handling",
+21
+],
+[
+"paste",
+"screenshot hit test",
+21
+],
+[
+"a4 merge",
+"layout and paint",
+21
+],
+[
+"compiled control",
+"table of contents",
+21
+],
+[
+"compiled control",
+"a4 keep",
+21
+],
+[
+"bank and port wiring",
+"docx writer",
+20
+],
+[
+"shared control registers",
+"headers and footers",
+20
+],
+[
+"glyph network",
+"screenshot hit test",
+20
+],
+[
+"tier 4 features",
+"range walker",
+20
+],
+[
+"spell dictionary",
+"layout and paint",
+20
+],
+[
+"glyph pixel records",
+"row sequencer",
+20
+],
+[
+"glyph geometry",
+"glyph store",
+20
+],
+[
+"paste",
+"bank and port wiring",
+20
+],
+[
+"ribbon actions",
+"bank and port wiring",
+20
+],
+[
+"tier3",
+"tier3",
+20
+],
+[
+"tables",
+"screenshot hit test",
+20
+],
+[
+"pdf tables",
+"bank and port wiring",
+20
+],
+[
+"docx reader rv_a5",
+"layout and paint",
+20
+],
+[
+"compiled control",
+"glyph network",
+20
+],
+[
+"compiled control",
+"bulk edits",
+20
+],
+[
+"png reader",
+"pictures",
+19
+],
+[
+"bank and port wiring",
+"a4 docx",
+19
+],
+[
+"bank and port wiring",
+"a4 ruler",
+19
+],
+[
+"undo",
+"a4 ruler",
+19
+],
+[
+"glyph patch",
+"compiled control",
+19
+],
+[
+"range walker",
+"tier 2",
+19
+],
+[
+"bulk edits",
+"screenshot hit test",
+19
+],
+[
+"docx reader tier 4",
+"tier 4 features",
+19
+],
+[
+"docx reader tier 4",
+"key handling",
+19
+],
+[
+"a4 keep",
+"bank and port wiring",
+19
+],
+[
+"compiled control",
+"paste",
+19
+],
+[
+"compiled control",
+"headers and footers",
+19
+],
+[
+"bank and port wiring",
+"key handling",
+18
+],
+[
+"bank and port wiring",
+"bulk edits",
+18
+],
+[
+"key handling",
+"pdf writer",
+18
+],
+[
+"key handling",
+"tier 2",
+18
+],
+[
+"shared control registers",
+"zip container",
+18
+],
+[
+"notes and balloons",
+"shared control registers",
+18
+],
+[
+"docx writer tier 3",
+"docx crc",
+18
+],
+[
+"sections",
+"docx reader",
+18
+],
+[
+"docx reader notes",
+"docx reader tier 3",
+18
+],
+[
+"row sequencer",
+"coverage",
+18
+],
+[
+"glyph pixel records",
+"ramp bank",
+18
+],
+[
+"key handling",
+"edit primitives",
+17
+],
+[
+"docx reader tier 3",
+"docx reader",
+17
+],
+[
+"docx writer",
+"docx reader tier 4",
+17
+],
+[
+"pdf writer",
+"pdf tables",
+17
+],
+[
+"tables",
+"pictures",
+17
+],
+[
+"bank and port wiring",
+"docx writer tier 3",
+17
+],
+[
+"raw event interpretation",
+"rv a3 interaction",
+17
+],
+[
+"tier 2",
+"key handling",
+17
+],
+[
+"glyph geometry",
+"ramp bank",
+17
+],
+[
+"chrome",
+"shared control registers",
+17
+],
+[
+"shared control registers",
+"pointer",
+16
+],
+[
+"glyph network",
+"raw event interpretation",
+16
+],
+[
+"screenshot hit test",
+"edit primitives",
+16
+],
+[
+"bank and port wiring",
+"sections",
+16
+],
+[
+"pointer",
+"chrome",
+16
+],
+[
+"bulk edits",
+"shared control registers",
+16
+],
+[
+"notes and balloons",
+"layout and paint",
+16
+],
+[
+"pdf writer",
+"docx reader tier 2",
+15
+],
+[
+"layout and paint",
+"a4 borders",
+15
+],
+[
+"glyph unit",
+"glyph store",
+15
+],
+[
+"docx reader",
+"screenshot hit test",
+15
+],
+[
+"sections",
+"layout and paint",
+15
+],
+[
+"headers and footers",
+"shared control registers",
+15
+],
+[
+"ribbon display list",
+"bank and port wiring",
+15
+],
+[
+"docx reader",
+"docx writer",
+15
+],
+[
+"docx reader rv_a5",
+"tables",
+15
+],
+[
+"bank and port wiring",
+"line breaking",
+14
+],
+[
+"shared control registers",
+"docx writer tier 3",
+14
+],
+[
+"pictures",
+"docx reader notes",
+14
+],
+[
+"docx reader tier 3",
+"docx reader notes",
+14
+],
+[
+"chrome",
+"rv a3 interaction",
+14
+],
+[
+"screen check",
+"compiled control",
+14
+],
+[
+"glyph store",
+"glyph store",
+14
+],
+[
+"edit primitives",
+"shared control registers",
+14
+],
+[
+"range walker",
+"glyph patch",
+14
+],
+[
+"zoom",
+"shared control registers",
+14
+],
+[
+"a4 commands",
+"range walker",
+14
+],
+[
+"compiled control",
+"spell dictionary",
+14
+],
+[
+"rv a3 interaction",
+"a4 pagenum",
+14
+],
+[
+"a4 pagenum",
+"docx reader",
+13
+],
+[
+"pdf writer",
+"docx reader tier 4",
+13
+],
+[
+"docx reader",
+"sections",
+13
+],
+[
+"bank and port wiring",
+"a4 keep",
+13
+],
+[
+"glyph network",
+"bank and port wiring",
+13
+],
+[
+"find across paragraphs",
+"find and replace",
+13
+],
+[
+"clipboard formatting",
+"shared control registers",
+13
+],
+[
+"tier 4 features",
+"key handling",
+13
+],
+[
+"docx writer tier 3",
+"zip container",
+13
+],
+[
+"a4 ruler",
+"pointer",
+13
+],
+[
+"a4 pagenum",
+"glyph network",
+13
+],
+[
+"rv a3 interaction",
+"docx reader rv_a5",
+13
+],
+[
+"rv a3 interaction",
+"chrome",
+13
+],
+[
+"compiled control",
+"canvas look",
+13
+],
+[
+"bank and port wiring",
+"raw event interpretation",
+12
+],
+[
+"key handling",
+"tier 4 features",
+12
+],
+[
+"undo",
+"tier3",
+12
+],
+[
+"ribbon display list",
+"compiled control",
+12
+],
+[
+"key handling",
+"rv a3 interaction",
+12
+],
+[
+"glyph metrics",
+"compiled control",
+12
+],
+[
+"chrome",
+"tier 4 features",
+12
+],
+[
+"docx crc",
+"bank and port wiring",
+12
+],
+[
+"docx reader rv_a5",
+"rv a3 interaction",
+12
+],
+[
+"rv a3 interaction",
+"zoom",
+12
+],
+[
+"compiled control",
+"ribbon actions",
+12
+],
+[
+"compiled control",
+"a4 ruler",
+12
+],
+[
+"layout and paint",
+"pictures",
+11
+],
+[
+"layout and paint",
+"canvas look",
+11
+],
+[
+"bank and port wiring",
+"a4 borders",
+11
+],
+[
+"glyph geometry",
+"row sequencer",
+11
+],
+[
+"key handling",
+"find across paragraphs",
+11
+],
+[
+"undo",
+"screenshot hit test",
+11
+],
+[
+"line breaking",
+"layout and paint",
+11
+],
+[
+"tier 4 features",
+"edit primitives",
+11
+],
+[
+"docx reader tier 2",
+"glyph patch",
+11
+],
+[
+"sections",
+"shared control registers",
+11
+],
+[
+"a4 ruler",
+"layout and paint",
+11
+],
+[
+"a4 merge",
+"screenshot hit test",
+11
+],
+[
+"compiled control",
+"line breaking",
+11
+],
+[
+"row sequencer",
+"glyph pixel records",
+11
+],
+[
+"bank and port wiring",
+"ribbon actions",
+10
+],
+[
+"shared control registers",
+"png reader",
+10
+],
+[
+"shared control registers",
+"docx reader tier 3",
+10
+],
+[
+"find and replace",
+"rv a3 interaction",
+10
+],
+[
+"paste",
+"shared control registers",
+10
+],
+[
+"chrome",
+"layout and paint",
+10
+],
+[
+"docx reader",
+"glyph patch",
+10
+],
+[
+"tier 2",
+"layout and paint",
+10
+],
+[
+"docx reader notes",
+"shared control registers",
+10
+],
+[
+"docx reader rv_a5",
+"tier 4 features",
+10
+],
+[
+"docx reader rv_a5",
+"chrome",
+10
+],
+[
+"find and replace",
+"find across paragraphs",
+9
+],
+[
+"bank and port wiring",
+"table of contents",
+9
+],
+[
+"shared control registers",
+"a4 keep",
+9
+],
+[
+"key handling",
+"screenshot hit test",
+9
+],
+[
+"bulk edits",
+"range walker",
+9
+],
+[
+"docx crc",
+"docx writer",
+9
+],
+[
+"screenshot hit test",
+"layout and paint",
+9
+],
+[
+"range walker",
+"layout and paint",
+9
+],
+[
+"ribbon actions",
+"shared control registers",
+9
+],
+[
+"docx writer",
+"shared control registers",
+9
+],
+[
+"tier 2",
+"glyph patch",
+9
+],
+[
+"zip container",
+"docx crc",
+9
+],
+[
+"pictures",
+"png reader",
+9
+],
+[
+"glyph network",
+"shared control registers",
+8
+],
+[
+"a4 docx",
+"docx reader",
+8
+],
+[
+"shared control registers",
+"tier3",
+8
+],
+[
+"line breaking",
+"a4 tabs",
+8
+],
+[
+"bank and port wiring",
+"glyph metrics",
+8
+],
+[
+"glyph network",
+"table of contents",
+8
+],
+[
+"docx writer",
+"screenshot hit test",
+8
+],
+[
+"docx reader tier 4",
+"edit primitives",
+8
+],
+[
+"docx reader tier 4",
+"layout and paint",
+8
+],
+[
+"tier 2",
+"range walker",
+8
+],
+[
+"docx reader tier 2",
+"shared control registers",
+8
+],
+[
+"tier3",
+"compiled control",
+8
+],
+[
+"table of contents",
+"shared control registers",
+8
+],
+[
+"docx reader notes",
+"edit primitives",
+8
+],
+[
+"a4 ruler",
+"glyph network",
+8
+],
+[
+"a4 merge",
+"tables",
+8
+],
+[
+"a4 pagenum",
+"zip container",
+8
+],
+[
+"rv a3 interaction",
+"docx writer",
+8
+],
+[
+"compiled control",
+"bank and port wiring",
+8
+],
+[
+"docx reader rv_a5",
+"sections",
+8
+],
+[
+"docx reader rv_a5",
+"zoom",
+8
+],
+[
+"bank and port wiring",
+"chrome",
+7
+],
+[
+"layout and paint",
+"docx writer",
+7
+],
+[
+"bank and port wiring",
+"docx reader tier 3",
+7
+],
+[
+"zip container",
+"pictures",
+7
+],
+[
+"layout and paint",
+"table of contents",
+7
+],
+[
+"bank and port wiring",
+"a4 tabs",
+7
+],
+[
+"tables",
+"a4 merge",
+7
+],
+[
+"tables",
+"a4 ruler",
+7
+],
+[
+"line breaking",
+"glyph network",
+7
+],
+[
+"find and replace",
+"bulk edits",
+7
+],
+[
+"edit primitives",
+"screenshot hit test",
+7
+],
+[
+"tier 4 features",
+"screenshot hit test",
+7
+],
+[
+"docx reader tier 4",
+"pdf writer",
+7
+],
+[
+"headers and footers",
+"layout and paint",
+7
+],
+[
+"canvas look",
+"glyph network",
+7
+],
+[
+"a4 commands",
+"tables",
+7
+],
+[
+"a4 tabs",
+"layout and paint",
+7
+],
+[
+"docx reader rv_a5",
+"docx reader notes",
+7
+],
+[
+"docx reader rv_a5",
+"key handling",
+7
+],
+[
+"docx reader rv_a5",
+"edit primitives",
+7
+],
+[
+"screen check",
+"bank and port wiring",
+7
+],
+[
+"docx reader",
+"key handling",
+7
+],
+[
+"docx reader",
+"edit primitives",
+7
+],
+[
+"rv a3 interaction",
+"a4 commands",
+7
+],
+[
+"tier 2",
+"character maps",
+6
+],
+[
+"undo",
+"bulk edits",
+6
+],
+[
+"layout and paint",
+"zoom",
+6
+],
+[
+"docx writer tier 3",
+"docx reader notes",
+6
+],
+[
+"spell dictionary",
+"docx reader rv_a5",
+6
+],
+[
+"pointer",
+"docx reader rv_a5",
+6
+],
+[
+"bank and port wiring",
+"screen check",
+6
+],
+[
+"pdf writer",
+"key handling",
+6
+],
+[
+"docx reader notes",
+"pictures",
+6
+],
+[
+"layout and paint",
+"a4 merge",
+6
+],
+[
+"ribbon display list",
+"canvas look",
+6
+],
+[
+"range walker",
+"docx reader rv_a5",
+6
+],
+[
+"raw event interpretation",
+"layout and paint",
+6
+],
+[
+"range walker",
+"pointer",
+6
+],
+[
+"clipboard formatting",
+"paste",
+6
+],
+[
+"zoom",
+"pointer",
+6
+],
+[
+"tables",
+"layout and paint",
+6
+],
+[
+"headers and footers",
+"bank and port wiring",
+6
+],
+[
+"docx writer tier 3",
+"docx deflate",
+6
+],
+[
+"docx reader notes",
+"key handling",
+6
+],
+[
+"canvas look",
+"chrome",
+6
+],
+[
+"a4 commands",
+"layout and paint",
+6
+],
+[
+"a4 tabs",
+"docx writer",
+6
+],
+[
+"a4 pagenum",
+"shared control registers",
+6
+],
+[
+"docx reader rv_a5",
+"docx reader tier 2",
+6
+],
+[
+"rv a3 interaction",
+"screenshot hit test",
+6
+],
+[
+"docx reader rv_a5",
+"headers and footers",
+6
+],
+[
+"bank and port wiring",
+"paste",
+5
+],
+[
+"range walker",
+"clipboard formatting",
+5
+],
+[
+"bank and port wiring",
+"docx crc",
+5
+],
+[
+"shared control registers",
+"pdf writer",
+5
+],
+[
+"layout and paint",
+"tables",
+5
+],
+[
+"tables",
+"table of contents",
+5
+],
+[
+"a4 keep",
+"a4 merge",
+5
+],
+[
+"find and replace",
+"layout and paint",
+5
+],
+[
+"raw event interpretation",
+"tables",
+5
+],
+[
+"layout and paint",
+"a4 keep",
+5
+],
+[
+"layout and paint",
+"a4 pagenum",
+5
+],
+[
+"a4 tabs",
+"glyph network",
+5
+],
+[
+"pictures",
+"docx reader rv_a5",
+5
+],
+[
+"glyph store",
+"row sequencer",
+5
+],
+[
+"pointer",
+"bank and port wiring",
+5
+],
+[
+"raw event interpretation",
+"screen check",
+5
+],
+[
+"range walker",
+"screenshot hit test",
+5
+],
+[
+"find across paragraphs",
+"layout and paint",
+5
+],
+[
+"zoom",
+"chrome",
+5
+],
+[
+"zoom",
+"rv a3 interaction",
+5
+],
+[
+"png reader",
+"pointer",
+5
+],
+[
+"tables",
+"raw event interpretation",
+5
+],
+[
+"zip container",
+"shared control registers",
+5
+],
+[
+"pictures",
+"layout and paint",
+5
+],
+[
+"docx writer tier 3",
+"pictures",
+5
+],
+[
+"a4 commands",
+"screenshot hit test",
+5
+],
+[
+"a4 commands",
+"glyph patch",
+5
+],
+[
+"a4 keep",
+"shared control registers",
+5
+],
+[
+"a4 borders",
+"shared control registers",
+5
+],
+[
+"a4 pagenum",
+"tables",
+5
+],
+[
+"docx reader rv_a5",
+"docx writer",
+5
+],
+[
+"rv a3 interaction",
+"raw event interpretation",
+5
+],
+[
+"screen check",
+"shared control registers",
+5
+],
+[
+"edit primitives",
+"bulk edits",
+5
+],
+[
+"bank and port wiring",
+"undo",
+4
+],
+[
+"undo",
+"range walker",
+4
+],
+[
+"paste",
+"clipboard formatting",
+4
+],
+[
+"docx reader",
+"tier 2",
+4
+],
+[
+"tables",
+"zip container",
+4
+],
+[
+"pictures",
+"docx writer tier 3",
+4
+],
+[
+"bank and port wiring",
+"canvas look",
+4
+],
+[
+"key handling",
+"notes and balloons",
+4
+],
+[
+"pdf writer",
+"glyph network",
+4
+],
+[
+"docx reader tier 2",
+"docx reader notes",
+4
+],
+[
+"docx reader notes",
+"docx reader rv_a5",
+4
+],
+[
+"range walker",
+"docx writer",
+4
+],
+[
+"glyph metrics",
+"layout and paint",
+4
+],
+[
+"edit primitives",
+"docx reader notes",
+4
+],
+[
+"undo",
+"pointer",
+4
+],
+[
+"paste",
+"tier 2",
+4
+],
+[
+"bulk edits",
+"find and replace",
+4
+],
+[
+"find across paragraphs",
+"edit primitives",
+4
+],
+[
+"docx writer",
+"a4 docx",
+4
+],
+[
+"docx crc",
+"screenshot hit test",
+4
+],
+[
+"png reader",
+"shared control registers",
+4
+],
+[
+"tier 4 features",
+"layout and paint",
+4
+],
+[
+"tier 4 features",
+"chrome",
+4
+],
+[
+"tier 2",
+"edit primitives",
+4
+],
+[
+"tier 2",
+"screenshot hit test",
+4
+],
+[
+"pictures",
+"docx reader tier 3",
+4
+],
+[
+"table of contents",
+"screenshot hit test",
+4
+],
+[
+"table of contents",
+"layout and paint",
+4
+],
+[
+"a4 borders",
+"docx reader tier 2",
+4
+],
+[
+"a4 docx",
+"docx reader tier 2",
+4
+],
+[
+"a4 ruler",
+"sections",
+4
+],
+[
+"a4 merge",
+"key handling",
+4
+],
+[
+"docx reader rv_a5",
+"docx reader tier 3",
+4
+],
+[
+"docx reader rv_a5",
+"ribbon actions",
+4
+],
+[
+"rv a3 interaction",
+"edit primitives",
+4
+],
+[
+"rv a3 interaction",
+"coverage",
+4
+],
+[
+"screen check",
+"layout and paint",
+4
+],
+[
+"compiled control",
+"clipboard formatting",
+4
+],
+[
+"file output command",
+"file output command",
+4
+],
+[
+"a4 ruler",
+"tier 2",
+4
+],
+[
+"compiled control",
+"tier3",
+4
+],
+[
+"paste",
+"find across paragraphs",
+3
+],
+[
+"layout and paint",
+"find across paragraphs",
+3
+],
+[
+"bank and port wiring",
+"zoom",
+3
+],
+[
+"docx deflate",
+"pictures",
+3
+],
+[
+"docx reader",
+"notes and balloons",
+3
+],
+[
+"bank and port wiring",
+"headers and footers",
+3
+],
+[
+"tables",
+"docx reader notes",
+3
+],
+[
+"docx writer",
+"a4 tabs",
+3
+],
+[
+"layout and paint",
+"a4 ruler",
+3
+],
+[
+"tables",
+"a4 pagenum",
+3
+],
+[
+"docx reader tier 2",
+"docx reader rv_a5",
+3
+],
+[
+"layout and paint",
+"rv a3 interaction",
+3
+],
+[
+"shared control registers",
+"screen check",
+3
+],
+[
+"tier 2",
+"docx reader",
+3
+],
+[
+"key handling",
+"tables",
+3
+],
+[
+"pdf writer",
+"docx writer tier 3",
+3
+],
+[
+"range walker",
+"a4 commands",
+3
+],
+[
+"docx reader notes",
+"a4 merge",
+3
+],
+[
+"pdf writer",
+"a4 pagenum",
+3
+],
+[
+"shared control registers",
+"ribbon display list",
+3
+],
+[
+"key handling",
+"chrome",
+3
+],
+[
+"docx writer",
+"range walker",
+3
+],
+[
+"shared control registers",
+"docx crc",
+3
+],
+[
+"layout and paint",
+"docx crc",
+3
+],
+[
+"glyph network",
+"line breaking",
+3
+],
+[
+"screenshot hit test",
+"tables",
+3
+],
+[
+"find and replace",
+"screenshot hit test",
+3
+],
+[
+"bulk edits",
+"edit primitives",
+3
+],
+[
+"clipboard formatting",
+"tier 2",
+3
+],
+[
+"line breaking",
+"shared control registers",
+3
+],
+[
+"png reader",
+"screenshot hit test",
+3
+],
+[
+"png reader",
+"layout and paint",
+3
+],
+[
+"docx reader tier 4",
+"docx writer tier 3",
+3
+],
+[
+"docx reader tier 4",
+"line breaking",
+3
+],
+[
+"tier 2",
+"pointer",
+3
+],
+[
+"docx reader tier 2",
+"pdf writer",
+3
+],
+[
+"zip container",
+"docx deflate",
+3
+],
+[
+"pictures",
+"zip container",
+3
+],
+[
+"notes and balloons",
+"docx reader",
+3
+],
+[
+"notes and balloons",
+"line breaking",
+3
+],
+[
+"notes and balloons",
+"headers and footers",
+3
+],
+[
+"table of contents",
+"tables",
+3
+],
+[
+"docx writer tier 3",
+"shared control registers",
+3
+],
+[
+"canvas look",
+"layout and paint",
+3
+],
+[
+"a4 commands",
+"tier 2",
+3
+],
+[
+"a4 keep",
+"layout and paint",
+3
+],
+[
+"a4 borders",
+"layout and paint",
+3
+],
+[
+"a4 docx",
+"docx reader notes",
+3
+],
+[
+"a4 tabs",
+"shared control registers",
+3
+],
+[
+"a4 tabs",
+"line breaking",
+3
+],
+[
+"a4 merge",
+"a4 keep",
+3
+],
+[
+"a4 pagenum",
+"headers and footers",
+3
+],
+[
+"docx reader rv_a5",
+"screenshot hit test",
+3
+],
+[
+"chrome",
+"canvas look",
+3
+],
+[
+"bulk edits",
+"glyph patch",
+3
+],
+[
+"tier 4 features",
+"glyph patch",
+3
+],
+[
+"docx reader rv_a5",
+"docx reader tier 4",
+3
+],
+[
+"docx reader tier 4",
+"screenshot hit test",
+3
+],
+[
+"a4 commands",
+"a4 merge",
+3
+],
+[
+"raw event interpretation",
+"docx reader rv_a5",
+3
+],
+[
+"raw event interpretation",
+"chrome",
+3
+],
+[
+"rv a3 interaction",
+"sections",
+3
+],
+[
+"row sequencer",
+"glyph store",
+3
+],
+[
+"glyph unit",
+"row sequencer",
+3
+],
+[
+"docx reader notes",
+"character maps",
+2
+],
+[
+"pointer",
+"key handling",
+2
+],
+[
+"glyph patch",
+"range walker",
+2
+],
+[
+"spell dictionary",
+"tier 4 features",
+2
+],
+[
+"glyph patch",
+"tier 4 features",
+2
+],
+[
+"bank and port wiring",
+"tier3",
+2
+],
+[
+"bank and port wiring",
+"zip container",
+2
+],
+[
+"docx reader tier 3",
+"pictures",
+2
+],
+[
+"pdf writer",
+"notes and balloons",
+2
+],
+[
+"ribbon actions",
+"table of contents",
+2
+],
+[
+"ribbon actions",
+"docx writer tier 3",
+2
+],
+[
+"table of contents",
+"docx writer tier 3",
+2
+],
+[
+"notes and balloons",
+"canvas look",
+2
+],
+[
+"layout and paint",
+"bulk edits",
+2
+],
+[
+"pdf writer",
+"layout and paint",
+2
+],
+[
+"docx reader notes",
+"table of contents",
+2
+],
+[
+"pdf writer",
+"canvas look",
+2
+],
+[
+"docx writer",
+"docx deflate",
+2
+],
+[
+"layout and paint",
+"glyph metrics",
+2
+],
+[
+"line breaking",
+"glyph metrics",
+2
+],
+[
+"pdf writer",
+"glyph metrics",
+2
+],
+[
+"pdf writer",
+"rv a3 interaction",
+2
+],
+[
+"docx reader tier 2",
+"docx reader tier 3",
+2
+],
+[
+"headers and footers",
+"a4 pagenum",
+2
+],
+[
+"docx reader tier 4",
+"docx reader notes",
+2
+],
+[
+"pointer",
+"png reader",
+2
+],
+[
+"pointer",
+"docx crc",
+2
+],
+[
+"edit primitives",
+"docx reader tier 4",
+2
+],
+[
+"undo",
+"key handling",
+2
+],
+[
+"range walker",
+"undo",
+2
+],
+[
+"find across paragraphs",
+"key handling",
+2
+],
+[
+"clipboard formatting",
+"pointer",
+2
+],
+[
+"ribbon actions",
+"find and replace",
+2
+],
+[
+"ribbon actions",
+"layout and paint",
+2
+],
+[
+"docx crc",
+"pictures",
+2
+],
+[
+"pdf writer",
+"shared control registers",
+2
+],
+[
+"tier 4 features",
+"docx reader",
+2
+],
+[
+"tier 2",
+"paste",
+2
+],
+[
+"tables",
+"edit primitives",
+2
+],
+[
+"zip container",
+"tables",
+2
+],
+[
+"pdf tables",
+"pdf writer",
+2
+],
+[
+"pdf tables",
+"shared control registers",
+2
+],
+[
+"pictures",
+"shared control registers",
+2
+],
+[
+"pictures",
+"pointer",
+2
+],
+[
+"notes and balloons",
+"key handling",
+2
+],
+[
+"notes and balloons",
+"chrome",
+2
+],
+[
+"docx writer tier 3",
+"tier 4 features",
+2
+],
+[
+"docx reader notes",
+"sections",
+2
+],
+[
+"docx reader notes",
+"screenshot hit test",
+2
+],
+[
+"canvas look",
+"shared control registers",
+2
+],
+[
+"a4 docx",
+"docx writer tier 3",
+2
+],
+[
+"a4 tabs",
+"pdf writer",
+2
+],
+[
+"a4 tabs",
+"tier 4 features",
+2
+],
+[
+"a4 ruler",
+"range walker",
+2
+],
+[
+"a4 merge",
+"edit primitives",
+2
+],
+[
+"docx reader rv_a5",
+"pictures",
+2
+],
+[
+"docx reader rv_a5",
+"spell dictionary",
+2
+],
+[
+"rv a3 interaction",
+"find and replace",
+2
+],
+[
+"docx crc",
+"file output command",
+2
+],
+[
+"pdf writer",
+"file output command",
+2
+],
+[
+"docx deflate",
+"docx writer",
+2
+],
+[
+"raw event interpretation",
+"zoom",
+2
+],
+[
+"screenshot hit test",
+"a4 commands",
+2
+],
+[
+"raw event interpretation",
+"screenshot hit test",
+2
+],
+[
+"paste",
+"bulk edits",
+2
+],
+[
+"docx writer",
+"rv a3 interaction",
+2
+],
+[
+"compiled control",
+"screen check",
+2
+],
+[
+"docx reader rv_a5",
+"pdf writer",
+2
+],
+[
+"pictures",
+"docx reader tier 2",
+2
+],
+[
+"raw event interpretation",
+"png reader",
+2
+],
+[
+"docx reader rv_a5",
+"notes and balloons",
+2
+],
+[
+"key handling",
+"undo",
+2
+],
+[
+"docx reader rv_a5",
+"undo",
+2
+],
+[
+"event dispatch",
+"pointer",
+1
+],
+[
+"screenshot hit test",
+"range walker",
+1
+],
+[
+"glyph network",
+"paste",
+1
+],
+[
+"glyph patch",
+"bulk edits",
+1
+],
+[
+"layout and paint",
+"ribbon actions",
+1
+],
+[
+"bank and port wiring",
+"pdf tables",
+1
+],
+[
+"key handling",
+"docx writer tier 3",
+1
+],
+[
+"notes and balloons",
+"docx reader notes",
+1
+],
+[
+"layout and paint",
+"a4 docx",
+1
+],
+[
+"zip container",
+"a4 pagenum",
+1
+],
+[
+"a4 pagenum",
+"docx reader rv_a5",
+1
+],
+[
+"event dispatch",
+"rv a3 interaction",
+1
+],
+[
+"chrome",
+"edit primitives",
+1
+],
+[
+"key handling",
+"paste",
+1
+],
+[
+"docx reader notes",
+"docx writer",
+1
+],
+[
+"pdf writer",
+"docx reader",
+1
+],
+[
+"docx reader notes",
+"docx deflate",
+1
+],
+[
+"docx reader notes",
+"docx reader tier 4",
+1
+],
+[
+"pdf writer",
+"tier 2",
+1
+],
+[
+"docx reader notes",
+"tier 2",
+1
+],
+[
+"pdf writer",
+"tables",
+1
+],
+[
+"docx reader tier 4",
+"zip container",
+1
+],
+[
+"edit primitives",
+"pictures",
+1
+],
+[
+"docx reader notes",
+"docx writer tier 3",
+1
+],
+[
+"docx reader notes",
+"a4 keep",
+1
+],
+[
+"docx writer",
+"a4 borders",
+1
+],
+[
+"docx reader tier 2",
+"a4 docx",
+1
+],
+[
+"a4 tabs",
+"a4 ruler",
+1
+],
+[
+"tier 2",
+"docx reader rv_a5",
+1
+],
+[
+"pdf writer",
+"docx reader rv_a5",
+1
+],
+[
+"key handling",
+"line breaking",
+1
+],
+[
+"layout and paint",
+"tier 4 features",
+1
+],
+[
+"bank and port wiring",
+"a4 commands",
+1
+],
+[
+"pointer",
+"screen check",
+1
+],
+[
+"pdf writer",
+"ribbon actions",
+1
+],
+[
+"tier 2",
+"docx reader notes",
+1
+],
+[
+"docx reader tier 2",
+"a4 pagenum",
+1
+],
+[
+"glyph network",
+"spell dictionary",
+1
+],
+[
+"event dispatch",
+"compiled control",
+1
+],
+[
+"glyph metrics",
+"line breaking",
+1
+],
+[
+"glyph network",
+"notes and balloons",
+1
+],
+[
+"glyph patch",
+"pointer",
+1
+],
+[
+"pointer",
+"ribbon display list",
+1
+],
+[
+"pointer",
+"range walker",
+1
+],
+[
+"pointer",
+"pdf writer",
+1
+],
+[
+"pointer",
+"docx reader",
+1
+],
+[
+"key handling",
+"png reader",
+1
+],
+[
+"undo",
+"edit primitives",
+1
+],
+[
+"range walker",
+"key handling",
+1
+],
+[
+"find and replace",
+"range walker",
+1
+],
+[
+"bulk edits",
+"undo",
+1
+],
+[
+"find across paragraphs",
+"paste",
+1
+],
+[
+"spell dictionary",
+"bank and port wiring",
+1
+],
+[
+"chrome",
+"zoom",
+1
+],
+[
+"ribbon actions",
+"pointer",
+1
+],
+[
+"ribbon actions",
+"edit primitives",
+1
+],
+[
+"docx writer",
+"layout and paint",
+1
+],
+[
+"pdf writer",
+"pointer",
+1
+],
+[
+"tables",
+"pointer",
+1
+],
+[
+"sections",
+"ribbon actions",
+1
+],
+[
+"sections",
+"screenshot hit test",
+1
+],
+[
+"sections",
+"key handling",
+1
+],
+[
+"zip container",
+"sections",
+1
+],
+[
+"zip container",
+"pointer",
+1
+],
+[
+"docx reader tier 3",
+"shared control registers",
+1
+],
+[
+"docx reader tier 3",
+"screenshot hit test",
+1
+],
+[
+"pdf tables",
+"a4 borders",
+1
+],
+[
+"pictures",
+"screenshot hit test",
+1
+],
+[
+"pictures",
+"canvas look",
+1
+],
+[
+"pictures",
+"key handling",
+1
+],
+[
+"notes and balloons",
+"edit primitives",
+1
+],
+[
+"table of contents",
+"range walker",
+1
+],
+[
+"table of contents",
+"ribbon actions",
+1
+],
+[
+"docx writer tier 3",
+"layout and paint",
+1
+],
+[
+"docx reader notes",
+"tables",
+1
+],
+[
+"canvas look",
+"notes and balloons",
+1
+],
+[
+"a4 borders",
+"pdf writer",
+1
+],
+[
+"a4 ruler",
+"rv a3 interaction",
+1
+],
+[
+"a4 ruler",
+"ribbon actions",
+1
+],
+[
+"a4 pagenum",
+"rv a3 interaction",
+1
+],
+[
+"a4 pagenum",
+"ribbon actions",
+1
+],
+[
+"rv a3 interaction",
+"line breaking",
+1
+],
+[
+"rv a3 interaction",
+"a4 ruler",
+1
+],
+[
+"screenshot hit test",
+"rv a3 interaction",
+1
+],
+[
+"paste",
+"pointer",
+1
+],
+[
+"line breaking",
+"a4 keep",
+1
+],
+[
+"docx reader tier 3",
+"docx reader rv_a5",
+1
+],
+[
+"screenshot hit test",
+"zoom",
+1
+],
+[
+"zoom",
+"tier 2",
+1
+],
+[
+"ribbon actions",
+"key handling",
+1
+],
+[
+"tables",
+"canvas look",
+1
+],
+[
+"docx writer tier 3",
+"sections",
+1
+],
+[
+"a4 pagenum",
+"screenshot hit test",
+1
+],
+[
+"docx reader rv_a5",
+"a4 pagenum",
+1
+],
+[
+"screenshot hit test",
+"a4 ruler",
+1
+],
+[
+"paste",
+"tier 4 features",
+1
+],
+[
+"find across paragraphs",
+"screenshot hit test",
+1
+],
+[
+"clipboard formatting",
+"range walker",
+1
+],
+[
+"clipboard formatting",
+"screenshot hit test",
+1
+],
+[
+"line breaking",
+"rv a3 interaction",
+1
+],
+[
+"zoom",
+"pictures",
+1
+],
+[
+"pictures",
+"docx deflate",
+1
+],
+[
+"docx reader notes",
+"notes and balloons",
+1
+],
+[
+"a4 pagenum",
+"key handling",
+1
+],
+[
+"docx reader rv_a5",
+"paste",
+1
+],
+[
+"key handling",
+"a4 pagenum",
+1
+],
+[
+"layout and paint",
+"sections",
+1
+],
+[
+"line breaking",
+"docx reader tier 4",
+1
+],
+[
+"a4 pagenum",
+"pdf writer",
+1
+],
+[
+"raw event interpretation",
+"find and replace",
+1
+],
+[
+"screenshot hit test",
+"ribbon actions",
+1
+],
+[
+"paste",
+"range walker",
+1
+],
+[
+"paste",
+"key handling",
+1
+],
+[
+"line breaking",
+"notes and balloons",
+1
+],
+[
+"pdf writer",
+"a4 tabs",
+1
+],
+[
+"tables",
+"a4 commands",
+1
+],
+[
+"pointer",
+"layout and paint",
+1
+],
+[
+"raw event interpretation",
+"tier 4 features",
+1
+],
+[
+"docx reader notes",
+"zip container",
+1
+],
+[
+"a4 pagenum",
+"docx reader tier 2",
+1
+],
+[
+"key handling",
+"zoom",
+1
+],
+[
+"docx reader rv_a5",
+"a4 commands",
+1
+],
+[
+"a4 commands",
+"a4 pagenum",
+1
+],
+[
+"raw event interpretation",
+"event dispatch",
+1
+],
+[
+"layout and paint",
+"pointer",
+1
+],
+[
+"compiled control",
+"event dispatch",
+1
+],
+[
+"key handling",
+"headers and footers",
+1
+],
+[
+"raw event interpretation",
+"tier 2",
+1
+],
+[
+"key handling",
+"find and replace",
+1
+],
+[
+"raw event interpretation",
+"paste",
+1
+],
+[
+"docx reader rv_a5",
+"table of contents",
+1
+],
+[
+"key handling",
+"docx reader rv_a5",
+1
+],
+[
+"glyph patch",
+"glyph patch",
+1
+],
+[
+"docx reader",
+"rv a3 interaction",
+1
+],
+[
+"glyph pixel records",
+"glyph unit",
+1
+],
+[
+"row sequencer",
+"glyph unit",
+1
+]
+],
+"ports": [
+[
+"bank and port wiring",
+"memory read",
+12
+],
+[
+"bank and port wiring",
+"memory write",
+9
+],
+[
+"bank and port wiring",
+"screen rectangle",
+5
+],
+[
+"glyph unit",
+"screen patch",
+4
+],
+[
+"glyph unit",
+"memory write",
+3
+],
+[
+"shared control registers",
+"memory read",
+2
+],
+[
+"pointer",
+"screen and memory copy",
+2
+],
+[
+"screenshot hit test",
+"memory read",
+2
+],
+[
+"screenshot hit test",
+"memory write",
+2
+],
+[
+"docx writer",
+"memory write",
+2
+],
+[
+"png reader",
+"memory write",
+2
+],
+[
+"docx deflate",
+"memory read",
+2
+],
+[
+"glyph unit",
+"memory read",
+2
+],
+[
+"glyph pixel records",
+"memory write",
+2
+],
+[
+"bank and port wiring",
+"screen and memory copy",
+1
+],
+[
+"bank and port wiring",
+"screen pixel read",
+1
+],
+[
+"bank and port wiring",
+"style read",
+1
+],
+[
+"coverage",
+"glyph call",
+1
+],
+[
+"glyph patch",
+"glyph call",
+1
+],
+[
+"ribbon display list",
+"memory read",
+1
+],
+[
+"paste",
+"memory write",
+1
+],
+[
+"spell dictionary",
+"memory read",
+1
+],
+[
+"docx writer",
+"memory read",
+1
+],
+[
+"pdf writer",
+"memory write",
+1
+],
+[
+"docx reader",
+"memory write",
+1
+],
+[
+"docx deflate",
+"memory write",
+1
+],
+[
+"glyph unit",
+"style read",
+1
+],
+[
+"row sequencer",
+"memory write",
+1
+],
+[
+"style interner",
+"memory read",
+1
+],
+[
+"style interner",
+"memory write",
+1
+]
+],
+"commands": {
+"halt": "bank and port wiring",
+"chold": "raw event interpretation",
+"clipout": "bank and port wiring",
+"fileout": "file output command",
+"dsave": "docx reader rv_a5",
+"wpic": "png reader",
+"wopen": "docx reader",
+"kbo": "raw event interpretation",
+"ffield": "raw event interpretation",
+"fback": "raw event interpretation",
+"wantp": "range walker",
+"timer": "bank and port wiring",
+"pass_": "raw event interpretation",
+"hold": "raw event interpretation",
+"outbase": "docx crc",
+"namea": "file output command",
+"namen": "file output command"
+},
+"inputs": {
+"ev": [
+"bank and port wiring"
+],
+"keyv": [
+"bank and port wiring"
+]
+},
+"hdr": [
+"L",
+"bank",
+"cb",
+"cb2",
+"cb2max",
+"chold",
+"clipout",
+"dict",
+"dsave",
+"e",
+"ev",
+"fback",
+"ffield",
+"file",
+"fileout",
+"fmax",
+"halt",
+"hold",
+"kbmax",
+"kbo",
+"kbq",
+"kbv",
+"keyl",
+"keyv",
+"n",
+"n1",
+"namea",
+"namen",
+"nb",
+"ni",
+"nports",
+"nt",
+"outbase",
+"pass_",
+"pdfout",
+"saveout",
+"screenbad",
+"timer",
+"wantp",
+"wopen",
+"wpic",
+"zn"
+]
+}

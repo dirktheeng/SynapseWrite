@@ -262,9 +262,9 @@ _A=glyph_unit.A
 _face=net.wire(); _sz=net.wire(); _ppem=net.wire(); _pt=net.wire(); _fg=net.wire(); _bg=net.wire(); _base=net.wire(); g_nc=Bus(net); g_fx=Bus(net); g_fc=Bus(net)
 for f_ in FACES: net.connect(_face,FH[f_]*FACES.index(f_))
 net.connect(_face,g_fx.w)
-_facef=net.wire(); net.connect(_facef,_face-net.gate(_face,_xuk)+_xno*XFT)
+_gdr=net.step(g_draw.w); _facef=net.wire(); net.connect(_facef,net.gate(_face,_gdr)-net.gate(_face,_xuk)+_xno*XFT)   # measuring needs neither of these, so they wake only to draw
 for k_,ln_ in _xfl.items(): net.connect(_facef,net.and_(ln_,_xhb)*XF[k_])
-_gch=net.wire(); net.connect(_gch,g_ch.w-net.gate(g_ch.w-128-G_(_xlow,_xhb),_xuk))
+_gch=net.wire(); net.connect(_gch,net.gate(g_ch.w,_gdr)-net.gate(g_ch.w-128-G_(_xlow,_xhb),_xuk))
 for si,h in enumerate(zoom_sizes(size_hot)):
     px=round(rom.SZ[si]*96/72); net.connect(_sz,h*si); net.connect(_ppem,h*px); net.connect(_pt,h*rom.SZ[si])
 for j,b_ in enumerate(fg): net.connect(_fg,b_.w*(j+1))
@@ -1182,7 +1182,7 @@ rv_a4_btn.FP=a4fp
 ui.build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,t1_hov,t1_hb,t1_hvo,bstg,t1_prs)
 exec(open('pointer3.py').read())
 exec(open('rv_a11_out.py').read())
-net.group('ribbon display list')
+net.group('compiled control')
 # ---- finish ----
 pat_finish()
 for r in (zxret,a7r,a7sr,a7cr,jret,oret,dret,wret,bret,gret,hret,cret,iret,nrr,frr,t4r,fvr,t4cr,zret,zdr,pfr,pfcr,t2pr,t2rr,t2pp,t2sr,t2ur,pgret,wret_,lret,lbret)+tuple(T3_RETS): r.gen()
@@ -1272,10 +1272,15 @@ ROM_RUNS.append([DLROM,b''.join(int(v_).to_bytes(3,'little') for v_ in a9_rom),3
 raw+=rom_finish(hdr)
 h=json.dumps(hdr,separators=(',',':')).encode()
 blob=struct.pack('<I',len(h))+h+b'\0'*((4-(len(h)+4)%4)%4)+raw
-gz=gzip.compress(blob,9)
+gz=gzip.compress(blob,9,mtime=0)
+if os.environ.get('NETSIZE'):
+    _gz=lambda b_:len(gzip.compress(b_,9,mtime=0))
+    print('size: all',len(gz),'hdr',_gz(h),'streams',_gz(_zb),'wtab',_gz(np.array(wtab,dtype=np.float64).tobytes()),'btab',_gz(np.array(btab,dtype=np.float64).tobytes()),'lstart+ports',_gz(np.array(c['lstart'],dtype=np.int32).tobytes()+np.array(pr,dtype=np.int32).tobytes()),file=sys.stderr)
+    print('size: rom',[(hex(a_),len(d_),_gz(d_)) for a_,d_ in [(FROMB,bytes(PF_ROM)),(LITROM,bytes(_litb))]+[(a_,d_) for a_,d_,w_ in ROM_RUNS]],'bank_init cells',len(hdr['bank_init']),file=sys.stderr)
+    print('size: stream raw',[len(z_) for z_ in _streams],'gz',[_gz(z_) for z_ in _streams],file=sys.stderr)
 if os.environ.get('NETSTAT'):
-    import rv_a8_fmt; _a8b,_=rv_a8_fmt.encode(c,pr); print('a8 encoder gz',len(gzip.compress(_a8b,9)),'fonts encoder gz',len(gzip.compress(raw[:len(raw)-sum(len(d) for a,d,w in [[0,bytes(PF_ROM),1],[0,bytes(_litb),1]]+ROM_RUNS)],9)),file=sys.stderr)
-    print({k_:(len(v_),len(gzip.compress(v_,6))) for k_,v_ in zip('ist ost act bias i0 i1 i2 i3 iw d1 d2 wz'.split(),_streams)},'wtab',len(wtab),'btab',len(btab),'hdr',len(h),file=sys.stderr)
+    import rv_a8_fmt; _a8b,_=rv_a8_fmt.encode(c,pr); print('a8 encoder gz',len(gzip.compress(_a8b,9,mtime=0)),'fonts encoder gz',len(gzip.compress(raw[:len(raw)-sum(len(d) for a,d,w in [[0,bytes(PF_ROM),1],[0,bytes(_litb),1]]+ROM_RUNS)],9)),file=sys.stderr)
+    print({k_:(len(v_),len(gzip.compress(v_,6,mtime=0))) for k_,v_ in zip('ist ost act bias i0 i1 i2 i3 iw d1 d2 wz'.split(),_streams)},'wtab',len(wtab),'btab',len(btab),'hdr',len(h),file=sys.stderr)
 exec(open('a12_dbg.py').read())
 open('../build/net.bin.gz','wb').write(gz)
 exec(open('rv_a11_prov.py').read())

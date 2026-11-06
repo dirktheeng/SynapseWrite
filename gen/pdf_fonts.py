@@ -25,12 +25,13 @@ def _name(fi,bo,it):
 def face_blob(i,fi,bo,it,first):
     """The three PDF objects of one face, numbered first, first+1, first+2. Returns the bytes and the offsets of the last two."""
     w,st=(700 if bo else 400),('italic' if it else 'normal')
-    f=TTFont(io.BytesIO(rom._load(rom.FAM[fi],'latin',w,st)))
+    f=TTFont(io.BytesIO(rom._load(rom.FAM[fi],'latin',w,st)),recalcTimestamp=False)
     want=set(WANT.values())|{0x2022}
-    o=subset.Options();o.hinting=False;o.layout_features=[];o.name_IDs=[1];o.notdef_outline=True;o.drop_tables+=['GSUB','GPOS','GDEF','kern','meta','DSIG','FFTM']
+    o=subset.Options();o.hinting=False;o.layout_features=[];o.name_IDs=[1];o.notdef_outline=True;o.drop_tables+=['GSUB','GPOS','GDEF','kern','meta','DSIG','FFTM','name','OS/2','gasp','prep','fpgm','cvt ']
     s=subset.Subsetter(o);s.populate(unicodes=sorted(want&set(f.getBestCmap())));s.subset(f)
     rest=want-set(f.getBestCmap())
-    if rest: _graft(f,TTFont(io.BytesIO(rom._load(rom.FAM[fi],'latin-ext',w,st))),rest,o)
+    if rest: _graft(f,TTFont(io.BytesIO(rom._load(rom.FAM[fi],'latin-ext',w,st)),recalcTimestamp=False),rest,o)
+    f['post'].formatType=3.0
     b=io.BytesIO();f.save(b);ttf=b.getvalue();zd=zlib.compress(ttf,9)
     upm=f['head'].unitsPerEm;cm=f.getBestCmap();hm=f['hmtx'];k=1000/upm
     wd=[round(hm[cm[WANT[c]]][0]*k) if c in WANT and WANT[c] in cm else 0 for c in range(32,256)]
@@ -48,12 +49,13 @@ def ext_blob(i,v,p,first):
     for l,(sub,g) in m.items():
         if sub not in subs: subs.append(sub)
     f=TTFont(io.BytesIO(rom._load(rom.FAM[0],subs[0] if subs else 'latin',w,st)))
-    o=subset.Options();o.hinting=False;o.layout_features=[];o.name_IDs=[1];o.notdef_outline=True;o.drop_tables+=['GSUB','GPOS','GDEF','kern','meta','DSIG','FFTM']
+    o=subset.Options();o.hinting=False;o.layout_features=[];o.name_IDs=[1];o.notdef_outline=True;o.drop_tables+=['GSUB','GPOS','GDEF','kern','meta','DSIG','FFTM','name','OS/2','gasp','prep','fpgm','cvt ']
     us={p+l for l in m}; s=subset.Subsetter(o);s.populate(unicodes=sorted(us&set(f.getBestCmap())));s.subset(f)
     rest=us-set(f.getBestCmap())
     for sub in subs[1:]:
         q=rest&set(TTFont(io.BytesIO(rom._load(rom.FAM[0],sub,w,st))).getBestCmap())
         if q: _graft(f,TTFont(io.BytesIO(rom._load(rom.FAM[0],sub,w,st))),q,o); rest-=q
+    f['post'].formatType=3.0
     b=io.BytesIO();f.save(b);ttf=b.getvalue();zd=zlib.compress(ttf,9)
     upm=f['head'].unitsPerEm;cm=f.getBestCmap();hm=f['hmtx'];k=1000/upm
     wd=[round(hm[cm[p+l]][0]*k) if p+l in cm else 0 for l in range(128)]
