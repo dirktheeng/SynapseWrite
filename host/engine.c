@@ -8,23 +8,27 @@ extern u8 __heap_base; static u8* hp=&__heap_base;
 __attribute__((export_name("alloc"))) void* alloc(i32 n){u8*p=(u8*)(((unsigned long)hp+15)&~15ul);hp=p+n;
   unsigned long need=((unsigned long)hp+65535)/65536, have=__builtin_wasm_memory_size(0);
   if(need>have)__builtin_wasm_memory_grow(0,need-have); return p;}
-static u8*dz,*wz; static i32 *stamp,tickno=1; static i32 *istart,*isrc; static u16 *iwi,*wi; static f64 *wtab; static i32 NI;
+static u8*zb; static f64*btab; static i32 *stamp,tickno=1; static i32 *istart,*isrc; static u16 *iwi,*wi; static f64 *wtab; static i32 NI;
 static i32 N,E,L,NP,NT; static u8*act; static f64*bias,*v,*acc,*nacc; static i32*ostart,*osplit,*dst;
 static i32*lstart,*live,*nlist,*ports,*pen,*pptr,*live2,*nlist2; static u8*nflag; static i32 nlive,nnext,nlive2,nnext2,N1,D; static i32 pb[2][3]; static u64*bits,*sum; static i32 SWORDS,sw0[2],sw1[2];
 static f32*bank; static u8*fb; enum{W=1280,H=800,YB=4096};
-__attribute__((export_name("setup"))) void setup(i32 n,i32 e,i32 l,i32 np,i32 banksize,i32 ni,i32 nt,i32 dn,i32 wn,i32 n1){N1=n1;dz=alloc(dn+1);wz=alloc(wn+1);N=n;E=e;L=l;NP=np;NI=ni;NT=nt;istart=alloc(4*(n+1));isrc=alloc(4*ni+4);iwi=alloc(2*ni+2);wtab=alloc(8*nt+8);
+__attribute__((export_name("setup"))) void setup(i32 n,i32 e,i32 l,i32 np,i32 banksize,i32 ni,i32 nt,i32 nb,i32 zn,i32 n1){N1=n1;N=n;E=e;L=l;NP=np;NI=ni;NT=nt;istart=alloc(4*(n+1));isrc=alloc(4*ni+4);iwi=alloc(2*ni+2);wtab=alloc(8*nt+8);btab=alloc(8*nb+8);
  act=alloc(n);bias=alloc(8*n);v=alloc(8*n);acc=alloc(8*n);nacc=alloc(8*n);ostart=alloc(4*(n+1));osplit=alloc(4*n);dst=alloc(4*e+4);wi=alloc(2*e+2);
  stamp=alloc(4*n);lstart=alloc(4*(l+1));live=alloc(4*n);nlist=alloc(4*n);live2=alloc(4*(n-n1+1));nlist2=alloc(4*(n-n1+1));nflag=alloc(n);bits=alloc(8*(n/64+2));SWORDS=n/4096+2;sum=alloc(8*SWORDS);sw0[0]=0;sw1[0]=n1/4096+1;sw0[1]=n1/4096;sw1[1]=SWORDS;
- ports=alloc(4*np);pen=alloc(4*np);pptr=alloc(4*np);bank=alloc(4*banksize);fb=alloc(W*H*4);}
+ ports=alloc(4*np);pen=alloc(4*np);pptr=alloc(4*np);fb=alloc(W*H*4);bank=alloc(4*banksize);zb=alloc(zn+4);}
 #define PTR(name,x) __attribute__((export_name(name))) void* x##_p(void){return x;}
-PTR("p_dz",dz)PTR("p_wz",wz)PTR("p_istart",istart)PTR("p_isrc",isrc)PTR("p_iwi",iwi)PTR("p_wtab",wtab)PTR("p_act",act)PTR("p_bias",bias)PTR("p_ostart",ostart)PTR("p_lstart",lstart)PTR("p_ports",ports)PTR("p_bank",bank)PTR("p_fb",fb)PTR("p_v",v)
-// Sizes and targets arrive delta coded so the weight file compresses; this restores them.
-// Each neuron's targets ascend, so its recurrent targets come first. Ports are indexed by enable.
+PTR("p_zb",zb)PTR("p_wtab",wtab)PTR("p_btab",btab)PTR("p_lstart",lstart)PTR("p_ports",ports)PTR("p_bank",bank)PTR("p_fb",fb)PTR("p_v",v)
+// The weight file holds variable length integer streams, so that it compresses; this restores the arrays.
+// Sizes, then sources of lazy inputs (delta per input position, pull flag in the low bit), then push targets
+// (first target delta from the previous neuron's first target, others ascending), weight and bias indices.
+static inline unsigned rv(u8**p){unsigned x=0;i32 s=0;u8 b;do{b=*(*p)++;x|=(unsigned)(b&127)<<s;s+=7;}while(b&128);return x;}
+static inline i32 uz(unsigned x){return (i32)(x>>1)^-(i32)(x&1);}
 __attribute__((export_name("finish"))) void finish(void){
- for(i32 i=0;i<N;i++){istart[i+1]+=istart[i];ostart[i+1]+=ostart[i];}
- {u8*d=dz,*w_=wz;for(i32 k=0;k<E;k++){i32 x=*d++;if(x==255){__builtin_memcpy(&x,d,4);d+=4;}dst[k]=x;u16 y=*w_++;if(y==255){__builtin_memcpy(&y,w_,2);w_+=2;}wi[k]=y;}}
+ u8*p_=zb;unsigned ln[12];__builtin_memcpy(ln,p_,48);u8*S[12];u8*q0=p_+48;for(i32 k=0;k<12;k++){S[k]=q0;q0+=ln[k];}
+ for(i32 i=0;i<N;i++){istart[i+1]=istart[i]+rv(&S[0]);ostart[i+1]=ostart[i]+rv(&S[1]);act[i]=*S[2]++;bias[i]=btab[rv(&S[3])];}
+ {i32 pv[4]={0,0,0,0};for(i32 i=0;i<N;i++)for(i32 q=istart[i],e=istart[i+1];q<e;q++){i32 c=q-istart[i];if(c>3)c=3;unsigned x=rv(&S[4+c]);pv[c]+=uz(x>>1);isrc[q]=x&1?~pv[c]:pv[c];iwi[q]=(u16)rv(&S[8]);}}
+ {i32 pf=0;for(i32 i=0;i<N;i++){i32 s=ostart[i],e=ostart[i+1];if(s<e){pf+=uz(rv(&S[9]));dst[s]=pf;wi[s]=(u16)rv(&S[11]);for(i32 k=s+1;k<e;k++){dst[k]=dst[k-1]+(i32)rv(&S[10]);wi[k]=(u16)rv(&S[11]);}}}}
  for(i32 l=0;l<L;l++)for(i32 i=lstart[l];i<lstart[l+1];i++){i32 s=ostart[i],e=ostart[i+1],end=lstart[l+1],q=s;
-  for(i32 k=s+1;k<e;k++)dst[k]+=dst[k-1];
   while(q<e&&dst[q]<end)q++; osplit[i]=q;}
  // Ports are grouped by clock domain, writes first. A port of kind 9 marks the start of domain 1.
  i32 c=0;for(i32 d=0;d<2;d++)for(i32 pass=0;pass<2;pass++){i32*p=ports,*e=ports+NP;i32 cd=0;pb[d][pass]=c;

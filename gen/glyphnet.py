@@ -26,8 +26,8 @@ DP=8.0        # stem shift registers carry shift+DP
 AO=256.0      # accent shift registers carry shift+AO
 HDR=5         # store block header: key+1, rows, cells, x origin, top
 OFF=64        # offset of header values that may be negative
-QUANT=4.0     # outline vertices are kept to a quarter of a font unit
-TOL_PX,TOL_PPEM=0.1,48   # flatness: a tenth of a pixel at 36 pt
+GRID_EM=1024  # outline vertices are kept on a grid of 1/1024 em (the same weights recur, and the file compresses)
+TOL_PX,TOL_PPEM=0.15,48   # flatness: 0.15 pixel at 36 pt
 K=4           # sample lines per pixel row
 def tol_em(): return TOL_PX/TOL_PPEM
 class Flat(BasePen):
@@ -50,11 +50,11 @@ class Flat(BasePen):
             s.cs[-1].append(tuple(u**3*a[k]+3*u*u*t*c1[k]+3*u*t*t*c2[k]+t**3*p[k] for k in (0,1)))
     def _closePath(s): pass
     def _endPath(s): pass
-def merge(c,tol):
+def merge(c,tol,quant):
     "Removes a vertex that lies on the line through its neighbours, within tol."
     q=[]
     for p in c:
-        p=(round(p[0]*QUANT)/QUANT,round(p[1]*QUANT)/QUANT)
+        p=(round(p[0]*quant)/quant,round(p[1]*quant)/quant)
         if not q or q[-1]!=p: q.append(p)
     if len(q)>1 and q[0]==q[-1]: q.pop()
     ch=True
@@ -78,7 +78,7 @@ def named(fi,bo,it,sub,name):
     f=rom.tt(fi,bo,it,sub); gs=f.getGlyphSet(); upm=f['head'].unitsPerEm; t_=tol_em()*upm
     p=Flat(gs,t_); gs[name].draw(p); out=[]
     for c in p.cs:
-        m=merge(c,t_/8)
+        m=merge(c,t_/8,GRID_EM/upm)
         if len(m)>=3: out.append([(a/upm,b/upm) for a,b in m])
     _NC[key]=out; return out
 def src(fi,bo,it,code):
@@ -164,15 +164,15 @@ def _shift_weights(xm,st):
     if xm>=pts[-1][0]: return [(pts[-1][1],pts[-1][2],1.0)]
     for a,b in zip(pts,pts[1:]):
         if a[0]<=xm<=b[0] and b[0]>a[0]:
-            t=round((xm-a[0])/(b[0]-a[0])*16)/16
+            t=round((xm-a[0])/(b[0]-a[0])*8)/8
             return [(u_,e_,w_) for u_,e_,w_ in ((a[1],a[2],1-t),(b[1],b[2],t)) if w_]
     return []
-SLOPE_BITS=11
+SLOPE_BITS=9
 def q_slope(m):
     "Keeps a fixed number of significant bits so that slopes share the engine's weight dictionary."
     if m==0: return 0.0
     e=math.floor(math.log2(abs(m))); return round(m/2**(e-SLOPE_BITS))*2**(e-SLOPE_BITS)
-GRID_X=8192
+GRID_X=GRID_EM
 def structure(fi,bo,it,codes):
     """How each code of one face is made, from the font's own composite data: {code:[(program key,dx,dy)]}.
     Two components without a transform, the first in place, make base + accent. Anything else is drawn whole.
@@ -241,7 +241,7 @@ class GlyphUnit:
         net.rec(brows,brows-brun+net.gate(H[1],start))
         net.rec(baddr,baddr-net.relu(baddr+fin*M-M)+net.gate(tag+g.STORE+HDR,start)+net.gate(bcells,brun))
         bpx=L(Lx-H[3]+OFF+OFF,start)
-        net.rec(bpy,bpy-net.relu(bpy+fin*M-M)+net.gate(Ly-H[4]+OFF,start)+bwr)
+        net.rec(bpy,bpy-net.relu(bpy+fin*M-M)+net.gate(Ly-H[4]+OFF,start)+bwr-blast)
         net.rec(bwr,brun); net.rec(blast,lastt)
         net.connect(fin,net.step(blast+empty))
         g.fin=fin
@@ -496,7 +496,7 @@ class GlyphUnit:
         if Y>=A[-1][0]: return A[-1][1]+s*(Y-A[-1][0])
         for (a,ka),(b,kb) in zip(A,A[1:]):
             if a<=Y<=b:
-                t=round((Y-a)/(b-a)*8192)/8192
+                t=round((Y-a)/(b-a)*256)/256
                 return ka*(1-t)+kb*t
     def _glyph(g,k,P,slots,aslots,kn,s,y,bc,bh,uen,sx,done,ax,ay,lf):
         net=g.net; E=P['E']; fm=P['fm']; st=P['st']; accp=P['acc']; raw=P['raw'] or fm is None
@@ -514,26 +514,8 @@ class GlyphUnit:
             elif raw: ex=y-s*yk
             else: ex=y-g._ymap(fm,yk,s,kn)
             net.connect(n,ex); dy[yk]=n-YP
-        idx={yk:i for i,yk in enumerate(keys)}
-        ls=net.step(gr*M-M+dy[keys[0]]); rt=net.step(ls*M-M-dy[keys[-1]])
-        nodes={}
-        def build(a,b,en):
-            nodes[a,b]=en
-            if b-a<=1: return
-            m=(a+b)//2
-            up=net.step(en*M-M+dy[keys[m]]); dn_=net.step(en-up-0.5)
-            build(m,b,up); build(a,m,dn_)
-        build(0,len(keys)-1,rt)
-        attach={}
-        def place(i0,i1,a,b,i):
-            if i0<=a and b<=i1: attach.setdefault((a,b),[]).append(i); return
-            m=(a+b)//2
-            if i0<m: place(i0,i1,a,m,i)
-            if i1>m: place(i0,i1,m,b,i)
-        for i,e in enumerate(E): place(idx[e[0]],idx[e[2]],0,len(keys)-1,i)
-        en_of=[X() for _ in E]
-        for ab,L_ in attach.items():
-            for i in L_: en_of[i]=en_of[i]+nodes[ab]
+        # one threshold per outline height: an edge is live between the thresholds of its two ends
+        ge={yk:net.step(gr*M-M+dy[yk]) for yk in keys}
         sl_=aslots if accp else slots
         for i,e in enumerate(E):
             Y0,X0,Y1,X1,sg=e
@@ -544,7 +526,7 @@ class GlyphUnit:
                 r_=(g.dL if side==0 else g.dR)[u]
                 ex=ex+(r_-DP)*wt
             ex=ex+PAD
-            net.connect(sl_[sg][P['sl'][i]],net.relu(ex+en_of[i]*M-M))
+            net.connect(sl_[sg][P['sl'][i]],net.relu(ex+(ge[Y0]-ge[Y1])*M-M))
         g.stats['edges']+=len(E); g.stats['knots']+=len(keys); g.stats['programs']+=1; g.stats['accent_programs']+=1 if accp else 0
 GAMMA_K=(1.32,0.35,0.09,0.06)
 GRIDW=(136,68,34,17,5)

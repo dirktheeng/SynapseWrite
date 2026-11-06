@@ -1011,40 +1011,43 @@ for p in _ports:
     elif r[0]==7: pr+=[7,new[nid(r[1])],new[nid(r[2])],new[nid(r[3])]]+list(r[4:])
     elif r[0]==5: pr+=[5,new[nid(r[1])],new[nid(r[2])],new[nid(r[3])]]
 import numpy as np
-n=c['n'];ost=np.zeros(n+1,dtype=np.int32);
-dst=[];ww_=[]
+n=c['n']
+def _var(vals):
+    o=bytearray()
+    for x_ in vals:
+        while x_>=128: o.append((x_&127)|128); x_>>=7
+        o.append(x_)
+    return bytes(o)
+_zz=lambda x_:(x_<<1) if x_>=0 else ((-x_)<<1)-1
+ww_=[];iww=[]
 for i in range(n):
-    o=sorted(c['out'][i]); ost[i+1]=len(o)      # sizes, ascending targets, delta coded
-    prev=0
-    for d,w_ in o: dst.append(d-prev);prev=d;ww_.append(w_)
-ist=np.zeros(n+1,dtype=np.int32);isr=[];iww=[]
-for i in range(n):
-    ist[i+1]=len(c['lazy'][i])
-    for j_,w_ in c['lazy'][i]: isr.append(j_);iww.append(w_)
+    c['out'][i]=sorted(c['out'][i]); ww_+=[w_ for _d,w_ in c['out'][i]]; iww+=[w_ for _j,w_ in c['lazy'][i]]
 import collections
 _wc=collections.Counter(ww_)+collections.Counter(iww)
-wtab=sorted(_wc,key=lambda w_:(-_wc[w_],w_)); wix={w_:k_ for k_,w_ in enumerate(wtab)}; assert len(wtab)<65536
-def _pack(vals,big):      # small values one byte, others an escape then fixed width
-    o=bytearray()
-    for v_ in vals:
-        if v_<255: o.append(v_)
-        else: o.append(255); o+=int(v_).to_bytes(big,'little')
-    return bytes(o)
-_dz=_pack(dst,4); _wz=_pack([wix[w_] for w_ in ww_],2)
-hdr=dict(fmax=TAGB-FILE,outbase=new[nid(outbase.w)],dn=len(_dz),wn=len(_wz),pdfout=new[nid(pdfout.w)],ni=len(isr),nt=len(wtab),wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,e=len(dst),L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
+wtab=sorted(_wc,key=lambda w_:(-_wc[w_],w_)); wix={w_:k_ for k_,w_ in enumerate(wtab)}; assert len(wtab)<65536,len(wtab)
+_bc=collections.Counter(c['bias']); btab=sorted(_bc,key=lambda w_:(-_bc[w_],w_)); bix={w_:k_ for k_,w_ in enumerate(btab)}
+_i0,_i1,_i2,_i3=[],[],[],[]; _ipv=[0,0,0,0]; _d1,_d2=[],[]; _pf=0
+for i in range(n):
+    for k_,(j_,w_) in enumerate(c['lazy'][i]):
+        q_=min(k_,3); s_=~j_ if j_<0 else j_; (_i0,_i1,_i2,_i3)[q_].append(_zz(s_-_ipv[q_])*2+(1 if j_<0 else 0)); _ipv[q_]=s_
+    prev_=None
+    for d_,w_ in c['out'][i]:
+        if prev_ is None: _d1.append(_zz(d_-_pf)); _pf=d_
+        else: _d2.append(d_-prev_)
+        prev_=d_
+_streams=[_var(len(c['lazy'][i]) for i in range(n)),_var(len(c['out'][i]) for i in range(n)),bytes(c['act']),_var(bix[w_] for w_ in c['bias']),_var(_i0),_var(_i1),_var(_i2),_var(_i3),_var(wix[w_] for w_ in iww),_var(_d1),_var(_d2),_var(wix[w_] for w_ in ww_)]
+_zb=struct.pack('<12I',*[len(z_) for z_ in _streams])+b''.join(_streams)
+hdr=dict(fmax=TAGB-FILE,outbase=new[nid(outbase.w)],zn=len(_zb),nb=len(btab),pdfout=new[nid(pdfout.w)],ni=len(iww),nt=len(wtab),wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,e=len(ww_),L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
  ev=[new[nid(q)] for q in (ev_kind,ev_a,ev_b,ev_c,ev_t)],cb=CB,cb2=CB2,n1=c['n1'],init=[[new[i],v] for i,v in net.init.items() if not net.dom[i]],init1=[[new[i],v] for i,v in net.init.items() if net.dom[i]],
  bank_init=[*[[SECB+i_,v_] for i_,v_ in enumerate((1,816,PH,PX,TX,TW,96,864))],[LEN+SLOT0,0],[DIRTY+SLOT0,1],[PT,SLOT0],[SLOT0+SAVE,112],[SLOT0+SAVE+1,16],[SLOT0+SAVE+2,1],[SLOT0+PSPA,DEFSPA]]+T2_ROM)
 import os
-dd=np.array(dst,dtype=np.int32)
-raw=b''.join([ist.tobytes(),np.array(isr,dtype=np.int32).tobytes(),np.array([wix[w_] for w_ in iww],dtype=np.uint16).tobytes(),np.array(c['act'],dtype=np.uint8).tobytes(),np.array(c['bias'],dtype=np.float64).tobytes(),ost.tobytes(),_dz,_wz,np.array(c['lstart'],dtype=np.int32).tobytes(),np.array(pr,dtype=np.int32).tobytes(),np.array(wtab,dtype=np.float64).tobytes()])
+raw=b''.join([_zb,np.array(c['lstart'],dtype=np.int32).tobytes(),np.array(pr,dtype=np.int32).tobytes(),np.array(wtab,dtype=np.float64).tobytes(),np.array(btab,dtype=np.float64).tobytes()])
 h=json.dumps(hdr,separators=(',',':')).encode()
 blob=struct.pack('<I',len(h))+h+b'\0'*((4-(len(h)+4)%4)%4)+raw
 gz=gzip.compress(blob,9)
 if os.environ.get('NETSTAT'):
-    secs=dict(ist=ist.tobytes(),isr=np.array(isr,dtype=np.int32).tobytes(),iw=np.array([wix[w_] for w_ in iww],dtype=np.uint16).tobytes(),act=np.array(c['act'],dtype=np.uint8).tobytes(),bias=np.array(c['bias'],dtype=np.float64).tobytes(),ost=ost.tobytes(),dz=_dz,wz=_wz,pr=np.array(pr,dtype=np.int32).tobytes(),wt=np.array(wtab,dtype=np.float64).tobytes(),hdr=h)
-    print({k:(len(v),len(gzip.compress(v,6))) for k,v in secs.items()},file=sys.stderr)
-    import pickle; pickle.dump(dict(ist=ist,isr=isr,iww=iww,act=c['act'],bias=c['bias'],ost=ost,dst=dst,ww=ww_,n=n,new=new,groups={k:[new[i] for i in v] for k,v in net.groups.items()}),open('/tmp/claude-0/net.pkl','wb'))
+    print({k_:(len(v_),len(gzip.compress(v_,6))) for k_,v_ in zip('ist ost act bias i0 i1 i2 i3 iw d1 d2 wz'.split(),_streams)},'wtab',len(wtab),'btab',len(btab),'hdr',len(h),file=sys.stderr)
 open('../build/net.bin.gz','wb').write(gz)
 prov={k:len(v) for k,v in net.groups.items()}
-json.dump(dict(neurons=n,edges=len(dst),layers=c['L'],groups=prov,states=len(fsm.states)),open('../build/provenance.json','w'),indent=1)
-print('lazy',len(isr),'edges',len(dst),'raw',len(blob),'gz',len(gz),file=sys.stderr)
+json.dump(dict(neurons=n,edges=len(ww_),layers=c['L'],groups=prov,states=len(fsm.states)),open('../build/provenance.json','w'),indent=1)
+print('lazy',len(iww),'edges',len(ww_),'raw',len(blob),'gz',len(gz),file=sys.stderr)
