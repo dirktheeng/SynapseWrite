@@ -1019,7 +1019,7 @@ for k_ in range(1,128):
 _re2a={clip0:0,clip1:0,rA:(1262,DOCY,18,VH,(243,242,241),250),rB:(1265,ty_+DOCY+4,12,th,tuple(as_x(205)-net.step(t1_tdrag+net.eq(t1_hov,255,e))*65 for _ in range(3)),255),thumb:ty_+DOCY+4,t1_thh:th}
 on('RE2',(net.and_(ONE-rdm,full,net.or_(zwd,t1_ruler)),'V8_E0',_re2a),(net.and_(zwd,ONE-rdm),'V8_E0',_re2a),(None,'RE3',_re2a))
 # The status bar costs far more than a key's own paint. A fast event repaints it only if something it shows has changed.
-e=S('RE3'); _stk=net.step(pfile)+net.step(pcut)*2+net.step(pfull)*4+net.step(pmsg)*8+trk*16+sp_on*32+net.step(pcpy)*64
+e=S('RE3'); _stk=net.step(pfile)+net.step(pcut)*2+net.step(pfull)*4+net.step(pmsg)*8+trk*16+sp_on*32+net.step(pcpy)*64+net.step(p1wcm)*128   # p1: the word count message
 on('RE3',(net.and_(e,ONE-full,net.eq(pcp,stp,e),net.eq(pagesT,stg,e),net.eq(wtot,stw,e),net.eq(_stk,stm,e)),'FB0',None),(None,'STATUS',{rA:(0,DOCB+1,640,23,PAL_B[3],0),stp:pcp,stg:pagesT,stw:wtot,stm:_stk}))
 # number and text drawing states
 def text_chain(start,items,nxt,y=None,f=1,b=3):
@@ -1050,7 +1050,7 @@ def text_chain(start,items,nxt,y=None,f=1,b=3):
 sb_y=as_x(DOCB+6)
 on('STATUS',(None,'IMP3_ZS0',None))
 text_chain('ST1',['Page ',pcp,' of ',pagesT,'      ',wtot,' words      English (United States)'],'PM0')
-on('PM0',(net.step(pfile),'PMr',None),(net.step(pcut),'PMc',None),(net.step(pcpy),'PMh',None),(net.step(pfull),'PMf',None),(net.step(pmsg),'PMa',None),(None,'T4_ST',None))
+on('PM0',(net.step(p1wcm),'P1_WM',{sx:sx+18}),(net.step(pfile),'PMr',None),(net.step(pcut),'PMc',None),(net.step(pcpy),'PMh',None),(net.step(pfull),'PMf',None),(net.step(pmsg),'PMa',None),(None,'T4_ST',None))
 on('PMf',(None,'PMg',{sx:sx+18}))
 on('PMr',(None,'PMs',{sx:sx+18}))
 text_chain('PMs',['This file could not be opened: it is not a valid document or picture'],'T4_ST')

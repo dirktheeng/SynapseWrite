@@ -4,3 +4,5 @@
 add(2,45,1060,R0,96,RH,'Column Break','P1_CB'); add(2,46,1060,R0+22,96,RH,'Text Wrapping','P1_TW')
 add(1,47,1058,R0+22,92,RH,'Comment','P1_CM'); add(1,48,1058,R0+44,92,RH,'Footnote','T3_C_FN')
 add(5,16,352,R0,94,RH,'Print Layout','IMP3_RX')
+# Insert > Symbol opens a menu of common symbols; Review > Word Count writes the counts into the status bar; Home > Select All.
+add(1,49,1152,R0,90,RH,'Symbol','P1_SY'); add(4,10,480,R0,92,RH,'Word Count','P1_WC'); add(1,50,1152,R0+22,90,RH,'Blank Page','P1_BP')

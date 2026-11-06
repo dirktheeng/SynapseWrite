@@ -10,3 +10,5 @@ p1hi,p1hk,p1hs,p1ho,p1hc,p1fb,p1fi,p1fu,p1fp,p1fc,p1fk,p1fn,p1ff=[R() for _ in r
 p1hm,p1rn,p1pt,p1pb,p1sp,p1d,p1ch,p1vk,p1pc,p1sk,p1nv,p1nf,p1nd,p1rk,p1so,p1fy,p1al,p1j=[R() for _ in range(18)]
 p1c=[R() for _ in range(3)]
 p1lo,p1nk,p1lk,p1li=[R() for _ in range(4)]
+P1_SYX,P1_SYY=1092,87   # Insert > Symbol menu position (gen/p1_menus.py)
+p1wcm=R()   # Review > Word Count message: timer ticks left to show it, as pmsg

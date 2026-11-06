@@ -81,5 +81,20 @@ const yel=(r,g,b)=>r>200&&g>180&&b<170; // match tint
   let A=await lib();A.file(9,zip({'word/document.xml':`<?xml version="1.0"?><w:document ${W}><w:body><w:p><w:r><w:t>above</w:t><w:br w:type="textWrapping"/><w:t>below</w:t></w:r></w:p></w:body></w:document>`}));A.settle();A.shot('build/p1_tw.png');
   const x=xml(A);ok('a file\'s text wrapping break reads as a line break',/above<\/w:t><w:br\/><w:t[^>]*>below/.test(x),(x.match(/<w:body>.*<\/w:body>/)||[''])[0].slice(0,300));
  }
+
+ if(!only||only=='ribbon2'){
+  // Insert > Symbol opens a menu; a row types its symbol
+  let A=await lib();A.type('Sym');A.click(127,47);A.settle();A.click(1190,74);A.settle();A.shot('build/p1_sym.png');const menu=count(A,1092,1242,90,420,(r,g,b)=>r>250&&g>250&&b>250);
+  A.click(1150,87+21*3+10);A.settle();A.click(127,47);A.settle();A.click(1190,74);A.settle();A.click(1150,87+21*0+10);A.settle();let x=xml(A);
+  ok('the symbol menu opens and types the euro and copyright signs',menu>20000&&x.includes('Sym€©'),[menu,(x.match(/<w:t[^>]*>[^<]*/g)||[]).join('|')]);
+  // Review > Word Count writes characters and paragraphs into the status bar until the next key
+  let B=await lib();B.type('one two three');B.key(13);B.type('four');B.settle();const s0=B.hash(777,800);B.click(318,47);B.settle();B.click(520,74);B.settle();B.shot('build/p1_wc.png');const s1=B.hash(777,800);
+  const ink=count(B,262,470,780,798,(r,g,b)=>r<120&&g<120&&b<120);B.key(130);B.settle();
+  ok('Word Count shows its counts in the status bar, gone at the next key',s1!==s0&&ink>80&&B.hash(777,800)===s0,ink);
+  // Insert > Blank Page: a page break, an empty paragraph, a page break; one undo
+  let C=await lib();C.type('before');C.click(127,47);C.settle();C.click(1190,96);C.settle();C.type('after');C.settle();x=xml(C);
+  const ps=(x.match(/<w:p>.*?<\/w:p>/g)||[]);ok('Blank Page makes an empty page between',ps.length===3&&/pageBreakBefore/.test(ps[1])&&/pageBreakBefore/.test(ps[2])&&/after/.test(ps[2])&&!/<w:t/.test(ps[1]),ps.map(p_=>p_.slice(0,160)).join(' || '));
+  let D=await lib();D.type('x');D.click(127,47);D.settle();D.click(1190,96);D.settle();D.key('z',1);D.settle();x=xml(D);ok('Blank Page undoes in one step',(x.match(/<w:p>/g)||[]).length===1&&!/pageBreakBefore/.test(x));
+ }
  const f=R.filter(x=>!x).length;console.log(R.length-f,'passed',f,'failed');process.exit(f?1:0);
 })();
