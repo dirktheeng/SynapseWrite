@@ -45,3 +45,20 @@ Page 3,059,481.
   pair per bit and no longer carries first and index. a01_format open 9,225,834 to 8,981,411 edges, same ticks.
 - getn: a field the current byte still holds is taken in one tick. 8,981,411 to 8,936,561 edges, 466,299 to 454,606 ticks.
 - Two builds byte identical; audit 67 of 67.
+
+## 4. Merge of main (features) and glyph quality pass
+- Merged /root/readme main. Conflicts in gen/app.py: size_hot now uses F1_SPLIT (small caps and hidden text);
+  sel_sum follows the same split (script or small capital size behind step(vflag+F1_SMCL+F1_HID), hidden text no size)
+  and adv keeps F1_SPX. PROVENANCE.md taken from main (generated). After merge: page 3,001,761.
+- Chain starts on a 1/512 em grid: page 2,988,005.
+- Screenshots at 9, 11 (Carlito, Arimo, Tinos), 14 (Open Sans, Caladea, Caveat) and 36 pt, side by side with the
+  base: Arimo and Tinos 0 and the Caladea o were drawn thin. Python model of the snapped map (scratch sim.py) found
+  why: a vertex lying exactly on a knot did not split the chain, and other bands (xh to cap, cap to ascent) also stretch.
+- Fix: split at every knot (also at a vertex on a knot), then rejoin pieces while the summed net travel over band
+  height stays under 0.3 (under about 0.15 px of drift at any size). Worst vertex error over all ASCII at 12 to 24 ppem
+  is now on the order of the old per edge model's own end mismatch (old 2.2 px, new 4.2 px, both on Arimo @).
+  Screenshots again: all lines match the base by eye; 212 pixels differ by more than 40 levels on the whole screen.
+- Page 2,919,845; neurons 235,022; connections F 455,438 + R 649,784 = 1,105,222 (base 2,006,998, minus 45 percent).
+- FLOPs: typing repeat 80,866 to 69,995 (0.87); select all 9.74 M to 6.48 M; jump 10.28 to 6.29; Enter 10.42 to 6.35;
+  undo 10.95 to 6.66; wheel 12.23 to 7.44; click 12.48 to 7.68; background layout 1.07 G to 0.56 G.
+- a01_format open 9,912,561 to 8,928,039 edges (target 7 M not reached).
