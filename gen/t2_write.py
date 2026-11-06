@@ -1,25 +1,9 @@
 # ---- .docx writer: zip container, CRC32 and XML are all produced here ----
 # Parts: static members, a dynamic styles.xml written from the style table, a dynamic document.xml.
-t2nr=Ret('T2NR');t2pr=Ret('T2PR');t2rr=Ret('T2RR');t2pp=Ret('T2PP');t2sr=Ret('T2SR')
+t2pr=Ret('T2PR');t2rr=Ret('T2RR');t2pp=Ret('T2PP');t2sr=Ret('T2SR')
 zo=R();zdr=Ret('T2ZD');usize=R();t2ur=Ret('T2UR')
-t2n=R();t2run=R();t2pk=R();t2full=R();t2w=R();t2j=R();t2pa=R();t2st=R();t2psv=R()
+t2run=R();t2pk=R();t2full=R();t2w=R();t2j=R();t2pa=R();t2st=R();t2psv=R()
 qsty_=R()
-# number printing without leading zeros
-cur_='T2_NV'
-for pw_ in (100000,10000,1000,100,10,1):
-    nx_='T2NR' if pw_==1 else f'T2_NV{pw_}'
-    e=S(cur_); base=net.gate(t2n,e); val=base
-    for big in (100000,10000,1000,100,10):
-        if big>pw_:
-            dd=X()
-            for t in range(1,10): dd=dd+net.step(val-big*t+0.5)
-            val=val-dd*big
-    dg=X()
-    for t in range(1,10): dg=dg+net.step(val-pw_*t+0.5)
-    show=e if pw_==1 else net.and_(e,net.step(base-pw_+0.5))
-    em_en.lin(show); em_b.add(show,48+dg)
-    on(cur_,(None,nx_,None)); cur_=nx_
-def vnum(st,val,nx): on(st,(None,'T2_NV',{t2n:val,t2nr.r:t2nr.id(nx)}))
 # run properties: ins_st holds the cell. t2full also writes the "off" forms so a paragraph style cannot leak in.
 sv_in=Bus(net); sv_en=Bus(net); sv_fl=Bus(net); SV=style_decode(sv_in.w,sv_en.w); SV.update(flag_decode(sv_fl.w,sv_en.w))
 sv_en.lin(S('T2RP')); sv_in.add(S('T2RP'),ins_rec); sv_fl.add(S('T2RP'),ins_st)
@@ -42,9 +26,8 @@ on('T2R3',(rv_i,'T2Ri1',None),(t2full,'T2Ri0',None),(None,'T2R4',None))
 lit('T2Ri1',b'<w:i/>','T2R4'); lit('T2Ri0',b'<w:i w:val="0"/>','T2R4')
 on('T2R4',(rv_s,'T2Rs1',None),(None,'T2R4n',None)); lit('T2Rs1',b'<w:strike/>','T2R4n')
 on('T2R4n',(rv_n,'T2Rn',None),(None,'T2R5',None)); lit('T2Rn',b'<w:noProof/>','T2R5')
-e=S('T2R5'); h_=net.decode(rv_c,32,e)
-on('T2R5',*[(h_[j],f'T2Rk{j}',None) for j in range(1,32)],(t2full,'T2Rk0',None),(None,'T2R6',None))
-for j in range(32): lit(f'T2Rk{j}',('<w:color w:val="%02X%02X%02X"/>'%PAL_F[j]).encode(),'T2R6')
+_ct=[('<w:color w:val="%02X%02X%02X"/>'%PAL_F[j]).encode() for j in range(32)]; _cb=rom_str(b''.join(_ct)); _cl=len(_ct[0])
+on('T2R5',(net.step(rv_c),'A10_L0',{la_:as_x(_cb)+rv_c*_cl,ln_lit:_cl,lret.r:lret.id('T2R6')}),(t2full,'A10_L0',{la_:_cb,ln_lit:_cl,lret.r:lret.id('T2R6')}),(None,'T2R6',None))
 lit('T2R6',b'<w:sz w:val="','T2R7')
 e=S('T2R7'); h_=net.decode(rv_z,rom.NSZ,e); hp=X()
 for si,h in enumerate(h_): hp=hp+h*(rom.SZ[si]*2)
@@ -111,19 +94,11 @@ for j,c_ in enumerate(crcr):
     if j<16: crcL=crcL+c_*(1<<j)
     else: crcH=crcH+c_*(1<<(j-16))
 cfL=R();cfH=R();dsize=R()
-def le_bytes(val,en,n=4):
-    bt=net.bits(val,8*n,en)
-    return [sum((bt[8*k+i]*(1<<i) for i in range(8)),X()) for k in range(n)]
-def crc_b(ix,en):
-    return le_bytes(cfL if ix<2 else cfH,en,2)[ix%2]
-# subroutine: write crc and both sizes at t2pa
-vals=[('c',i) for i in range(4)]+[('s',i) for i in range(4)]+[('u',i) for i in range(4)]
-cur_='T2Q'
-for n_,(kd,ix) in enumerate(vals):
-    ee2=S(cur_); bv_=crc_b(ix,ee2) if kd=='c' else le_bytes(dsize if kd=='s' else usize,ee2)[ix]
-    nx_=f'T2Q{n_}'
-    on(cur_,(None,nx_,{fw2:(t2pa+n_,bv_)})); cur_=nx_
-on(cur_,(None,'T2SR',None))
+# subroutine: write crc and both sizes at t2pa, then put the write position back
+t2sf=R();t2sb=R()
+on('T2Q',(None,'T2Q0',{t2sf:fp,t2sb:embase,fp:t2pa-SAVEB,embase:SAVEB}))
+lefield('T2Q0',cfL+cfH*65536,4,'T2Q1'); lefield('T2Q1',dsize,4,'T2Q2'); lefield('T2Q2',usize,4,'T2Q3')
+on('T2Q3',(None,'T2SR',{fp:t2sf,embase:t2sb}))
 fsm.set(pi,S('SAVE'),0); fsm.set(t2run,S('SAVE'),0); fsm.set(t2pk,S('SAVE'),0)
 e=S('SVP'); on('SVP',(net.ge(pi,npar,e),'T3_SVE',None),(net.ge(fp,3900000,e),'T3_SVE',None),(None,'SVa',{r1:as_x(PT)+pi}))
 on('SVa',(None,'SVm',{ra4:R1+A4C,ra4t:R1+A4T,pbs:R1,rl:R1+LEN,rp6:R1+PIND,rc:R1+2062,rmeta:R1+META,rim:R1+IMF}))

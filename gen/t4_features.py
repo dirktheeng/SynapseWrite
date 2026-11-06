@@ -52,20 +52,7 @@ on('T4_FI2',(None,'T4_FV',{fst:TST+t4k*ST_F0,fvr.r:fvr.id('AFTER_ED')}))
 on('T4_FV',(None,'T4_FV1',{r1:cb+SAVE+2}))
 e=S('T4_FV1')
 on('T4_FV1',(net.eq(t4k,1,e),'T4_NI',{t4nv:R1,t4r.r:t4r.id('T4_FVR')}),(net.eq(t4k,2,e),'T4_NI',{t4nv:wtot,t4r.r:t4r.id('T4_FVR')}),(None,'T4_DY1',{t4y:1970,t4d:evt}))
-PW=(100000,10000,1000,100,10,1)
-for i_,pw_ in enumerate(PW):
-    st=f'T4_NI{pw_}'; nx=f'T4_NI{PW[i_+1]}' if pw_>1 else 'T4_RR'
-    e=S(st); base=net.gate(t4nv,e); val=base
-    for big in PW:
-        if big>pw_:
-            dd=X()
-            for t in range(1,10): dd=dd+net.step(val-big*t+0.5)
-            val=val-dd*big
-    dg=X()
-    for t in range(1,10): dg=dg+net.step(val-pw_*t+0.5)
-    show=e if pw_==1 else net.step(base-pw_+0.5)
-    on(st,(show,'INS',{ins_ch:48+dg,ins_st:fst,oret.r:oret.id(nx)}),(None,nx,None))
-on('T4_NI',(None,'T4_NI100000',None))
+num_field('T4_NI',t4nv,fst,'T4_RR')
 # days since 1970 to a civil date, valid for 1970 to 2099
 e=S('T4_DY1'); ybits=net.bits(t4y,12,e); leap=net.and_(e,ONE-ybits[0],ONE-ybits[1]); yd=365+leap
 on('T4_DY1',(net.ge(t4d,yd,e),'T4_DY1',{t4d:t4d-yd,t4y:t4y+1}),(None,'T4_DM',{t4m:1,t4lp:leap}))
@@ -110,10 +97,9 @@ MGT=60000; MGB=100000
 mop=R();mpp=[R() for _ in range(6)];mi=R();mq=R();mo=R();mfs=R();mc=R();mrb=R();mnr=R();mncol=R();mn0=R();mr=R();mrba=R();mp=R();msb=R();mlen=R();mso=R();mol=R();mst=R();mnb=R();mnl=R();mk=R();mhs=R();mi2=R();mvl=R();mpb=R();mimw=R();mimh=R();mimo=R()
 BANNER='Mail Merge: paste CSV now (Ctrl+V). The first row is the header; {Name} in the document is replaced. Esc cancels.'
 on('T4_MB',(None,'T4_MBa',{rA:(PX,DOCY,816,28,(255,242,171),0),sx:PX+8}))
-cur_='T4_MBa'
-for i_,ch_ in enumerate(BANNER):
-    nx=f'T4_MBc{i_}' if i_<len(BANNER)-1 else 'TB0'
-    on(cur_,(None,nx,{gly:(ord(ch_),9,sx,DOCY+6,0,2),sx:sx+adv})); cur_=nx
+_bn=BANNER.encode('latin-1')
+on('T4_MBa',(None,'A10_MB',{lr:rom_str(_bn),la_:rom_str(_bn)+1,ln_lit:len(_bn)-1}))
+on('A10_MB',(net.step(ln_lit),'A10_MB',{gly:(LO_,9,sx,DOCY+6,0,2),sx:sx+adv,lr:la_,la_:la_+1,ln_lit:ln_lit-1}),(None,'TB0',{gly:(LO_,9,sx,DOCY+6,0,2),sx:sx+adv}))
 on('T4_M0',(None,'T4_M1',{mi:0,mq:0,mo:0,mfs:0,mc:0,mrb:0,mnr:0,mncol:0,grp:grp+1}))
 e=S('T4_M1')
 on('T4_M1',(net.ge(mi,evc,e),'T4_M1z',None),(net.ge(mnr,500,e),'T4_M5',None),(None,'T4_M2',{rl:as_x(CB2)+mi}))
@@ -239,25 +225,25 @@ lim=net.min_(as_x(258),zus-zi)
 on('T4_Z5',(net.and_(net.step(cnt_-7.5),net.lt(zm+8,lim,e)),'T4_Z4',{zm:zm+8}),(None,'T4_Z6',{zm:net.min_(zm+cnt_,lim)}))
 e=S('T4_Z6')
 on('T4_Z6',(net.ge(zm,3,e),'T4_ZL',None),(None,'T4_ZLIT',None))
-e=S('T4_ZLIT'); lh_=net.decode(zb0,256,e); lv=X();ln_=X()
-for i_ in range(256):
-    c_,n_=fixed(i_); lv=lv+lh_[i_]*c_; ln_=ln_+lh_[i_]*n_
-on('T4_ZLIT',(None,'T4_ZP',{zc:lv,zk:ln_,zi:zi+1,zret.r:zret.id('T4_Z1')}))
-e=S('T4_ZL'); mh_=net.decode(zm-3,256,e); lv=X();ln_=X();zlx_=X();lxn=X()
+_zlt=rom_table(sum((list(fixed(i_)) for i_ in range(256)),[]))
+rz2=RPort(4)
+on('T4_ZLIT',(None,'A10_ZLIT',{rz2:as_x(_zlt)+zb0*2}))
+on('A10_ZLIT',(None,'T4_ZP',{zc:rz2.out[0],zk:rz2.out[1],zi:zi+1,zret.r:zret.id('T4_Z1')}))
 def lensym(m):
     for i_ in range(len(LB)-1,-1,-1):
         if m>=LB[i_]: return i_
+_zmt=[]
 for i_ in range(256):
-    k_=lensym(i_+3); c_,n_=fixed(257+k_)
-    lv=lv+mh_[i_]*c_; ln_=ln_+mh_[i_]*n_; zlx_=zlx_+mh_[i_]*(i_+3-LB[k_]); lxn=lxn+mh_[i_]*LE[k_]
-on('T4_ZL',(None,'T4_ZP',{zc:lv,zk:ln_,zx:zlx_,zxn:lxn,zret.r:zret.id('T4_ZL2')}))
+    k_=lensym(i_+3); c_,n_=fixed(257+k_); _zmt+=[c_,n_,i_+3-LB[k_],LE[k_]]
+_zmt=rom_table(_zmt)
+on('T4_ZL',(None,'A10_ZL',{rz2:as_x(_zmt)+(zm-3)*4}))
+on('A10_ZL',(None,'T4_ZP',{zc:rz2.out[0],zk:rz2.out[1],zx:rz2.out[2],zxn:rz2.out[3],zret.r:zret.id('T4_ZL2')}))
 on('T4_ZL2',(None,'T4_ZP',{zc:zx,zk:zxn,zret.r:zret.id('T4_ZL3')}))
 e=S('T4_ZL3'); dist_=zi-zcs; idx_=X()
 for i_ in range(1,30): idx_=idx_+net.ge(dist_,DB[i_],e)
-dh_=net.decode(idx_,30,e); dv=X();dx=X();dxn=X()
-for i_ in range(30):
-    dv=dv+dh_[i_]*rev(i_,5); dx=dx+dh_[i_]*DB[i_]; dxn=dxn+dh_[i_]*DE[i_]
-on('T4_ZL3',(None,'T4_ZP',{zc:dv,zk:5,zx:dist_-dx,zxn:dxn,zret.r:zret.id('T4_ZL4')}))
+_zdt=rom_table(sum(([rev(i_,5),DB[i_],DE[i_]] for i_ in range(30)),[]))
+on('T4_ZL3',(None,'A10_ZD',{rz2:as_x(_zdt)+idx_*3}))
+on('A10_ZD',(None,'T4_ZP',{zc:rz2.out[0],zk:5,zx:zi-zcs-rz2.out[1],zxn:rz2.out[2],zret.r:zret.id('T4_ZL4')}))
 on('T4_ZL4',(None,'T4_ZP',{zc:zx,zk:zxn,zret.r:zret.id('T4_ZL5')}))
 on('T4_ZL5',(None,'T4_ZI',{zj:1}))
 e=S('T4_ZI')

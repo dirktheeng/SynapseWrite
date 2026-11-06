@@ -5,6 +5,6 @@ module.exports=async()=>{const t0=process.hrtime.bigint();const blob=zlib.gunzip
  const {instance:{exports:e}}=await WebAssembly.instantiate(fs.readFileSync(process.env.ENGINE||'build/engine.wasm'),{});
  e.setup(h.n,h.e,h.L,h.nports,h.bank,h.ni,h.nt,h.nb,h.zn,h.n1);const put=(p,n)=>{new Uint8Array(e.memory.buffer,p,n).set(blob.subarray(o,o+n));o+=n;};
  put(e.p_zb(),h.zn);put(e.p_lstart(),4*(h.L+1));put(e.p_ports(),4*h.nports);put(e.p_wtab(),8*h.nt);put(e.p_btab(),8*h.nb);e.finish();
- for(const [i,v] of h.init)e.inject(i,v);e.dom();for(const [i,v] of h.init1)e.inject(i,v);e.dom();for(const [a,v] of h.bank_init)e.bset(a,v);{const r=blob.subarray(o);for(let i=0;i<r.length;i++)if(r[i])e.bset(h.romb+i,r[i]);}const bank=()=>new Proxy({},{get:(_,a)=>e.bget(+a),set:(_,a,v)=>{e.bset(+a,v);return true;}});
+ for(const [i,v] of h.init)e.inject(i,v);e.dom();for(const [i,v] of h.init1)e.inject(i,v);e.dom();for(const [a,v] of h.bank_init)e.bset(a,v);for(const [a,n,w] of h.rom)for(let i=0;i<n;i++,o+=w){const x=w==1?blob[o]:blob[o]+256*blob[o+1]+(w>2?65536*blob[o+2]:0);if(x)e.bset(a+i,x);}const bank=()=>new Proxy({},{get:(_,a)=>e.bget(+a),set:(_,a,v)=>{e.bset(+a,v);return true;}});
  console.log('load ms gunzip',Number(t1-t0)/1e6,'rest',Number(process.hrtime.bigint()-t1)/1e6);
  return {e,h,bank};};

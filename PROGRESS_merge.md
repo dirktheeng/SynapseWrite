@@ -51,3 +51,16 @@ Conflicts and how they were resolved:
 Found by fuzz_inv seed 2 s: second save split a run, because a record value 0 (Carlito 11 pt reached by toggling bold off) missed the interner's scan from index 1 and got a second index. Scan now starts at 0. Not an a12 defect; from fonts.
 Runs: fuzz regress 5/5, fuzz_selftest 4/4, fuzz run 1000-1003 mix: 0 crash classes, file 1000-1002: 0, fuzz_inv 1-5 us: 0 failures of 8 (1 of 6 before the interner fix), e2e 210/210 (before the one line interner fix), fonts 23/23.
 F32_LOSS warning at port 396 tick 1, value 0.237 is the pointer glyph? not a failure class in a12's list, left.
+## Step 3: a10 (aef3888)
+Fresh baseline taken first with test/a10_regress.js on the head before a10 (fixtures made in the scratchpad, since test/fixtures holds only PNGs): total 5,024,125 ticks, 550.0 M edges.
+Decisions:
+- ROM: BANK raised from 64 M to 66 M. a10 string ROM 64 M, spell table 65 M, lookup tables 65.8 M, declared with region(). The bank is paged so the range is cheap. The fonts PDF ROM joined the same run list hdr.rom, so glue has one copy loop that skips zero cells. romb gone from hdr.
+- Lookup table cells widened from 16 to 24 bits, since a size table entry is a raw record field with bits up to 21.
+- Size table: HEAD's 3 digit half points and rom.sz_near; a10's table form, 200 entries.
+- Color: a10's palette table plus HEAD's oi+6 (a5 moved the entry point).
+- Comparator: a10's window bank replaces a5's two letter group. a5's helpers removed. Open cost goes up, see below; neurons drop.
+- Spell: a10's table walked per letter, with a6's suggestion walker still driving the same letter wires (_ew).
+- Ret.gen: a10's two digit form. Return lists HEAD's a7 returns plus a10's.
+New writers: a4, a5, a6, a12 call lit, number and numz, which are now a10's, so they are routed. Also done by hand: pad3 uses the number writer; PDF only literals A4_Q and A6P_ use the block copy, with no CRC involved.
+Regress after vs before: every screen hash equal, every docx hash equal. PDF bodies equal up to the embedded font streams (subset carries the build time, a10's note), same length, same xref. Total 5,063,060 ticks, 561.7 M edges. Neurons 729,781 to 611,401; synapses 1,194,346 to 1,018,588 push plus lazy 1,273,767 to 1,129,725; weights gz 2,461,663 to 2,382,999. Open of a small docx 13.6 M to 17.3 M edges, from the comparator bank.
+Runs: t4_docx 18/18, t4_pdf 7/7, e2e 210/210, rv_a6 6/6, rv_a6_pdf 4/4, rv_a6_eq 9/9, rv_math_mark 6/6.

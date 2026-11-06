@@ -22,7 +22,7 @@ class World{
    new Int32Array(M(),e.d_ptr(0),stIds.length).set(stIds);new Int32Array(M(),e.d_ptr(1),dbg.regs.length).set(dbg.regs);
    let q=0;const take=(k,n,T)=>{const a=new T(M(),e.d_ptr(k),n);const by=n*T.BYTES_PER_ELEMENT;a.set(new T(dbin.buffer.slice(dbin.byteOffset+q,dbin.byteOffset+q+by)));q+=by;};
    take(2,dbg.na+1,Int32Array);take(3,dbg.nas,Int32Array);take(4,dbg.nas,Float64Array);take(5,dbg.na,Float64Array);take(6,dbg.na,Int32Array);take(7,h.n+1,Int32Array);take(8,dbg.nw,Int32Array);this.seen=0;}
-  for(const [i,v] of h.init)e.inject(i,v);e.dom();for(const [i,v] of h.init1)e.inject(i,v);e.dom();for(const [a,v] of h.bank_init)e.bset(a,v);{const r=blob.subarray(o_);for(let i=0;i<r.length;i++)if(r[i])e.bset(h.romb+i,r[i]);}
+  for(const [i,v] of h.init)e.inject(i,v);e.dom();for(const [i,v] of h.init1)e.inject(i,v);e.dom();for(const [a,v] of h.bank_init)e.bset(a,v);{let q=o_;for(const [a,n,w] of h.rom)for(let i=0;i<n;i++,q+=w){const x=w==1?blob[q]:blob[q]+256*blob[q+1]+(w>2?65536*blob[q+2]:0);if(x)e.bset(a+i,x);}}
   this.pendTimer=0;this.pendOpen=false;this.pendPic=false;this.sysClip='';this.clip=null;this.dead=false;
   if(!o.noboot)this.D(1);}
  bank(){const e=this.e;return new Proxy({},{get:(_,k)=>e.bget(+k),set:(_,k,x)=>{e.bset(+k,x);return true;}});}

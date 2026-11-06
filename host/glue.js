@@ -15,7 +15,7 @@ e.finish();
 for(const [i,v] of h.init)e.inject(i,v);
 e.dom();for(const [i,v] of h.init1)e.inject(i,v);e.dom();
 for(const [a,v] of h.bank_init)e.bset(a,v);
-{const r=blob.subarray(o);for(let i=0;i<r.length;i++)if(r[i])e.bset(h.romb+i,r[i]);}
+for(const [a,n,w] of h.rom)for(let i=0;i<n;i++,o+=w){const x=w==1?blob[o]:blob[o]+256*blob[o+1]+(w>2?65536*blob[o+2]:0);if(x)e.bset(a+i,x);}
 window.annMem=()=>mem().byteLength;
 try{const s=JSON.parse(localStorage.getItem('synapse_dict')||'[]');for(let i=0;i<s.length;i++)e.bset(h.dict+i,s[i]);}catch(_){}
 const cv=document.getElementById('screen'),ctx=cv.getContext('2d',{alpha:false,willReadFrequently:true});const img=ctx.createImageData(1280,800);
