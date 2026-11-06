@@ -174,9 +174,9 @@ on('T2_A3',(None,'T2_AT',{w1:(cb+t2fld,as_x(PFO)-t2q)}))
 on('T2_A2b',(None,'T2_DV',{t2q:0,t2sr.r:t2sr.id('T2_A3b')}))
 on('T2_A3b',(None,'T2_AT',{w1:(cb+t2fld,as_x(PFO)+t2q)}))
 e=S('T2_A4'); lv_=net.gt(t2n_,267,e)+net.gt(t2n_,300,e)+net.gt(t2n_,420,e)+net.gt(t2n_,540,e)+net.gt(t2n_,660,e)+(e-net.gt(t2n_,250,e))*6   # 240 true single, 259 the default
-on('T2_A4',(None,'T2_AT',{w1:(cb+PLSP,lv_)}))
-e=S('T2_A6'); notauto=net.or_(net.eq(W[0],101,e),net.and_(net.eq(W[0],97,e),net.eq(W[1],116,e)))
-on('T2_A6',(notauto,'T2_AT',{oi:oi+12,w1:(cb+PLSP,0)}),(None,'T2_AT',{oi:oi+12}))
+on('T2_A4',(net.step(t2lk),'T2_AT',{w1:(cb+PLSP,net.min_(t2n_,4095)+t2lk*4096),t2lk:0}),(None,'T2_AT',{w1:(cb+PLSP,lv_),t2lnv:net.min_(t2n_,4095),t2lh:1}))
+e=S('T2_A6'); _ex=net.eq(W[0],101,e); _al=net.and_(net.eq(W[0],97,e),net.eq(W[1],116,e)); _lkv=_ex*1+_al*2; notauto=net.or_(_ex,_al)
+on('T2_A6',(net.and_(notauto,t2lh),'T2_AT',{oi:oi+12,w1:(cb+PLSP,t2lnv+_lkv*4096),t2lh:0}),(notauto,'T2_AT',{oi:oi+12,t2lk:_lkv}),(None,'T2_AT',{oi:oi+12,t2lh:0}))
 # numbering part
 t2an=R();t2nx=R();t2lv=R();t2il=R()
 e=S('T2_AB'); isdef=pat('actNum ',e); isref=pat('actNumId',e)

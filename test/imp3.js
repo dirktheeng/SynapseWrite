@@ -65,5 +65,15 @@ const yel=(r,g,b)=>r>200&&g>180&&b<170; // match tint
   // cut then paste keeps format
   let D=await lib();D.key(98,1);D.type('cut');D.key(98,1);D.key(97,1);D.key(120,1);D.settle();D.paste('cut');D.settle();ok('cut then paste keeps bold',/<w:b\/>/.test(xml(D)));
  }
+ if(!only||only=='line'){
+  const zlib=require('zlib');const W='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+  const zip=(files)=>{const ps=[],cd=[];let off=0;for(const [n,dd] of Object.entries(files)){const d=Buffer.from(dd),c=zlib.deflateRawSync(d),nm=Buffer.from(n);const crc=zlib.crc32(d);const l=Buffer.alloc(30);l.writeUInt32LE(0x04034b50,0);l.writeUInt16LE(20,4);l.writeUInt16LE(8,8);l.writeUInt32LE(crc,14);l.writeUInt32LE(c.length,18);l.writeUInt32LE(d.length,22);l.writeUInt16LE(nm.length,26);ps.push(l,nm,c);const h=Buffer.alloc(46);h.writeUInt32LE(0x02014b50,0);h.writeUInt16LE(20,4);h.writeUInt16LE(20,6);h.writeUInt16LE(8,10);h.writeUInt32LE(crc,16);h.writeUInt32LE(c.length,20);h.writeUInt32LE(d.length,24);h.writeUInt16LE(nm.length,28);h.writeUInt32LE(off,42);cd.push(h,nm);off+=30+nm.length+c.length;}const a=Buffer.concat(ps),b=Buffer.concat(cd),e=Buffer.alloc(22);e.writeUInt32LE(0x06054b50,0);e.writeUInt16LE(Object.keys(files).length,8);e.writeUInt16LE(Object.keys(files).length,10);e.writeUInt32LE(b.length,12);e.writeUInt32LE(a.length,16);return Buffer.concat([a,b,e]);};
+  const words=Array(60).fill('wrapping words on several lines').join(' ');
+  const mk=sp=>zip({'[Content_Types].xml':'<Types/>','word/document.xml':`<?xml version="1.0"?><w:document ${W}><w:body><w:p><w:pPr><w:spacing ${sp}/></w:pPr><w:r><w:t>${words}</w:t></w:r></w:p></w:body></w:document>`});
+  const pitch=A=>{const f=A.fb();const r=[];for(let y=174;y<776;y++){let d=0;for(let x=319;x<900;x++){const i=(y*1280+x)*4;if(f[i]<120)d++;}r.push(d>0);}const t=[];for(let i=1;i<r.length;i++)if(r[i]&&!r[i-1])t.push(i);return t[2]-t[1];};
+  for(const [sp,want,name] of [['w:line="480" w:lineRule="exact"',32,'exact 24 pt'],['w:lineRule="exact" w:line="240"',16,'exact 12 pt, rule first'],['w:line="600" w:lineRule="atLeast"',40,'at least 30 pt'],['w:line="120" w:lineRule="atLeast"',18,'at least 6 pt keeps the font height']]){
+   let A=await lib();A.file(9,mk(sp));A.settle();const p=pitch(A);ok(name+' pitch '+want+' px',Math.abs(p-want)<=1,p);A.shot('build/imp3_ln_'+want+'.png');const x=xml(A);const m=x.match(/w:line="\d+" w:lineRule="\w+"/);ok(name+' saved',m&&m[0].includes(sp.includes('exact')?'exact':'atLeast'),m&&m[0]);
+   let B=await lib();B.file(9,A.savedBytes());B.settle();ok(name+' reopens the same',pitch(B)===p);}
+ }
  console.log(R.filter(x=>x).length+'/'+R.length+' passed');process.exit(R.every(x=>x)?0:1);
 })();

@@ -896,14 +896,16 @@ x0=net.gate(delta*0.5,alh[1])+net.gate(delta,alh[2])+pind+pf_val(lfi)+48
 # line spacing adds room above the text. The extra is a compiled table per spacing choice.
 # Index 0 is the default of 1.08 lines, which the metrics already hold. Index 6 is true single spacing.
 LSPF=[rom.LDEF,1.15,1.5,2.0,2.5,3.0,1.0]
-ls_en=net.and_(e,net.step(plsp),ONE-net.step(pim)); lsh_=net.decode(plsp,7,ls_en); lxtra=X()
+_lsx=net.step(plsp-4095.5+e*M-M); ls_en=net.and_(e,net.step(plsp),ONE-net.step(pim),ONE-_lsx); lsh_=net.decode(plsp,7,ls_en); lxtra=X()
+# A line rule from a file: 4096 plus twips is an exact height, 8192 plus twips a least height
+_lsa=net.step(plsp-8191.5+_lsx*M-M); _lse=net.and_(_lsx,ONE-_lsa,ONE-net.step(pim)); _lsl=net.and_(_lsa,ONE-net.step(pim)); lxtra=lxtra+net.gate(plsp*(1/15),_lse)-_lse*(4096/15)-net.gate(lhh,_lse)+net.relu(net.gate(plsp*(1/15),_lsl)-_lsl*(8192/15)-net.gate(lhh*(1/rom.LDEF),_lsl))-net.gate(lhh*(1-1/rom.LDEF),_lsl)
 for i_ in range(1,7):
     k_=LSPF[i_]/rom.LDEF-1
     lxtra=lxtra+net.gate(lhh*abs(k_),lsh_[i_])*(1 if k_>0 else -1)
 # Lines sit on whole pixels. The fraction left over goes to the next line of the paragraph, so a long paragraph keeps the true pitch.
 lcar=R(); fsm.set(lcar,S('LAY0'),0.5); _lpx=lhh+lxtra+lcar-0.5; _lbit=net.bits(_lpx,12,e); lhint=sum((_lbit[i_]*(1<<i_) for i_ in range(12)),X())
 fsm.set(lcar,e,_lpx-lhint+0.5)
-wln.drive(e,(pbs+LINES+lj*8,ls_,lend,x0,lhint,lasc+lxtra,ex));w1.drive(e,(pbs+LINES+lj*8+6,lfb));w2.drive(e,(pbs+LINES+lj*8+7,lfh))
+wln.drive(e,(pbs+LINES+lj*8,ls_,lend,x0,lhint,net.relu(lasc+lxtra),ex));w1.drive(e,(pbs+LINES+lj*8+6,lfb));w2.drive(e,(pbs+LINES+lj*8+7,lfh))
 on('EM',(llast,'LF',{lj:lj+1}),(None,'L1',{lj:lj+1,ls_:off,lx:0,lb:off,lbx:0,lsn:0,lspb:0,lasc:0,lhh:0,lfi:0,kprev:0,lfb:lfn,lfh:0,lfnb:lfn,lfhb:0}))
 _lf={w1:(pbs+NLINES,lj),w2:(pbs+DIRTY,0),w3:(pbs+WORDS,wc),wtot:wtot+wc-wdp,bcnt:bcnt+G_(plen_*0.01,bgm),a7_wb:a7_wb+plen_}
 on('LF',(a4la,'A4_KL',_lf),(None,'R2X',_lf))
