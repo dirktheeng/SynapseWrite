@@ -268,6 +268,12 @@ class Bus:
     def add(s,cond,val): s.net.connect(s.w,s.net.gate(val,cond))
     def lin(s,e): s.net.connect(s.w,e)
 
+CHUNK=12
+class Dec(X):
+    """r minus k, for a write whose rule has already proved r>=k: the rule's line with a negative weight, with no clamp needed."""
+    __slots__=('k',)
+    def __init__(s,r,k): X.__init__(s,dict(r.t),r.c-k); s.k=k
+def ONE_(net): return net.ONE
 class FSM:
     """Control registers whose next values are gated sums over one-hot state neurons."""
     def __init__(s,net): s.net=net; s.states={}; s.assign={}
@@ -286,8 +292,13 @@ class FSM:
         s.seen_on=getattr(s,'seen_on',set())
         assert name not in s.seen_on, 'state defined twice: '+name
         s.seen_on.add(name)
+        conds=[r_[0] for r_ in rules if r_[0] is not None]; chunks={}
+        if len(conds)>=CHUNK*2:     # a long rule list: its state wakes one AND per chunk, and a chunk wakes its rules only if one of its lines is true
+            for i_ in range(0,len(conds),CHUNK):
+                ch=net.and_(st,net.or_(*conds[i_:i_+CHUNK]))
+                for x_ in conds[i_:i_+CHUNK]: chunks[id(x_)]=ch
         for cond,nxt,acts in rules:
-            c=rem if cond is None else net.and_(rem,cond)
+            c=rem if cond is None else net.and_(rem,cond) if not chunks else net.and_(chunks[id(cond)],cond,ONE_(net)+rem-st)
             if cond is not None: rem=rem-c
             s.states[name][1].append((c,nxt))
             for tgt,val in (acts or {}).items(): s.apply(tgt,c,val)
@@ -322,8 +333,17 @@ class FSM:
                     k_=net.and_(c,trap); net.rec(s.state(nxt),c-k_); net.rec(s.state(s.trap_to),k_)
                 else: net.rec(s.state(nxt),c)
         for k,(r,lst) in s.assign.items():
+            # A write of the register plus a positive constant is the rule's own line with that weight: no gates, no read of the register.
+            add=X(); rest=[]
+            for c,v in lst:
+                d=v-r
+                if isinstance(v,Dec): add=add-c*v.k
+                elif d.is_const() and d.c>0: add=add+c*d.c
+                elif d.c>=0 and d.t and all(w>0 and (net.kind[j]=='reg' or net.act[j]!=ID) for j,w in d.t.items()): add=add+net.gate(d,c)   # a growing register: only the growth is gated
+                else: rest.append((c,v))
             anyc=X()
-            for c,_ in lst: anyc=anyc+c
-            e=r-net.relu(r+anyc*M-M)
-            for c,v in lst: e=e+net.gate(v,c)
+            for c,_ in rest: anyc=anyc+c
+            e=r+add
+            if rest: e=e-net.relu(r+anyc*M-M)
+            for c,v in rest: e=e+net.gate(v,c)
             net.rec(r,e)
