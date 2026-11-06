@@ -11,7 +11,7 @@ FAM_ALIAS=['Calibri','Cambria','Arial','Times New Roman','Courier New',None,None
 _root=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def _path(fam,sub,w,st): return f'{_root}/fonts/{fam}/package/files/{fam}-{sub}-{w}-{st}.woff'
 def _load(fam,sub,w,st):
-    f=TTFont(_path(fam,sub,w,st)); f.flavor=None; b=io.BytesIO(); f.save(b); return b.getvalue()
+    f=TTFont(_path(fam,sub,w,st),recalcTimestamp=False); f.flavor=None; b=io.BytesIO(); f.save(b); return b.getvalue()
 CACHE={}
 def _bytes(fi,bold,ital,sub='latin'):
     k=(fi,bold,ital,sub)

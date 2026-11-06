@@ -1218,10 +1218,10 @@ ROM_RUNS.append([DLROM,b''.join(int(v_).to_bytes(3,'little') for v_ in a9_rom),3
 raw+=rom_finish(hdr)
 h=json.dumps(hdr,separators=(',',':')).encode()
 blob=struct.pack('<I',len(h))+h+b'\0'*((4-(len(h)+4)%4)%4)+raw
-gz=gzip.compress(blob,9)
+gz=gzip.compress(blob,9,mtime=0)
 if os.environ.get('NETSTAT'):
-    import rv_a8_fmt; _a8b,_=rv_a8_fmt.encode(c,pr); print('a8 encoder gz',len(gzip.compress(_a8b,9)),'fonts encoder gz',len(gzip.compress(raw[:len(raw)-sum(len(d) for a,d,w in [[0,bytes(PF_ROM),1],[0,bytes(_litb),1]]+ROM_RUNS)],9)),file=sys.stderr)
-    print({k_:(len(v_),len(gzip.compress(v_,6))) for k_,v_ in zip('ist ost act bias i0 i1 i2 i3 iw d1 d2 wz'.split(),_streams)},'wtab',len(wtab),'btab',len(btab),'hdr',len(h),file=sys.stderr)
+    import rv_a8_fmt; _a8b,_=rv_a8_fmt.encode(c,pr); print('a8 encoder gz',len(gzip.compress(_a8b,9,mtime=0)),'fonts encoder gz',len(gzip.compress(raw[:len(raw)-sum(len(d) for a,d,w in [[0,bytes(PF_ROM),1],[0,bytes(_litb),1]]+ROM_RUNS)],9)),file=sys.stderr)
+    print({k_:(len(v_),len(gzip.compress(v_,6,mtime=0))) for k_,v_ in zip('ist ost act bias i0 i1 i2 i3 iw d1 d2 wz'.split(),_streams)},'wtab',len(wtab),'btab',len(btab),'hdr',len(h),file=sys.stderr)
 exec(open('a12_dbg.py').read())
 open('../build/net.bin.gz','wb').write(gz)
 exec(open('rv_a11_prov.py').read())

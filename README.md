@@ -21,7 +21,7 @@ It is an independent project with its own name and icons, modeled on the feature
 
 ## Contents
 
-[One tick](#the-whole-program-is-one-function) · [The equation](#the-equation-explained) · [Neurons](#from-neurons-to-logic) · [Control flow](#control-flow-a-token-in-the-weights) · [Sparsity](#why-half-a-million-neurons-can-feel-instant) · [Memory](#memory-the-network-holds-the-pointers) · [The screen](#the-screen-is-also-an-input) · [Text](#how-a-letter-gets-drawn) · [File formats](#file-formats-are-networks-too) · [Connections](#how-everything-is-connected) · [Every sub-network](#every-sub-network-and-why-it-exists) · [Boundaries](#what-is-not-the-network) · [Building](#build-it) · [Verification](#how-it-is-checked) · [Status](#status)
+[One tick](#the-whole-program-is-one-function) · [The equation](#the-equation-explained) · [Neurons](#from-neurons-to-logic) · [Control flow](#control-flow-a-token-in-the-weights) · [Sparsity](#why-half-a-million-neurons-can-feel-instant) · [Memory](#memory-the-network-holds-the-pointers) · [The screen](#the-screen-is-also-an-input) · [Text](#how-a-letter-gets-drawn) · [File formats](#file-formats-are-networks-too) · [Connections](#how-everything-is-connected) · [Every sub-network](#every-sub-network-and-why-it-exists) · [Determinism](#determinism-and-hallucinations) · [Boundaries](#what-is-not-the-network) · [Building](#build-it) · [Verification](#how-it-is-checked) · [Status](#status)
 
 ## The whole program is one function
 
@@ -452,6 +452,47 @@ Saving runs the same idea in reverse. The network produces every byte, and the g
 | `file output command` | 5 | Selects the length, data start and file name that the glue saves. | The glue must not decide what to save, or under what name. It reads these neurons and acts. |
 
 <!-- networks:end -->
+
+## Determinism and hallucinations
+
+People who hear "neural network" often expect a system that varies from run to run and sometimes makes things up. This one works differently, because of how it was made.
+
+### Same input, same output
+
+Nothing in the network is random. No sampling, temperature, noise or dropout exists at run time, and the audit rejects randomness in the generator and host.
+
+| What was tested | Result |
+|---|---|
+| Build the page twice from the same source | Byte-identical `index.html` |
+| Load the network 3 times in Node, then send the same 20 events | Same screen hash, 4,495 ticks and 3,485,421 edges each time |
+| Compare runs across test suites | Many tests in `test/e2e.js` require two event sequences to produce identical pixels |
+
+These tests ran on one machine. WebAssembly specifies its floating point arithmetic closely, with NaN bit patterns as the main exception, and the engine has no threads. So other machines should match, but that has not been tested, and neither have Firefox or Edge.
+
+**The output can still differ if the input differs.** The glue passes in a few things from the outside world: the date, event times, and the timing of keys and timers. So a tracked change records today's date, and a saved file with one will differ from one saved on another day. Given the same inputs at the same times, the result is the same.
+
+### Exactly repeatable is not the same as exact
+
+Every result repeats down to the last bit, but it is still floating point, with rounding at known limits:
+
+- **Neuron values are 64-bit floats.** Integers are exact up to 2^53, so counting and logic have no error. A gate adds and removes 2^40, and at that size a 64-bit float resolves steps of 2^-12, about 0.00024. So a fractional value passing a gate is rounded to that step. The same rounding happens every time.
+- **Memory cells are 32-bit floats.** They hold integers exactly up to 2^24, about 16.7 million. The checked engine build used by the fuzz tests flags values that would lose precision.
+
+Most of the program is logic and integers, which are exact. Fractions appear mainly in font geometry.
+
+### Can it hallucinate?
+
+Not in the sense that a language model can. Hallucination is when a trained model produces plausible content with no basis, because it generates output from learned statistics. This network has none of the parts that do that:
+
+- **No learned statistics.** No data set or training step exists. Each weight comes from a rule or from a font outline.
+- **No generated content.** It does not write or complete text. Letters appear because you typed them or a file contained them. The spell checker's suggestions are single edits of your word, checked against a fixed word list.
+- **No confidence or guessing.** A neuron has no notion of a likely answer. A rule either matches or does not.
+
+### What can go wrong instead
+
+The failure mode here is the ordinary one for software: bugs. A wrong result is repeatable, can be traced neuron by neuron, and gets fixed by changing the generator. This project has had plenty of them, such as a Select All that painted a blank page. Bad output is also possible when a feature is simply missing or a file uses something the reader does not handle.
+
+This repository's generator and documentation were largely written with a language model, which is a different matter from the network it wrote. That model could make mistakes in code, and did, in the same way it could in prose. Some labels and claims in these files were wrong until they were checked against the weight file. So the running network cannot hallucinate, but its documentation could have errors. Where a number matters, the scripts in `docs/figures/src/` measure it from the shipped weights.
 
 ## What is not the network
 
