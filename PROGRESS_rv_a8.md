@@ -21,3 +21,12 @@ Framebuffers at all 12 fbdump checkpoints pixel identical to baseline.
 
 ## Neuron numbering
 The engine needs only a topological numbering with registers first, not layers. finish() now treats even lstart ranges as registers and odd ranges as feed forward (recurrent targets are those not above the source). See gen/rv_a8_order.py.
+Three numberings through a cache model (engine copy with every neuron and synapse access run through a simulated 32 KB L1 and 512 KB L2). L1 misses, layer order / post order / creation order: paste 10128k / 5301k / 4604k, enter5 22858k / 20522k / 15802k, wheel5 11107k / 10113k / 7824k. Creation order kept. All pixel identical. It costs 180 KB gz on the whole net because glyph planes compress better in layer order (2.28 vs 2.47 MB), but is 18 KB smaller on the edges outside glyph groups, which is what remains after the glyph branch.
+
+## Engine
+One record per neuron (bias, acc, input start, output start, split, act) and one per synapse, so a visit touches one line rather than six. Cache model on top of creation order: paste 4604k -> 1962k L1 misses, enter5 15802k -> 7413k, wheel5 7824k -> 3805k, png 1406k -> 679k. Port enables nobody else reads numbered last: a further 5%. Wall clock on bench under load 15 could not separate it from the old layout, within noise; not worse.
+Display copy moved into the engine (show): runs in compiled code from the first frame, where the JS loop started in the interpreter. Image shares wasm memory, no second copy in JS.
+
+## Final, paired runs under load 30+ (min of 3, two rounds), ms
+base / new: x1 3961 / 1447, x4 4096 / 1663, x6 3376 / 1914. Page 3,380,088 -> 3,315,624 bytes. Raw blob 17,589,641 -> 8,777,165. Neurons 419,463 -> 414,7xx. Pixel identical at 12 checkpoints.
+Suites run while the machine was at load 30+: failures that came and went between runs were download timeouts and short waits.
