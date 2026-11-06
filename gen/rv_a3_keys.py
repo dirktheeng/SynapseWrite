@@ -71,4 +71,4 @@ e=S('RVA3_LE0'); measure(e,32,ty)
 on('RVA3_LE0',(None,'EM',{lasc:asc,lhh:lh,lend:off,lwid:0,lspc:0,llast:1}))
 # docx: tab and forced line break
 lit('RVA3_ST',b'</w:t><w:tab/><w:t xml:space="preserve">','SVC'); lit('RVA3_SB',b'</w:t><w:br/><w:t xml:space="preserve">','SVC')
-on('RVA3_RBR',(None,'INS',{ins_ch:11,ins_st:cs+rhi,oret.r:oret.id('PX')}))
+on('RVA3_RBR',(None,'INS',{ins_ch:11,ins_st:csi+rhi,oret.r:oret.id('PX')}))

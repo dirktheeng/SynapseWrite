@@ -23,7 +23,7 @@ on('A4_CE',(None,'RD0',{lc:1}))
 fsm.set(a4cw,S('RD0'),0)
 # format painter: the first click takes the run format and paragraph record at the caret, mouse up applies them. A double click stays on.
 e=S('A4_FP')
-on('A4_FP',(net.and_(a4fp,net.eq(t1_clk,2,e)),'RD0',{a4fs:1}),(a4fp,'RD0',{a4fp:0,a4fs:0}),(has_sel,'A4_FPs',{r1:as_x(PT)+lo_p}),(None,'A4_FP1',{r1:cb+ALIGN,rp6:cb+PIND,a4fst:ity}))
+on('A4_FP',(net.and_(a4fp,net.eq(t1_clk,2,e)),'RD0',{a4fs:1}),(a4fp,'RD0',{a4fp:0,a4fs:0}),(has_sel,'A4_FPs',{r1:as_x(PT)+lo_p}),(None,'A4_FP1',{r1:cb+ALIGN,rp6:cb+PIND,a4fst:ty}))
 on('A4_FPs',(None,'A4_FPt',{rs:R1+1024+lo_o}))
 on('A4_FPt',(None,'A4_FP1',{a4fst:RSR,r1:cb+ALIGN,rp6:cb+PIND}))
 e=S('A4_FP1')
@@ -31,7 +31,7 @@ on('A4_FP1',(None,'RD0',{a4ff[1]:R1,a4ff[2]:rp6.out[0],a4ff[3]:rp6.out[1],a4ff[4
 _a4set={fpre:a4fst,t2f[1]:a4ff[1],t2f[2]:a4ff[2],t2f[3]:a4ff[3],t2f[4]:a4ff[4],t2f[5]:a4ff[5],t2f[6]:a4ff[6],t2si:a4fps,fm:8,t2lo:lo_p,t2hi:hi_p,t2um:0,a4fp:a4fs,t1_uid:1}
 e=S('A4_FA0')
 on('A4_FA0',(has_sel,'W0',{**_a4set,a4wp_:lo_p,a4wo_:lo_o,wm:2,wfirst:1,grp:grp+1,wret.r:wret.id('A4_FE')}),(net.eq(clen,0,e),'A4_FE',{**_a4set,grp:grp+1}),(None,'T1_W0',{a4cw:2}))
-on('A4_FE',(a4fpp,'T2_SP0',{ap:cp,ao:co,lc:1,ty:fpre}),(None,'RD0',{lc:1,ty:fpre}))
+on('A4_FE',(a4fpp,'T2_SP0',{ap:cp,ao:co,lc:1,ity:fpre}),(None,'RD0',{lc:1,ity:fpre}))
 # paragraph switches through the logged paragraph field pass
 def a4_toggle(st,fld):
     on(st,(None,'A4_TG1',{r1:cb+fld,pfld:fld}))

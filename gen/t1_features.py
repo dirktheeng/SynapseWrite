@@ -201,8 +201,12 @@ for k_ in range(1,8): _gc1=_gc1+net.ge(hx_,t1_mx+GC*k_,e)
 on('T1_MD1',(net.eq(A_,254,e),'T1_MR',{t1_mrow:G_(nr1,ONE-_gm1)+G_(nr1*8+_gc1,_gm1)}),(None,'T1_MX',None))
 on('T1_MX',(None,'RD0',{t1_mop:0,t1_uid:1,t1_mrow:99}))
 e=S('T1_MK'); nrw=mh_n=X()
-e=S('T1_M0'); mh=net.decode(t1_mop,13,e)
-on('T1_M0',(mh[12],'RVA3_MM0',None),*[(mh[k_],f'T1_MM{k_}',None) for k_ in range(1,12)],(None,'T1_END',None))
+mk0=net.decode(t1_mop,13,e)
+for k_,c_ in ((1,2),(2,11),(3,32),(4,2),(5,3),(6,4),(7,8),(8,4),(9,5),(10,64),(11,7),(12,8)): nrw=nrw+mk0[k_]*c_
+on('T1_MK',(net.eq(eva,27,e),'T1_MX',None),(net.and_(net.eq(eva,13,e),net.lt(t1_mrow,64,e)),'T1_MR',None),(net.eq(eva,13,e),'T1_MX',None),
+ (net.and_(net.eq(eva,131,e),net.ge(t1_mrow+1,nrw,e)),'T1_M0',{t1_mrow:0}),(net.eq(eva,131,e),'T1_M0',{t1_mrow:t1_mrow+1}),
+ (net.and_(net.eq(eva,129,e),net.or_(net.eq(t1_mrow,0,e),net.eq(t1_mrow,99,e))),'T1_M0',{t1_mrow:nrw-1}),(net.eq(eva,129,e),'T1_M0',{t1_mrow:t1_mrow-1}),(None,'HALT',None))
+e=S('T1_MR'); mr=net.decode(t1_mop,13,e); rr_=net.decode(t1_mrow,32,e); CM={t1_mop:0,t1_uid:1,t1_mrow:99}; mrules=[]
 def mc(k_,r_): return net.and_(net.step(mr[k_]),net.step(rr_[r_]))
 for r_ in range(len(rom.FAM)): mrules.append((mc(1,r_),'FMTS',{fm:10,fcol:r_,**CM}))
 for r_,si_ in enumerate(T1_SZ): mrules.append((mc(2,r_),'FMTS',{fm:9,fsi:rom.sz_raw(rom.SZ.index(si_)),**CM}))
