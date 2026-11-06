@@ -35,3 +35,9 @@ The Ctrl+Alt rules first cost +1,950 per typed key (nine rules ahead of all othe
 ## 6. Landscape thumb (Zoom and views row)
 Why: the row says the thumb's size assumes a portrait page.
 What: gen/imp4_view.py draws the side bar thumb with a scale per level and orientation (over 900 px wide uses 1056 px); gen/imp5_wheel.py drags with the same scales. First run 0 of 2: the orientation test was gated by the wrong state (V8_HS0, not the bar's V8_E0), so it read zero. Fixed: 2 of 2 (thumb 981 px for a landscape page at 150 percent, drag of 150 px moves it 150 px). Screenshot build/p1_land.png.
+
+## 7. Text wrapping break read from a file (Tabs and breaks row)
+Run: a test opening `<w:br w:type="textWrapping"/>` failed: a w:br with a type other than page or column fell to A5_BR, which splits the paragraph. Word treats textWrapping (and w:clear) as a line break. T3_RB1's fallback now goes to RVA3_RBR, the same line break as `<w:br/>`. test/p1.js ribbon 7 of 7.
+
+## 8. PARITY
+Find and replace, Tabs and breaks, Other shortcuts and Rulers marked Passed with evidence in test/p1.js (rulers: existing a4, imp4, imp5 evidence; drag off removes a stop; the vertical ruler is at the window edge as in Word). Zoom and views and Ribbon stay Partial with what is still missing named (web layout, draft view, 72 pt glyph ceiling; many ribbon commands). Clipboard is Partial (blocked) with the blocker stated.

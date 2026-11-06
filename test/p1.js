@@ -74,5 +74,12 @@ const yel=(r,g,b)=>r>200&&g>180&&b<170; // match tint
   const cx=(t0[0]+t0[1])>>1;A.raw(3,cx,770,1e6);A.settle();A.raw(22,cx+60,770,1);A.settle();A.raw(22,cx+150,770,1);A.settle();const t1=thumb(A);A.raw(4,cx+150,770);A.settle();
   ok('the landscape thumb drags with the pointer',Math.abs(t1[0]-t0[0]-150)<=2,[t0,t1]);
  }
+
+ if(!only||only=='ribbon'){
+  // a file's text wrapping break reads as a line break
+  const {zip,W}=require('./imp4_lib');
+  let A=await lib();A.file(9,zip({'word/document.xml':`<?xml version="1.0"?><w:document ${W}><w:body><w:p><w:r><w:t>above</w:t><w:br w:type="textWrapping"/><w:t>below</w:t></w:r></w:p></w:body></w:document>`}));A.settle();A.shot('build/p1_tw.png');
+  const x=xml(A);ok('a file\'s text wrapping break reads as a line break',/above<\/w:t><w:br\/><w:t[^>]*>below/.test(x),(x.match(/<w:body>.*<\/w:body>/)||[''])[0].slice(0,300));
+ }
  const f=R.filter(x=>!x).length;console.log(R.length-f,'passed',f,'failed');process.exit(f?1:0);
 })();

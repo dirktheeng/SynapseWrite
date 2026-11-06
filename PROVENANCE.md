@@ -90,10 +90,10 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | a4 ruler | Ruler display and drag. | gen/rv_a4_features.py (335) | 335 | 1222 |
 | a4 merge | Merged table cells. | gen/rv_a4_features.py (639) | 639 | 1414 |
 | a4 pagenum | Page number formats and section start values. | gen/rv_a4_features.py (254) | 254 | 583 |
-| docx reader rv_a5 | Reader fidelity (nested tables, row spans, spacing, truncation), plus spell suggestions and the saved list of added words. | gen/rv_a6_spell.py (845), gen/rv_a5_docx.py (355), gen/app.py (317) | 1517 | 14509 |
+| docx reader rv_a5 | Reader fidelity (nested tables, row spans, spacing, truncation), plus spell suggestions and the saved list of added words. | gen/rv_a6_spell.py (845), gen/rv_a5_docx.py (355), gen/app.py (317) | 1517 | 14508 |
 | feat1 docx reader | Reads caps, small caps, double strike, hidden text, character spacing, run shading, links with their targets, bookmarks, contextual spacing and widow control from a .docx. | gen/feat1_docx.py (249) | 249 | 648 |
 | feat1 docx writer | Writes those run and paragraph properties back, opens and closes links and bookmarks around runs, and lists external link targets as relationships. | gen/feat1_docx.py (228) | 228 | 965 |
-| rv a3 interaction | Editing keys, word and page motion, right click, autoscroll, context menu, and the late tier 1 features. | gen/t1_features.py (2039), gen/rv_a3_keys.py (655), gen/pointer3.py (96), gen/rv_a4_features.py (79), gen/ui.py (42) | 2911 | 25118 |
+| rv a3 interaction | Editing keys, word and page motion, right click, autoscroll, context menu, and the late tier 1 features. | gen/t1_features.py (2039), gen/rv_a3_keys.py (655), gen/pointer3.py (96), gen/rv_a4_features.py (79), gen/ui.py (42) | 2911 | 25119 |
 | file output command | Selects the length, data base and file name the glue saves. | gen/rv_a11_out.py (5) | 5 | 8 |
 | screen check | Compares one line of the screen id plane against the line table on each blink tick and repairs by repainting. | gen/rv_a11_out.py (23) | 23 | 56 |
 | compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (11362) | 11362 | 60000 |
