@@ -72,11 +72,11 @@ def merge(c,tol,quant):
         q=o
     return q
 _NC={}
-def named(fi,bo,it,sub,name):
-    "Closed flattened contours of one font glyph in em units (y up)."
-    key=(fi,bo,it,sub,name)
+def named(fi,bo,it,sub,name,tm=1.0):
+    "Closed flattened contours of one font glyph in em units (y up). tm widens the flattening tolerance."
+    key=(fi,bo,it,sub,name,tm)
     if key in _NC: return _NC[key]
-    f=rom.tt(fi,bo,it,sub); gs=f.getGlyphSet(); upm=f['head'].unitsPerEm; t_=tol_em()*upm
+    f=rom.tt(fi,bo,it,sub); gs=f.getGlyphSet(); upm=f['head'].unitsPerEm; t_=tol_em()*upm*tm
     p=Flat(gs,t_); gs[name].draw(p); out=[]
     for c in p.cs:
         m=merge(c,t_/8,GRID_EM/upm)

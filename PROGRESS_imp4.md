@@ -33,3 +33,9 @@ All exit 0 and pass except: a5_docx edge bound (above), tier2 same after a Libre
 
 ## Full run 3 at a30475e
 Every listed suite and audit run. Results in the report; the only failure is the a5_docx edge bound, 10.14 M against 10 M.
+
+## Regressions: edge bound and page size
+Merged the readme branch; PROVENANCE regenerated.
+Edge bound. The bound counts pushed edges. Work by source line showed the colored text path in the row plane. Palette lines now rest for an exact color; background lines and the ic term rest on white, since the base term is already the background (this helps all colored text); exact color takes three neurons on a pixel at least 0.9 covered and the top four bits on an edge pixel, so edge pixels are within a sixteenth of the exact blend; the unit's face and code wires wake only to draw. Tried and of no effect on this count: font lookup starting at its seed, cascaded patterns for rare rules (kept, they read less). 10.14 M to 9.95 M.
+Size. Before, gz of the weight file: imp3 2,398,648, imp4 2,889,111, a growth of 490 K, of which streams 365 K and PDF font ROM 117 K. By group: glyph weights 93 K neurons and 350 K inputs of a total 106 K and 404 K; compiled control 38 K inputs; glyph unit 18 K. Reclaimed: identical outlines in one face are one program (177 programs); outlines past Latin-1 flatten at 1.6 times the tolerance (0.24 px at 36 pt); exact color lines 24 to 12 plus 3 per column; PDF fonts drop name, OS/2 and post names.
+Determinism: my extended PDF fonts recalculated timestamps; pinned, two builds now hash the same.

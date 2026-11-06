@@ -248,11 +248,12 @@ exec(open('ptr_shapes.py').read())
 _sq=_layer([".K..","K.K.","...K"],0,rom.metrics(9)[0],'K')
 _pseudo={0:{SQUIG:(_sq,True)},len(FACES):PTR_GLYPHS}
 # extended characters: one pseudo face per page and variant, then one with the box for anything else
-UO=rom.UO; XF0=len(FACES)+1; XF={}; _pfm={}
+UO=rom.UO; XF0=len(FACES)+1; XF={}; _pfm={}; _REAL={}; XTOL=1.6   # outlines past Latin-1 flatten a little coarser, which at text sizes cannot be seen
 for p_ in rom.EXT_PAGES:
     for v_ in rom.EXT_VARS:
         _i=XF0+len(XF); XF[p_,v_]=_i; _pfm[_i]=v_
-        _pseudo[_i]={128+l_:(glyphnet.named(*v_,*sg_),False) for l_,sg_ in rom.ext_page(v_,p_).items()}
+        _real=_REAL.setdefault(v_,{str(glyphnet.contours(*v_,c_)) for c_ in rom.CODES})
+        _pseudo[_i]={128+l_:((glyphnet.named(*v_,*sg_) if str(glyphnet.named(*v_,*sg_)) in _real else glyphnet.named(*v_,*sg_,XTOL)),False) for l_,sg_ in rom.ext_page(v_,p_).items()}
         _pseudo[_i]={c_:d_ for c_,d_ in _pseudo[_i].items() if d_[0]} or {128:([[(0.1,0.0),(0.1,0.1),(0.2,0.1)]],False)}
 XFT=XF0+len(XF); _pfm[XFT]=(0,0,0)
 _pseudo[XFT]={128:([[(0.08,0.0),(0.08,0.66),(0.52,0.66),(0.52,0.0)],[(0.14,0.06),(0.46,0.06),(0.46,0.6),(0.14,0.6)]],False)}

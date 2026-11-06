@@ -48,13 +48,13 @@ def ext_blob(i,v,p,first):
     subs=[]
     for l,(sub,g) in m.items():
         if sub not in subs: subs.append(sub)
-    f=TTFont(io.BytesIO(rom._load(rom.FAM[0],subs[0] if subs else 'latin',w,st)))
+    f=TTFont(io.BytesIO(rom._load(rom.FAM[0],subs[0] if subs else 'latin',w,st)),recalcTimestamp=False)
     o=subset.Options();o.hinting=False;o.layout_features=[];o.name_IDs=[1];o.notdef_outline=True;o.drop_tables+=['GSUB','GPOS','GDEF','kern','meta','DSIG','FFTM','name','OS/2','gasp','prep','fpgm','cvt ']
     us={p+l for l in m}; s=subset.Subsetter(o);s.populate(unicodes=sorted(us&set(f.getBestCmap())));s.subset(f)
     rest=us-set(f.getBestCmap())
     for sub in subs[1:]:
-        q=rest&set(TTFont(io.BytesIO(rom._load(rom.FAM[0],sub,w,st))).getBestCmap())
-        if q: _graft(f,TTFont(io.BytesIO(rom._load(rom.FAM[0],sub,w,st))),q,o); rest-=q
+        q=rest&set(TTFont(io.BytesIO(rom._load(rom.FAM[0],sub,w,st)),recalcTimestamp=False).getBestCmap())
+        if q: _graft(f,TTFont(io.BytesIO(rom._load(rom.FAM[0],sub,w,st)),recalcTimestamp=False),q,o); rest-=q
     f['post'].formatType=3.0
     b=io.BytesIO();f.save(b);ttf=b.getvalue();zd=zlib.compress(ttf,9)
     upm=f['head'].unitsPerEm;cm=f.getBestCmap();hm=f['hmtx'];k=1000/upm
