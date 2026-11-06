@@ -28,6 +28,8 @@ class World{
  bank(){return new Float32Array(this.e.memory.buffer,this.e.p_bank(),h.bank);}
  fb(){return new Uint32Array(this.e.memory.buffer,this.e.p_fb(),1024000);}
  hash(y0=0,y1=800,x0=0,x1=1280){const f=this.fb();let a=2166136261>>>0,b=0x9747b28c;for(let y=y0;y<y1;y++){for(let i=y*1280+x0,j=y*1280+x1;i<j;i++){const c=f[i]&0xffffff;a=Math.imul(a^c,16777619);b=Math.imul(b^(c>>>3),0x5bd1e995);}}return (a>>>0).toString(16)+(b>>>0).toString(16);}
+ snap(){return this.fb().slice();}
+ box(a,b,y0=174,y1=776){let x0=9999,x1=-1,yy0=9999,yy1=-1,n=0;for(let y=y0;y<y1;y++)for(let x=0;x<1280;x++){const i=y*1280+x;if((a[i]^b[i])&0xffffff){n++;if(x<x0)x0=x;if(x>x1)x1=x;if(y<yy0)yy0=y;if(y>yy1)yy1=y;}}return n?`${n}px x${x0}-${x1} y${yy0}-${yy1}`:'none';}
  docHash(){return this.hash(174,776,0,1280);}
  active(){const on=[];for(const i of stIds)if(this.e.val(i))on.push(states[i]);return on;}
  D(k,a=0,b=0,c=0){if(this.dead)return 0;const e=this.e;this.events++;this.lastEv=[k,a,b,c];

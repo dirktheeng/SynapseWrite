@@ -13,7 +13,7 @@ async function T(name,fn,cap){if(only&&!name.includes(only))return;const t0=Date
  if(w){const seen={};for(const f of w.fails){const k=f.cls+' '+f.id;seen[k]=(seen[k]||0)+1;}for(const k in seen)msgs.push(k+' x'+seen[k]);}
  const good=!msgs.length;good?pass++:failn++;res.push([name,good,msgs]);console.log(good?'PASS':'FAIL',name,((Date.now()-t0)/1000|0)+'s',w?('ticks '+w.ticks):'',msgs.slice(0,6).join(' ; ').slice(0,500));}
 // A document must survive the event: still editable, and the probe text must reach the saved file.
-function alive(w,ok,tag){if(w.dead)return ok(false,tag+' dead');w.key(133,1);w.type('zq');const u=w.save();ok(!!u,tag+' save produced nothing');if(u){let p;try{p=paras(u);}catch(x){return ok(false,tag+' saved zip bad: '+x.message);}ok(p.join('').includes('zq'),tag+' probe missing');}}
+function alive(w,ok,tag){if(w.dead)return ok(false,tag+' dead');w.key(133,1);w.key(13);w.type('zq');const u=w.save();ok(!!u,tag+' save produced nothing');if(u){let p;try{p=paras(u);}catch(x){return ok(false,tag+' saved zip bad: '+x.message);}ok(p.join('').includes('zq'),tag+' probe missing');}}
 (async()=>{
  await T('paragraph: typing stops at the limit, neighbours intact',(W,ok)=>{const w=W();w.type('before\n');for(let i=0;i<1100;i++)w.key(97);w.type('\nafter');const p=paras(w.save());ok(p.length==3,'paragraphs '+p.length);ok(p[0]=='before','p0');ok(p[1].length<=1000&&p[1].length>=999,'len '+p[1].length);ok(p[2]=='after','p2');});
  await T('paragraph: paste over the limit is clipped',(W,ok)=>{const w=W();w.type('before\n');w.paste('x'.repeat(5000));w.type('\nafter');const p=paras(w.save());ok(p[0]=='before','p0');ok(p[1].length<=1000,'len '+p[1].length);ok(p[2]=='after','p2 '+p[2]);});

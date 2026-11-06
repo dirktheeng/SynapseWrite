@@ -20,3 +20,5 @@ for i_,c_ in enumerate(_SENT):
     on(f'A12_S{i_}',(None,f'A12_S{i_+1}' if i_<len(_SENT)-1 else 'T3_ZX',{wo:(OA+ob+i_,c_)}))
 fsm.trap=net.ge(rdcnt,RD_BUDGET,rdmode); fsm.trap_to='A12_TRAP'; fsm.trap_roots=('OP0','PG_0'); fsm.trap_bar=('OPEND','HALT','INS','SPLIT','PG_Q2','OR','SYNC','T3_PF','A12_TRAP')
 on('A12_TRAP',(rddoc,'OPEND',{rdmode:0,obase:OUTB,pgdoc:0}),(None,'HALT',{rdmode:0,obase:OUTB,pgdoc:0}))
+# A manual page break is a paragraph property, so it goes through the undo log like the others.
+log(S('PB2'),6,cp,PBRK,0,1)
