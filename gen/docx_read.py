@@ -59,7 +59,13 @@ def reversed_(e_):
 def getn(st,n,ret):
     on(st,(None,'GBL',{gbn:n,gbv:0,gbw:1,gbi:0,gret.r:gret.id(ret)}))
 e=S('GBL'); hbit=nextbit(e)
-on('GBL',(net.ge(gbi,gbn,e),'GR',None),(net.eq(nb,0,e),'GBR',{r1:ibase+ip,ip:ip+1}),(None,'GBL',{gbv:gbv+G_(gbw,hbit),gbw:gbw*2,gbi:gbi+1,cur:Shift((cur-hbit*128)*2,512),nb:Dec(nb,1)}))
+# a whole field that the current byte still holds is taken in one tick: the byte's bits, then one line per field width
+_gq=net.and_(e,net.eq(gbi,0,e),net.ge(nb,gbn,e)); _gb=net.bits(cur,8,_gq); _gh=net.decode(gbn,9,_gq)
+_gv=X(); _gc=X()
+for n_ in range(1,9):
+    _gv=_gv+net.gate(sum((_gb[7-k_]*(2**k_) for k_ in range(n_)),X()),_gh[n_])
+    _gc=_gc+net.gate(sum((_gb[7-k_]*(2**(7-k_+n_)) for k_ in range(n_,8)),X()),_gh[n_])
+on('GBL',(net.ge(gbi,gbn,e),'GR',None),(net.and_(_gq,net.step(gbn)),'GR',{gbv:_gv,gbi:gbn,cur:_gc,nb:nb-gbn}),(net.eq(nb,0,e),'GBR',{r1:ibase+ip,ip:ip+1}),(None,'GBL',{gbv:gbv+G_(gbw,hbit),gbw:gbw*2,gbi:gbi+1,cur:Shift((cur-hbit*128)*2,512),nb:Dec(nb,1)}))
 on('GBR',(net.gt(ip,ilim,S('GBR')),'A12_IE',None),(None,'GBL',{cur:reversed_(S('GBR')),nb:8}))
 # Huffman decode, after puff: count[] at hb, symbols at hb+16. Each length's limit (first code plus count) and the
 # symbol offset less its first code (lifted by HBASE, as memory writes cannot carry a negative) sit at hb+HLIM+2*len,
