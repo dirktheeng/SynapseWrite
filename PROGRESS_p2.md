@@ -84,3 +84,7 @@ FLOPs: still below baseline on all events but mouse move (equal).
 Two builds byte identical: 2,963,233 bytes (baseline 2,953,717; +9,516).
 e2e 210/210, tier2 49/49, look 31/31, t3_table 9/9, t3_pic 9/9, t3_misc 13/13, t4_docx 18/18, t4_pdf 7/7, roundtrip and touch all true, a4 50/50, a5_docx 37 PASS (6,808,741 edges, up from 6,784,308 at run 1: the style and list reader additions), fonts 23/23, imp2 45, imp3 49/49, imp4 101/101, imp5 49, imp6 20, feat1 24/24, feat2 35/35, t4 ran, p2 49/49, audit 67/67, flops below or equal to baseline on every event.
 Not reached: Columns (third column, column line), style name and id lengths, the hyphenation walker.
+
+## 6. Merges of main (Tier 4, then Tier 1) and final run (25c7c36)
+Collisions resolved by intent: p3 took bits 14-23 of the extended field (character scale) and 20-23 of the link field, and keeps a paragraph outline level as (level+1)/32 in feat1's paragraph cell. The list restart flag moved to 1/2048 (p3's level decode now floors); the further highlights moved to the run shade cell as their color with blue one up (a mark the writer reads; my p2 test colors updated for that). p1 hooks, menus and rules kept beside mine; a shared temporary renamed.
+Run: builds identical (2,982,457); e2e 210, tier2 49, look 31, t3_* 9/9/13, t4_docx 18, t4_pdf 7, roundtrip, touch, a4 50, a5_docx 37 (6,786,240 edges), fonts 23, imp2-6, feat1 24, feat2 35, t4, p2 49, p3 36, rv_a6_eq 9, rv_a6_pdf 4, p1 36, p1_clip 13, audit 67/67. FLOPs against main 5eaf1e3: lower on all events but mouse move (equal). Main's page 2,969,773.
