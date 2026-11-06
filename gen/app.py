@@ -154,6 +154,12 @@ def _tree(parent,sels,n):
     return _tree(l0,sels[:-1],min(n,half))+(_tree(l1,sels[:-1],n-half) if n>half else [])
 NS=rom.NSZ
 _leaf=_tree(GE,SD['sb'],NS)
+SZG=[]      # the tree's nodes three levels above its leaves: each is the one hot flag of a group of 8 sizes
+def _tg(parent,sels,n):
+    if len(sels)==3: SZG.append(parent); return
+    half=1<<(len(sels)-1); l0,l1=tsplit(parent,sels[-1]); _tg(l0,sels[:-1],min(n,half))
+    if n>half: _tg(l1,sels[:-1],n-half)
+_tg(GE,SD['sb'],NS)
 raw_hot=_leaf[:NS]
 # character index in binary; values past the table (code 255) clamp to an empty entry
 UO_=1<<20; _chv=net.relu(g_ch.w-32+1+GE*M-M)
@@ -176,13 +182,17 @@ vflag=net.step(SD['sup']+SD['sub'])
 size_hot=[X() for _ in range(NS)]
 for i_ in range(NS):
     n_,s_=tsplit(raw_hot[i_],vflag); size_hot[i_]=size_hot[i_]+n_; size_hot[script_size(i_)]=size_hot[script_size(i_)]+s_
-def sel_sum(pairs,G=8):
-    "Sum of one hot selected values (each at least zero), read through groups: a closed group gate ends its reads at once."
+def sel_sum(val):
+    """A value of the drawn size, val(i) at least zero for size i, read through the size tree's groups of 8:
+    a closed group gate ends its reads at once. A raised or lowered run takes its script size, behind vflag."""
     o=X()
-    for a_ in range(0,len(pairs),G):
-        grp=pairs[a_:a_+G]; hw_=net.wire(); vw_=net.wire()
-        for h_,v_ in grp: net.connect(hw_,h_); net.connect(vw_,net.gate(v_,h_))
-        o=o+net.gate(vw_,hw_)
+    for sc,en_ in ((False,ONE-vflag),(True,vflag)):
+        part=X()
+        for g_,gn_ in enumerate(SZG):
+            vw_=net.wire()
+            for i_ in range(8*g_,min(8*g_+8,NS)): net.connect(vw_,net.gate(val(script_size(i_) if sc else i_),raw_hot[i_]))
+            part=part+net.gate(vw_,gn_)
+        o=o+net.gate(part,en_)
     return o
 # a raised or lowered run is rare, so its height is read behind its flag
 _rsup=net.wire(); _rsub=net.wire()
@@ -229,7 +239,7 @@ for p_ in rom.EXT_PAGES:
         chartree(ln_,_xb[:7],6,list(d_),_xal)
 _xhb=net.step(_xhit); _xno=net.step(_xuk-_xhb-0.5); net.connect(aem,_xno*0.6)
 _xlow=sum((_xb[b_]*(1<<b_) for b_ in range(7)),X())
-net.connect(adv,sel_sum([(h,aem*round(rom.SZ[si]*96/72)) for si,h in enumerate(size_hot)]))
+net.connect(adv,sel_sum(lambda si:aem*round(rom.SZ[si]*96/72)))
 # kerning: a tree over the previous character, then over the current one. A pair that exists fires kany.
 kp_en=Bus(net); kp_in=Bus(net)
 kp_ok=net.and_(kp_en.w,net.lt(kp_in.w,127,kp_en.w))
@@ -249,9 +259,7 @@ kanyb=net.step(kany)
 k1=X()
 for f_ in FACES: k1=k1+net.gate(kf[f_]+1,tnode(FH[f_],kanyb))
 kern=net.wire(); _kin=net.wire(); KOFF=4096    # a kerned pair is read behind kanyb; the offset keeps the gated sum positive
-for si,h in enumerate(size_hot):
-    px=round(rom.SZ[si]*96/72)
-    net.connect(_kin,net.gate(k1*px,h)-h*px)
+net.connect(_kin,sel_sum(lambda si:k1*round(rom.SZ[si]*96/72))-sel_sum(lambda si:round(rom.SZ[si]*96/72)))
 net.connect(kern,net.gate(_kin+KOFF,kanyb)-kanyb*KOFF)
 print('metric trees',time.time()-t0,'s',len(KP),'kern pairs',file=sys.stderr)
 # the drawing unit: its own clock domain, entered through a call port, so the paint state stalls while it runs
