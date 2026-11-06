@@ -7,9 +7,10 @@ csd=None;code=R();first=R();index=R();hlen=R();cnt=R();hb=R();sym=R();ln=R();lb=
 rins=R();rdel=R();rfk=R();rvb=R();rhi=rins*ST_INS+rdel*ST_DEL+rfk*ST_F0
 LN=TBL+1200; CLH=TBL+800; LH=TBL; DH=TBL+400; OFFS=TBL+1000
 exec(open('t3_px.py').read())
+exec(open('rv_a5_regs.py').read())
 rtoc=R();rdig=R();tpgv=R();fnc=R();rdsec=R();gcount=R();tcidx=R();gx=R();incell=R()
 def T3_PX_RULES(e):
-    return [(tag('<w:tbl',' >'),'PX',{gcount:0,tcidx:0,gx:0,pfirst:0,oi:oi+6}),(pat('<w:gridC',e),'T3_GC',{oi:oi+8}),(tag('<w:tc',' >'),'T3_TC0',{oi:oi+5}),(pat('</w:tc>',e),'PX',{incell:0,tcidx:tcidx+1,oi:oi+7}),(pat('</w:tr>',e),'PX',{tcidx:0,gx:0,oi:oi+7}),(pat('<w:shd ',e),'T3_SHD',{oi:oi+7})]+T3_PX_MORE(e)
+    return [(tag('<w:tbl',' >'),'PX',{gcount:0,tcidx:0,gx:0,pfirst:0,a5ts:0,oi:oi+6}),(pat('<w:gridC',e),'T3_GC',{oi:oi+8}),(tag('<w:tc',' >'),'T3_TC0',{oi:oi+5}),(pat('</w:tc>',e),'A5_TCE',{oi:oi+7}),(pat('</w:tr>',e),'A5_TRE',{oi:oi+7}),(net.and_(a5tcp,pat('<w:shd ',e)),'T3_SHD',{oi:oi+7})]+T3_PX_MORE(e)
 # open: reset the document, then walk zip members
 t2cp=R();t2k=R();t2v=R();t2n_=R();t2cb0=R();t2skip=R();t2df=R();t2ps=R()
 on('OP0',(None,'T3_OP',{cursec:0,nsec:1,imgp:0,fnc:0,rdsec:0,rdp:0,hftp:0,hfl[0]:0,hfl[1]:0,hfl[2]:0,hfl[3]:0,rins:0,rdel:0,rfk:0,t2cb0:nextb,t2skip:0,t2ps:0,nsty:6,wln:(nextb+SAVE,112,16,1,0,0,0),w1:(as_x(PT),nextb),w2:(nextb+DIRTY,1),w3:(nextb+LEN,0),cp:0,cb:nextb,co:0,clen:0,ap:0,ao:0,npar:1,nextb:nextb+STRIDE,usp:UB,urp:UB,scroll:0,nolog:1,zp:0,pfirst:1,cs:0,ty:0,dfrom:0,lc:1,bgp:0}))
@@ -39,8 +40,8 @@ on('C4',(None,'C5',{nm:W[0]+W[1]*256,ext:W[2]+W[3]*256,cmt:W[4]+W[5]*256,rl:FA+z
 on('C5',(None,'C6',{loff:W[0]+W[1]*256+W[2]*65536,rl:FA+zp+46+nm-8}) if False else (None,'C5b',{loff:W[0]+W[1]*256+W[2]*65536}))
 on('C5b',(None,'C6',{rl:FA+zp+46+nm-8}))
 e=S('C6')
-ztg=net.decode(ztarget,8,e)
-on('C6',(net.or_(net.and_(ztg[4],pat('ment.xml',e),net.eq(nm,17,e)),net.and_(ztg[1],pat('xml.rels',e),net.eq(nm,28,e)),net.and_(ztg[2],pat('otes.xml',e),net.eq(nm,18,e)),net.and_(ztg[3],pat('ents.xml',e),net.eq(nm,17,e)),net.and_(ztg[7],pat('yles.xml',e),net.eq(nm,15,e)),net.and_(ztg[6],pat('ring.xml',e),net.eq(nm,18,e))),'C7',{rl:FA+loff+26}),(ztg[5],'T3_ZC',{zk:0}),(None,'X_C0',{zp:zp+46+nm+ext+cmt}))
+ztg=net.decode(ztarget,9,e)
+on('C6',(net.or_(net.and_(ztg[4],pat('ment.xml',e),net.eq(nm,17,e)),net.and_(ztg[1],pat('xml.rels',e),net.eq(nm,28,e)),net.and_(ztg[2],pat('otes.xml',e),net.eq(nm,18,e)),net.and_(ztg[3],pat('ents.xml',e),net.eq(nm,17,e)),net.and_(ztg[7],pat('yles.xml',e),net.eq(nm,15,e)),net.and_(ztg[6],pat('ring.xml',e),net.eq(nm,18,e)),net.and_(ztg[0],pat('eme1.xml',e)),net.and_(ztg[8],pat('otes.xml',e),net.eq(nm,17,e))),'C7',{rl:FA+loff+26}),(ztg[5],'T3_ZC',{zk:0}),(None,'X_C0',{zp:zp+46+nm+ext+cmt}))
 on('C7',(None,'Z7',{ip:loff+30+W[0]+W[1]*256+W[2]+W[3]*256,ob:0,nb:0,cur:0}))
 e=S('Z7')
 on('Z7',(net.eq(mth,8,e),'BH',{ibase:FA,iret.r:iret.id('T3_ZX')}),(None,'ZS',{oi:0,ibase:FA}))
@@ -164,13 +165,26 @@ e=S('PX')
 on('PX',(net.ge(oi,ob,e),'T2_ZN',None),(None,'PX1',{rl:OA+oi}))
 e=S('PX1')
 lt_=net.eq(W[0],60,e)
-on('PX1',(lt_,'PX2',{rl:OA+oi}),(None,'PX',{oi:oi+1}))
+on('PX1',(lt_,'PX2',{rl:OA+oi}),(None,'PX',{oi:oi+a5_adv(e)}))
 e=S('PX2')
+# Tag rules are compared only inside a group chosen by two letters, so an unmatched tag visits few neurons.
+_pxe=e;_pat0=pat;_a5g={};_a5c={}
+def _a5eq(i_,c_):
+    if (i_,c_) not in _a5c: _a5c[(i_,c_)]=net.eq(W[i_],ord(c_),_pxe)
+    return _a5c[(i_,c_)]
+def _a5en(st):
+    k_=(st[1],st[3])
+    if k_ not in _a5g: _a5g[k_]=net.and_(_a5eq(1,st[1]),_a5eq(3,st[3]))
+    return _a5g[k_]
+def pat(st,en,offs=0):
+    return _pat0(st,_a5en(st) if en is _pxe and offs==0 and len(st)>3 else en,offs)
 def tag(n,end):
-    return net.and_(pat(n,e),net.or_(*[net.eq(W[len(n)],ord(q),e) for q in end]))
+    g_=_a5en(n)
+    return net.and_(_pat0(n,g_),net.or_(*[net.eq(W[len(n)],ord(q),g_) for q in end]))
 def tagA(n,end): return tag(n,end)
 on('PX2',(net.and_(t2skip,ONE-pat('</w:styl',e)),'PX',{oi:oi+1}),
  (pat('</w:styl',e),'T2_SW',{oi:oi+8,t2rr.r:t2rr.id('T2_SC')}),
+ *A5_PX_EARLY(e),
  (tag('<w:p',' >'),'PN1',{oi:oi+4}),
  (tag('<w:t',' >'),'TX0',{oi:oi+4}),
  (tag('<w:r',' >'),'PX',{cs:t2ps,oi:oi+4}),
@@ -188,8 +202,8 @@ on('PX2',(net.and_(t2skip,ONE-pat('</w:styl',e)),'PX',{oi:oi+1}),
  (pat('</w:fldS',e),'PX',{rfk:0,oi:oi+8}),
  (pat('<w:rStyl',e),'T2_VF',{oi:oi+8,t2rr.r:t2rr.id('T2_RS1')}),
  (pat('<w:sz ',e),'SZ0',{rl:OA+oi+13}),
- (pat('<w:color',e),'CO0',{rl:OA+oi+16}),
- (pat('<w:rFont',e),'RF9',{rl:OA+oi+19}),
+ (pat('<w:color',e),'A5_CO',{oi:oi+8}),
+ (pat('<w:rFont',e),'A5_RF',{oi:oi+9}),
  (pat('<w:highl',e),'T2_HL',{rl:OA+oi+20}),
  (pat('<w:vertA',e),'T2_VA',{rl:OA+oi+20}),
  (pat('<w:jc ',e),'JC0',{rl:OA+oi+13}),
@@ -209,8 +223,10 @@ on('PX2',(net.and_(t2skip,ONE-pat('</w:styl',e)),'PX',{oi:oi+1}),
  (pat('<w:numFm',e),'T2_FM',{rl:OA+oi+17}),
  *T3_PX_RULES(e),
  (None,'PX',{oi:oi+1}))
+pat=_pat0
 e=S('SZ0')
-hpv=(W[0]-48)*10+(W[1]-48)
+_q1=net.or_(net.eq(W[1],34,e),net.eq(W[1],39,e));_q2=net.and_(e,ONE-_q1,net.or_(net.eq(W[2],34,e),net.eq(W[2],39,e)))
+hpv=net.min_(G_(W[0]-48,_q1)+G_((W[0]-48)*10+(W[1]-48),_q2)+G_((W[0]-48)*100+(W[1]-48)*10+W[2]-48,e-_q1-_q2),as_x(79))
 hps=net.decode(hpv,80,e); cl=X()
 PTL=rom.PTS
 for hp_ in range(80):
@@ -220,7 +236,8 @@ on('SZ0',(None,'T2_C',{t2k:8,t2v:cl,oi:oi+13}))
 e=S('JC0'); j1=net.eq(W[0],99,e);j2=net.or_(net.eq(W[0],114,e),net.eq(W[0],101,e));j3=net.eq(W[0],98,e)
 on('JC0',(None,'PX',{w1:(cb+ALIGN,j1*1+j2*2+j3*3),oi:oi+13}))
 e=S('PN1')
-on('PN1',(incell,'T2_PR',{rins:0,rdel:0,rfk:0}),(pfirst,'T2_PR',{pfirst:0,rins:0,rdel:0,rfk:0}),(None,'SPLIT',{oret.r:oret.id('T3_PN2'),rins:0,rdel:0,rfk:0}))
+fsm.set(a5aft,S('PN1'),0)
+on('PN1',(net.and_(incell,net.step(clen),net.lt(clen,1000,e)),'INS',{ins_ch:32,ins_st:cs+rhi,oret.r:oret.id('A5_PN')}),(incell,'T2_PR',{rins:0,rdel:0,rfk:0}),(pfirst,'T2_PR',{pfirst:0,rins:0,rdel:0,rfk:0}),(None,'SPLIT',{oret.r:oret.id('T3_PN2'),rins:0,rdel:0,rfk:0}))
 on('T3_PN2',(None,'T2_PR',{w1:(cb+ALIGN,0),w2:(cb+SECN,rdp),rdp:0,rtoc:0,rdig:0}))
 # text inside a run
 e=S('TX0')
@@ -231,7 +248,9 @@ on('TX2',(None,'TX3',{rl:OA+oi}))
 e=S('TX3')
 amp_=net.eq(W[0],38,e);ltx=net.eq(W[0],60,e)
 isdg_=net.and_(net.ge(W[0],48,e),net.lt(W[0],58,e))
-on('TX3',(ltx,'PX',None),(net.and_(rdig,isdg_),'TX2',{tpgv:tpgv*10+W[0]-48,oi:oi+1,w1:(cb+TPG,tpgv*10+W[0]-48)}),(rdig,'TX2',{oi:oi+1}),
+on('TX3',(ltx,'PX',None),(net.and_(rdig,isdg_),'TX2',{tpgv:tpgv*10+W[0]-48,oi:oi+1,w1:(cb+TPG,tpgv*10+W[0]-48)}),(rdig,'T3_RT0',{oi:a5bk,rdig:0,rtoc:0,w1:(cb+TOCF,0),w2:(cb+TPG,0)}),
+ (net.and_(amp_,net.eq(W[1],35,e)),'A5_NE',{oi:oi+2}),
+ (net.and_(ONE-incell,net.or_(net.ge(clen,1000,e),net.and_(net.eq(W[0],32,e),net.ge(clen,950,e)))),'SPLIT',{a5pb:cb,oret.r:oret.id('A5_LP')}),
  (net.and_(amp_,net.eq(W[1],97,e),net.eq(W[2],112,e)),'INS',{ins_ch:39,ins_st:cs+rhi,oi:oi+6,oret.r:oret.id('TX2')}),
  (net.and_(amp_,net.eq(W[1],113,e)),'INS',{ins_ch:34,ins_st:cs+rhi,oi:oi+6,oret.r:oret.id('TX2')}),
  (net.and_(amp_,net.eq(W[1],97,e)),'INS',{ins_ch:38,ins_st:cs+rhi,oi:oi+5,oret.r:oret.id('TX2')}),
@@ -242,7 +261,7 @@ on('TX3',(ltx,'PX',None),(net.and_(rdig,isdg_),'TX2',{tpgv:tpgv*10+W[0]-48,oi:oi
  (net.ge(W[0],240,e),'T2_U8',{t2cp:63,oi:oi+4}),
  (net.or_(net.gt(W[0],126,e),net.lt(W[0],32,e),net.ge(clen,1000,e)),'TX2',{oi:oi+1}),
  (None,'INS',{ins_ch:W[0],ins_st:cs+rhi,oi:oi+1,oret.r:oret.id('TX2')}))
-e=S('RF9'); on('RF9',(net.or_(pat('Caladea',e),pat('Cambria',e),pat('Times',e),pat('Georgia',e),pat('Garamond',e)),'T2_C',{t2k:3,t2v:1,oi:oi+19}),(None,'T2_C',{t2k:3,t2v:0,oi:oi+8}))
+e=S('RF9'); on('RF9',(a5_serif(e),'T2_C',{t2k:3,t2v:1}),(pat('Liberati',e),'A5_LIB',{rl:OA+oi+11}),(None,'T2_C',{t2k:3,t2v:0}))
 e=S('CO0'); cvv=X(); exact=X()
 for j_ in range(1,32):
     p_=pat('%02X%02X%02X'%PAL_F[j_],e); cvv=cvv+p_*j_; exact=exact+p_
@@ -255,9 +274,9 @@ for i_ in range(512):
     r_,g_,b_=((i_>>6)&7)*36+18,((i_>>3)&7)*36+18,(i_&7)*36+18
     best=min(range(32),key=lambda j:(PAL_F[j][0]-r_)**2+(PAL_F[j][1]-g_)**2+(PAL_F[j][2]-b_)**2)
     nv_=nv_+nh[i_]*best
-on('CO0',(au,'T2_C',{t2k:7,t2v:0,oi:oi+16}),(None,'T2_C',{t2k:7,t2v:cvv+nv_,oi:oi+16}))
+on('CO0',(au,'T2_C',{t2k:7,t2v:0,oi:oi+6}),(None,'T2_C',{t2k:7,t2v:cvv+nv_,oi:oi+6}))
 on('OPEND',(None,'OPE2',{nolog:0,clip0:0,clip1:0}))
-on('OPE2',(None,'SYNC',{autos:1,lc:1,dfrom:0,ty:0}))
+on('OPE2',(None,'A5_CX0',{autos:1,lc:1,dfrom:0,ty:0,a5i:1}))
 
 # ---- PNG reader: chunks, inflate, row filters, decimation to fit the page ----
 net.group('png reader')
@@ -287,16 +306,17 @@ OAp=as_x(OUTP)
 e=S('PG_R'); on('PG_R',(net.ge(pcy,ph,e),'PG_K',{ck:1,psz:624}),(None,'PG_F',{r1:OAp+pos}))
 on('PG_F',(None,'PG_X',{rowf:R1,pos:pos+1,ix:0,rstart:pos+1}))
 e=S('PG_X')
-on('PG_X',(net.ge(ix,pst-1,e),'PG_R',{pcy:pcy+1}),(None,'PG_P',{r1:OAp+pos,r2:G_(OAp+pos-pbp,net.ge(ix,pbp,e)),rU:G_(OAp+pos-pst,net.step(pcy)),rV:G_(OAp+pos-pst-pbp,net.and_(net.ge(ix,pbp,e),net.step(pcy)))}))
+on('PG_X',(net.eq(rowf,0,e),'PG_R',{pcy:pcy+1,pos:pos+pst-1}),(net.ge(ix,pst-1,e),'PG_R',{pcy:pcy+1}),(None,'PG_P',{r1:OAp+pos,r2:G_(OAp+pos-pbp,net.ge(ix,pbp,e)),rU:G_(OAp+pos-pst,net.step(pcy)),rV:G_(OAp+pos-pst-pbp,net.and_(net.ge(ix,pbp,e),net.step(pcy)))}))
 e=S('PG_P'); ft=net.decode(rowf,5,e)
 hasL=net.ge(ix,pbp,e);hasU=net.step(pcy)
 a_=G_(R2,hasL);b_=G_(rU.out[0],hasU);c_=G_(rV.out[0],net.and_(hasL,hasU))
 xv=R1
-sm=a_+b_; avg=(sm-net.bits(sm,9,e)[0])*0.5
+sm=a_+b_; avg=(sm-net.bits(sm,9,ft[3])[0])*0.5
 def abs_(x): return net.relu(x)+net.relu(-x)
-pa=abs_(b_-c_);pb=abs_(a_-c_);pc=abs_(a_+b_-c_*2)
-ca=net.and_(e,net.ge(pb,pa,e),net.ge(pc,pa,e));cb_p=net.and_(e,ONE-ca,net.ge(pc,pb,e));cc=e-ca-cb_p
-paeth=G_(a_,ca)+G_(b_,cb_p)+G_(c_,cc)
+a4=G_(a_,ft[4]);b4=G_(b_,ft[4]);c4=G_(c_,ft[4])
+pa=abs_(b4-c4);pb=abs_(a4-c4);pc=abs_(a4+b4-c4*2)
+ca=net.and_(ft[4],net.ge(pb,pa,ft[4]),net.ge(pc,pa,ft[4]));cb_p=net.and_(ft[4],ONE-ca,net.ge(pc,pb,ft[4]));cc=ft[4]-ca-cb_p
+paeth=G_(a4,ca)+G_(b4,cb_p)+G_(c4,cc)
 pred=G_(a_,ft[1])+G_(b_,ft[2])+G_(avg,ft[3])+G_(paeth,ft[4])
 tot=xv+pred; ov=net.ge(tot,256,e)
 hasL2=net.ge(ix+1,pbp,e);hasU2=net.step(pcy)

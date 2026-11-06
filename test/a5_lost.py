@@ -6,6 +6,6 @@ def txt(fn):
     for n in z.namelist():
         if re.match(r'word/(document|footnotes|endnotes|comments|header\d*|footer\d*)\.xml$',n):
             o+=' '+re.sub(r'<[^>]+>','',re.sub(r'</w:p>',' ',z.read(n).decode('utf8','replace')))
-    return set(re.findall(r'\bM\d{3,6}\b',o))
+    return set(re.findall(r'M\d{3,6}\b',o))
 a,b=txt(sys.argv[1]),txt(sys.argv[2])
 print(sys.argv[1].split('/')[-1],'markers',len(a),'lost',len(a-b),sorted(a-b)[:40])

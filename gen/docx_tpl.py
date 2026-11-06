@@ -20,3 +20,6 @@ def _def(d):
     c=zlib.compressobj(9,zlib.DEFLATED,-15); return c.compress(d)+c.flush()
 STY_H=XH+b'<w:styles '+W_NS+b'><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Carlito" w:hAnsi="Carlito"/><w:sz w:val="22"/></w:rPr></w:rPrDefault></w:docDefaults>'
 STY_T=b'</w:styles>'
+def settings():
+    "word/settings.xml: Word writes this part in every file. The separators are the ones footnotes.xml defines; compatibility mode 15 is current Word."
+    return XH+b'<w:settings '+W_NS+b'><w:footnotePr><w:footnote w:id="-1"/><w:footnote w:id="0"/></w:footnotePr><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>'

@@ -85,6 +85,8 @@ def check(fn):
     if re.search(r'</w:tbl></w:tc>',doc): bad.append('table cell ends in a table with no paragraph')
     if re.search(r'<w:tc>(<w:tcPr>.*?</w:tcPr>)?</w:tc>',doc): bad.append('empty table cell')
     # grid columns against cells per row
+    try: E.fromstring(doc.encode())
+    except Exception as ex: return bad+["document.xml not well formed"]
     for tb in E.fromstring(doc.encode()).iter('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tbl'):
         WN='{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
         g=len(tb.find(WN+'tblGrid')) if tb.find(WN+'tblGrid') is not None else -1
