@@ -98,7 +98,8 @@ class Net:
         return s.relu(val+en*M-M)
     def and_(s,*a):
         e=X(c=-(len(a)-1))
-        for x in a: e=e+x
+        # A sum of exclusive lines has no single input that decides, so every line would have to wake the AND. One bounded neuron over the sum lets one input decide and the lines stay lazy.
+        for x in a: e=e+(s.step(x) if isinstance(x,X) and sum(1 for w in x.t.values() if w>0)>1 else x)
         r=s.step(e)
         # An AND's inputs are 0 or 1 by construction, so any of them may wake it.
         s.bool_in=getattr(s,'bool_in',set()); s.bool_in.add(next(iter(r.t)))

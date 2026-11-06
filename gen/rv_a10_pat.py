@@ -22,6 +22,6 @@ def pat(st,e,offs=0):
     if (st,offs) not in _wlines:    # a bare wire here would have no known bound, and every rule reading it would be pushed
         _wlines[(st,offs)]=_wrange(1,st) if offs==4 else _wrange(0,st) if len(st)<=4 else net.and_(_wrange(0,st[:4]),_wrange(1,st[4:]))
     return _wlines[(st,offs)]
-def tag(n,end): return sum((pat(n+q,e) for q in end),X())   # the lines exclude each other
+def tag(n,end): return net.or_(*[pat(n+q,e) for q in end])   # one bounded neuron, so a rule's state can wake it and the window lines are read only when asked
 tagA=tag
 def pat_finish(): print('window comparator patterns',len(_wlines),'thresholds',len(_wth[0])+len(_wth[1]),file=sys.stderr)

@@ -287,7 +287,7 @@ class GlyphUnit:
         g._generator(miss,Lch,Lface,Lppem,Lpt,g.key,retry,fin)
     def _generator(g,st,Lch,Lface,Lppem,Lpt,key,retry,fin):
         net=g.net; ONE=net.ONE; LW=g.LW
-        done=net.wire()
+        done=net.wire(); g._doneb=net.step(done)
         haswire=net.wire(); has=net.step(haswire); run_=net.and_(st,has); nog=st-run_     # a code with no outline runs nothing
         def latch(val,load=run_,clear=done):
             r=net.reg(); net.rec(r,r-net.relu(r+clear*M-M)+net.gate(val,load)); return r
@@ -453,28 +453,34 @@ class GlyphUnit:
             g._glyph(k,P,slots,aslots,kn,s,y,bc,bh,uen,sx,done,ax,ay,net.step(P['lf']))
         # ---- ramp bank, shared by all glyphs and written once ----
         net.group('ramp bank')
-        c28=latch(net.step(cells-28.5)); c64=latch(net.step(cells-64.5))
+        # A column past the glyph's cells is never stored, so each tier of columns opens only for a glyph that wide.
+        TIERS=[t_ for t_ in (6,9,12,16,20,28,40,64,100) if t_<LW]; ctier=[latch(net.step(cells-t_-0.5)) for t_ in TIERS]
+        def tier_of(q): return next((i_ for i_,t_ in enumerate(TIERS) if q<=t_),len(TIERS))
+        def tiers(en):
+            o_=[en]
+            for c_ in ctier: o_.append(net.and_(o_[-1],c_))
+            return o_
         ox=latch(OX)
         w=[X() for _ in range(LW)]; nbank=0
         for gp in (slots,aslots):
             for sg,L_ in gp.items():
                 for xk in L_:
-                    en=net.step(xk); enm=net.and_(en,c28); enl=net.and_(en,c64); R=[]
+                    en=net.step(xk); et=tiers(en); R=[]
                     xs=net.wire(); net.connect(xs,net.relu(xk+ox+en*M-M))
                     for q in range(LW+1):
-                        e_=en if q<=28 else enm if q<=64 else enl
-                        R.append(net.relu(e_*M-M+(q+PAD+OFF)-xs)); nbank+=1
+                        R.append(net.relu(et[tier_of(q)]*M-M+(q+PAD+OFF)-xs)); nbank+=1
                     for p_ in range(LW): w[p_]=w[p_]+(R[p_+1]-R[p_])*sg
         g.nbank=nbank
         net.group('coverage')
         ac=[net.reg() for _ in range(LW)]
         out=[net.wire() for _ in range(LW)]
+        clrt=tiers(clr); wrt=tiers(wr)
         for p_ in range(LW):
             wp=net.wire(); net.connect(wp,w[p_])
             cov=net.relu(wp)-net.relu(wp-1)
-            net.rec(ac[p_],ac[p_]-net.relu(ac[p_]+clr*M-M)+cov*(1.0/K))
+            net.rec(ac[p_],ac[p_]-net.relu(ac[p_]+clrt[tier_of(p_+1)]*M-M)+cov*(1.0/K))
             # darkening curve, the same one the old rasterizer used, written as a piecewise linear map of final coverage
-            a_=net.relu(ac[p_]+wr*M-M)
+            a_=net.relu(ac[p_]+wrt[tier_of(p_+1)]*M-M)
             net.connect(out[p_],a_*GAMMA_K[0]-net.relu(a_-0.25)*GAMMA_K[1]-net.relu(a_-0.5)*GAMMA_K[2]-net.relu(a_-0.75)*GAMMA_K[3])
         net.aligned.append([next(iter(w_.t)) for w_ in out])
         p=_Write(wr,addr,out[0],LW,cl); net.ports.append(p); p.dom=1
@@ -503,7 +509,7 @@ class GlyphUnit:
             for u,(l,r,_h) in enumerate(st):
                 net.connect(uen[u],lfs); net.connect(bc[u],net.gate(g._sin*((l+r)/2),lfs)); net.connect(bh[u],net.gate(g._sin*((r-l)/2),lfs))
             g.stats['stems']+=len(st)
-        gr=net.reg(); net.rec(gr,gr-net.relu(gr+done*M-M)+lf)
+        gr=net.reg(); net.boolreg=getattr(net,'boolreg',set()); net.boolreg.add(next(iter(gr.t))); net.rec(gr,gr-net.and_(gr,g._doneb)+lf)   # the live program wakes its own clear, so done has no fan out to every program
         keys=sorted(set(e[0] for e in E)|set(e[2] for e in E))
         dy={}
         for yk in keys:

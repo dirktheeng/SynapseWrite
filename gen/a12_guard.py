@@ -9,9 +9,11 @@ e=S('A12_OV0'); on('A12_OV0',(net.lt(evc,22,e),'HALT',None),(None,'A12_OV1',{ovp
 on('A12_OV1',(None,'A12_OV2',{rl:FA+ovp}))
 e=S('A12_OV2'); _sig=net.and_(net.eq(W[0],80,e),net.eq(W[1],75,e),net.eq(W[2],5,e),net.eq(W[3],6,e))
 on('A12_OV2',(_sig,'OP0',None),(net.or_(net.eq(ovp,0,e),net.ge(ovn,65535,e)),'HALT',None),(None,'A12_OV1',{ovp:ovp-1,ovn:ovn+1}))
-fsm.set(obase,S('OP0'),OUTB); fsm.set(rdmode,S('OP0'),1); fsm.set(rddoc,S('OP0'),1); fsm.set(rdcnt,S('OP0'),0)
-fsm.set(rdmode,S('PG_0'),1); fsm.set(rddoc,S('PG_0'),0); fsm.set(rdcnt,S('PG_0'),0)
-fsm.set(rdmode,S('OPEND'),0); fsm.set(rdmode,S('HALT'),0); fsm.set(rdcnt,rdmode,rdcnt+1)
+fsm.set(obase,S('OP0'),OUTB); fsm.set(rdmode,S('OP0'),1); fsm.set(rddoc,S('OP0'),1)
+fsm.set(rdmode,S('PG_0'),1); fsm.set(rddoc,S('PG_0'),0)
+fsm.set(rdmode,S('OPEND'),0); fsm.set(rdmode,S('HALT'),0)
+# The budget counts by its own bias: once loaded with 1 it adds 1 per tick through its self connection, one edge a tick, and reading it costs nothing.
+_rc=next(iter(rdcnt.t)); net.bias[_rc]=1.0; _rl=S('OP0')+S('PG_0'); net.rec(rdcnt,rdcnt-net.relu(rdcnt+1+(_rl+S('OPEND')+S('HALT'))*M-M)+_rl)
 # Any end of input or output: what was decoded so far is all there is.
 on('A12_IE',(None,'IR',{oi:0}))
 # The end of every inflated member gets a sentinel holding each terminator that attribute and tag scans wait for.
