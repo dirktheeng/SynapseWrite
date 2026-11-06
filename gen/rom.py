@@ -1,5 +1,7 @@
 """Compiles openly licensed font outlines into per-glyph weight vectors, advances and kerning."""
 import io,glob,math,os,unicodedata
+import numpy as np
+GAMMA=0.8
 from fontTools.ttLib import TTFont
 from PIL import Image,ImageDraw,ImageFont
 PTS=[11,12,14,16,18,20,24,28,36,9,10,8,7]   # size index 0 is the default 11 pt
@@ -37,18 +39,36 @@ def _src(fi,bold,ital,ch):
     if ord(ch) in tt(fi,bold,ital).getBestCmap(): return 'latin'
     if ord(ch) in tt(fi,bold,ital,'latin-ext').getBestCmap(): return 'latin-ext'
     return None
+OS=8                                        # oversampling for unhinted ink
+def _xsnap(fi,bold,ital,px):
+    "Vertical scale that puts the x-height on a pixel row. Horizontal positions stay exact."
+    f=tt(fi,bold,ital); xh=f['OS/2'].sxHeight/f['head'].unitsPerEm*px
+    return max(1,round(xh))/xh if xh>0 else 1.0
 def _render(fi,bold,ital,si,ch):
+    """Ink from the unhinted outline: drawn 8x large (hinting is then negligible), box filtered.
+    Hinted ink at text sizes is narrower than the advance, which left holes after letters such as m."""
     px=round(PTS[si]*96/72); W,H=(SW,SH) if small(si) else (LW,LH)
     sub=_src(fi,bold,ital,ch)
     if sub is None: return {}
-    f=font(fi,bold,ital,px,sub); a,_=font(fi,bold,ital,px).getmetrics()
-    im=Image.new('L',(W,H),0); d=ImageDraw.Draw(im); d.text((2,a),ch,font=f,fill=255,anchor='ls')
-    out={}; p=im.load()
+    f=font(fi,bold,ital,px*OS,sub); a,_=font(fi,bold,ital,px).getmetrics()
+    im=Image.new('L',(W*OS,(H+8)*OS),0); d=ImageDraw.Draw(im); d.text((2*OS,(a+4)*OS),ch,font=f,fill=255,anchor='ls')
+    A=np.asarray(im,dtype=np.float64)
+    ys=_xsnap(fi,bold,ital,px)
+    # row r of the output covers these oversampled rows, measured from the baseline
+    base=(a+4)*OS; rows=np.arange((H+8)*OS); yo=np.floor((base+(rows-base+0.5)*ys)/OS-4).astype(int)
+    out_={}
+    acc=np.zeros((H,W)); cnt=np.zeros(H)
+    cols=A.reshape((H+8)*OS,W,OS).mean(axis=2)
+    for r_,yy in enumerate(yo):
+        if 0<=yy<H: acc[yy]+=cols[r_]; cnt[yy]+=1
     for y in range(H):
+        if cnt[y]==0: continue
         for x in range(W):
-            q=round(p[x,y]*15/255)
-            if q: out[(x,y)]=q
-    return out
+            c=acc[y,x]/cnt[y]/255
+            if c<=0: continue
+            q=round(min(1,c**GAMMA)*15)
+            if q: out_[(x,y)]=q
+    return out_
 def adv_em(fi,bold,ital,code):
     "Unhinted advance in ems, read from the font tables."
     ch=cp1252(code)
