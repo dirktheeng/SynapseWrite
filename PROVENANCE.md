@@ -49,7 +49,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | docx writer | Writes the document XML parts. | gen/t2_write.py (652), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1095 | 11224 |
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2707), gen/app.py (4) | 2711 | 41587 |
 | pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1434) | 1434 | 4627 |
-| feat2 pdf run effects | NO PURPOSE RECORDED | gen/pdf_write.py (290) | 290 | 1106 |
+| feat2 pdf run effects | Prints character spacing, run shading, double strike and external links as link annotations. | gen/pdf_write.py (290) | 290 | 1106 |
 | docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (2837) | 2837 | 16733 |
 | png reader | Decodes PNG files to pixel words. | gen/docx_read.py (311), gen/a12_guard.py (61) | 372 | 4750 |
 | zip crc check | Zip CRC check on open: the inflated main part runs through the save CRC network and must match the central directory. | gen/a12_guard.py (18) | 18 | 104 |
@@ -58,7 +58,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | tier 4 features | Tracked changes, fields, equations, mail merge. | gen/t4_features.py (705) | 705 | 1927 |
 | docx deflate | LZ77 with fixed Huffman compression for the zip container. | gen/t4_features.py (242) | 242 | 863 |
 | docx reader tier 4 | Reads tracked marks and fields. | gen/t4_features.py (1722) | 1722 | 4788 |
-| feat2 built up math | NO PURPOSE RECORDED | gen/t4_features.py (1788) | 1788 | 4610 |
+| feat2 built up math | Builds, measures, paints, saves as OMML, reads and prints the newer equation forms: root with an index, n-ary with limits, accents, delimiters as tall as their line, two row matrix. | gen/t4_features.py (1788) | 1788 | 4610 |
 | tier 2 | Styles, paragraph commands, lists and typed sizes. | gen/t2_features.py (391) | 391 | 1023 |
 | docx reader tier 2 | Reads styles, numbering, run and paragraph properties. | gen/t2_features.py (816) | 816 | 3010 |
 | tier3 | Remaining tier 3 commands and undo op 8. | gen/t3_features.py (22) | 22 | 46 |

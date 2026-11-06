@@ -32,3 +32,7 @@ Design: the rv_a6 record (one character, code 300 and up, standing for a 64 cell
 - Page 3,832,385 bytes (base 3,806,957, +25,428).
 - Two builds byte identical (cmp).
 - test/flops.js: every event within +0.88% of docs/flops_baseline.json (main itself is +0.88% on background layout; feat2 adds at most 0.03% over main).
+
+## Final full run (background, one at a time)
+feat2 35/35, e2e 210/210, tier2 49/49, look, t3_table, t3_pic, t3_misc, roundtrip, touch, a4, imp2, t4 exit 0 with no FAIL, t4_docx 18/18, t4_pdf 7/7, a5_docx no FAIL (a01 open 9,931,697 edges), imp3 49/49, imp4 101/101, imp5 49/0, imp6 20/0, feat1 24/24, rv_a6_eq 9/9, rv_a6_pdf 4/4.
+audit first 65/67: the two new groups had no purpose in gen/rv_a11_prov.py (so PROVENANCE.md lacked them). Added; rebuilt; audit 67/67. Two builds byte identical after that, page 3,832,385 bytes.
