@@ -767,6 +767,20 @@ Measured in headless Chromium on a CPU through WASM, on a long test document at 
 | Undo | 32 ms |
 | First paint of a page in a new font, 11 pt | 39 to 147 ms |
 
+Wall time is noisy on a shared machine, so the project also counts work deterministically with `test/flops.js`. It runs the real weights on a counting build of the engine and counts every multiply-add, including inputs that are read lazily, plus every activation: FLOPs = 2 × multiply-adds + activations. The same events always give the same count. Engine port work, such as filling pixels, is not included. The baseline is in [`docs/flops_baseline.json`](docs/flops_baseline.json):
+
+| Event, long document | Ticks | FLOPs |
+|---|---:|---:|
+| Type a letter, after the first | 65 | 80,866 |
+| Mouse move | 10 | 30,735 |
+| Select all | 2,169 | 9.7 M |
+| Jump to top | 2,433 | 10.3 M |
+| Enter at the top | 2,580 | 10.4 M |
+| Undo | 2,661 | 11.0 M |
+| Scroll one notch | 2,873 | 12.2 M |
+
+Earlier figures in this README count only pushed edges. Those miss the lazy reads, which here are about four times as many multiply-adds.
+
 The project's target is under 100 ms from event to frame, at 1280 by 800. It has not been measured on a mid-range GPU.
 
 ### Repository tour
