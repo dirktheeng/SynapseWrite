@@ -15,13 +15,13 @@
 | **Deployment** | one static HTML file, about 3.2 MB |
 | **Training code** | none: no data, loss, gradient, search or fitting |
 
-SynapseWrite follows the [Weight-Space Programming](https://rikiyat.github.io/blog/weight-space-programming/) approach: reason about what each layer must compute, then write the weights that compute it. A deterministic Python generator writes those weights. After that, Python is gone. The browser runs inference, plus the small glue described below.
+SynapseWrite was inspired by [Weight-Space Programming](https://rikiyat.github.io/blog/weight-space-programming/): reason about what each layer must compute, then write the weights that compute it. Here, a deterministic Python generator writes those weights, so it is best described as a [compiled neural program](#how-do-we-classify-what-this-is). After that, Python is gone. The browser runs inference, plus the small glue described below.
 
 It is an independent project with its own name and icons, modeled on the features and look of Microsoft Word. It is not affiliated with or endorsed by Microsoft and contains no Microsoft assets.
 
 ## Contents
 
-[One tick](#the-whole-program-is-one-function) · [The equation](#the-equation-explained) · [Neurons](#from-neurons-to-logic) · [Control flow](#control-flow-a-token-in-the-weights) · [Sparsity](#why-half-a-million-neurons-can-feel-instant) · [Memory](#memory-the-network-holds-the-pointers) · [The screen](#the-screen-is-also-an-input) · [Text](#how-a-letter-gets-drawn) · [File formats](#file-formats-are-networks-too) · [Connections](#how-everything-is-connected) · [Every sub-network](#every-sub-network-and-why-it-exists) · [Circuits](#is-it-a-circuit) · [Determinism](#determinism-and-hallucinations) · [Boundaries](#what-is-not-the-network) · [Building](#build-it) · [Verification](#how-it-is-checked) · [Status](#status)
+[One tick](#the-whole-program-is-one-function) · [The equation](#the-equation-explained) · [Neurons](#from-neurons-to-logic) · [Control flow](#control-flow-a-token-in-the-weights) · [Sparsity](#why-half-a-million-neurons-can-feel-instant) · [Memory](#memory-the-network-holds-the-pointers) · [The screen](#the-screen-is-also-an-input) · [Text](#how-a-letter-gets-drawn) · [File formats](#file-formats-are-networks-too) · [Connections](#how-everything-is-connected) · [Every sub-network](#every-sub-network-and-why-it-exists) · [Circuits](#is-it-a-circuit) · [Classification](#how-do-we-classify-what-this-is) · [Determinism](#determinism-and-hallucinations) · [Boundaries](#what-is-not-the-network) · [Building](#build-it) · [Verification](#how-it-is-checked) · [Status](#status)
 
 ## The whole program is one function
 
@@ -504,6 +504,40 @@ Actual values show the same mix. In a short session of typing, clicking, formatt
 - **The glue and the browser.** These are ordinary code around the circuit, limited as described below.
 
 **Clock domains have a hardware parallel.** Pausing the main block while the second one runs resembles clock gating. As a call that runs to completion, it is also like a software subroutine.
+
+## How do we classify what this is?
+
+The short answer is a **compiled neural program**: a fixed-function, deterministically compiled recurrent threshold-linear network that implements a complete interactive application.
+
+| Term | Does it fit? | Why |
+|---|---|---|
+| **Neural network** | Yes, by definition | It has weighted sums, activations, layers and recurrence. But it has no learning and no generalization, and one wrong weight breaks it like a bug in a program. |
+| **Neural program** | Yes, in the compiled sense | The weights are the program. In much of the research, though, the phrase means a program a network learned, so "compiled" matters. |
+| **Circuit** | Yes in structure | See [Is it a circuit?](#is-it-a-circuit). Most of it is mixed-signal in style, and only a small part is pure logic. |
+| **Neural computer** | Partly | It has a program counter, registers, addressed memory and input and output. But the program is the wiring. It has no instruction set and cannot load other software, so it is a fixed-function machine, closer to a chip that only does one job than to a CPU. |
+| **Weight-Space Programming** | Partly | As [the post that inspired this project](https://rikiyat.github.io/blog/weight-space-programming/) defines it, a language model reads and writes weights directly, and it lists compiling from formal programs as a different approach. Here, a language model wrote a generator, and the generator wrote the weights. |
+| **Machine learning** | No | There is no data, loss, gradient or search. |
+
+### Earlier work it relates to
+
+| Line of work | Example | How weights are made | Relationship |
+|---|---|---|---|
+| Threshold logic | McCulloch and Pitts, 1943 | Designed logic | Its foundation |
+| Neural compilers | [Siegelmann, 1994](https://mlanthology.org/aaai/1994/siegelmann1994aaai-neural): the NEL language to a recurrent network | Compiled | Closest in spirit |
+| | [Gruau, Ratajszczak and Wiber, 1995](https://gpbib.cs.ucl.ac.uk/gp-html/DBLP_journals_tcs_GruauRW95.html): Pascal to a network | Compiled | Closest in spirit |
+| | [Carreira et al., 1998](https://core.ac.uk/download/32330732.pdf): "Building a Neural Computer", recursive functions to a recurrent network | Compiled, no training described | Closest in spirit |
+| Compiled modern networks | [Tracr, Lindner et al., 2023](https://arxiv.org/abs/2301.05062v3): programs to transformers | Compiled, to give interpretability research a known ground truth | Similar method, different goal |
+| Trained programs | Neural Turing Machines; [Neural Programmer-Interpreters](https://arxiv.org/abs/1511.06279v4) | Trained | Similar structure in places, opposite method |
+
+### What may be different here
+
+These may be unusual, but they have not been checked against a full literature survey, so this project makes no claim to be first:
+
+- **Scale of the target.** The earlier compilers above worked on functions and algorithms. This is a whole application, with a graphical interface, text rendering, file formats and compression.
+- **The screen as an input.** The network reads its own output image for hit testing and for checking its work.
+- **A language model as author.** The generator was largely written by one, under rules that keep logic out of the glue.
+
+It is also arguable whether "compiler" is the right word for the generator. It is a single-purpose program with its own primitives, not a general compiler with a source language. This table is based on a quick search and on abstracts and summaries of the papers, so treat it as a starting point rather than a complete review.
 
 ## Determinism and hallucinations
 
