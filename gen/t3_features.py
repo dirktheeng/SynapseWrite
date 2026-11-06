@@ -969,7 +969,7 @@ on('T3_RB1',(pat('"page"',e),'T3_RB2',None),(net.eq(W[0],62,e),'PX',None),(None,
 on('T3_RB2',(None,'PX',{w1:(cb+PBRK,1)}))
 
 # ---- paragraph merge by the user: metadata goes through the log first, so undo brings it back ----
-MZF=[(IMF,0),(IMF+1,0),(IMF+2,0),(IMN,0),(IMN+1,0),(IMN+2,0),(SECN,0),(TOCF,0),(TSRC,0),(TPG,0),(CMTL,0)]
+MZF=[(IMF,0),(IMF+1,0),(IMF+2,0),(IMN,0),(IMN+1,0),(IMN+2,0),(SECN,0),(TOCF,0),(TSRC,0),(TPG,0),(CMTL,0),(ALIGN,0),(LIST,0),(PIND,0),(PFIRST,0),(PLSP,0),(PSPB,0),(PSPA,0),(PSTY,0),(PBRK,0)]
 set_chain('T3_MZ',MZF,'MERGE')
 # backspace into a picture removes the picture: clear it, come back, merge the empty paragraph away
 on('T3_MP0',(None,'T3_MP1',{jp:cp-1,jo:0,jret.r:jret.id('T3_MP2')}))

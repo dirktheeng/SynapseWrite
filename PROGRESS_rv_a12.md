@@ -16,3 +16,4 @@ Tried: PLAYWRIGHT_BROWSERS_PATH=build/pwx playwright install firefox webkit. Blo
 - Reader fixes: zip validator before reset, ip and ob limits in inflate, dist check, PNG chunk bounds, zero size PNG refused, sentinel after each member so unterminated attribute scans stop, tick budget steering the token out through guarded back edges (reach 1458 states, 707 edges).
 - Invariant false alarms traced to the test: start text was undoable (fixed by opening a saved file first), Ctrl+Home leaves a small residual scroll (normalized by wheel), early stop on no-op undo (fixed count).
 - Real invariant bug: Ctrl+Enter wrote PBRK without a log entry. Redo lost the page break. Now logged as op 6.
+- Undo of a user merge restored the second paragraph with the first paragraph's properties (shrunk trace: style, Delete at the end of the paragraph, undo). The second paragraph's properties now go through the existing op 8 metadata chain before the merge.
