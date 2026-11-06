@@ -551,7 +551,7 @@ ZN={ob:0}
 on('T3_ZN',(zh[0],'A5_Z1',None),(zh[8],'T3_Z3n',None),(zh[1],'T3_Z2n',None),(zh[2],'A5_Z8',None),(zh[3],'T3_Z4n',None),(zh[5],'T3_ZNe',None),(zh[6],'T3_Z6n',None),(zh[7],'T3_Z7n',None),(None,'OPEND',None))
 on('T3_ZNe',(None,'PX',{ob:sob,oi:soi,obase:OUTB}))
 e=S('T3_ZX'); zh2=net.decode(ztarget,9,e)
-on('T3_ZX',(zh2[0],'A5_TH',None),(zh2[8],'A5_EN0',{aux_l:ob}),(zh2[1],'T3_Z2n',{rels_l:ob}),(zh2[2],'T3_FN0',{aux_l:ob}),(zh2[3],'T3_CM0',{aux_l:ob}),(net.and_(zh2[5],ONE-rhf),'T3_ZP',{pgl:ob}),(net.and_(zh2[5],rhf),'T3_HP0',{aux_l:ob}),(None,'PX',{oi:0}))
+on('T3_ZX',(net.and_(vdry,net.or_(net.eq(ob,vusz,e),net.ge(ob,oblim,e))),'IMP_V1',None),(vdry,'OPEND',None),(zh2[0],'A5_TH',None),(zh2[8],'A5_EN0',{aux_l:ob}),(zh2[1],'T3_Z2n',{rels_l:ob}),(zh2[2],'T3_FN0',{aux_l:ob}),(zh2[3],'T3_CM0',{aux_l:ob}),(net.and_(zh2[5],ONE-rhf),'T3_ZP',{pgl:ob}),(net.and_(zh2[5],rhf),'T3_HP0',{aux_l:ob}),(None,'PX',{oi:0}))
 on('T3_ZP',(None,'PG_1',{rl:as_x(PNGB),pbase:PNGB,pgdoc:1}))
 on('T3_PF',(pgdoc,'T3_PF2',{ob:sob,oi:soi,obase:OUTB,pgdoc:0}),(None,'RD0',{pfile:PMSG}))
 on('T3_PF2',(None,'PX',None))
@@ -563,7 +563,7 @@ on('T3_PQd',(None,'PX',{wl_i:(cb+IMF,rs_w,rs_h,rs_a),ext_w:0,ext_h:0,a5aft:1}))
 
 on('T3_Z2n',(None,'X_C0',{zp:zp0,ztarget:2,obase:AUXB,ob:0}))
 on('T3_Z3n',(None,'X_C0',{zp:zp0,ztarget:3,obase:AUXB,ob:0}))
-on('T3_Z4n',(None,'X_C0',{zp:zp0,ztarget:6,obase:OUTB,ob:0}))
+on('T3_Z4n',(None,'X_C0',{zp:zp0,ztarget:6,obase:OUTP,ob:0}))
 net.group('notes and balloons')
 # ---- wrapped text, count only or drawn, for footnotes and balloons ----
 ws_=R();wi_=R();wx_=R();wlb_=R();wend=R();wcnt=R()

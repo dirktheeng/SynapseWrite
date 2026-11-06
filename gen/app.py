@@ -335,7 +335,8 @@ on('MV',(t1_tdrag,'T1_TM0',None),(net.and_(S('MV'),net.step(tdk)),'T3_MV',None),
 _wi=net.and_(S('WH'),impf); _wn=S('WH')-_wi; on('WH',(None,'RD0',{scroll:net.relu(G_(impsc,_wi)+G_(scroll,_wn)+evc-1000),ytot:G_(impyt,_wi)+G_(ytot,_wn),autos:0,a7_jmp:0,impf:0}))   # ev_c carries delta+1000
 e=S('TM'); _a6stale=net.and_(a6hf,ONE-has_sel,ONE-drag,net.eq(mode,0,e),net.step(net.gt(wtot,a6w,e)+net.lt(wtot,a6w,e)+net.gt(pagesT,a6pg,e)+net.lt(pagesT,a6pg,e)))
 _rv_tm=S('TM'); on('TM',(net.and_(_rv_tm,drag,net.or_(net.lt(mp_pty,DOCY+8,_rv_tm),net.ge(mp_pty,DOCB-8,_rv_tm))),'RVA3_AS0',None),(t1_cntp,'T1_C0',{blink:blink}),(bgp,'BG',{blink:blink}),(_a6stale,'T4_FU',{blink:blink,a6fg:1,nolog:1,a6w:wtot,a6pg:pagesT}),(None,'A11_C0',None))
-on('BG',(None,'T3_RS0',{fnh:bfnh,cursec:bsec,fnn:bfn,fnp:bfp,xcol:bxc,pi:bpi,yy:byy,ptop:bptop,pages:bpg,wsum:bws,listn:bln,full:1,vm:0,bgm:1,bcnt:0,clip0:DOCY,clip1:800-DOCB}))
+# A provisional page is not the background's to paint on: the clip is empty until it finishes.
+on('BG',(None,'T3_RS0',{fnh:bfnh,cursec:bsec,fnn:bfn,fnp:bfp,xcol:bxc,pi:bpi,yy:byy,ptop:bptop,pages:bpg,wsum:bws,listn:bln,full:1,vm:0,bgm:1,bcnt:0,clip0:G_(as_x(800),net.and_(S('BG'),impf))+G_(as_x(DOCY),S('BG')-net.and_(S('BG'),impf)),clip1:G_(as_x(800-DOCB),S('BG')-net.and_(S('BG'),impf))}))
 _rv_hf=S('HF'); _rv_bg=net.or_(bgp,t1_cntp); timer.lin(_rv_hf*530-net.and_(_rv_hf,_rv_bg)*529-net.and_(_rv_hf,drag,ONE-_rv_bg,net.or_(net.lt(mp_pty,DOCY+8,_rv_hf),net.ge(mp_pty,DOCB-8,_rv_hf)))*495)
 # ---- character code tables: internal cells use Windows-1252 style codes ----
 net.group('character maps')
@@ -535,8 +536,8 @@ on('DS0',(trk,'T4_DS0',{wp:lo_p,wo:lo_o,wm:2,wfirst:1,fm:11,wret.r:wret.id('T4_D
 Kw=wp*2048+wo; wsel=Bus(net)
 on('COPY',(has_sel,'W0',{wp:lo_p,wo:lo_o,wn:0,wm:1,wret.r:wret.id('COPYE')}),(None,'HALT',None))
 on('CUT',(has_sel,'W0',{wp:lo_p,wo:lo_o,wn:0,wm:1,wret.r:wret.id('CUT2'),grp:grp+1}),(None,'HALT',None))
-e=S('CUT2'); on('CUT2',(net.ge(wn,589900,e),'RD0',{pcut:PMSG}),(None,'DS0',{dret.r:dret.id('AFTER_ED'),clipl:wn+1,clipn:wn,clipi:0}))
-on('COPYE',(None,'HALT',{clipl:wn+1,clipn:wn,clipi:0}))
+e=S('CUT2'); on('CUT2',(net.ge(wn,589900,e),'RD0',{pcut:PMSG,clipn:0}),(None,'DS0',{dret.r:dret.id('AFTER_ED'),clipl:wn+1,clipn:wn,clipi:0}))
+e=S('COPYE'); on('COPYE',(net.ge(wn,589900,e),'RD0',{pcpy:PMSG,clipn:0}),(None,'HALT',{clipl:wn+1,clipn:wn,clipi:0}))
 clipout.add(S('HF'),clipl); fsm.set(clipl,S('HF'),0)
 wantp=Bus(net); wantp.lin(S('HF')*0+wpaste); fsm.set(wpaste,S('HF'),0)
 e=S('W0')
@@ -912,6 +913,7 @@ on('RE0',(net.and_(autos,net.lt(cy,scroll+40,e)),'RD0',{scroll:net.relu(cy-40),a
 e=S('RE1'); showc=net.and_(e,ONE-has_sel,ONE-blink,ONE-net.step(mode),ONE-a7_far+impf)
 rA.drive(showc,(cx,cy+DOCY-scroll,1,chh,(0,0,0),cacol))
 fsm.set(dfrom,net.and_(S('RE1'),ONE-full,ONE-bgp),99999)
+fsm.set(pcp,net.and_(S('RE1'),impf),pagesT)   # on a provisional page the caret is on the last page known
 on('BGD',(None,'RD0',{impf:0,impc:0,bgp:0,bgm:0,dfrom:99999,pagesT:pages,wtot:wsum,ytot:ptop+s_ps,lc:0,a7_far:0,autos:a7_jmp,a7_jmp:0}))
 on('RE1',(None,'RE2',{oldcp:cp,wassel:has_sel}))
 # An edit past where the background has reached: its true height is not known yet, so the caret's neighbourhood is drawn at once on a provisional page after the
@@ -926,7 +928,7 @@ for k_ in range(1,128):
     th=th+ph[k_]*max(20,int((VH-8)/k_)); ty_=ty_+net.gate(_ths*((VH-8)/(k_*PST)),ph[k_])
 on('RE2',(None,'RE3',{clip0:0,clip1:0,rA:(1262,DOCY,18,VH,(243,242,241),250),rB:(1265,ty_+DOCY+4,12,th,tuple(as_x(205)-net.step(t1_tdrag+net.eq(t1_hov,255,e))*65 for _ in range(3)),255),thumb:ty_+DOCY+4,t1_thh:th}))
 # The status bar costs far more than a key's own paint. A fast event repaints it only if something it shows has changed.
-e=S('RE3'); _stk=net.step(pfile)+net.step(pcut)*2+net.step(pfull)*4+net.step(pmsg)*8+trk*16+sp_on*32
+e=S('RE3'); _stk=net.step(pfile)+net.step(pcut)*2+net.step(pfull)*4+net.step(pmsg)*8+trk*16+sp_on*32+net.step(pcpy)*64
 on('RE3',(net.and_(e,ONE-full,net.eq(pcp,stp,e),net.eq(pagesT,stg,e),net.eq(wtot,stw,e),net.eq(_stk,stm,e)),'FB0',None),(None,'STATUS',{rA:(0,DOCB+1,640,23,PAL_B[3],0),stp:pcp,stg:pagesT,stw:wtot,stm:_stk}))
 # number and text drawing states
 def text_chain(start,items,nxt,y=None,f=1,b=3):
@@ -957,12 +959,14 @@ def text_chain(start,items,nxt,y=None,f=1,b=3):
 sb_y=as_x(DOCB+6)
 on('STATUS',(None,'ST1',{sx:12}))
 text_chain('ST1',['Page ',pcp,' of ',pagesT,'      ',wtot,' words      English (United States)'],'PM0')
-on('PM0',(net.step(pfile),'PMr',None),(net.step(pcut),'PMc',None),(net.step(pfull),'PMf',None),(net.step(pmsg),'PMa',None),(None,'T4_ST',None))
+on('PM0',(net.step(pfile),'PMr',None),(net.step(pcut),'PMc',None),(net.step(pcpy),'PMh',None),(net.step(pfull),'PMf',None),(net.step(pmsg),'PMa',None),(None,'T4_ST',None))
 on('PMf',(None,'PMg',{sx:sx+18}))
 on('PMr',(None,'PMs',{sx:sx+18}))
 text_chain('PMs',['This file could not be opened: it is not a valid document or picture'],'T4_ST')
 on('PMc',(None,'PMd',{sx:sx+18}))
 text_chain('PMd',['The selection is too large to cut: nothing was removed'],'T4_ST')
+on('PMh',(None,'PMi',{sx:sx+18}))
+text_chain('PMi',['The selection is too large to copy: nothing was copied'],'T4_ST')
 text_chain('PMg',['Too many different text formats: this one was not applied'],'T4_ST')
 on('PMa',(None,'PMb',{sx:sx+18}))
 text_chain('PMb',['Press Ctrl+V to paste from other apps'],'T4_ST')
