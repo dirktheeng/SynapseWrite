@@ -7,15 +7,20 @@ Test evidence: `test/e2e.js` (see `build/e2e.json`; `build/e2e.json`), `test/t4.
 | Feature | Status | Evidence or gap |
 |---|---|---|
 | Ribbon and tabs | Partial | Hover highlights on buttons, tabs, and menu rows. Dropdown menus for font, size, color, find options, margins, and line spacing, drawn by the network, with keyboard use. Home, Insert, Layout, References, Review, and View have working commands, but many Word commands are absent from them. Original icons, 16 and 32 px. Word style arrangement with a File tab, combo boxes, a styles gallery with previews, color and highlight dropdown grids, pressed states; every command has its own hover highlight. File screen has New, Open, Save, Print. |
-| Status bar | Passed | Page and word counts render from the network. Language, view buttons and zoom slider are drawn but do not act. |
+| Status bar | Passed | Page and word counts render from the network. Language, view buttons and zoom slider are drawn but do not act; zoom needs glyphs at other scales and a mapped hit test. |
 | Pointer | Passed | Drawn by the network: arrow, I-beam, left-right, up-down, diagonal, margin arrow, chosen from the id and color under it and the table and picture zones. Colors under it are saved and restored through a block port; it never writes alpha. Hidden on touch. `test/look.js`. |
 | Rulers | Partial | Indent and margin markers and the active band follow the caret paragraph, table cell, column, and margin setting. Can be hidden. Markers are not draggable. |
 | Typing, caret, blink | Passed | e2e typing tests; caret blinks through ANN timer requests. |
-| Selection | Passed | Shift+arrows, drag, select all, double click word, triple click paragraph. Dragging after a double click does not extend by word. |
+| Selection | Passed | Shift+arrows, Ctrl+Shift word and paragraph moves, Shift+PageUp and PageDown, Shift+click, drag with autoscroll past the top or bottom, margin click for a line, double for a paragraph, triple for all, select all, double click word, triple click paragraph. Dragging after a double click does not extend by word. |
 | Scrolling | Passed | Wheel, scrollbar click, and thumb dragging. |
 | Undo and redo | Passed | Includes paragraph merges, formatting, paragraph properties, style updates, and table, footnote, comment and section break edits. Groups by word, with new groups on caret moves, commands, a change of edit kind, and a 2 s pause. Margin, orientation and column settings are not undoable. |
 | Clipboard | Partial | Plain text only; formatting is lost. Real Ctrl+C, Ctrl+X and Ctrl+V tested (`test/look.js`). A denied Paste button draws a status message and pastes the network's own copy if it has one. If clipboard write is impossible, Ctrl+V uses the network's copy until the next successful copy, so text copied elsewhere meanwhile is not seen. Not exercised in Firefox or Safari. |
-| Find and replace | Partial | Match count with current index, match case, whole words. Matches must lie within one paragraph. Other matches are not highlighted. |
+| Find and replace | Partial | Match count with current index, match case, whole words. Matches must lie within one paragraph. All matches are highlighted while the bar is open, and spell squiggles pause meanwhile. F3 finds next. |
+
+| Caret keys | Passed | Ctrl+arrows by word and paragraph, Ctrl+Backspace, Ctrl+Delete, PageUp and PageDown move the caret, End and clicks keep the caret on a wrapped line, Insert toggles overtype with no status indicator (`test/rv_a3.js`). |
+| Tabs and breaks | Partial | Tab is a real character advancing to default stops every 0.5 in, Shift+Enter a line break; both saved as `w:tab` and `w:br`, read back, drawn in PDF. No custom tab stops. |
+| Context menu | Passed | Right click in the document: cut, copy, paste, select all, bold, italic, underline, find. |
+| Other shortcuts | Partial | Ctrl+[ ] and Ctrl+Shift+< >, Ctrl+= and Ctrl+Shift+=, Ctrl+M, Ctrl+Shift+M, Ctrl+1, 2, 5, Ctrl+Shift+L, Ctrl+Shift+N, Shift+F3, F12, Shift+Delete, Ctrl+Insert, Shift+Insert. Find cannot span paragraphs. Browser reserved keys such as Ctrl+N and Ctrl+T cannot be taken. |
 
 ## Tier 2
 | Feature | Status | Evidence or gap |
