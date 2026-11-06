@@ -66,13 +66,6 @@ on('RVA3_CC2',(chg_,'DEL',{rv_nc:nc_,rv_st:R2,rv_ctp:ONE-t1_isw(R1,e),oret.r:ore
 on('RVA3_CC3',(None,'INS',{ins_ch:rv_nc,ins_st:rv_st,oret.r:oret.id('RVA3_CC1')}))
 e=S('RVA3_CC9'); rv_cn=net.decode(rv_cc,3,e)
 on('RVA3_CC9',(None,'RD0',{ap:rv_cap,ao:rv_cao,rv_cc:rv_cn[0]*1+rv_cn[1]*2,lc:1}))
-# find match highlight: at each cell while the find bar is open, compare the query against the paragraph ahead
-on('RVA3_H0',(net.ge(rv_hk,qlen,S('RVA3_H0')),'RVA3_HM',None),(net.gt(off+rv_hk,plen_-1,S('RVA3_H0')),'RVA3_HG',None),(None,'RVA3_H1',{r1:pbs+off+rv_hk,r2:as_x(Q)+rv_hk}))
-e=S('RVA3_H1'); on('RVA3_H1',(net.eq(low(R1,e),low(R2,e),e),'RVA3_H0',{rv_hk:rv_hk+1}),(None,'RVA3_HG',None))
-on('RVA3_HM',(t1_fw,'RVA3_H2',{r1:pbs+net.relu(off-1),r2:pbs+off+qlen}),(None,'RVA3_HG',{rv_mhe:off+qlen}))
-e=S('RVA3_H2'); ok_=net.and_(net.or_(net.eq(off,0,e),ONE-t1_isw(R1,e)),net.or_(net.ge(off+qlen,plen_,e),ONE-t1_isw(R2,e)))
-on('RVA3_H2',(ok_,'RVA3_HG',{rv_mhe:off+qlen}),(None,'RVA3_HG',None))
-on('RVA3_HG',(None,'C1',{r1:pbs+off,r2:pbs+1024+off}))
 # forced line break at the very end of a paragraph leaves an empty last line
 e=S('RVA3_LE0'); measure(e,32,ty)
 on('RVA3_LE0',(None,'EM',{lasc:asc,lhh:lh,lend:off,lwid:0,lspc:0,llast:1}))
