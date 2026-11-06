@@ -48,4 +48,8 @@ const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);}
  await nz();const f4=await sh('n3');
  await save('build/n.docx');await open('build/n.docx');await nz();const f5=await sh('n4');ok('two column narrow section save then open identical',f4===f5);
  execSync('rm -rf build/nlo; timeout 120 soffice --headless --convert-to pdf --outdir build/nlo build/n.docx >/dev/null 2>&1; pdftoppm -r 40 -png build/nlo/n.pdf build/nlo/p');
+ // margins chosen from the Tier 1 menu live in the section, so they save
+ await K('Control+a');await K('Delete');await go('home');await T('Menu margin text');await go('lay');await C(291,90);await p.waitForTimeout(40);await C(320,182);await p.waitForTimeout(40);await go('home');await C(600,300);await p.waitForTimeout(60);const q1=await sh('q1');
+ await save('build/q.docx');const qx=execSync(`python3 -c "import zipfile;print(zipfile.ZipFile('build/q.docx').read('word/document.xml').decode())"`).toString();ok('margins menu saved in sectPr',/w:left="720"/.test(qx)&&/w:right="720"/.test(qx));
+ await open('build/q.docx');await C(600,300);await p.waitForTimeout(60);const q2=await sh('q2');ok('margins menu reopens identical',q1===q2);
  console.log(JSON.stringify(res));await b.close();})();

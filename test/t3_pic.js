@@ -15,7 +15,7 @@ const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);}
   await K('ArrowDown');await K('End');const a2=await sh('pc5');
  const save=async f=>{const [dl]=await Promise.all([p.waitForEvent('download'),K('Control+s')]);await dl.saveAs(f);await check('save');};
  const open=async f=>{await p.evaluate(u=>annOpen(new Blob([new Uint8Array(u)])),[...fs.readFileSync(f)]);await p.waitForTimeout(2000);await check('open');};
- await save('build/pc.docx');await open('build/pc.docx');await K('ArrowDown');await K('ArrowDown');await K('End');await p.waitForTimeout(100);const a3=await sh('pc6');ok('picture docx save then open identical',H(a2)===H(a3));
+ await save('build/pc.docx');ok('zip valid, XML parts deflated, picture stored',execSync(`python3 -c "import zipfile;z=zipfile.ZipFile('build/pc.docx');print(z.testzip(),all((i.compress_type==0)==i.filename.startswith('word/media') for i in z.infolist()),any(i.filename.startswith('word/media') for i in z.infolist()))"`).toString().trim()==='None True True');await open('build/pc.docx');await K('ArrowDown');await K('ArrowDown');await K('End');await p.waitForTimeout(100);const a3=await sh('pc6');ok('picture docx save then open identical',H(a2)===H(a3));
  execSync('rm -rf build/pclo; timeout 120 soffice --headless --convert-to docx:"MS Word 2007 XML" --outdir build/pclo build/pc.docx >/dev/null 2>&1');
  await open('build/pclo/pc.docx');await K('ArrowDown');await K('ArrowDown');await K('End');await p.waitForTimeout(100);const a4=await sh('pc7');ok('picture open after LibreOffice identical',H(a2)===H(a4));
  await p.mouse.move(400,560);await p.mouse.down();await p.mouse.move(100,300);await p.waitForTimeout(80);await p.mouse.up();await p.waitForTimeout(100);await sh('pc8');

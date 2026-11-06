@@ -80,5 +80,24 @@ const LAT='Français Été naïve Ñandú Ångström ß æ ø ¿ © € “quote
   ok('foreign file: run formats read',x.includes('<w:strike/>')&&x.includes('superscript')&&x.includes('subscript')&&x.includes('w:highlight w:val="yellow"'));
   ok('foreign file: paragraph properties read',x.includes('w:left="720"')&&x.includes('w:firstLine="360"')&&x.includes('w:line="360"')&&x.includes('w:val="both"'));
   await A.b.close();}
+ // hanging indent: ribbon, save, reopen, LibreOffice, a file from elsewhere
+ {const A=await open_();const LG='hanging words that keep going until the line has to wrap onto another line of text in this very paragraph here';
+  await A.T(LG);await A.tabL();await A.lay(0,1);await A.lay(0,1);await A.lay(0,2);await A.tabH();await A.K('Control+End');const a=await shot(A.p);fs.writeFileSync('build/hang_a.png',a);
+  await A.save('build/hang.docx');const x=xml('build/hang.docx');ok('hanging indent saved',x.includes('w:left="720"')&&x.includes('w:hanging="360"'));
+  await A.open('build/hang.docx');await A.K('Control+End');const b=await shot(A.p);fs.writeFileSync('build/hang_b.png',b);ok('hanging indent reopens pixel identical',h(a)===h(b));
+  lo('build/hang.docx','docx');await A.open('build/lo_docx/hang.docx');await A.K('Control+End');const c=await shot(A.p);fs.writeFileSync('build/hang_c.png',c);ok('hanging indent after LibreOffice',h(a)===h(c));
+  execSync(`python3 - <<'P'
+import zipfile
+W='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
+z=zipfile.ZipFile('build/hang_f.docx','w')
+z.writestr('[Content_Types].xml','<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>')
+z.writestr('_rels/.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>')
+z.writestr('word/document.xml','<?xml version="1.0"?><w:document %s><w:body><w:p><w:pPr><w:spacing w:before="0" w:after="165"/><w:ind w:left="720" w:hanging="360"/></w:pPr><w:r><w:rPr><w:sz w:val="22"/></w:rPr><w:t>${LG}</w:t></w:r></w:p></w:body></w:document>'%W)
+z.close()
+P`);
+  await A.open('build/hang_f.docx');await A.K('Control+End');const f=await shot(A.p);fs.writeFileSync('build/hang_f.png',f);ok('hanging indent from a foreign file',h(a)===h(f));
+  await A.pdf('build/hang.pdf');const box=execSync('pdftotext -bbox build/hang.pdf -').toString();const m=[...box.matchAll(/xMin="([\d.]+)" yMin="([\d.]+)"[^>]*>(hanging|text|another|wrap|line|onto)</g)].map(q=>+q[1]);const fx=m[0];
+  const lines=[...box.matchAll(/<word xMin="([\d.]+)" yMin="([\d.]+)"/g)];const y0=+lines[0][2];const nx=lines.find(q=>+q[2]>y0+5);ok('hanging indent in the PDF',nx&&+nx[1]>+lines[0][1]+10,nx&&(lines[0][1]+' '+nx[1]));
+  await A.b.close();}
  const n=R.filter(r=>r[1]).length;console.log(`${n}/${R.length} passed`);fs.writeFileSync('build/tier2.json',JSON.stringify(R,null,1));
 })();
