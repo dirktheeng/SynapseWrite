@@ -819,7 +819,8 @@ on('LE0',(None,'EM',{lasc:asc,lhh:lh,lend:0,lwid:0,lspc:0,llast:1}))
 fsm.set(kprev,S('LAY0'),0)
 on('L1',(None,'L2',{r1:pbs+off,r2:pbs+1024+off}))
 e=S('L2'); measure(e,R1,R2); ke2=net.and_(e,net.step(kprev)); kp_en.lin(ke2); kp_in.add(ke2,kprev)
-sp=net.eq(R1,32,e); over=net.and_(net.gt(lx+adv+kern,ww,e),ONE-sp); hasb=net.gt(lb,ls_,e); nsp=e-sp
+sp=net.eq(R1,32,e); _ov=net.gt(lx+adv+kern,ww,e); over=net.and_(_ov,ONE-sp,net.gt(off,ls_,_ov));   # a line always takes its first character, or a very narrow cell never ends
+ hasb=net.gt(lb,ls_,e); nsp=e-sp
 lastc=net.ge(off+1,plen_,e); newword=net.and_(nsp,prevsp)
 advance={kprev:R1,lx:lx+adv+kern,lasc:net.max_(asc,lasc),lhh:net.max_(lh,lhh),off:off+1,prevsp:sp,wc:wc+newword,lsn:lsn+sp}
 fsm.set(lb,net.and_(sp,ONE-over),off+1);fsm.set(lbx,net.and_(sp,ONE-over),lx+kern);fsm.set(lspb,net.and_(sp,ONE-over),lsn)
