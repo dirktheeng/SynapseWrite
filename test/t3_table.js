@@ -12,14 +12,14 @@ const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);}
  await K('Control+y');const hy=await shot(p,'tb1b');
  await C(...R.dr);const h2=await shot(p,'tb2');
  await C(...R.cr);await T('X');const h3=await shot(p,'tb3');ok('col right changes image',h3!==h2);
- await C(...R.dc);const h4=await shot(p,'tb4');
- await C(...R.s(1));const h5=await shot(p,'tb5');ok('shading changes image',h5!==h4);
- await K('Control+z');const h5u=await shot(p);ok('shading undo restores',h5u===h4);
- await K('Control+y');const h5r=await shot(p);ok('shading redo',h5r===h5);
+ await C(...R.dc);await p.mouse.click(400,320);await p.waitForTimeout(40);const h4=await shot(p,'tb4');
+ await C(...R.s(1));const CL=async()=>{await p.mouse.click(400,320);await p.waitForTimeout(40);};await CL();const h5=await shot(p,'tb5');ok('shading changes image',h5!==h4);
+ await K('Control+z');await CL();const h5u=await shot(p);ok('shading undo restores',h5u===h4);
+ await K('Control+y');await CL();const h5r=await shot(p);ok('shading redo',h5r===h5);
  // column width drag on the first inner border: x=319+208
- const yb=170+150+15;await p.mouse.move(319+208,yb);await p.mouse.down();await p.mouse.move(319+260,yb);await p.waitForTimeout(60);await p.mouse.up();
+ const yb=170+150+15;await p.mouse.move(319+208,yb);await p.mouse.down();await p.mouse.move(319+260,yb);await p.waitForTimeout(60);await p.mouse.up();await CL();
  const h6=await shot(p,'tb6');ok('column drag changes image',h6!==h5);
- await K('Control+z');const h6u=await shot(p);ok('column drag undo restores',h6u===h5);
+ await K('Control+z');await CL();const h6u=await shot(p);ok('column drag undo restores',h6u===h5);
  await K('Control+y');await p.waitForTimeout(40);require('fs');
  const sh=async()=>{await p.mouse.move(1270,5);return await p.screenshot({clip:{x:0,y:174,width:1262,height:600}});};
  await p.mouse.click(400,320);await p.waitForTimeout(40);const a=await sh();fs.writeFileSync('build/tb_a.png',a);
