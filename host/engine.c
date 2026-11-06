@@ -8,16 +8,21 @@ extern u8 __heap_base; static u8* hp=&__heap_base;
 __attribute__((export_name("alloc"))) void* alloc(i32 n){u8*p=(u8*)(((unsigned long)hp+15)&~15ul);hp=p+n;
   unsigned long need=((unsigned long)hp+65535)/65536, have=__builtin_wasm_memory_size(0);
   if(need>have)__builtin_wasm_memory_grow(0,need-have); return p;}
-static u8*zb; static f64*btab; static i32 *stamp,tickno=1; static i32 *istart,*isrc; static u16 *iwi,*wi; static f64 *wtab; static i32 NI;
+static u8*zb; static i32 zn_; static f64*btab; static i32 *stamp,tickno=1; static i32 *istart,*isrc; static u16 *iwi,*wi; static f64 *wtab; static i32 NI;
 static i32 N,E,L,NP,NT; static u8*act; static f64*bias,*v,*acc,*nacc; static i32*ostart,*osplit,*dst;
 static i32*lstart,*live,*nlist,*ports,*pen,*pptr,*live2,*nlist2; static u8*nflag; static i32 nlive,nnext,nlive2,nnext2,N1,D; static i32 pb[2][3]; static u64*bits,*sum; static i32 SWORDS,sw0[2],sw1[2];
-static f32*bank; static u8*fb; enum{W=1280,H=800,YB=4096};
+static u8*fb; enum{W=1280,H=800,YB=4096,PG=65536,NPG=1024};
+// The memory bank is paged: wasm memory is taken only when a page is first written, and an untouched page reads as zeros.
+static f32*pages[NPG];
+static inline f32*pg_w(i32 a){unsigned k=(unsigned)a>>16;if(k>=NPG)return 0;if(!pages[k]){unsigned long need=(((unsigned long)hp+15)&~15ul)+PG*4;unsigned long want=(need+65535)/65536,have=__builtin_wasm_memory_size(0);if(want>have&&__builtin_wasm_memory_grow(0,want-have)<0)return 0;pages[k]=alloc(PG*4);}return pages[k];}
+__attribute__((export_name("bget"))) f64 bget(i32 a){unsigned k=(unsigned)a>>16;return k<NPG&&pages[k]?pages[k][a&(PG-1)]:0;}
+__attribute__((export_name("bset"))) void bset(i32 a,f64 x){f32*p=pg_w(a);if(p)p[a&(PG-1)]=(f32)x;}
 __attribute__((export_name("setup"))) void setup(i32 n,i32 e,i32 l,i32 np,i32 banksize,i32 ni,i32 nt,i32 nb,i32 zn,i32 n1){N1=n1;N=n;E=e;L=l;NP=np;NI=ni;NT=nt;istart=alloc(4*(n+1));isrc=alloc(4*ni+4);iwi=alloc(2*ni+2);wtab=alloc(8*nt+8);btab=alloc(8*nb+8);
  act=alloc(n);bias=alloc(8*n);v=alloc(8*n);acc=alloc(8*n);nacc=alloc(8*n);ostart=alloc(4*(n+1));osplit=alloc(4*n);dst=alloc(4*e+4);wi=alloc(2*e+2);
  stamp=alloc(4*n);lstart=alloc(4*(l+1));live=alloc(4*n);nlist=alloc(4*n);live2=alloc(4*(n-n1+1));nlist2=alloc(4*(n-n1+1));nflag=alloc(n);bits=alloc(8*(n/64+2));SWORDS=n/4096+2;sum=alloc(8*SWORDS);sw0[0]=0;sw1[0]=n1/4096+1;sw0[1]=n1/4096;sw1[1]=SWORDS;
- ports=alloc(4*np);pen=alloc(4*np);pptr=alloc(4*np);fb=alloc(W*H*4);bank=alloc(4*banksize);zb=alloc(zn+4);}
+ ports=alloc(4*np);pen=alloc(4*np);pptr=alloc(4*np);fb=alloc(W*H*4);zb=alloc(zn+4);zn_=zn;}
 #define PTR(name,x) __attribute__((export_name(name))) void* x##_p(void){return x;}
-PTR("p_zb",zb)PTR("p_wtab",wtab)PTR("p_btab",btab)PTR("p_lstart",lstart)PTR("p_ports",ports)PTR("p_bank",bank)PTR("p_fb",fb)PTR("p_v",v)
+PTR("p_zb",zb)PTR("p_wtab",wtab)PTR("p_btab",btab)PTR("p_lstart",lstart)PTR("p_ports",ports)PTR("p_fb",fb)PTR("p_v",v)
 // The weight file holds variable length integer streams, so that it compresses; this restores the arrays.
 // Sizes, then sources of lazy inputs (delta per input position, pull flag in the low bit), then push targets
 // (first target delta from the previous neuron's first target, others ascending), weight and bias indices.
@@ -30,6 +35,7 @@ __attribute__((export_name("finish"))) void finish(void){
  {i32 pf=0;for(i32 i=0;i<N;i++){i32 s=ostart[i],e=ostart[i+1];if(s<e){pf+=uz(rv(&S[9]));dst[s]=pf;wi[s]=(u16)rv(&S[11]);for(i32 k=s+1;k<e;k++){dst[k]=dst[k-1]+(i32)rv(&S[10]);wi[k]=(u16)rv(&S[11]);}}}}
  for(i32 l=0;l<L;l++)for(i32 i=lstart[l];i<lstart[l+1];i++){i32 s=ostart[i],e=ostart[i+1],end=lstart[l+1],q=s;
   while(q<e&&dst[q]<end)q++; osplit[i]=q;}
+ __builtin_memset(zb,0,zn_);hp=zb;
  // Ports are grouped by clock domain, writes first. A port of kind 9 marks the start of domain 1.
  i32 c=0;for(i32 d=0;d<2;d++)for(i32 pass=0;pass<2;pass++){i32*p=ports,*e=ports+NP;i32 cd=0;pb[d][pass]=c;
   while(p<e){i32 k=p[0],len=k==1||k==2?6:k==3?12:k==4?9:k==6?8:k==7?8:k==8?5+2*p[3]+2*p[4]:k==9?1:k==10?8:4;
@@ -50,7 +56,8 @@ static void call_port(i32*p);
 static void write_port(i32*p){switch(p[0]){
   case 8:call_port(p);break;
   case 1:{ // block or scalar write: {1,en,addr,data,len,lenN}
-   i32 a=I(p[2]),n=p[5]>=0?I(p[5]):p[4];if(n>p[4])n=p[4];f64*d=v+p[3];f32*b=bank+a;for(i32 j=0;j<n;j++)b[j]=(f32)d[j];break;}
+   i32 a=I(p[2]),n=p[5]>=0?I(p[5]):p[4];if(n>p[4])n=p[4];f64*d=v+p[3];
+   while(n>0){i32 o=a&(PG-1),m=PG-o;if(m>n)m=n;f32*b=pg_w(a);if(b){b+=o;for(i32 j=0;j<m;j++)b[j]=(f32)d[j];}a+=m;d+=m;n-=m;}break;}
   case 3:{ // rectangle write: {3,en,x,y,w,h,r,g,b,a,y0,y1}
    i32 x=I(p[2]),y=I(p[3])-YB,w_=I(p[4]),h=I(p[5]);i32 y0=V(p[10]),y1=V(p[11]);if(y1==0){y0=0;y1=H;}
    i32 x1=x+w_,yy1=y+h;if(x<0)x=0;if(x1>W)x1=W;if(y<y0)y=y0;if(yy1>y1)yy1=y1;
@@ -63,16 +70,17 @@ static void write_port(i32*p){switch(p[0]){
      if(yy>=y0&&yy<y1&&yy>=0&&yy<H&&xx>=0&&xx<W){u8*o=fb+4*(yy*W+xx);f64*c=v+d+q-3;o[0]=C(c[0]);o[1]=C(c[1]);o[2]=C(c[2]);drow[yy]=1;}}}break;}
   case 6:{ // image row copy, packed RGB cells to pixels: {6,en,x,y,addr,n,y0,y1}
    i32 x=I(p[2]),y=I(p[3])-YB,a=I(p[4]),n=I(p[5]),y0=V(p[6]),y1=V(p[7]);if(y1==0){y0=0;y1=H;}
-   if(y>=y0&&y<y1&&y>=0&&y<H){drow[y]=1;for(i32 j=0;j<n;j++){i32 xx=x+j;if(xx>=0&&xx<W){u8*o=fb+4*(y*W+xx);i32 c=(i32)bank[a+j];o[0]=c>>16;o[1]=(c>>8)&255;o[2]=c&255;o[3]=1;}}}break;}
+   if(y>=y0&&y<y1&&y>=0&&y<H){drow[y]=1;for(i32 j=0;j<n;j++){i32 xx=x+j;if(xx>=0&&xx<W){u8*o=fb+4*(y*W+xx);i32 c=(i32)bget(a+j);o[0]=c>>16;o[1]=(c>>8)&255;o[2]=c&255;o[3]=1;}}}break;}
   case 7:{ // screen colors to or from the bank, alpha untouched: {7,en,x,y,addr,dir,w,h}
-   i32 x=I(p[2]),y=I(p[3]),dir=p[5],pw=p[6],ph=p[7];f32*b=bank+p[4];
+   i32 x=I(p[2]),y=I(p[3]),dir=p[5],pw=p[6],ph=p[7];f32*b=pg_w(p[4]);if(!b)break;b+=p[4]&(PG-1);
    for(i32 r=0;r<ph;r++){i32 yy=y+r;for(i32 c=0;c<pw;c++,b++){i32 xx=x+c;if(yy<0||yy>=H||xx<0||xx>=W)continue;u8*o=fb+4*(yy*W+xx);
      if(dir==0)*b=(f32)((o[0]<<16)|(o[1]<<8)|o[2]);else{i32 k=(i32)*b;u8 r_=k>>16,g_=(k>>8)&255,b_=k&255;if(o[0]!=r_||o[1]!=g_||o[2]!=b_){o[0]=r_;o[1]=g_;o[2]=b_;drow[yy]=1;}}}}break;}
  }}
+static void bread(i32 a,i32 n,i32 o){while(n>0){unsigned k=(unsigned)a>>16;i32 q=a&(PG-1),m=PG-q;if(m>n)m=n;if(k<NPG&&pages[k]){f32*b=pages[k]+q;for(i32 j=0;j<m;j++){f32 x=b[j];if(x!=0)inject(o+j,x);}}a+=m;o+=m;n-=m;}}
 static void read_port(i32*p){ if(p[0]==10){ // read through an index cell: {10,en,addr,out,base,mask,stride,len}
-   f32 x=bank[I(p[2])];i32 o=p[3];if(x!=0)inject(o,x);f32*b=bank+p[4]+(((i32)x)&p[5])*p[6];for(i32 j=0;j<p[7];j++){f32 y=b[j];if(y!=0)inject(o+1+j,y);}}
+   f32 x=(f32)bget(I(p[2]));i32 o=p[3];if(x!=0)inject(o,x);bread(p[4]+(((i32)x)&p[5])*p[6],p[7],o+1);}
   else if(p[0]==2){ // read: {2,en,addr,out,len,lenN}
-   i32 a=I(p[2]),n=p[5]>=0?I(p[5]):p[4];if(n>p[4])n=p[4];i32 o=p[3];f32*b=bank+a;for(i32 j=0;j<n;j++){f32 x=b[j];if(x!=0)inject(o+j,x);}}
+   i32 a=I(p[2]),n=p[5]>=0?I(p[5]):p[4];if(n>p[4])n=p[4];bread(a,n,p[3]);}
   else { // screenshot pixel read: {5,en,xy,out} with xy neuron packed as x+y*65536
    i32 xy=I(p[2]),x=xy&65535,y=xy>>16;if(x>=0&&x<W&&y>=0&&y<H){u8*o=fb+4*(y*W+x);for(i32 j=0;j<4;j++)if(o[j])inject(p[3]+j,o[j]);}}}
 static inline void run_ports(void){i32 d=D,a=pb[d][0],b=pb[d][1],c=pb[d][2];

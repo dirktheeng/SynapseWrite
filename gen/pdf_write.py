@@ -20,22 +20,21 @@ for pw_ in (1000000,100000,10000,1000,100,10,1):
     em_en.lin(e); em_b.add(e,48+dg)
     on(cur_n,(None,nx_,None)); cur_n=nx_
 import pdf_fonts
-head=b'%PDF-1.4\n'
-off=len(head); body=b''; offs={}
-offs[1]=off+len(body); body+=b'1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n'
-for ob_,bb_ in sorted(pdf_fonts.objects(3,11).items()):
-    offs[ob_]=off+len(body); body+=bb_
-FIRST=27
+NFC=len(FACES); FIRST=3+3*NFC; PUS=999000; PFT=999100   # faces used by this PDF, and where each face's bytes are in the read only part of the bank
+PF_ROM=bytearray(); PF_INIT=[]
+for i_,f_ in enumerate(FACES):
+    bl_,o1_,o2_=pdf_fonts.face_blob(i_,*f_,3+3*i_)
+    for j_,v_ in enumerate((FROMB+len(PF_ROM),len(bl_),o1_,o2_)): PF_INIT.append([PFT+i_*4+j_,v_])
+    PF_ROM+=bl_
+head=b'%PDF-1.4\n'; cat_=b'1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n'
 pfr=Ret('T4_PFR')
 on('PDF',(None,'PD_h',{fp:0,embase:OUTB}))
-lit('PD_h',head+body,'PD_x')
+lit('PD_h',head+cat_,'PD_x')
 xw=WPort(1)
-seq=sorted(offs.items())
-cur_n='PD_x'
-for i_,(ob_,of_) in enumerate(seq):
-    nx_=f'PD_x{i_}'
-    on(cur_n,(None,nx_,{xw:(as_x(XR)+ob_,of_)})); cur_n=nx_
-on(cur_n,(None,'T3_PQ0',{qp:0,qpg:0,qtop:0,qobj:FIRST,qfc:0,qf0:0,qfh:0}))
+on('PD_x',(None,'PD_y',{xw:(as_x(XR)+1,len(head)),qi:0}))
+e=S('PD_y')
+on('PD_y',(net.ge(qi,NFC,e),'PD_y2',None),(None,'PD_y',{xw:(as_x(PUS)+qi,0),w1:(as_x(XR)+qi*3+3,0),w2:(as_x(XR)+qi*3+4,0),w3:(as_x(XR)+qi*3+5,0),qi:qi+1}))
+on('PD_y2',(None,'T3_PQ0',{xw:(as_x(PUS),1),qp:0,qpg:0,qtop:0,qobj:FIRST,qfc:0,qf0:0,qfh:0}))
 qln=R();qxc=R();qiw=R();qih=R();qpo=R();qxx=R();qcx0=R();qop=R();qund=R();qdel=R();qrise=R();qadv=R();qex=R();qind=R();qry=R();qrc=R();qpa=R();qpv=R();qri=R();qhi=R()
 # open a page: page object then content object with a fixed width length
 def pg_open(st,nx):
@@ -122,19 +121,25 @@ qsty=R(); qyb=qph-(qyy-qtop+qa); qpc=R()
 e=S('PD_8')
 on('PD_8',(None,'T2_PM',None))
 on('PD_R',(net.step(qiw),'T4P_IM',None),(None,'PD_9',{qsty:999999,qop:0,qxx:qx+qind+qxc,qpc:0}))
-e=S('PD_9'); on('PD_9',(net.ge(qo,qe,e),'PD_Z',None),(None,'PD_A',{r1:qb+qo,r2:qb+1024+qo}))
-e=S('PD_A'); measure(e,R1,R2); ke3=net.and_(e,net.step(qpc)); kp_en.lin(ke3); kp_in.add(ke3,qpc)
-pdiff=net.step(net.step(R2-qsty)+net.step(qsty-R2)); psp=net.eq(R1,32,e)
-ladv={ins_ch:R1,ins_st:R2,qadv:adv+kern+G_(qex,psp),qpc:R1}
+e=S('PD_9'); on('PD_9',(net.ge(qo,qe,e),'PD_Z',None),(None,'PD_A',{r1:qb+qo,rs:qb+1024+qo}))
+e=S('PD_A'); measure(e,R1,RSR,RSC); ke3=net.and_(e,net.step(qpc)); kp_en.lin(ke3); kp_in.add(ke3,qpc)
+pdiff=net.step(net.step(RSC-qsty)+net.step(qsty-RSC)); psp=net.eq(R1,32,e)
+ladv={ins_ch:R1,ins_st:RSC,ins_rec:RSR,qadv:adv+kern+G_(qex,psp),qpc:R1}
 on('PD_A',(net.ge(R1,1000,e),'T4P_MK',{qo:qo+1,qfid:R1-1000}),(net.and_(pdiff,qop),'T4P_CL',{**ladv,pfcr.r:pfcr.id('PD_F')}),(pdiff,'PD_F',ladv),(qop,'PD_Tc',ladv),(None,'T4P_O',ladv))
-sv_en.lin(S('PD_F')); sv_in.add(S('PD_F'),ins_st)
-e=S('PD_F'); zh=net.decode(SV['size'],len(rom.PTS),e); pts=X(); ptv=X()
-for i_,h_ in enumerate(zh): pts=pts+h_*round(rom.PTS[i_]*96/72); ptv=ptv+h_*round(rom.PTS[script_size(i_)]*96/72)
+sv_en.lin(S('PD_F')); sv_in.add(S('PD_F'),ins_rec); sv_fl.add(S('PD_F'),ins_st)
+e=S('PD_F'); zh=net.decode(SV['si'],rom.NSZ,e); pts=X(); ptv=X()
+for i_,h_ in enumerate(zh): pts=pts+h_*round(rom.SZ[i_]*96/72); ptv=ptv+h_*round(rom.SZ[script_size(i_)]*96/72)
 ptk=net.or_(SV['ins'],SV['dele']); vf_=net.step(SV['sup']+SV['sub'])
-on('PD_F',(None,'PD_Fa',{qsty:ins_st,qfn:SV['bold']+SV['ital']*2+SV['font']*4+3,qsz:G_(pts,ONE-vf_)+G_(ptv,vf_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3}))
+_pfh=net.decode(SV['font'],len(rom.FAM),e); _pfv=X()
+for ff_,h_ in enumerate(_pfh):
+    for bo_,bb_ in enumerate((ONE-SV['bold'],SV['bold'])):
+        for it_,ii_ in enumerate((ONE-SV['ital'],SV['ital'])):
+            k_=FACES.index(rom.face_of(ff_,bo_,it_))
+            if k_: _pfv=_pfv+net.and_(h_,bb_,ii_)*k_
+on('PD_F',(None,'PD_Fa',{qsty:ins_st,qfn:_pfv,qsz:G_(pts,ONE-vf_)+G_(ptv,vf_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3}))
 lit('PD_Fa',b'/F','PD_Fb')
-e=S('PD_Fb'); on('PD_Fb',(None,'PD_Fc',None))
-em_en.lin(e); em_b.add(e,48+qfn-3)
+e=S('PD_Fb'); on('PD_Fb',(None,'PD_Fc',{xw:(as_x(PUS)+qfn,1)}))
+em_en.lin(e); em_b.add(e,48+qfn+net.ge(qfn,10,e)*7)     # font names /F0 to /F9, /FA and on
 lit('PD_Fc',b' ','PD_Fd')
 number('PD_Fd',qsz,'PD_Fe')
 lit('PD_Fe',b' Tf ','PD_Ff')
@@ -199,8 +204,15 @@ lit('T4P_PE',b'>\nEI Q\n','PD_Y')
 e=S('PD_N'); tbl=net.and_(net.step(qcols),net.lt(qci+1,qcols,e))
 on('PD_N',(None,'PD_1',{qp:qp+1,qyy:qyy+11}))
 # after the last stream: pages tree, xref, trailer
-on('PD_E',(None,'PD_E1',{xw:(as_x(XR)+2,fp)}))
-res=b''.join(('/F%d %d 0 R'%(i_,3+i_)).encode() for i_ in range(8))
+# the faces this PDF used: each one is copied out of the read only part of the bank, a block per tick
+qaddr=R();qrem=R();qn_=R()
+on('PD_E',(None,'PF_0',{qi:0}))
+e=S('PF_0'); on('PF_0',(net.ge(qi,NFC,e),'PF_E',None),(None,'PF_1',{r1:as_x(PUS)+qi}))
+e=S('PF_1'); on('PF_1',(net.step(R1),'PF_2',{rl:as_x(PFT)+qi*4}),(None,'PF_0',{qi:qi+1}))
+on('PF_2',(None,'PF_3',{qaddr:RL[0],qrem:RL[1],xw:(as_x(XR)+qi*3+3,fp),w1:(as_x(XR)+qi*3+4,fp+RL[2]),w2:(as_x(XR)+qi*3+5,fp+RL[3])}))
+e=S('PF_3'); on('PF_3',(net.step(qrem),'PF_4',{rb:(qaddr,net.min_(qrem,1000)),qn_:net.min_(qrem,1000)}),(None,'PF_0',{qi:qi+1}))
+on('PF_4',(None,'PF_3',{wb:(as_x(OUTB)+fp,qn_),fp:fp+qn_,qaddr:qaddr+qn_,qrem:qrem-qn_}))
+on('PF_E',(None,'PD_E1',{xw:(as_x(XR)+2,fp)}))
 # page furniture: header text and footer page number, same places as the screen
 A9=rom.metrics(9)[0]
 qfb=R();qfl=R();qfy=R();qfk=R()
@@ -218,7 +230,13 @@ e=S('T4P_Fh'); em_en.lin(e); em_b.add(e,qcur); on('T4P_Fh',(None,'T4P_Fd',{qhi:q
 lit('T4P_Fg',b')Tj ET\n','T4P_FN')
 e=S('T4P_FN'); fp2=net.and_(hftp,net.eq(qpg,1,e))
 on('T4P_FN',(net.step(qfk),'T4_PFR',None),(fp2,'T4P_F1',{qfb:as_x(HFB)+768,qfl:hfl[3],qfy:as_x(60)-A9,qfk:1}),(None,'T4P_F1',{qfb:as_x(HFB)+512,qfl:hfl[2],qfy:as_x(60)-A9,qfk:1}))
-lit('PD_E1',b'2 0 obj\n<</Type/Pages/MediaBox[0 0 612 792]/Resources<</Font<<'+res+b'>>>>/Count ','PD_E2')
+lit('PD_E1',b'2 0 obj\n<</Type/Pages/MediaBox[0 0 612 792]/Resources<</Font<<','PR_0')
+for i_ in range(NFC):
+    on(f'PR_{i_}',(None,f'PRa_{i_}',{r1:PUS+i_}))
+    nx_=f'PR_{i_+1}' if i_+1<NFC else 'PR_E'
+    on(f'PRa_{i_}',(net.step(R1),f'PRb_{i_}',None),(None,nx_,None))
+    lit(f'PRb_{i_}',('/F%s %d 0 R'%(chr(48+i_+(7 if i_>=10 else 0)),3+3*i_)).encode(),nx_)
+lit('PR_E',b'>>>>/Count ','PD_E2')
 number('PD_E2',qpg,'PD_E3')
 lit('PD_E3',b'/Kids[','PD_K0')
 on('PD_K0',(None,'PD_K1',{qi:FIRST}))
@@ -232,7 +250,8 @@ number('PD_X2',qobj,'PD_X3')
 lit('PD_X3',b'\n0000000000 65535 f \n','PD_X4')
 on('PD_X4',(None,'PD_X5',{qi:1}))
 e=S('PD_X5'); on('PD_X5',(net.ge(qi,qobj,e),'PD_T0',None),(None,'PD_X6',{r1:as_x(XR)+qi}))
-on('PD_X6',(None,'PD_X6b',{qcur:R1}))
+e=S('PD_X6'); on('PD_X6',(net.eq(R1,0,e),'PD_Xf',None),(None,'PD_X6b',{qcur:R1}))
+lit('PD_Xf',b'0000000000 65535 f \n','PD_X9')
 lit('PD_X6b',b'000','PD_X7')
 number('PD_X7',qcur,'PD_X8')
 lit('PD_X8',b' 00000 n \n','PD_X9')

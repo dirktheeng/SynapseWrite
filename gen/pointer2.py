@@ -11,6 +11,7 @@ fsm.set(mp_ptr_lock,net.and_(kh[12],net.eq(eva,1,e)),1); fsm.set(mp_ptr_lock,net
 PMSG=9
 _pn=net.step(pmsg)
 fsm.set(pmsg,net.and_(kh[7],_pn),pmsg-1); fsm.set(pmsg,net.and_(net.or_(kh[2],kh[3]),_pn),0)
+pfull=R(); RFULL_=net.step(RFULL); _pfn=net.step(pfull); fsm.set(pfull,net.and_(kh[7],_pfn),pfull-1)
 _kv=net.eq(eva,1,e); _hasi=net.step(clipn)
 _ikey=net.and_(kh[8],_kv,_hasi,net.or_(clipi,net.eq(evc,0,e)))
 PTR_DISP=[(kh[12],'T1_HH',None),

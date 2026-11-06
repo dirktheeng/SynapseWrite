@@ -4,7 +4,10 @@ import numpy as np
 from fontTools.ttLib import TTFont
 from PIL import ImageFont
 PTS=[11,12,14,16,18,20,24,28,36,9,10,8,7]   # size index 0 is the default 11 pt
-FAM=['carlito','caladea']
+FAM=['carlito','caladea','arimo','tinos','cousine','open-sans','oswald','dancing-script']
+FAM_NAMES=['Carlito','Caladea','Arimo','Tinos','Cousine','Open Sans','Oswald','Dancing Script']
+FAM_FACES=[(1,1),(1,1),(1,1),(1,1),(1,1),(1,1),(1,0),(1,0)]     # has a bold, has an italic
+FAM_ALIAS=['Calibri','Cambria','Arial','Times New Roman','Courier New',None,None,None]   # the commercial family each one stands in for, by metrics
 _root=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def _path(fam,sub,w,st): return f'{_root}/fonts/{fam}/package/files/{fam}-{sub}-{w}-{st}.woff'
 def _load(fam,sub,w,st):
@@ -20,10 +23,27 @@ def tt(fi,bold,ital,sub='latin'):
     if k not in TT: TT[k]=TTFont(io.BytesIO(_bytes(fi,bold,ital,sub)))
     return TT[k]
 def font(fi,bold,ital,px,sub='latin'): return ImageFont.truetype(io.BytesIO(_bytes(fi,bold,ital,sub)),px)
-NSZ=len(PTS)
-GLW=150     # pixel columns of the glyph unit's row plane
-FACES=[(fi,bo,it) for fi in range(len(FAM)) for bo in range(2) for it in range(2)]
+SZ=list(range(11,73))+[7,8,9,10]            # font sizes a style record can hold; field value 0 is the default 11 pt
+NSZ=len(SZ)
+def sz_raw(v): return (v&15)+((v>>4)<<19)    # a size field value placed in the record's bit positions
+def sz_near(pt): return min(range(NSZ),key=lambda i:(abs(SZ[i]-pt),SZ[i]))
+def st_font(st): return ((st>>7)&1)+(((st>>25)&3)*2)
+def font_raw(f): return ((f&1)<<7)+((f>>1)<<22)
+def lit(st):
+    "Record value of a style written at build time: old size index in the low bits, flags at 16, 32, 64, font at 128 and 1<<25, color and so on above."
+    return sz_raw(SZ.index(PTS[st&15]))+(st&(16|32|64))+font_raw(st_font(st))+(st&0x7FF00)
+GLW=180     # pixel columns of the glyph unit's row plane: the widest glyph at 72 pt
+FACES=[(fi,bo,it) for fi in range(len(FAM)) for bo in range(1+FAM_FACES[fi][0]) for it in range(1+FAM_FACES[fi][1])]
 def x_snap_face(fi,bo,it): return fi==0 and not it
+def face_of(fi,bo,it): return (fi,bo if FAM_FACES[fi][0] else 0,it if FAM_FACES[fi][1] else 0)
+def st_of_font(f): return ((f&1)<<7)+((f>>1)<<25)
+_MS={}
+def metrics_sz(si,fi):
+    "Ascent and line height in pixels at a size field value, for one family, from the family's own tables."
+    k=(si,fi)
+    if k not in _MS:
+        px=round(SZ[si]*96/72); f=font(fi,0,0,px); a,d=f.getmetrics(); _MS[k]=(a,round((a+d)*1.08))
+    return _MS[k]
 def metrics(si,fi=0):
     px=round(PTS[si]*96/72); f=font(fi,0,0,px); a,d=f.getmetrics()
     return a,round((a+d)*1.08)

@@ -157,7 +157,7 @@ e=S('T1_V0'); on('T1_V0',(net.eq(tab,5,e),'T1_V1',None),(None,'T1_M0',None))
 e=S('T1_V1'); rA.drive(net.and_(e,t1_ruler),(15,72,8,8,ui.BLUE,201)); rB.drive(net.and_(e,t1_marks),(15,98,8,8,ui.BLUE,202))
 on('T1_V1',(None,'T1_M0',None))
 # ---- menus: rows use alpha 254, the row is computed from the pointer y ----
-T1_SZ=[9,10,0,1,2,3,4,5,6,7,8]    # size rows sorted by point size
+T1_SZ=[8,9,10,11,12,14,16,18,20,22,24,26,28,36,48,72]    # rows of the size menu, in points
 T1_CN=['Black','Gray','White','Blue','Red','Green','Orange','Purple']
 def t1_gmenu(k,x,y,colors):
     "A grid of color swatches; the cell comes from the pointer x and y."
@@ -175,14 +175,14 @@ def t1_menu(k,x,y,w,labels,draw=None):
         if draw: draw(u,r_,x,y+r_*RH)
         else: u.t(x+8,y+r_*RH+2,lb,9,0,0,True)
     t1_chain(f'T1_MM{k}',u,'T1_END')
-def _fnt(u,r_,x,y): u.t(x+8,y+2,['Carlito','Caladea'][r_],9+128*r_,0,0,True)
+def _fnt(u,r_,x,y): u.t(x+8,y+2,rom.FAM_NAMES[r_],9+rom.st_of_font(r_),0,0,True)
 def _col(u,r_,x,y):
     u.r(x+6,y+4,14,14,(120,120,120),254); u.r(x+7,y+5,12,12,PAL_F[r_],254); u.t(x+26,y+2,T1_CN[r_],9,0,0,True)
 def _fop(u,r_,x,y):
     u.r(x+6,y+4,14,14,(120,120,120),254); u.r(x+7,y+5,12,12,WHITE,254); u.k(t1_fw if r_ else t1_case,x+9,y+7,8,8,ui.BLUE,254)
     u.t(x+26,y+2,['Match case','Whole words'][r_],9,0,0,True)
-t1_menu(1,112,87,128,[0,0],_fnt)
-t1_menu(2,242,87,48,[str(rom.PTS[i_]) for i_ in T1_SZ])
+t1_menu(1,112,87,128,[0]*len(rom.FAM),_fnt)
+t1_menu(2,242,87,48,[str(i_) for i_ in T1_SZ])
 t1_gmenu(3,270,115,PAL_F)
 t1_gmenu(7,306,115,[(255,255,255)]+PAL_B[6:13])
 t1_menu(8,464,115,70,['1.0','1.15','1.5','2.0'])
@@ -207,8 +207,8 @@ on('T1_MK',(net.eq(eva,27,e),'T1_MX',None),(net.and_(net.eq(eva,13,e),net.lt(t1_
  (net.and_(net.eq(eva,129,e),net.or_(net.eq(t1_mrow,0,e),net.eq(t1_mrow,99,e))),'T1_M0',{t1_mrow:nrw-1}),(net.eq(eva,129,e),'T1_M0',{t1_mrow:t1_mrow-1}),(None,'HALT',None))
 e=S('T1_MR'); mr=net.decode(t1_mop,9,e); rr_=net.decode(t1_mrow,32,e); CM={t1_mop:0,t1_uid:1,t1_mrow:99}; mrules=[]
 def mc(k_,r_): return net.and_(net.step(mr[k_]),net.step(rr_[r_]))
-for r_ in range(2): mrules.append((mc(1,r_),'FMTS',{fm:10,fcol:r_,**CM}))
-for r_,si_ in enumerate(T1_SZ): mrules.append((mc(2,r_),'FMTS',{fm:9,fsi:si_,**CM}))
+for r_ in range(len(rom.FAM)): mrules.append((mc(1,r_),'FMTS',{fm:10,fcol:r_,**CM}))
+for r_,si_ in enumerate(T1_SZ): mrules.append((mc(2,r_),'FMTS',{fm:9,fsi:rom.sz_raw(rom.SZ.index(si_)),**CM}))
 for r_ in range(32): mrules.append((mc(3,r_),'FMTS',{fm:7,fcol:r_,**CM}))
 for r_ in range(8): mrules.append((mc(7,r_),'FMTS',{fm:15,fhl:r_,**CM}))
 mrules.append((mc(4,0),'RD0',{t1_case:ONE-t1_case,**CSTART,**CM}))

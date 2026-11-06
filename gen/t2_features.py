@@ -3,7 +3,7 @@ net.group('tier 2')
 # ROM images. Written once at build time; the network reads them through its memory ports.
 T2_ROM=[]
 def _rec(i,run,al=0,ind=0,fi=0,lsp=0,spb=0,spa=DEFSPA,sid='',name=''):
-    vals=[run,al,ind,fi,lsp,spb,spa,0]
+    vals=[rom.lit(run),al,ind,fi,lsp,spb,spa,0]
     for base in (STY0,STY):
         a=base+i*STYN
         for j,v in enumerate(vals):
@@ -36,13 +36,12 @@ on('T2_PS',(net.step(um_out),'INS',{ins_ch:um_out,ins_st:TST,oret.r:oret.id('PS2
 e=S('T2_U8'); um_en.lin(e); um_in.add(e,t2cp)
 on('T2_U8',(None,'T2_U9',{ins_ch:um_out}))
 e=S('T2_U9')
-on('T2_U9',(net.ge(clen,1000,e),'TX2',None),(net.step(ins_ch),'INS',{ins_st:cs+rhi,oret.r:oret.id('TX2')}),(None,'INS',{ins_ch:63,ins_st:cs+rhi,oret.r:oret.id('TX2')}))
+on('T2_U9',(net.ge(clen,1000,e),'TX2',None),(net.step(ins_ch),'INS',{ins_st:csi+rhi,oret.r:oret.id('TX2')}),(None,'INS',{ins_ch:63,ins_st:csi+rhi,oret.r:oret.id('TX2')}))
 # typed font size
 e=S('T2_TD'); dig=net.and_(net.ge(eva,48,e),net.lt(eva,58,e))
 on('T2_TD',(dig,'RD0',{td1:td0,td0:eva-48}),(None,'RD0',None))
 e=S('T2_TS'); szv=td1*10+td0; hz=net.decode(szv,100,e); near=X()
-for v_ in range(100):
-    near=near+hz[v_]*min(range(len(rom.PTS)),key=lambda i:(abs(rom.PTS[i]-v_),rom.PTS[i]))
+for v_ in range(100): near=near+hz[v_]*rom.sz_raw(rom.sz_near(v_))
 on('T2_TS',(net.eq(szv,0,e),'RD0',None),(None,'FMTS',{fm:9,fsi:near}))
 # list toggles and keys
 e=S('T2_LI0')
@@ -62,7 +61,7 @@ on('T2_EN0',(net.and_(emp,net.step(l2_)),'PA0',{pwalk:cp,pfld:LIST,alv:k2_+(l2_-
 e=S('T2_EN1')
 on('T2_EN1',(net.and_(net.step(t2es),net.eq(clen,0,e)),'T2_EN2',{rl:as_x(STY)}),(None,'AFTER_ED',None))
 W_=rl.out
-on('T2_EN2',(None,'AFTER_ED',{ty:W_[0],w1:(cb+ALIGN,W_[1]),wln:(cb+PIND,W_[2],W_[3],W_[4],W_[5],W_[6],0)}))
+on('T2_EN2',(None,'AFTER_ED',{ity:W_[0],w1:(cb+ALIGN,W_[1]),wln:(cb+PIND,W_[2],W_[3],W_[4],W_[5],W_[6],0)}))
 on('T2_BK',(net.step(R1),'PA0',{pwalk:cp,pfld:LIST,alv:0}),(net.step(cp),'MG0',{}),(None,'AFTER_ED',None))
 # applying a style: format the runs, then write each paragraph property with undo records
 t2f=[R() for _ in range(8)]; t2lo=R();t2hi=R();t2i_=R();t2o=R();t2val=R();t2um=R()
@@ -83,10 +82,10 @@ on('T2_SG',(net.lt(t2i_,6,e),'T2_SF',{t2i_:t2i_+1,w1:(t2b+t2o,t2val),w2:(t2b+DIR
  (net.lt(pwalk,t2hi,e),'T2_SP1',{pwalk:pwalk+1,w1:(t2b+t2o,t2val),w2:(t2b+DIRTY,1)}),
  (None,'RD0',{lc:1,ap:cp,ao:co,w1:(t2b+t2o,t2val),w2:(t2b+DIRTY,1)}))
 # update a style from the caret paragraph, then carry the change to all its paragraphs
-t2or=R();t2nr_=R();t2c=R();t2l=R()
-on('T2_UM0',(None,'T2_UM1',{r1:cb+PSTY,r2:cb+1024,rl:cb+LEN,rp6:cb+PIND}))
+t2or=R();t2nr_=R();t2c=R();t2l=R();t2ni=R();t2ni_rec_=Interned(R(),t2ni)
+on('T2_UM0',(None,'T2_UM1',{r1:cb+PSTY,rs:cb+1024,rl:cb+LEN,rp6:cb+PIND}))
 e=S('T2_UM1'); hasc=net.step(clen)
-on('T2_UM1',(None,'T2_UM2',{t2si:R1,t2nr_:G_(R2,hasc)+G_(ty,e-net.and_(e,hasc)),t2f[1]:rl.out[2],t2f[2]:rp6.out[0],t2f[3]:rp6.out[1],t2f[4]:rp6.out[2],t2f[5]:rp6.out[3],t2f[6]:rp6.out[4],grp:grp+1}))
+on('T2_UM1',(None,'T2_UM2',{t2si:R1,t2nr_:G_(RSR,hasc)+G_(ty,e-net.and_(e,hasc)),t2ni_rec_:G_(RSR,hasc)+G_(ty,e-net.and_(e,hasc)),t2f[1]:rl.out[2],t2f[2]:rp6.out[0],t2f[3]:rp6.out[1],t2f[4]:rp6.out[2],t2f[5]:rp6.out[3],t2f[6]:rp6.out[4],grp:grp+1}))
 on('T2_UM2',(None,'T2_UM3',{r1:as_x(STY)+t2si*STYN}))
 on('T2_UM3',(None,'T2_UT',{t2or:R1,t2i_:0}))
 e=S('T2_UT'); hq=net.decode(t2i_,7,e); vq=G_(t2nr_,hq[0])
@@ -94,12 +93,12 @@ for i_ in range(1,7): vq=vq+G_(t2f[i_],hq[i_])
 on('T2_UT',(None,'T2_UU',{t2val:vq,r2:as_x(STY)+t2si*STYN+t2i_}))
 e=S('T2_UU'); log(e,7,as_x(STY)+t2si*STYN+t2i_,0,R2,t2val)
 on('T2_UU',(net.lt(t2i_,6,e),'T2_UT',{t2i_:t2i_+1,w1:(as_x(STY)+t2si*STYN+t2i_,t2val)}),(None,'T2_UW',{pwalk:0,t2um:1,w1:(as_x(STY)+t2si*STYN+t2i_,t2val)}))
-e=S('T2_UW'); on('T2_UW',(net.ge(pwalk,npar,e),'RD0',{lc:1,dfrom:0,t2um:0,ty:t2nr_}),(None,'T2_UX',{r1:as_x(PT)+pwalk}))
+e=S('T2_UW'); on('T2_UW',(net.ge(pwalk,npar,e),'RD0',{lc:1,dfrom:0,t2um:0,ity:t2nr_}),(None,'T2_UX',{r1:as_x(PT)+pwalk}))
 on('T2_UX',(None,'T2_UY',{t2b:R1,r2:R1+PSTY,rl:R1+LEN}))
 e=S('T2_UY'); on('T2_UY',(net.eq(R2,t2si,e),'T2_SF',{t2i_:0,t2l:rl.out[0]}),(None,'T2_UW',{pwalk:pwalk+1}))
 on('T2_UC0',(None,'T2_UC1',{t2c:0}))
-e=S('T2_UC1'); on('T2_UC1',(net.ge(t2c,t2l,e),'T2_UW',{pwalk:pwalk+1}),(None,'T2_UC2',{r2:t2b+1024+t2c}))
-e=S('T2_UC2'); hit_=net.eq(R2,t2or,e); log(hit_,5,pwalk,t2c,R2,t2nr_); w1.drive(hit_,(t2b+1024+t2c,t2nr_))
+e=S('T2_UC1'); on('T2_UC1',(net.ge(t2c,t2l,e),'T2_UW',{pwalk:pwalk+1}),(None,'T2_UC2',{rs:t2b+1024+t2c}))
+e=S('T2_UC2'); hit_=net.and_(net.eq(RSR,t2or,e),net.lt(RSC,ST_INS,e)); log(hit_,5,pwalk,t2c,RSC,t2ni); w1.drive(hit_,(t2b+1024+t2c,t2ni))
 on('T2_UC2',(None,'T2_UC1',{t2c:t2c+1}))
 # paragraph property stepping
 t2d=R();t2mn=R()
@@ -120,7 +119,7 @@ e=S('T2_OR2'); on('T2_OR2',(net.ge(t2z,512,e),'OP1',{w1:(t2cb0+PSPA,DEFSPA)}),(N
 # member walk order is in T3_ZN; end of a scanned part moves to the next part
 e=S('T2_ZN')
 on('T2_ZN',(net.eq(ztarget,6,e),'T3_Z6n',None),(net.eq(ztarget,7,e),'T3_Z7n',None),(None,'OPEND',None))
-on('T3_Z6n',(None,'X_C0',{ztarget:7,zp:zp0,ob:0,obase:OUTB,cb:SCR,cs:0,t2df:0,t2ps:0,w1:(as_x(SCR)+ALIGN,0),w2:(as_x(SCR)+LIST,0),wln:(as_x(SCR)+PIND,0,0,0,0,0,0)}))
+on('T3_Z6n',(None,'X_C0',{ztarget:7,zp:zp0,ob:0,obase:OUTB,cb:SCR,ics:as_x(0),t2df:0,t2ps:0,w1:(as_x(SCR)+ALIGN,0),w2:(as_x(SCR)+LIST,0),wln:(as_x(SCR)+PIND,0,0,0,0,0,0)}))
 on('T3_Z7n',(None,'X_C0',{ztarget:4,zp:zp0,ob:0,obase:OUTB,cb:t2cb0,t2skip:0}))
 # attribute search: moves oi to the first value after w:val=" in this tag
 e=S('T2_VF1')
@@ -138,11 +137,13 @@ e=S('T2_DV')
 on('T2_DV',(net.ge(t2n_,1500,e),'T2_DV',{t2n_:t2n_-1500,t2q:t2q+100}),(net.ge(t2n_,150,e),'T2_DV',{t2n_:t2n_-150,t2q:t2q+10}),(net.ge(t2n_,15,e),'T2_DV',{t2n_:t2n_-15,t2q:t2q+1}),(net.ge(t2n_,8,e),'T2SR',{t2q:t2q+1}),(None,'T2SR',None))
 # run property write: decode the current style once per tag
 cse=S('T2_C'); CSD=style_decode(cs,cse); hk=net.decode(t2k,10,cse)
-csn=(G_(cs-CSD['bold']*16+t2v*16,hk[0])+G_(cs-CSD['ital']*32+t2v*32,hk[1])+G_(cs-CSD['und']*64+t2v*64,hk[2])+G_(cs-CSD['font']*128+t2v*128,hk[3])
- +G_(cs-CSD['strike']*ST_STRIKE+t2v*ST_STRIKE,hk[4])+G_(cs-CSD['vert']*ST_VERT+t2v*ST_VERT,hk[5])+G_(cs-CSD['hl']*ST_HL+t2v*ST_HL,hk[6])+G_(cs-CSD['size']+t2v,hk[8])+G_(cs-CSD['nop']*ST_NOP+t2v*ST_NOP,hk[9]))
+_tvf=net.bits(t2v,3,hk[3])
+csn=(G_(cs-CSD['bold']*16+t2v*16,hk[0])+G_(cs-CSD['ital']*32+t2v*32,hk[1])+G_(cs-CSD['und']*64+t2v*64,hk[2])+G_(cs-CSD['fontraw']+_tvf[0]*128+_tvf[1]*(1<<22)+_tvf[2]*(1<<23),hk[3])
+ +G_(cs-CSD['strike']*ST_STRIKE+t2v*ST_STRIKE,hk[4])+G_(cs-CSD['vert']*ST_VERT+t2v*ST_VERT,hk[5])+G_(cs-CSD['hl']*ST_HL+t2v*ST_HL,hk[6])+G_(cs-CSD['size']+t2v,hk[8])+G_(cs,hk[9]))
 tvc=R()
 vb_=net.bits(t2v,5,hk[7]); csn=csn+G_(cs-CSD['colraw']+vb_[0]*256+vb_[1]*512+vb_[2]*1024+vb_[3]*131072+vb_[4]*262144,hk[7])
-on('T2_C',(None,'PX',{cs:csn}))
+fsm.set(rnop,hk[9],t2v)
+on('T2_C',(None,'PX',{ics:csn}))
 # on or off: a bare tag is on; a value starting 0, f or n is off
 on('T2_TV',(None,'T2_TV1',{rl:OA+oi}))
 e=S('T2_TV1')
@@ -219,13 +220,13 @@ on('T2_SC',(None,'PX',{t2skip:0}))
 # a run style reference: the run starts from the character style's properties
 on('T2_RS1',(None,'T2_FS',{t2i:0,t2jj:0,t2rr.r:t2rr.id('T2_RS2')}))
 on('T2_RS2',(t2fnd,'T2_RS3',{rl:as_x(STY)+t2i*STYN}),(None,'PX',None))
-on('T2_RS3',(None,'PX',{cs:W[0]}))
+on('T2_RS3',(None,'PX',{ics:W[0]}))
 # paragraph style reference, also basedOn: apply a table record to the current record
 on('T2_PS1',(None,'T2_FS',{t2i:0,t2jj:0,t2rr.r:t2rr.id('T2_PS2')}))
 on('T2_PS2',(t2fnd,'T2_AP',None),(None,'PX',None))
 on('T2_PR',(None,'T2_AP',{t2i:0}))
 on('T2_AP',(None,'T2_AP1',{rl:as_x(STY)+t2i*STYN}))
-on('T2_AP1',(None,'PX',{t2il:0,t2ps:W[0],cs:W[0],w1:(cb+ALIGN,W[1]),w2:(cb+LIST,W[7]),wln:(cb+PIND,W[2],W[3],W[4],W[5],W[6],t2i)}))
+on('T2_AP1',(None,'PX',{t2il:0,t2ps:W[0],ics:W[0],w1:(cb+ALIGN,W[1]),w2:(cb+LIST,W[7]),wln:(cb+PIND,W[2],W[3],W[4],W[5],W[6],t2i)}))
 # PDF list markers, in the page's pixel coordinates
 e=S('T2_PM'); on('T2_PM',(net.and_(net.eq(qs,0,e),net.step(qk)),'T2_PMa',None),(None,'PD_R',None))
 lit('T2_PMa',b'BT /F0 15 Tf 0 0 0 rg 1 0 0 1 ','T2_PMb')

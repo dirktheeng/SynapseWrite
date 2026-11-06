@@ -118,7 +118,7 @@ class L:
     def k(s,cond,x,y,w,h,c,a=0): s.i.append(('k',cond,x,y,w,h,c,a))
     def t(s,x,y,txt,st=9,f=0,b=3,hv=False):
         "Whole pixel pens rounded from exact advances, so a label matches document spacing."
-        si=st&15;bo=(st>>4)&1;fi=(st>>7)&1;px=round(rom.PTS[si]*96/72); xf=float(x)
+        si=st&15;bo=(st>>4)&1;fi=rom.st_font(st);px=round(rom.PTS[si]*96/72); xf=float(x)
         for ch in txt:
             s.i.append(('g',ord(ch),st,round(xf),y,f,b,hv)); xf+=rom.adv_em(fi,bo,0,ord(ch))*px
         return round(xf)
@@ -310,7 +310,7 @@ def emit(net,fsm,rA,bus,YB,items,seq0_state,hv_reg,hb,bg,prs=None):
             _,cond,x,y,w,h,c,a=it; rA.lin(net.and_(t,cond),x,y,w,h,c,a)
         else:
             _,ch,st,x,y,f,b,hv=it
-            g_en.lin(t);g_draw.lin(t);g_ch.lin(t*ch);g_st.lin(t*st);g_x.lin(t*x);g_y.lin(t*(y+YB));fg[f].lin(t)
+            g_en.lin(t);g_draw.lin(t);g_ch.lin(t*ch);g_st.lin(t*rom.lit(st));g_x.lin(t*x);g_y.lin(t*(y+YB));fg[f].lin(t)
             if hv:
                 c=net.and_(t,hb); bg[b].lin(t-c); bg[5].lin(c)
             else: bg[b].lin(t)

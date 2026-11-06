@@ -1,10 +1,10 @@
 
 openout=Bus(net); openout.add(S('HF'),wopen); fsm.set(wopen,S('HF'),0)
 iret=Ret('IR');bret=Ret('BR');gret=Ret('GR');hret=Ret('HR');cret=Ret('CR')
-ip=R();cur=R();nb=R();bitv=R();gbn=R();gbv=R();gbw=R();gbi=R();ob=R();oi=R();zp=R();pfirst=R();cs=R();ntxt=R()
+ip=R();cur=R();nb=R();bitv=R();gbn=R();gbv=R();gbw=R();gbi=R();ob=R();oi=R();zp=R();pfirst=R();cs=R();csi=R();ics=Interned(cs,csi);ntxt=R()
 lln=R();bfinal=R();nlen=R();ndist=R();ncode=R();idx=R();prev=R();rept=R();rval=R();cval=R()
 csd=None;code=R();first=R();index=R();hlen=R();cnt=R();hb=R();sym=R();ln=R();lb=R();lc_=R();sb=R();dist=R();copyn=R()
-rins=R();rdel=R();rfk=R();rvb=R();rhi=rins*ST_INS+rdel*ST_DEL+rfk*ST_F0
+rins=R();rdel=R();rfk=R();rvb=R();rnop=R();rhi=rins*ST_INS+rdel*ST_DEL+rfk*ST_F0+rnop*ST_NOP
 LN=TBL+1200; CLH=TBL+800; LH=TBL; DH=TBL+400; OFFS=TBL+1000
 exec(open('t3_px.py').read())
 rtoc=R();rdig=R();tpgv=R();fnc=R();rdsec=R();gcount=R();tcidx=R();gx=R();incell=R()
@@ -12,7 +12,7 @@ def T3_PX_RULES(e):
     return [(tag('<w:tbl',' >'),'PX',{gcount:0,tcidx:0,gx:0,pfirst:0,oi:oi+6}),(pat('<w:gridC',e),'T3_GC',{oi:oi+8}),(tag('<w:tc',' >'),'T3_TC0',{oi:oi+5}),(pat('</w:tc>',e),'PX',{incell:0,tcidx:tcidx+1,oi:oi+7}),(pat('</w:tr>',e),'PX',{tcidx:0,gx:0,oi:oi+7}),(pat('<w:shd ',e),'T3_SHD',{oi:oi+7})]+T3_PX_MORE(e)
 # open: reset the document, then walk zip members
 t2cp=R();t2k=R();t2v=R();t2n_=R();t2cb0=R();t2skip=R();t2df=R();t2ps=R()
-on('OP0',(None,'T3_OP',{cursec:0,nsec:1,imgp:0,fnc:0,rdsec:0,rdp:0,hftp:0,hfl[0]:0,hfl[1]:0,hfl[2]:0,hfl[3]:0,rins:0,rdel:0,rfk:0,t2cb0:nextb,t2skip:0,t2ps:0,nsty:6,wln:(nextb+SAVE,112,16,1,0,0,0),w1:(as_x(PT),nextb),w2:(nextb+DIRTY,1),w3:(nextb+LEN,0),cp:0,cb:nextb,co:0,clen:0,ap:0,ao:0,npar:1,nextb:nextb+STRIDE,usp:UB,urp:UB,scroll:0,nolog:1,zp:0,pfirst:1,cs:0,ty:0,dfrom:0,lc:1,bgp:0}))
+on('OP0',(None,'T3_OP',{**{q_:0 for q_ in falias},cursec:0,nsec:1,imgp:0,fnc:0,rdsec:0,rdp:0,hftp:0,hfl[0]:0,hfl[1]:0,hfl[2]:0,hfl[3]:0,rins:0,rdel:0,rfk:0,t2cb0:nextb,t2skip:0,t2ps:0,nsty:6,wln:(nextb+SAVE,112,16,1,0,0,0),w1:(as_x(PT),nextb),w2:(nextb+DIRTY,1),w3:(nextb+LEN,0),cp:0,cb:nextb,co:0,clen:0,ap:0,ao:0,npar:1,nextb:nextb+STRIDE,usp:UB,urp:UB,scroll:0,nolog:1,zp:0,pfirst:1,cs:0,ty:0,dfrom:0,lc:1,bgp:0}))
 on('T3_OP',(None,'T3_OP2',None))
 for i_,v_ in enumerate((1,816,PH,PX,TX,TW,96,864)):
     on('T3_OP2' if i_==0 else f'T3_OP2{i_}',(None,f'T3_OP2{i_+1}' if i_<7 else 'T2_OR0',{w1:(as_x(SECB)+i_,v_)}))
@@ -173,7 +173,7 @@ on('PX2',(net.and_(t2skip,ONE-pat('</w:styl',e)),'PX',{oi:oi+1}),
  (pat('</w:styl',e),'T2_SW',{oi:oi+8,t2rr.r:t2rr.id('T2_SC')}),
  (tag('<w:p',' >'),'PN1',{oi:oi+4}),
  (tag('<w:t',' >'),'TX0',{oi:oi+4}),
- (tag('<w:r',' >'),'PX',{cs:t2ps,oi:oi+4}),
+ (tag('<w:r',' >'),'PX',{ics:t2ps,rnop:0,oi:oi+4}),
  (tag('<w:b','/ '),'T2_TV',{t2k:0,oi:oi+4}),
  (tag('<w:i','/ '),'T2_TV',{t2k:1,oi:oi+4}),
  (tag('<w:u','/ '),'T2_TV',{t2k:2,oi:oi+4}),
@@ -211,11 +211,11 @@ on('PX2',(net.and_(t2skip,ONE-pat('</w:styl',e)),'PX',{oi:oi+1}),
  (None,'PX',{oi:oi+1}))
 e=S('SZ0')
 hpv=(W[0]-48)*10+(W[1]-48)
-hps=net.decode(hpv,80,e); cl=X()
-PTL=rom.PTS
-for hp_ in range(80):
-    best=min(range(len(PTL)),key=lambda i:abs(PTL[i]*2-hp_)) if hp_ else 0
-    cl=cl+hps[hp_]*best
+hps=net.decode(hpv,100,e); cl=X(); _dq=net.ge(W[2],48,e)      # half points: two digits, or three
+hpv3=(W[0]-48)*100+(W[1]-48)*10+(W[2]-48); hps3=net.decode(G_(hpv3,_dq),200,e)
+for hp_ in range(100):
+    cl=cl+net.gate(hps[hp_]*rom.sz_raw(rom.sz_near(hp_/2) if hp_ else 0),e-_dq)
+for hp_ in range(100,200): cl=cl+hps3[hp_]*rom.sz_raw(rom.sz_near(hp_/2))
 on('SZ0',(None,'T2_C',{t2k:8,t2v:cl,oi:oi+13}))
 e=S('JC0'); j1=net.eq(W[0],99,e);j2=net.or_(net.eq(W[0],114,e),net.eq(W[0],101,e));j3=net.eq(W[0],98,e)
 on('JC0',(None,'PX',{w1:(cb+ALIGN,j1*1+j2*2+j3*3),oi:oi+13}))
@@ -232,17 +232,19 @@ e=S('TX3')
 amp_=net.eq(W[0],38,e);ltx=net.eq(W[0],60,e)
 isdg_=net.and_(net.ge(W[0],48,e),net.lt(W[0],58,e))
 on('TX3',(ltx,'PX',None),(net.and_(rdig,isdg_),'TX2',{tpgv:tpgv*10+W[0]-48,oi:oi+1,w1:(cb+TPG,tpgv*10+W[0]-48)}),(rdig,'TX2',{oi:oi+1}),
- (net.and_(amp_,net.eq(W[1],97,e),net.eq(W[2],112,e)),'INS',{ins_ch:39,ins_st:cs+rhi,oi:oi+6,oret.r:oret.id('TX2')}),
- (net.and_(amp_,net.eq(W[1],113,e)),'INS',{ins_ch:34,ins_st:cs+rhi,oi:oi+6,oret.r:oret.id('TX2')}),
- (net.and_(amp_,net.eq(W[1],97,e)),'INS',{ins_ch:38,ins_st:cs+rhi,oi:oi+5,oret.r:oret.id('TX2')}),
- (net.and_(amp_,net.eq(W[1],108,e)),'INS',{ins_ch:60,ins_st:cs+rhi,oi:oi+4,oret.r:oret.id('TX2')}),
- (net.and_(amp_,net.eq(W[1],103,e)),'INS',{ins_ch:62,ins_st:cs+rhi,oi:oi+4,oret.r:oret.id('TX2')}),
+ (net.and_(amp_,net.eq(W[1],97,e),net.eq(W[2],112,e)),'INS',{ins_ch:39,ins_st:csi+rhi,oi:oi+6,oret.r:oret.id('TX2')}),
+ (net.and_(amp_,net.eq(W[1],113,e)),'INS',{ins_ch:34,ins_st:csi+rhi,oi:oi+6,oret.r:oret.id('TX2')}),
+ (net.and_(amp_,net.eq(W[1],97,e)),'INS',{ins_ch:38,ins_st:csi+rhi,oi:oi+5,oret.r:oret.id('TX2')}),
+ (net.and_(amp_,net.eq(W[1],108,e)),'INS',{ins_ch:60,ins_st:csi+rhi,oi:oi+4,oret.r:oret.id('TX2')}),
+ (net.and_(amp_,net.eq(W[1],103,e)),'INS',{ins_ch:62,ins_st:csi+rhi,oi:oi+4,oret.r:oret.id('TX2')}),
  (net.and_(net.ge(W[0],192,e),net.lt(W[0],224,e)),'T2_U8',{t2cp:(W[0]-192)*64+(W[1]-128),oi:oi+2}),
  (net.and_(net.ge(W[0],224,e),net.lt(W[0],240,e)),'T2_U8',{t2cp:(W[0]-224)*4096+(W[1]-128)*64+(W[2]-128),oi:oi+3}),
  (net.ge(W[0],240,e),'T2_U8',{t2cp:63,oi:oi+4}),
  (net.or_(net.gt(W[0],126,e),net.lt(W[0],32,e),net.ge(clen,1000,e)),'TX2',{oi:oi+1}),
- (None,'INS',{ins_ch:W[0],ins_st:cs+rhi,oi:oi+1,oret.r:oret.id('TX2')}))
-e=S('RF9'); on('RF9',(net.or_(pat('Caladea',e),pat('Cambria',e),pat('Times',e),pat('Georgia',e),pat('Garamond',e)),'T2_C',{t2k:3,t2v:1,oi:oi+19}),(None,'T2_C',{t2k:3,t2v:0,oi:oi+8}))
+ (None,'INS',{ins_ch:W[0],ins_st:csi+rhi,oi:oi+1,oret.r:oret.id('TX2')}))
+e=S('RF9')
+_RF=[('Caladea',1,0),('Cambria',1,1),('Arimo',2,0),('Arial',2,1),('Helvetic',2,0),('Tinos',3,0),('Times',3,1),('Georgia',3,0),('Garamond',3,0),('Cousine',4,0),('Courier',4,1),('Consolas',4,0),('Open San',5,0),('Verdana',5,0),('Tahoma',5,0),('Oswald',6,0),('Dancing',7,0),('Carlito',0,0),('Calibri',0,1)]
+on('RF9',*[(pat(n_,e),'T2_C',{t2k:3,t2v:f_,oi:oi+8,**({falias[f_]:1} if a_ else {})}) for n_,f_,a_ in _RF],(None,'T2_C',{t2k:3,t2v:0,oi:oi+8}))
 e=S('CO0'); cvv=X(); exact=X()
 for j_ in range(1,32):
     p_=pat('%02X%02X%02X'%PAL_F[j_],e); cvv=cvv+p_*j_; exact=exact+p_
@@ -257,7 +259,7 @@ for i_ in range(512):
     nv_=nv_+nh[i_]*best
 on('CO0',(au,'T2_C',{t2k:7,t2v:0,oi:oi+16}),(None,'T2_C',{t2k:7,t2v:cvv+nv_,oi:oi+16}))
 on('OPEND',(None,'OPE2',{nolog:0,clip0:0,clip1:0}))
-on('OPE2',(None,'SYNC',{autos:1,lc:1,dfrom:0,ty:0}))
+on('OPE2',(None,'SYNC',{autos:1,lc:1,dfrom:0,ity:as_x(0)}))
 
 # ---- PNG reader: chunks, inflate, row filters, decimation to fit the page ----
 net.group('png reader')

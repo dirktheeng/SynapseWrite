@@ -16,7 +16,7 @@ beam=net.and_(nok,ONE-marg,net.or_(drag,blank,text_,box))
 # the sprite is two glyphs drawn by the same unit as text: the white layer here, the black one in the next state. No clip, no id plane.
 ptshape=beam*1+kcol*2+kbot*3+kcor*4+marg*5; mp_ptsn=R()
 def ptr_draw(e_,code_):
-    g_en.lin(e_);g_draw.lin(e_);g_ch.add(e_,code_);g_st.lin(e_*9);g_x.add(e_,mp_ptx);g_y.add(e_,as_x(mp_pty)-asc_e+YB);g_nc.lin(e_);g_fx.lin(e_*len(FACES))
+    g_en.lin(e_);g_draw.lin(e_);g_ch.add(e_,code_);g_st.lin(e_*rom.lit(9));g_x.add(e_,mp_ptx);g_y.add(e_,as_x(mp_pty)-asc_e+YB);g_nc.lin(e_);g_fx.lin(e_*len(FACES))
 ptr_draw(e,33+ptshape*2); fg[2].lin(e); bg[0].lin(e)
 on('PTD',(None,'PTE',{mp_ptsn:ptshape}))
 e=S('PTE'); ptr_draw(e,34+mp_ptsn*2); fg[0].lin(e); bg[0].lin(e)
