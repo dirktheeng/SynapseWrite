@@ -21,13 +21,59 @@ It is an independent project with its own name and icons, modeled on the feature
 
 ## Contents
 
-- **[Start here](#start-here)**: [Build it](#build-it) · [Status](#status)
+- **[Start here](#start-here)**: [The goal](#the-goal-that-started-it) · [Build it](#build-it) · [Status](#status)
 - **[How it works](#how-it-works)**: [One tick](#the-whole-program-is-one-function) · [The equation](#the-equation-explained) · [Neurons to logic](#from-neurons-to-logic) · [Control flow](#control-flow-a-token-in-the-weights) · [Sparsity](#why-half-a-million-neurons-can-feel-instant) · [Memory](#memory-the-network-holds-the-pointers) · [The screen](#the-screen-is-also-an-input) · [Text](#how-a-letter-gets-drawn) · [File formats](#file-formats-are-networks-too)
 - **[How it is put together](#how-it-is-put-together)**: [Connections](#how-everything-is-connected) · [Every sub-network](#every-sub-network-and-why-it-exists) · [Boundaries](#what-is-not-the-network) · [The build](#how-it-is-built)
 - **[What kind of thing is this?](#what-kind-of-thing-is-this)**: [Circuits](#is-it-a-circuit) · [Classification](#how-do-we-classify-what-this-is) · [Determinism](#determinism-and-hallucinations)
 - **[Evidence and reference](#evidence-and-reference)**: [Verification](#how-it-is-checked) · [Repository tour](#repository-tour) · [License](#license)
 
 ## Start here
+
+### The goal that started it
+
+The project began from the goal below. The project owner asked a language model to draft it, then set it as the standing goal for the work, word for word. It explicitly allows a generator program to write the weights. Where the project falls short of it, [Status](#status) says so.
+
+<details>
+<summary>Show the full goal</summary>
+
+```text
+GOAL: Build and deploy a browser-based word processor with the features and visual style of Microsoft Word, implemented entirely as artificial neural networks (ANNs) whose weights are programmed directly and never trained. Follow the Weight-Space Programming approach: reason about what each layer must compute, then write the weights that compute it.
+
+ARCHITECTURE
+The app is event-driven. Key presses, mouse clicks, mouse moves, and time signals each trigger a tick. Each tick is one function: (last output screenshot, event vector, memory read vectors, recurrent state) -> (next screenshot, memory operations, recurrent state, timer request, halt signal). ANNs use the screenshot to support state management, including hit testing, caret and selection tracking, and checking the screen against document state. The output is an RGBA image only. ANNs must rasterize all text, widgets, icons, and pages, with no HTML, CSS, DOM, canvas drawing, or font APIs. Sub-networks are encouraged.
+
+ALLOWED NON-ANN CODE
+Glue must be the minimum needed to hold the networks together. It may only: run ANN inference in the browser using WebGPU or WASM; detect events, encode them as vectors, and start flow through the networks; route vectors between ANNs along a fixed graph; encode clipboard data and file bytes as vectors; display output tensors; store bytes and set timers when an ANN commands it; and repeat internal ticks until an ANN raises halt. Glue must not branch on, parse, format, or interpret application data or event meaning. All computation belongs in ANNs.
+
+MEMORY
+External memory is a passive tensor store. Every address, read, write, write mask, and allocation decision must be produced by an ANN. Glue executes these signals exactly and decides nothing.
+
+NO TRAINING
+Every weight must be written directly by you or by a deterministic generator program you write. Prohibited: gradients, backpropagation, fitting to data, evolutionary or black-box search, automated weight tuning, pretrained models, and stored screen recordings used as lookup output. You may debug by running the network, reasoning about failures, and revising weights or the generator by hand. Openly licensed font outlines may be compiled into weights. Weights are frozen at deployment.
+
+FEATURE AND STYLE TARGET
+Reach parity with Word in tier order:
+1. Ribbon, tabs, status bar, rulers, typing, caret, selection, scrolling, undo and redo, clipboard, and find and replace.
+2. Character and paragraph formatting, styles, fonts, lists, line breaking, justification, and pagination.
+3. Tables, images, headers and footers, sections, columns, footnotes, table of contents, and comments.
+4. Track changes, mail merge, equations, fields, spell check, print to PDF, and .docx open and save with round-trip fidelity. ANNs must also do parsing, compression, and serialization.
+Match Word's layout, spacing, colors, and interaction behavior. Use original icons and an original product name, with no Microsoft assets.
+
+DEPLOYMENT
+Provide a static web deployment for current Chrome, Edge, and Firefox. Target a 1280x800 display and under 100 ms from event to updated frame on a mid-range GPU. Documents of at least 100 pages must remain usable.
+
+VERIFICATION
+- An audit showing glue contains no application logic and the repository contains no training code.
+- A provenance record mapping each sub-network to its purpose and generator code.
+- A scripted end-to-end suite driven only through events and judged only on output images and saved files.
+- Pixel and layout comparisons against reference renders from real Word.
+- .docx round-trip tests verified in real Word.
+
+REPORTING
+Maintain a parity matrix listing every Word feature as passed, partial, or missing, with test evidence. Never add non-ANN logic to work around a failure. If a constraint blocks progress, document the blocker and the closest compliant result. Continue until all tiers pass or remaining gaps are shown to be infeasible under these rules.
+```
+
+</details>
 
 ### Build it
 
