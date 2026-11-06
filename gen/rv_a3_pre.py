@@ -13,7 +13,7 @@ def rv_key_rules():
     D={grp:grp+1,t1_lastk:0}
     PI_=lambda d: {pwalk:lo_p,pfld:PIND,t1_pdm:1,t1_pdd:1000+d,grp:grp+1,t1_lastk:0}
     LS_=lambda v: {pwalk:lo_p,pfld:PLSP,alv:v,grp:grp+1,t1_lastk:0}
-    return [
+    return [*p1_key_rules(KD,ND),
      (N(137)-net.and_(N(137),shf),'RVA3_F3',None),(net.and_(N(137),shf),'RVA3_CC0',None),(N(140),'SAVE',{}),
      (KD(128),'RVA3_ML',None),(KD(130),'RVA3_MR',None),(KD(129),'RVA3_PU',None),(KD(131),'RVA3_PD',None),
      (KD(8),'RVA3_KB',None),(KD(127),'RVA3_KD',None),
