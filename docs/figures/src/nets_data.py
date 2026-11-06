@@ -13,6 +13,8 @@ F=[
 ('shared control registers','Holds editor state such as caret, selection and typing format, plus the comparators that order a selection.','Many features read the same state. Shared registers mean each feature does not keep its own copy that could fall out of step.'),
 ]),
 ('Changing the document','These networks are the only ones that write document text. They all go through the same edit and undo paths, so everything stays undoable.',[
+('find across paragraphs','One matcher for queries that hold paragraph marks, shared by the replace walker, the match counter and the highlight.','A match that crosses a paragraph cannot be found inside one slot, so it needs state that follows the text across slots.'),
+('clipboard formatting','Keeps the style cells and paragraph records of the copy, and restores them when the pasted text equals that copy.','The system clipboard carries only text here. So the network keeps formatting in its own memory, and uses it when the pasted text matches.'),
 ('edit primitives','Inserts and deletes characters and paragraphs, and logs each change for undo.','It is the single choke point for edits, so undo cannot be bypassed by accident.'),
 ('undo','Walks the log backward and forward to undo and redo.','The log format is shared, so any feature that logs correctly gets undo with no extra network.'),
 ('range walker','Walks a selection for copy, cut, delete and formatting.','Selections cross paragraphs and slots. One walker holds that hard logic, and each command just supplies the action.'),
@@ -29,6 +31,7 @@ F=[
 ]),
 ('Laying out and painting the page','These networks decide where everything goes, then draw it.',[
 ('line breaking','Finds where lines break, and handles alignment.','Every paragraph needs it, and it runs on each edit, so it has to be small.'),
+('zoom','Handles zoom levels from 50 to 150 percent and read mode, maps paint to the screen at the chosen scale, and runs the status bar controls.','Paint works in page coordinates. This keeps the many drawing paths unaware of the zoom level.'),
 ('layout and paint','Walks paragraphs and places lines and words. It draws text, selection and pictures.','It is the main drawing loop. Most features add to this one walk, so they do not repaint separately.'),
 ('chrome','Draws the caret, scrollbar and status bar, and handles autoscroll.','These change on most events and must update without repainting the page.'),
 ('ribbon display list','One sequencer that plays draw records for the ribbon, menus and labels from read only memory, one item per tick.','Drawing a ribbon is data more than logic. Its neurons are shared by every list, and the lists themselves cost no neurons.'),
@@ -57,6 +60,7 @@ F=[
 ('snapping layer','Fits outline heights to the pixel grid for a given size.','Unsnapped text looks blurry at small sizes, so heights move to whole pixels using font metrics. Horizontal snapping is written, but no font uses it now, because it looked worse side by side.'),
 ('glyph geometry','Scales outline coordinates by the drawn size.','A single set of weights can then serve any size, rather than storing outlines per size.'),
 ('row sequencer','Steps the glyph unit through the rows of a character.','Coverage builds one sample line per tick, so something has to count them.'),
+('glyph pixel records','Records a small glyph drawn black on white, so that later draws take one read and one patch.','Most repaint cost was glyph rows. Replaying a record is much cheaper for the common case of plain text.'),
 ('glyph store','Keeps drawn glyphs in memory and copies them to the screen.','Generating a glyph costs far more than copying one, and most letters repeat.'),
 ('glyph patch','Assembles coverage and color into a patch for the patch port.','Text color is applied here, so a cached glyph works in any color.'),
 ('stem units','Would hold stem positions for horizontal snapping. It has no neurons in the current build, because no font turns that on.','It is listed so that the provenance record stays complete.'),
