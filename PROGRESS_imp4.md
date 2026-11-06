@@ -27,3 +27,6 @@ e2e 208/210: page break and narrow margin differed only in the vertical ruler. A
 
 ## a5_docx edge bound
 Open of a01_format is 10.14 M edges, 9.90 M at imp3, bound 10 M. Tried: rare character tests behind one neuron (no gain), lazy ext compares in the interner (no gain), a separate decoder for extended faces (small gain), exact color lines woken only for an exact color (10.17 to 10.14 M). A once per row pulse made it 13.4 M. The rest is mainly that this file's headings now draw 24 exact color lines per ink pixel. Not fixed; the test is left as it is.
+
+## Full run 2 at fb823ae
+All exit 0 and pass except: a5_docx edge bound (above), tier2 same after a LibreOffice re-save: now it truly opens that file, and its private use level 2 bullet drew round. A symbol font bullet now takes the level's own look. t4: select all 911 K edges, wheel 847 K (779 K at imp3).

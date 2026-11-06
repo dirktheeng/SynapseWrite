@@ -2,7 +2,7 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-556184 neurons, 1162386 edges, 188 layers, 3933 control states.
+556188 neurons, 1162386 edges, 188 layers, 3933 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
@@ -69,7 +69,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | docx writer tier 3 | Writes section properties, tabs, markers, comments, notes, headers and footers. | gen/t3_features.py (306) | 306 | 662 |
 | docx reader notes | Reads note, comment and header parts. | gen/t3_features.py (817) | 817 | 2440 |
 | style create and rename | New and renamed styles, and applying character styles. | gen/imp4_style.py (169) | 169 | 670 |
-| list formats | The list format menu and reading numFmt and lvlText. | gen/imp4_list2.py (147) | 147 | 534 |
+| list formats | The list format menu and reading numFmt and lvlText. | gen/imp4_list2.py (151) | 151 | 543 |
 | canvas look | Page shadow and the canvas around the page. | gen/rv_a2_canvas.py (82) | 82 | 197 |
 | a4 commands | Word commands: repeat, format painter, keep rules and others. | gen/rv_a4_features.py (344) | 344 | 1272 |
 | a4 keep | Keep with next and keep lines in pagination. | gen/rv_a4_features.py (56) | 56 | 144 |
