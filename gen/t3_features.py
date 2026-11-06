@@ -218,7 +218,7 @@ def zrec(m): return {wht:(as_x(ZT)+znum*ZS,zhdr,znl,cfL,cfH,dsize,usize),w1:(as_
 def zstatic(st,name,data,nxt):
     z_=docx_tpl._def(data); crc_=zlib.crc32(data)
     on(st,(None,st+'a',{zhdr:fp,znl:len(name),cfL:crc_&65535,cfH:crc_>>16,dsize:len(z_),usize:len(data)}))
-    lit(st+'a',lh_(name,8,crc_,len(z_),len(data))+z_,st+'b')
+    litb(st+'a',lh_(name,8,crc_,len(z_),len(data))+z_,st+'b')
     on(st+'b',(None,nxt,zrec(8)))
 def zdyn(st,name,nxt):
     on(st,(None,st+'a',{zhdr:fp,znl:len(name)}))

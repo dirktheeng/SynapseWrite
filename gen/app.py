@@ -291,8 +291,13 @@ class Ret:
         if st not in s.t: s.t.append(st)
         return s.t.index(st)+1
     def gen(s):
-        en=fsm.S(s.name); h=net.decode(s.r,len(s.t)+1,en)
-        on(s.name,*[(h[i+1],st,None) for i,st in enumerate(s.t)],(None,'HALT',None))
+        en=fsm.S(s.name); n=len(s.t)+1
+        if n<16: h=net.decode(s.r,n,en)
+        else:   # two digit one-hot: only the lines of the active digit are visited, and the lines exclude each other
+            nb=len(bin(n-1))-2; lo_=nb//2; b_=net.bits(s.r,nb,en)
+            dl=net.decode(sum((b_[i]*(1<<i) for i in range(lo_)),X()),1<<lo_,en); dh=net.decode(sum((b_[i]*(1<<(i-lo_)) for i in range(lo_,nb)),X()),1<<(nb-lo_),en)
+            h=[net.step(dh[i>>lo_]+dl[i&((1<<lo_)-1)]-1.5) for i in range(n)]
+        for i,st in enumerate(['HALT']+s.t): fsm.states[s.name][1].append((h[i],st))
 jret=Ret('JR');wret_=Ret('T3_WR');oret=Ret('OR');dret=Ret('DR');wret=Ret('WR');t4cr=Ret('T4_CR')
 S=fsm.S
 Kc=cp*2048+co;Ka=ap*2048+ao
@@ -989,6 +994,7 @@ def lit(name,data,nxt):
     for i,b_ in enumerate(data):
         em_en.lin(seq[i]); em_b.lin(seq[i]*b_); net.rec(seq[i+1],seq[i])
     net.rec(S(nxt),seq[-1])
+exec(open('rv_a10_rom.py').read())
 exec(open('t2_write.py').read())
 saveout=Bus(net); saveout.add(S('HF'),savel); fsm.set(savel,S('HF'),0)
 outbase=Bus(net); outbase.add(S('HF'),embase)
@@ -1025,7 +1031,7 @@ T1('late')
 ui.build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,t1_hov,t1_hb,t1_hvo,bstg,t1_prs)
 exec(open('pointer3.py').read())
 # ---- finish ----
-for r in (jret,oret,dret,wret,bret,gret,hret,cret,iret,nret,t4r,fvr,t4cr,zret,zdr,pfr,pfcr,t2nr,t2pr,t2rr,t2pp,t2sr,t2ur,pgret,wret_)+tuple(T3_RETS): r.gen()
+for r in (jret,oret,dret,wret,bret,gret,hret,cret,iret,nret,t4r,fvr,t4cr,zret,zdr,pfr,pfcr,t2nr,t2pr,t2rr,t2pp,t2sr,t2ur,pgret,wret_,lret,lbret)+tuple(T3_RETS): r.gen()
 _undef={nx_ for _,(r_,o_) in fsm.states.items() for _c,nx_ in o_ if nx_ is not None and nx_ not in fsm.states}
 assert not _undef,_undef
 _dead=[k_ for k_,(r_,o_) in fsm.states.items() if not o_]
@@ -1092,6 +1098,7 @@ hdr=dict(fmax=BANK-FILE,outbase=new[nid(outbase.w)],dn=len(_dz),wn=len(_wz),pdfo
 import os
 dd=np.array(dst,dtype=np.int32)
 raw=b''.join([ist.tobytes(),np.array(isr,dtype=np.int32).tobytes(),np.array([wix[w_] for w_ in iww],dtype=np.uint16).tobytes(),np.array(c['act'],dtype=np.uint8).tobytes(),np.array(c['bias'],dtype=np.float64).tobytes(),ost.tobytes(),_dz,_wz,np.array(c['lstart'],dtype=np.int32).tobytes(),np.array(pr,dtype=np.int32).tobytes(),np.array(wtab,dtype=np.float64).tobytes()])
+raw+=rom_finish(hdr)
 h=json.dumps(hdr,separators=(',',':')).encode()
 blob=struct.pack('<I',len(h))+h+b'\0'*((4-(len(h)+4)%4)%4)+raw
 gz=gzip.compress(blob,9)

@@ -14,7 +14,7 @@ put(e.p_istart(),4*(h.n+1));put(e.p_isrc(),4*h.ni);put(e.p_iwi(),2*h.ni);put(e.p
 e.finish();
 for(const [i,v] of h.init)e.inject(i,v);
 const bank=()=>new Float32Array(mem(),e.p_bank(),h.bank);
-{const b=bank();for(const [a,v] of h.bank_init)b[a]=v;}
+{const b=bank();for(const [a,v] of h.bank_init)b[a]=v;for(const [a,n,w] of h.rom)for(let i=0;i<n;i++,o+=w)b[a+i]=w==1?blob[o]:blob[o]+256*blob[o+1];}
 const cv=document.getElementById('screen'),ctx=cv.getContext('2d',{alpha:false,willReadFrequently:true});const img=ctx.createImageData(1280,800);
 let ptr='mouse';let timer=0,pendClip=null,keyCopy=false;
 // Clipboard write: the async API, then the copy event, then a code telling the network that only its own copy holds the text.
