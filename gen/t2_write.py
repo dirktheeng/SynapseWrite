@@ -138,7 +138,7 @@ on('T2W9',(None,'T3_TA0',None))
 e=S('SVC'); on('SVC',(net.step(pim),'T3_SD0',None),(net.ge(off,plen_,e),'SVe',None),(None,'SVr',{r1:pbs+off,r2:pbs+1024+off}))
 a6wk=R();a6wp=R();a6off=off
 e=S('SVr'); chg=net.step(net.step(R2-t2psv)+net.step(t2psv-R2))
-a6em=R(); fin.add(e,R2); fen.lin(e); _a6eq=net.and_(FD['font'],FD['nop'],net.lt(R1,1000,e))   # rv_a6: equation characters go out as math
+a6em=R(); fin.add(e,R2); fen.lin(e); _a6eq=net.and_(net.lt(R1,1000,e),net.or_(net.and_(FD['font'],FD['nop']),net.ge(R1,300,e)))   # rv_a6: equation characters go out as math
 on('SVr',(net.and_(a6em,ONE-_a6eq),'A6E_CL',None),(_a6eq,'A6E_0',{ins_ch:R1,ins_st:R2}),(net.ge(R1,1000,e),'T3_SF0',{ins_ch:R1}),(net.and_(net.eq(R1,171,e),ONE-a6wp),'A6W_0',{ins_ch:R1,ins_st:R2,a6wk:off+1}),(chg,'SVx',{ins_ch:R1,ins_st:R2}),(None,'SVch',{ins_ch:R1,ins_st:R2}))
 e=S('SVx'); first=net.eq(t2psv,99999,e)
 on('SVx',(first,'T4_SO',None),(None,'T4_SC',{t4cr.r:t4cr.id('T4_SO')}))

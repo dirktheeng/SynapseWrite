@@ -89,7 +89,7 @@ e=S('T4_UE'); fkv2=FD['f0']+FD['f1']*2
 on('T4_UE',(net.eq(fkv2,t4k,e),'DEL',{oret.r:oret.id('T4_UD')}),(None,'T4_FV',{fvr.r:fvr.id('T4_UL')}))
 # ---- equations: a linear form with ^ and _ becomes italic letters and shifted small script ----
 eq_sc=R();eq_gr=R();eq_pre=R()
-on('T4_EQ',(None,'T4_EQ0',{eq_sc:0,eq_gr:0,eq_pre:0}))
+on('T4_EQ',(None,'A6Q_S0',{eq_sc:0,eq_gr:0,eq_pre:0,a6qi:0,a6qa:1,a6qcv:0,a6qrr.r:a6qrr.id('A6Q_EQ2')}))
 range_start('T4_EQ0','T4_EL',True); range_loop('T4_EL','T4_EM')
 e=S('T4_EM')
 isc=net.eq(R1,94,e);isb=net.eq(R1,95,e);opn=net.and_(net.eq(R1,123,e),eq_pre);cls=net.and_(net.eq(R1,125,e),eq_gr)

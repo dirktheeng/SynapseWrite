@@ -25,6 +25,15 @@ d.save('build/a6f3.docx')
 P`);
  await open('build/a6f3.docx');await W(100);await A.p.screenshot({path:'build/a6e3.png'});const y=await save('build/a6f4.docx');
  const tx=(y.match(/<(?:m|w):t[ >][^<]*<|<(?:m|w):t>[^<]*</g)||[]).map(s=>s.replace(/<[^>]*>/,'').replace('<','')).join('');
- ok('foreign math is read in linear form',tx.includes('Let (a+b)/(c)=sqrt(x)y2 done'),tx);
+ ok('foreign math keeps its structure: fraction, root, superscript',/<m:f><m:num>.*>a\+b<.*<m:den>.*>c<.*<\/m:f>/.test(y)&&/<m:rad>.*>x<.*<\/m:rad>/.test(y)&&/<m:sSup><m:e>.*>y<.*<m:sup>.*>2</.test(y)&&tx.includes('Let ')&&tx.includes(' done'),tx);
+ // built up fraction and root
+ await A.b.close();A=await dr();await A.p.evaluate(()=>{window.annMax=60000000});
+ await T('Solve x=(a+b)/(c-1) and sqrt(y+2) now');await C(135,47);await C(725,76);await C(80,47);await K('Control+End');await K('Enter');await T('next line');await W(100);
+ const h2=await hash();await A.p.screenshot({path:'build/a6e4.png'});const z=await save('build/a6e5.docx');
+ ok('fraction and root saved as m:f and m:rad',/<m:f><m:num>.*>a\+b<\/m:t>.*<m:den>.*>c-1<\/m:t>.*<\/m:f>/.test(z)&&/<m:rad>.*>y\+2<\/m:t>.*<\/m:rad>/.test(z),z.slice(z.indexOf('<m:f>'),z.indexOf('<m:f>')+150));
+ await open('build/a6e5.docx');await W(100);const h3=await hash();await A.p.screenshot({path:'build/a6e6.png'});ok('built up forms reopen pixel identical',h2===h3);
+ const [dp]=await Promise.all([A.p.waitForEvent('download'),K('Control+p')]);await dp.saveAs('build/a6e.pdf');let qc;try{qc=sh('qpdf --check build/a6e.pdf 2>&1');}catch(e){qc=e.stdout.toString();}ok('PDF with built up forms is clean',/No syntax/.test(qc)&&!/WARNING/.test(qc));
+ ok('PDF has the texts',/a\+b/.test(sh('pdftotext build/a6e.pdf -'))&&/y\+2/.test(sh('pdftotext build/a6e.pdf -')));
+ await K('Control+Home');await K('End');
  await A.b.close();console.log(res.filter(r=>r[1]).length+'/'+res.length+' passed');
 })();

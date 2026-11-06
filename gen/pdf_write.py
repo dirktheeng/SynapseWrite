@@ -126,7 +126,7 @@ e=S('PD_9'); on('PD_9',(net.ge(qo,qe,e),'PD_Z',None),(None,'PD_A',{r1:qb+qo,r2:q
 e=S('PD_A'); measure(e,R1,R2); ke3=net.and_(e,net.step(qpc)); kp_en.lin(ke3); kp_in.add(ke3,qpc)
 pdiff=net.step(net.step(R2-qsty)+net.step(qsty-R2)); psp=net.eq(R1,32,e)
 ladv={ins_ch:R1,ins_st:R2,qadv:adv+kern+G_(qex,psp),qpc:R1}
-on('PD_A',(net.ge(R1,1000,e),'T4P_MK',{qo:qo+1,qfid:R1-1000}),(net.and_(pdiff,qop),'T4P_CL',{**ladv,pfcr.r:pfcr.id('PD_F')}),(pdiff,'PD_F',ladv),(qop,'PD_Tc',ladv),(None,'T4P_O',ladv))
+on('PD_A',(net.and_(net.ge(R1,300,e),net.lt(R1,1000,e)),'A6Q_P0',{qo:qo+1,a6qk:R1-300}),(net.ge(R1,1000,e),'T4P_MK',{qo:qo+1,qfid:R1-1000}),(net.and_(pdiff,qop),'T4P_CL',{**ladv,pfcr.r:pfcr.id('PD_F')}),(pdiff,'PD_F',ladv),(qop,'PD_Tc',ladv),(None,'T4P_O',ladv))
 sv_en.lin(S('PD_F')); sv_in.add(S('PD_F'),ins_st)
 e=S('PD_F'); zh=net.decode(SV['size'],len(rom.PTS),e); pts=X(); ptv=X()
 for i_,h_ in enumerate(zh): pts=pts+h_*round(rom.PTS[i_]*96/72); ptv=ptv+h_*round(rom.PTS[script_size(i_)]*96/72)

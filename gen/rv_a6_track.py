@@ -50,11 +50,11 @@ on('A6R_D0',(None,'A6R_D1',{rl:OA+oi,r1:OA+oi+8,r2:OA+oi+9}))
 e=S('A6R_D1'); W7=rl.out
 _y=(W7[0]-48)*1000+(W7[1]-48)*100+(W7[2]-48)*10+(W7[3]-48); _m=(W7[5]-48)*10+(W7[6]-48); _d=(R1-48)*10+(R2-48)
 _yy=net.gate(_y,e); _b=net.bits(net.relu(_yy-1969),8,e); _q=sum((_b[i_+2]*(1<<i_) for i_ in range(6)),X())
-_lb=net.bits(_yy,2,e); _ly=net.and_(e,ONE-_lb[0],ONE-_lb[1]); _mhr=net.decode(_m,13,e); _cum=X(); _c=0
+_lb=net.bits(_yy,12,e); _ly=net.and_(e,ONE-_lb[0],ONE-_lb[1]); _mhr=net.decode(_m,13,e); _cum=X(); _c=0
 for m_,d_ in enumerate((31,28,31,30,31,30,31,31,30,31,30,31),1): _cum=_cum+_mhr[m_]*_c; _c+=d_
 _late=sum((_mhr[m_] for m_ in range(3,13)),X())
 _days=net.relu(_yy-1970)*365+_q+_cum+net.step(_late+_ly-1.5)+net.relu(_d-1)
-on('A6R_D1',(None,'T4_TS',{w1:(cb+PDATE,_days+1),oi:oi+10}))
+on('A6R_D1',(None,'T4_TS',{w1:(cb+PDATE,_days),oi:oi+10}))
 
 # ---- tracked Backspace and Delete across a paragraph mark ----
 a6t=R();a6tc=R();a6q=R()
@@ -135,7 +135,8 @@ on('A6E_S1',(net.and_(_eqn,_same),'A6E_R',{ins_ch:R1,ins_st:R2,a6off:a6off+1,a6e
 e=S('A6E_SE'); on('A6E_SE',(net.eq(a6nk,1,e),'A6E_Eu',None),(None,'A6E_Eb',None))
 lit('A6E_Eu',b'</m:sup></m:sSup>','SVC'); lit('A6E_Eb',b'</m:sub></m:sSub>','SVC')
 # one character: run properties keep size and color, so a file comes back the same
-lit('A6E_R',b'<m:r>','A6E_R1')
+e=S('A6E_R'); on('A6E_R',(net.ge(ins_ch,300,e),'A6Q_X0',{a6qk:ins_ch-300}),(None,'A6E_Ro',None))
+lit('A6E_Ro',b'<m:r>','A6E_R1')
 on('A6E_R1',(None,'T2RP',{t2full:net.step(psty),t2pr.r:t2pr.id('A6E_R2')}))
 lit('A6E_R2',b'<m:t xml:space="preserve">','A6E_C')
 e=S('A6E_C'); _amp=net.eq(ins_ch,38,e);_lt=net.eq(ins_ch,60,e);_gt=net.eq(ins_ch,62,e);_hi=net.ge(ins_ch,160,e);_pn=net.and_(net.ge(ins_ch,128,e),net.lt(ins_ch,160,e)); _ot=e-_amp-_lt-_gt-_hi-_pn
@@ -173,3 +174,5 @@ e=S('A6E_I3'); on('A6E_I3',(None,'A6E_I1',{a6ec:47}))
 for i_,ch_ in enumerate('sqrt('):
     st=f'A6E_Ra' if i_==0 else f'A6E_Ra{i_}'; nx=f'A6E_Ra{i_+1}' if i_<4 else 'PX'
     e=S(st); _st=_eqstyle(e,as_x(ord(ch_))); on(st,(None,'INS',{ins_ch:ord(ch_),ins_st:_st,oret.r:oret.id(nx)}))
+
+exec(open('rv_a6_math.py').read())
