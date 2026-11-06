@@ -277,7 +277,7 @@ on('T3_SVd',(net.ge(sci+1,scols,e),'T3_SVr',None),(None,'SVP',{pi:pi+1,spc:scols
 lit('T3_SVr',b'</w:tr>','T3_SVs'); on('T3_SVs',(None,'SVP',{pi:pi+1,spc:scols}))
 e=S('T3_SVE')
 on('T3_SVE',(net.step(spc),'T3_SVEa',None),(None,'SVT',None))
-lit('T3_SVEa',b'</w:tbl>','SVT')
+lit('T3_SVEa',b'</w:tbl><w:p/>','SVT')
 on('SVT',(None,'T3_SX',{sxr.r:sxr.id('T3_SVT2')}))
 lit('T3_SVT2',b'</w:body></w:document>','T3_Z4e')
 zdend('T3_Z4e','T3_XM0')

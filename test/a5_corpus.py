@@ -234,4 +234,24 @@ p=d.add_paragraph()
 for i in range(300): r=p.add_run('r%d '%i); r.bold=i%2==0
 d.add_paragraph('M2005 after')
 save(d,'a19_long')
+
+# 20 to 26: damaged and odd packages must end the open, never hang
+good=open(os.path.join(OUT,'a01_format.docx'),'rb').read()
+open(os.path.join(OUT,'a20_trunc.docx'),'wb').write(good[:len(good)//2])
+rg=random.Random(9); open(os.path.join(OUT,'a21_noise.docx'),'wb').write(bytes(rg.getrandbits(8) for _ in range(20000)))
+open(os.path.join(OUT,'a22_empty.docx'),'wb').write(b'')
+b_=bytearray(good); zi=zipfile.ZipFile(io.BytesIO(good)).getinfo('word/document.xml'); o_=zi.header_offset+30+len(zi.filename)+40
+for k in range(60): b_[o_+k]^=0xA5
+open(os.path.join(OUT,'a23_baddeflate.docx'),'wb').write(bytes(b_))
+Z=zipfile.ZipFile(os.path.join(OUT,'a24_nodoc.docx'),'w'); Z.writestr('hello.txt','no main part'); Z.close()
+Z=zipfile.ZipFile(os.path.join(OUT,'a25_unclosed.docx'),'w',zipfile.ZIP_DEFLATED); Z.writestr('word/document.xml','<w:document xmlns:w="x"><w:body><w:p><w:r><w:t>M2501 open <w:tbl><w:tr><w:tc w:'); Z.close()
+d=docx.Document(); st=d.styles
+from docx.enum.style import WD_STYLE_TYPE
+for i in range(260): st.add_style('Extra %d'%i,WD_STYLE_TYPE.PARAGRAPH)
+p=d.add_paragraph('M2601 last style'); p.style=st['Extra 259']; d.add_paragraph('M2602 normal')
+save(d,'a26_manystyles')
+body=('<w:p w:rsidR="00A1" w14:paraId="1A2B3C4D" w14:textId="77777777" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"><w:pPr><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:hint="eastAsia" w:ascii="Georgia" w:hAnsi="Georgia"/><w:lang w:val="en-GB"/></w:rPr><w:t>M2701 hint first</w:t></w:r><w:proofErr w:type="spellStart"/><w:r><w:lastRenderedPageBreak/><w:t xml:space="preserve"> M2702</w:t></w:r><w:proofErr w:type="spellEnd"/></w:p>'
++'<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/><w:jc w:val="right"/></w:tblPr><w:tblGrid><w:gridCol w:w="4000"/><w:gridCol w:w="4000"/></w:tblGrid><w:tr><w:trPr><w:jc w:val="right"/></w:trPr><w:tc><w:tcPr><w:tcW w:w="8000" w:type="dxa"/><w:gridSpan w:val="2"/><w:shd w:val="clear" w:color="auto" w:fill="FFFF00"/></w:tcPr><w:p><w:pPr><w:shd w:val="clear" w:color="auto" w:fill="00FF00"/></w:pPr><w:r><w:t>M2703 span</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tc><w:tcPr><w:tcW w:w="4000" w:type="dxa"/></w:tcPr><w:p><w:r><w:t>M2704</w:t></w:r></w:p></w:tc><w:tc><w:tcPr><w:tcW w:w="4000" w:type="dxa"/></w:tcPr><w:p><w:r><w:t>M2705</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tc><w:p><w:r><w:t>M2706 short row</w:t></w:r></w:p></w:tc></w:tr></w:tbl>'
++P('M2707 end')+'<w:tbl><w:tblGrid><w:gridCol w:w="4000"/></w:tblGrid><w:tr><w:tc><w:p><w:r><w:t>M2708 table last</w:t></w:r></w:p></w:tc></w:tr></w:tbl>')
+bodyfile('a27_wordlike',body)
 print(sorted(os.listdir(OUT)))

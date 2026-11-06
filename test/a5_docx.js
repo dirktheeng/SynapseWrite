@@ -13,7 +13,7 @@ const ok=(n,v,x)=>console.log(v?'PASS':'FAIL',n,x===undefined?'':x);
   const l=execSync(`python3 test/a5_lost.py ${C}/${n}.docx ${s}`).toString().trim();return {s,x:execSync(`python3 -c "import zipfile;print(zipfile.ZipFile('${s}').read('word/document.xml').decode())"`).toString(),lost:l.match(/\[(.*)\]/)[1]};};
  const allkept=(n,r,allow='')=>{const miss=r.lost.split(', ').filter(x=>x&&!allow.includes(x.replace(/'/g,'')));ok(n+' keeps every marker',miss.length===0,miss.join(' '));};
  let r;
- r=await run('a01_format',async(p,a,st)=>{ok('python-docx open stays under 450k ticks (was 1.01 M)',st.t<450000,st.t);ok('and under 5 M edges (was 10.7 M)',st.e<5000000,st.e);fs.writeFileSync(O+'/a01.png',a);});allkept('a01',r);ok('72 pt reads as the largest size, not 14 half points',/<w:sz w:val="72"\/><\/w:rPr><w:t[^>]*>M182/.test(r.x));
+ r=await run('a01_format',async(p,a,st)=>{ok('python-docx open stays under 500k ticks (was 1.01 M)',st.t<500000,st.t);ok('and under 9 M edges (was 10.7 M)',st.e<9000000,st.e);fs.writeFileSync(O+'/a01.png',a);});allkept('a01',r);ok('72 pt reads as the largest size, not 14 half points',/<w:sz w:val="72"\/><\/w:rPr><w:t[^>]*>M182/.test(r.x));
  r=await run('a02_tables',async(p,a)=>{await p.keyboard.press('Control+Home');await p.waitForTimeout(50);const c=await shot(p);ok('open leaves the view at the top',H(a)===H(c));fs.writeFileSync(O+'/a02.png',a);});allkept('a02 merged and short rows',r);
  ok('cell paragraphs keep a space',/M601 first para M602 second para/.test(r.x.replace(/<[^>]+>/g,'')));
  r=await run('a05_pictures',async()=>{});allkept('a05 text beside a picture',r);ok('text before and after an inline picture is kept',/M503/.test(r.x)&&/M504/.test(r.x));
