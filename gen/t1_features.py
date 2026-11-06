@@ -59,7 +59,7 @@ on('T1_FW0',(t1_ok,'FJ',{ap:fp,ao:fo,jp:fp,jo:fo+qlen,jret.r:jret.id('FOUND')}),
 e=S('T1_C0'); on('T1_C0',(net.or_(net.eq(mode,0,e),net.eq(mode,3,e),net.ge(mode,4,e),net.eq(qlen,0,e)),'T1_CF',None),(None,'T1_C1',{t1_cb:0}))
 e=S('T1_C1'); on('T1_C1',(net.ge(t1_cw,npar,e),'T1_CF',None),(net.ge(t1_cb,1500,e),'T1_CS',None),(None,'T1_C2',{r1:as_x(PT)+t1_cw}))
 on('T1_C2',(None,'T1_C3',{t1_cB:R1,r2:R1+LEN}))
-on('T1_C3',(None,'T1_C4',{t1_cl:R2,t1_ck:0}))
+on('T1_C3',(qmrk,'IMP3_C0',{t1_cl:R2,t1_ck:0}),(None,'T1_C4',{t1_cl:R2,t1_ck:0}))
 e=S('T1_C4'); on('T1_C4',(net.gt(t1_co_+qlen,t1_cl,e),'T1_C1',{t1_cw:t1_cw+1,t1_co_:0,t1_cb:t1_cb+1}),(net.ge(t1_cb,1500,e),'T1_CS',None),(None,'T1_C5',{r1:t1_cB+t1_co_+t1_ck,r2:as_x(Q)+t1_ck,t1_cb:t1_cb+1}))
 e=S('T1_C5'); m5=net.eq(low(R1,e),low(R2,e),e); done5=net.and_(m5,net.ge(t1_ck+1,qlen,e))
 on('T1_C5',(net.and_(done5,t1_fw),'T1_C6',{r1:t1_cB+net.relu(t1_co_-1),r2:t1_cB+t1_co_+qlen}),(done5,'T1_C7',None),(m5,'T1_C4',{t1_ck:t1_ck+1}),(None,'T1_C4',{t1_co_:t1_co_+1,t1_ck:0}))

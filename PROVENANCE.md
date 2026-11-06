@@ -2,11 +2,11 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-444066 neurons, 942629 edges, 166 layers, 3564 control states.
+444429 neurons, 943196 edges, 166 layers, 3595 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
-| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1287) | 1287 | 6742 |
+| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1287) | 1287 | 6797 |
 | glyph network | Selects and addresses a character cell for drawing. | gen/app.py (507) | 507 | 8275 |
 | glyph metrics | Character advance and kerning trees. | gen/app.py (17875) | 17875 | 50620 |
 | glyph unit | Draws a character from its edge network into the glyph store, in its own clock domain. | gen/glyphnet.py (19503) | 19503 | 59479 |
@@ -20,21 +20,22 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | coverage | Adds edge coverage into pixel coverage. | gen/glyphnet.py (1816), gen/app.py (11) | 1827 | 10496 |
 | style interner | Finds or adds a style record in the interned table, in its own clock domain. | gen/app.py (53) | 53 | 122 |
 | glyph patch | Assembles glyph coverage into a color patch for the patch port. | gen/app.py (6) | 6 | 84 |
-| shared control registers | Editor state registers and the selection order comparators. | gen/app.py (240), gen/rv_a4_regs.py (81), gen/t1_features.py (45), gen/rv_a3_pre.py (38) | 404 | 4103 |
-| ribbon display list | Token chain whose weights hold each ribbon draw item. | gen/app.py (9150), gen/rv_a9_dl.py (150) | 9300 | 34921 |
+| shared control registers | Editor state registers and the selection order comparators. | gen/app.py (240), gen/rv_a4_regs.py (81), gen/t1_features.py (45), gen/rv_a3_pre.py (38), gen/imp3_regs.py (18) | 422 | 4226 |
+| ribbon display list | Token chain whose weights hold each ribbon draw item. | gen/app.py (9254), gen/rv_a9_dl.py (150) | 9404 | 35280 |
 | event dispatch | Routes each cooked event to its handler; timer, wheel and move handling. | gen/app.py (1) | 1 | 3 |
-| pointer | Draws the mouse pointer, saves and restores the colors under it, and chooses its shape from the screen. | gen/pointer2.py (55), gen/pointer.py (48), gen/app.py (15) | 118 | 743 |
+| pointer | Draws the mouse pointer, saves and restores the colors under it, and chooses its shape from the screen. | gen/pointer2.py (55), gen/pointer.py (48), gen/app.py (15) | 118 | 745 |
 | raw event interpretation | Turns raw browser events (key name code units, button masks, pointer types, field text, touch positions) into cooked events and browser commands. | gen/rv_a11_input.py (215), gen/app.py (85) | 300 | 1215 |
 | character maps | Unicode to internal code tables and back (Windows-1252 block). | gen/app.py (89) | 89 | 182 |
-| key handling | Maps each key and modifier to its editing command. | gen/app.py (414), gen/rv_a3_pre.py (69), gen/t1_features.py (2) | 485 | 4545 |
-| screenshot hit test | Reads object ids from the screen image and maps a click to a document position; also the blink tick check of the screen against the line table. | gen/t1_features.py (151), gen/rv_a7_regs.py (115), gen/app.py (110) | 376 | 1023 |
-| edit primitives | Character and paragraph insert and delete with undo logging. | gen/app.py (194), gen/rv_a7_regs.py (2) | 196 | 569 |
+| key handling | Maps each key and modifier to its editing command. | gen/app.py (419), gen/rv_a3_pre.py (69), gen/t1_features.py (2) | 490 | 4579 |
+| screenshot hit test | Reads object ids from the screen image and maps a click to a document position; also the blink tick check of the screen against the line table. | gen/t1_features.py (151), gen/rv_a7_regs.py (115), gen/app.py (110) | 376 | 1025 |
+| edit primitives | Character and paragraph insert and delete with undo logging. | gen/app.py (194), gen/rv_a7_regs.py (2) | 196 | 573 |
 | undo | Undo and redo walkers over the log. | gen/app.py (107) | 107 | 438 |
 | range walker | Walks a selection for copy, cut, delete and formatting. | gen/app.py (279), gen/rv_a4_regs.py (76), gen/t1_features.py (29) | 384 | 1686 |
-| find and replace | Search automaton over the document and replace. | gen/t1_features.py (196), gen/app.py (82) | 278 | 719 |
-| paste | Inserts clipboard text with paragraph splitting. | gen/app.py (199) | 199 | 2595 |
+| find and replace | Search automaton over the document and replace. | gen/t1_features.py (197), gen/app.py (82) | 279 | 747 |
+| paste | Inserts clipboard text with paragraph splitting. | gen/app.py (202) | 202 | 2605 |
 | bulk edits | Window walkers for bulk formatting, copy, save, paste and find. | gen/rv_a7_bulk.py (656) | 656 | 6750 |
-| layout and paint | Walks paragraphs, places lines and words, draws text, selection, pictures. | gen/app.py (866), gen/rv_a3_paint.py (95), gen/rv_a3_pre.py (30), gen/t4_spell.py (26), gen/rv_a4_regs.py (20) | 1037 | 3817 |
+| find across paragraphs | NO PURPOSE RECORDED | gen/app.py (275), gen/imp3_find.py (203), gen/rv_a3_pre.py (30), gen/imp3_find_paint.py (28), gen/t4_spell.py (26), gen/rv_a4_regs.py (11) | 573 | 1754 |
+| layout and paint | Walks paragraphs, places lines and words, draws text, selection, pictures. | gen/app.py (591), gen/rv_a3_paint.py (96), gen/rv_a4_regs.py (9) | 696 | 2684 |
 | spell dictionary | Word list stored as an automaton in weights, with word marks. | gen/t4_spell.py (67) | 67 | 165 |
 | line breaking | Greedy line breaker and alignment. | gen/app.py (249), gen/rv_a3_pre.py (30) | 279 | 810 |
 | chrome | Autoscroll, caret, scrollbar and status bar. | gen/app.py (1850), gen/t1_features.py (44) | 1894 | 12047 |
@@ -43,7 +44,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2771), gen/app.py (4) | 2775 | 74350 |
 | pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1236) | 1236 | 3878 |
 | docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (1847) | 1847 | 13634 |
-| png reader | Decodes PNG files to pixel words. | gen/docx_read.py (311), gen/a12_guard.py (62) | 373 | 3929 |
+| png reader | Decodes PNG files to pixel words. | gen/docx_read.py (311), gen/a12_guard.py (62) | 373 | 3965 |
 | tier 4 features | Tracked changes, fields, equations, mail merge. | gen/t4_features.py (699) | 699 | 1912 |
 | docx deflate | LZ77 with fixed Huffman compression for the zip container. | gen/t4_features.py (242) | 242 | 863 |
 | docx reader tier 4 | Reads tracked marks and fields. | gen/t4_features.py (1368) | 1368 | 3425 |

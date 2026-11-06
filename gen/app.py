@@ -295,6 +295,7 @@ T1S={x.split('\n',1)[0].strip():x.split('\n',1)[1] for x in open('t1_features.py
 def T1(n): exec(T1S[n],globals())
 T1('regs')
 exec(open('rv_a4_regs.py').read())
+exec(open('imp3_regs.py').read())
 cbb=R();qrep=R();a7_vw=R();a7_far=R();a7_jmp=R();a7_wb=R();impf=R();impk=R();impc=R();impsc=R();impyt=R();stp=R();stg=R();stw=R();stm=R();tbm=R();A7BUD=15000   # characters of layout one event may do before the rest goes to the background
 # dispatch tables for subroutine returns
 class Ret:
@@ -366,7 +367,7 @@ on('KEY',(net.and_(a4fp,N(27)),'RD0',{a4fp:0,a4fs:0,t1_uid:1}),
  (net.and_(net.eq(mode,5,en),net.or_(N(27),N(13))),'FNE',{mode:0}),(net.and_(net.eq(mode,5,en),N(8)),'FNc',None),(net.and_(net.eq(mode,4,en),net.or_(N(27),N(13))),'RD0',{mode:0}),(net.and_(net.eq(mode,4,en),N(8)),'CMc',None),(net.and_(net.eq(mode,3,en),net.or_(N(27),N(13))),'T3_HE',{mode:0}),(net.and_(net.eq(mode,3,en),N(8)),'RD0',{hlen:net.relu(hlen-1)}),(net.and_(findon,N(27)),'RD0',{mode:0}),
  (net.and_(findon,N(9)),'RD0',{field:ONE-field}),
  (net.and_(findon,N(13)),'FIND',{}),
- (net.and_(findon,N(8)),'RD0',{qlen:G_(net.relu(qlen-1),ONE-field)+G_(qlen,field),rlen:G_(net.relu(rlen-1),field)+G_(rlen,ONE-field),**CSTART}),
+ (net.and_(findon,N(8)),'IMP3_Q0',{qlen:G_(net.relu(qlen-1),ONE-field)+G_(qlen,field),rlen:G_(net.relu(rlen-1),field)+G_(rlen,ONE-field),**CSTART}),
  (net.and_(findon,net.and_(printable,nc)),'FTYPE',{}),
  *rv_key_rules(),
  (N(128),'MOVL',{}),(N(130),'MOVR',{}),(N(129),'MOVU',{}),(N(131),'MOVD',{}),(N(132),'MOVH',{}),(N(133),'MOVE',{}),
@@ -383,7 +384,7 @@ on('CMc',(None,'CMd',{r1:cb+CMTL}))
 on('CMd',(None,'RD0',{w1:(cb+CMTL,net.relu(R1-1))}))
 on('CMa',(None,'CMb',{r1:cb+CMTL}))
 on('CMb',(net.ge(R1,380,S('CMb')),'RD0',None),(None,'RD0',{w1:(cb+CMT+R1,eva),w2:(cb+CMTL,R1+1)}))
-on('FTYPE',(net.eq(mode,7,S('FTYPE')),'T2_TD',None),(net.eq(mode,6,S('FTYPE')),'RD0',None),(net.eq(mode,5,S('FTYPE')),'FNa',None),(net.eq(mode,4,S('FTYPE')),'CMa',None),(net.and_(net.eq(mode,3,S('FTYPE')),net.ge(hlen,255,S('FTYPE'))),'RD0',None),(net.eq(mode,3,S('FTYPE')),'RD0',{w1:(hfb+hlen,eva),hlen:hlen+1}),(field,'RD0',{w1:(as_x(RPL)+rlen,eva),rlen:rlen+1}),(qrep,'RD0',{w1:(as_x(Q),eva),qlen:1,qrep:0,**CSTART}),(None,'RD0',{w1:(as_x(Q)+qlen,eva),qlen:qlen+1,**CSTART}))
+on('FTYPE',(net.eq(mode,7,S('FTYPE')),'T2_TD',None),(net.eq(mode,6,S('FTYPE')),'RD0',None),(net.eq(mode,5,S('FTYPE')),'FNa',None),(net.eq(mode,4,S('FTYPE')),'CMa',None),(net.and_(net.eq(mode,3,S('FTYPE')),net.ge(hlen,255,S('FTYPE'))),'RD0',None),(net.eq(mode,3,S('FTYPE')),'RD0',{w1:(hfb+hlen,eva),hlen:hlen+1}),(net.and_(field,net.ge(rlen,190,S('FTYPE'))),'RD0',None),(field,'RD0',{w1:(as_x(RPL)+rlen,eva),rlen:rlen+1}),(qrep,'IMP3_Q0',{w1:(as_x(Q),eva),qlen:1,qrep:0,**CSTART}),(net.ge(qlen,190,S('FTYPE')),'RD0',None),(None,'IMP3_Q0',{w1:(as_x(Q)+qlen,eva),qlen:qlen+1,**CSTART}))
 T1('keys')
 ins_ch=R();ins_st=R();kprev=R();ins_rec=R();a6qk=R()
 cont_ty=S('TYPE')
@@ -610,7 +611,7 @@ on('F0',(net.and_(net.ge(fp,npar,e),wrap),'RD0',{rall:0,**CSTART}),(net.ge(fp,np
 on('F1',(None,'F2',{fbs:R1,r2:R1+LEN}))
 on('F2',(None,'F3',{fl:R2,fk:0}))
 e=S('F3')
-on('F3',(net.step(fo+qlen-fl),'F0',{fp:fp+1,fo:0}),(net.and_(e,ONE-net.step(fk)),'A7_FF',{rpw:fbs+fo}),(None,'F4',{r1:fbs+fo+fk,r2:as_x(Q)+fk}))
+on('F3',(qmrk,'IMP3_F0',None),(net.step(fo+qlen-fl),'F0',{fp:fp+1,fo:0}),(net.and_(e,ONE-net.step(fk)),'A7_FF',{rpw:fbs+fo}),(None,'F4',{r1:fbs+fo+fk,r2:as_x(Q)+fk}))
 e=S('F4'); m=net.eq(low(R1,e),low(R2,e),e)
 on('F4',(net.and_(m,net.ge(fk+1,qlen,e),t1_fw),'T1_FW0',{r1:fbs+net.relu(fo-1),r2:fbs+fo+qlen}),(net.and_(m,net.ge(fk+1,qlen,e)),'FJ',{ap:fp,ao:fo,jp:fp,jo:fo+qlen,jret.r:jret.id('FOUND')}),(m,'F3',{fk:fk+1}),(None,'F3',{fo:fo+1,fk:0}))
 on('FJ',(None,'J0',None))
@@ -620,13 +621,12 @@ on('RP0',(None,'DS0',{dret.r:dret.id('RP1')}))
 on('RP1',(None,'RP2',{ri:0}))
 e=S('RP2')
 on('RP2',(net.ge(ri,rlen,e),'RP4',None),(None,'RP3',{r1:as_x(RPL)+ri}))
-on('RP3',(None,'INS',{ins_ch:R1,ins_st:TST,ri:ri+1,oret.r:oret.id('RP2')}))
 on('RP4',(None,'SYNC2',{ap:cp,ao:co})); on('SYNC2',(None,'FIND2',None))
 on('FIND2',(None,'FN1',{fp:cp,fo:co,wrap:0}))
 # ---- paste ----
 net.group('paste')
 CB2=CB+200000; pi_=R()
-on('PASTE',(net.eq(mode,6,S('PASTE')),'T4_M0',{mode:0}),(has_sel,'DS0',{dret.r:dret.id('PS1'),grp:grp+1}),(None,'PS1',{grp:grp+1}))
+on('PASTE',(net.eq(mode,6,S('PASTE')),'T4_M0',{mode:0}),(net.and_(findon,net.lt(mode,3,S('PASTE'))),'IMP3_RQ',None),(has_sel,'DS0',{dret.r:dret.id('PS1'),grp:grp+1}),(None,'PS1',{grp:grp+1}))
 on('PS1',(None,'PS2',{pi_:0}))
 # Block paste. A window of cells is read at once. Their control characters are weighted by
 # position so one threshold layer finds how many cells lead before the first of them, and those
@@ -659,6 +659,7 @@ on('PSY',(None,'PS2',{wpch:(cb+co,pn_),wpst:(cb+1024+co,pn_),w3:(cb+LEN,clen+pn_
 e=S('PS3')
 on('PS3',(net.eq(R1,10,e),'SPLIT',{pi_:pi_+1,oret.r:oret.id('PS2')}),(net.and_(net.lt(R1,32,e),ONE-net.eq(R1,9,e)),'PS2',{pi_:pi_+1}),(net.ge(clen,1000,e),'PS2',{pi_:pi_+1}),(None,'T2_PS',{ins_ch:R1,pi_:pi_+1}))
 exec(open('rv_a7_bulk.py').read())
+exec(open('imp3_find.py').read())
 # ---- layout and paint walk ----
 net.group('layout and paint')
 ls_=R();le_=R();lx=R();lhh=R();lasc=R();lex=R();off=R();col=R();x=R();lb=R();lbx=R();lspb=R();lsn=R();xw=R();prevsp=R();wc=R()
@@ -668,7 +669,7 @@ xc_=net.step(xcol)
 lleft=rleft+G_(s_tx-s_px+xcol,xc_)
 lright=rright+xcol
 GRAY=(230,230,230);WHITE=(255,255,255);SEL=PAL_B[1]
-_rv_r0=S('RD0'); fsm.set(rv_hl,_rv_r0,net.and_(net.ge(mode,1,_rv_r0),net.lt(mode,3,_rv_r0),net.step(qlen))); fsm.set(rv_mhe,S('R4'),0)
+_rv_r0=S('RD0'); fsm.set(rv_hl,_rv_r0,net.and_(net.ge(mode,1,_rv_r0),net.lt(mode,3,_rv_r0),net.step(qlen))); fsm.set(rv_mhe,S('R4'),0); fsm.set(xbd,S('R4'),0)
 on('RD0',(None,'RD1',{cbb:0,clip0:DOCY,clip1:800-DOCB,full:ONE-net.and_(S('RD0'),fastok,ONE-wassel,ONE-has_sel,ONE-a7_far+impf),fastok:0}))
 fsm.set(a7_wb,S('RD1'),0); fsm.set(a7_vw,net.and_(S('RD1'),a7_far,bgp,ONE-lc),1); fsm.set(a7_vw,S('RE1'),0)   # a walk of the viewport alone: it leaves the background's saved position alone
 minc=net.min_(cp,oldcp);maxc=net.max_(cp,oldcp)
@@ -788,7 +789,7 @@ on('NUM',(None,'NUM2',{mk_i:0,sx:x-24}))
 on('NUM2',(None,'NUM3',{r1:as_x(MKT)+net.min_(plvl,2)*2048+mkn*8+mk_i}))
 on('NUM3',(net.step(R1),'NUM2',{gly:(R1,0,sx,gly_y,0,0),sx:sx+adv,mk_i:mk_i+1}),(None,'C0',None))
 e=S('C0')
-exec(open('rv_a3_paint.py').read()); e=S('C0')
+exec(open('rv_a3_paint.py').read()); exec(open('imp3_find_paint.py').read()); e=S('C0')
 on('C0',(net.ge(off,le_,e),'CE',None),(net.and_(rv_hl,net.ge(off,rv_mhe,e)),'RVA3_H0',{rv_hk:0}),(None,'C1',{r1:pbs+off,rs:pbs+1024+off}))
 fsm.set(kprev,S('R8'),0)
 e=S('C1')
@@ -1125,7 +1126,7 @@ exec(open('rv_a11_out.py').read())
 net.group('ribbon display list')
 # ---- finish ----
 pat_finish()
-for r in (a7r,a7sr,a7cr,jret,oret,dret,wret,bret,gret,hret,cret,iret,nrr,frr,t4r,fvr,t4cr,zret,zdr,pfr,pfcr,t2pr,t2rr,t2pp,t2sr,t2ur,pgret,wret_,lret,lbret)+tuple(T3_RETS): r.gen()
+for r in (zxret,a7r,a7sr,a7cr,jret,oret,dret,wret,bret,gret,hret,cret,iret,nrr,frr,t4r,fvr,t4cr,zret,zdr,pfr,pfcr,t2pr,t2rr,t2pp,t2sr,t2ur,pgret,wret_,lret,lbret)+tuple(T3_RETS): r.gen()
 _undef={nx_ for _,(r_,o_) in fsm.states.items() for _c,nx_ in o_ if nx_ is not None and nx_ not in fsm.states}
 assert not _undef,_undef
 _dead=[k_ for k_,(r_,o_) in fsm.states.items() if not o_]
