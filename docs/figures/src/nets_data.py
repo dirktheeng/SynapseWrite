@@ -70,7 +70,7 @@ F=[
 ('glyph network','Selects and addresses a character cell for drawing.','It is the junction between layout and drawing, whichever way the glyph is produced.'),
 ('glyph metrics','Holds advance widths and kerning as decision trees.','Layout needs widths for each character, and it should not have to draw a glyph to learn one.'),
 ('ramp bank','Provides shared ramps, `R_q = relu(q - x)`, that turn a crossing into pixel shares.','Ramps are the same for all glyphs, so one bank serves every edge. Each glyph does not need its own.'),
-('coverage','Adds edge shares into pixel coverage.','It turns signed crossings into how much of a pixel is ink, which gives smooth edges.'),
+('coverage','Adds edge shares into pixel coverage, and once per row adds the share of whole blocks of columns from one delta per crossing.','It turns signed crossings into how much of a pixel is ink, which gives smooth edges.'),
 ('snapping layer','Fits outline heights to the pixel grid for a given size.','Unsnapped text looks blurry at small sizes, so heights move to whole pixels using font metrics. Horizontal snapping is written, but no font uses it now, because it looked worse side by side.'),
 ('glyph geometry','Scales outline coordinates by the drawn size.','A single set of weights can then serve any size, rather than storing outlines per size.'),
 ('row sequencer','Steps the glyph unit through the rows of a character.','Coverage builds one sample line per tick, so something has to count them.'),
