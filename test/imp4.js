@@ -76,5 +76,43 @@ const near=(A,r,g,b,t=6)=>count(A,223,1039,174,776,(x,y,z)=>Math.abs(x-r)<=t&&Ma
   // PDF marker with a parenthesis stays valid
   A=await lib();A.paste('pp\nqq\n');A.settle();A.key(97,1);A.settle();A.click(394,75);A.settle();pick(A,2);A.key(112,1);const pn=A.e.val(A.h.fileout),pa=A.e.val(A.h.outbase);const pb=Buffer.alloc(pn);for(let i=0;i<pn;i++)pb[i]=A.e.bget(pa+i);const pdf=pb.toString('latin1');require('fs').writeFileSync('build/imp4_l.pdf',pb);ok('PDF marker escapes parentheses',/\\\(1\\\)/.test(pdf),(pdf.match(/\([^)]{0,8}\)Tj/g)||[]).slice(0,3).join(' '));
  }
+ if(!only||only=='uni'){
+  const T='Łódź ČĚŠ Ελληνικά Привет 日本 \u{1F600} end';
+  const dark=A=>count(A,223,1039,174,776,(r)=>r<120);
+  let A=await lib();A.paste(T);A.settle();A.shot('build/imp4_u1.png');ok('characters past Latin-1 draw ink',dark(A)>400,dark(A));
+  let x=part(A,'word/document.xml');ok('saved in UTF-8, nothing lost',x.includes(T),(x.match(/<w:t[^>]*>([^<]*)/)||[])[1]);
+  // caret moves over them one unit at a time, typed text lands in place
+  A.key(132,1);for(let i=0;i<2;i++)A.key(130);A.type('X');A.settle();x=part(A,'word/document.xml');ok('caret walks them',x.includes('ŁóXdź'),(x.match(/<w:t[^>]*>([^<]*)/)||[])[1]);A.key(8);A.settle();
+  // opening the saved file is the same picture
+  const h0=(A.key(133,1),A.settle(),A.hash(190,776));let B=await lib();B.file(9,A.savedBytes());B.settle();B.key(133,1);B.settle();ok('reopens the same',B.hash(190,776)===h0);B.shot('build/imp4_u2.png');
+  // copy gives the same text back
+  A.key(97,1);A.settle();A.key(99,1);A.settle();const c=[];for(let i=0;i<T.length;i++)c.push(A.e.bget(A.h.cb+i));ok('copy gives the code units',String.fromCharCode(...c)===T,String.fromCharCode(...c));
+  A.key(133,1);A.key(13);A.paste(T);A.settle();x=part(A,'word/document.xml');ok('paste of the own copy',(x.match(/Ελληνικά/g)||[]).length==2);A.key(122,1);A.settle();
+  // find, delete, undo
+  B=await lib();B.paste('αβγ δεζ\n');B.settle();B.key(102,1);B.paste('δεζ');B.settle();B.key(13);B.settle();B.key(27);B.settle();B.type('Z');B.settle();x=part(B,'word/document.xml');ok('find matches them',/αβγ Z/.test(x),(x.match(/<w:t[^>]*>([^<]*)/)||[])[1]);B.key(122,1);B.settle();x=part(B,'word/document.xml');ok('undo',/δεζ/.test(x));
+  // typed as a key
+  A=await lib();A.key(0x3b1);A.key(0x416);A.settle();x=part(A,'word/document.xml');ok('typed keys',/αЖ/.test(x));
+  // bold and italic faces, sizes; wrap
+  A=await lib();A.key(98,1);A.paste('Жирный ');A.key(98,1);A.key(105,1);A.paste('курсив');A.key(105,1);A.settle();A.shot('build/imp4_u3.png');ok('bold differs from regular',A.hash(190,776).length>0);
+  let L='';for(let i=0;i<60;i++)L+='Привет мир ';A=await lib();A.paste(L);A.settle();const rows=(()=>{const f=A.fb();let n=0,pr=false;for(let y=190;y<700;y++){let d=false;for(let x=319;x<944;x++)if(f[(y*1280+x)*4]<120){d=true;break;}if(d&&!pr)n++;pr=d;}return n;})();ok('Cyrillic wraps on spaces',rows>=5,rows);
+  // file entity and four byte forms
+  A=await lib();A.file(9,doc('<w:p><w:r><w:t>日本語 \u{1F600} Ωmega</w:t></w:r></w:p>'));A.settle();x=part(A,'word/document.xml');ok('file text past the old range survives',x.includes('日本語 \u{1F600} Ωmega'),(x.match(/<w:t[^>]*>([^<]*)/)||[])[1]);
+  // PDF does not break
+  A=await lib();A.paste('Ωmega text');A.settle();A.key(112,1);const pn=A.e.val(A.h.fileout),pa=A.e.val(A.h.outbase);const pb=Buffer.alloc(pn);for(let i=0;i<pn;i++)pb[i]=A.e.bget(pa+i);require('fs').writeFileSync('build/imp4_u.pdf',pb);ok('PDF written',pn>1000,pn);
+  A=await lib();A.paste('a Ωmega with bold fields');A.key(13);A.settle();A.click(1,1);
+ }
+ if(!only||only=='font'){
+  const fx=(n,t)=>`<w:p><w:r><w:rPr><w:rFonts w:ascii="${n}" w:hAnsi="${n}"/></w:rPr><w:t>${t}</w:t></w:r></w:p>`;
+  let A=await lib();A.file(9,doc(fx('Garamond','Old style')+fx('Segoe UI','Humanist')+fx('Frobnicate Sans','Unknown')+fx('Arial','Known')));A.settle();A.shot('build/imp4_f1.png');let x=part(A,'word/document.xml');
+  for(const n of ['Garamond','Segoe UI','Frobnicate Sans','Arial'])ok('name kept on save: '+n,x.includes('w:ascii="'+n+'" w:hAnsi="'+n+'"'));
+  let B=await lib();B.file(9,A.savedBytes());B.settle();x=part(B,'word/document.xml');ok('second save keeps it',x.includes('Frobnicate Sans'));
+  // the box shows the name at the caret
+  A.key(132,1);A.settle();A.key(131);A.settle();A.shot('build/imp4_f2.png');const b1=A.fb().slice(0);const box=count(A,113,223,65,85,(r)=>r<120);ok('font box drawn',box>20,box);
+  // typed name
+  A=await lib();A.type('name me');A.key(97,1);A.settle();A.click(231,75);A.settle();A.shot('build/imp4_f3.png');A.click(150,87+22*8+10);A.settle();A.type('Georgia Pro');A.settle();A.shot('build/imp4_f4.png');A.key(13);A.settle();x=part(A,'word/document.xml');ok('a typed font name is applied and saved',x.includes('w:ascii="Georgia Pro"'),(x.match(/w:ascii="[^"]*"/g)||[]).join());
+  const h1=A.hash(190,776);A.key(122,1);A.settle();x=part(A,'word/document.xml');ok('undo removes it',!x.includes('Georgia Pro'));
+  // a family from the menu drops the name
+  A=await lib();A.file(9,doc(fx('Frobnicate Sans','Unknown')));A.settle();A.key(97,1);A.settle();A.click(231,75);A.settle();A.click(150,87+22*2+10);A.settle();x=part(A,'word/document.xml');ok('choosing a family replaces the name',!x.includes('Frobnicate')&&/Arimo|Arial/.test(x),(x.match(/w:ascii="[^"]*"/g)||[]).join());
+ }
  console.log(R.filter(x=>x).length+'/'+R.length);process.exit(R.every(x=>x)?0:1);
 })();

@@ -246,7 +246,7 @@ on('TX3',(_tgo,'TX2',{oi:oi+_ntx2,co:co+_ntx2,clen:clen+_ntx2}),(ltx,'PX',None),
  (net.and_(amp_,net.eq(W[1],103,e)),'INS',{ins_ch:62,ins_st:csi+rhi,oi:oi+4,oret.r:oret.id('TX2')}),
  (net.and_(net.ge(W[0],192,e),net.lt(W[0],224,e)),'T2_U8',{t2cp:(W[0]-192)*64+(W[1]-128),oi:oi+2}),
  (net.and_(net.ge(W[0],224,e),net.lt(W[0],240,e)),'T2_U8',{t2cp:(W[0]-224)*4096+(W[1]-128)*64+(W[2]-128),oi:oi+3}),
- (net.ge(W[0],240,e),'T2_U8',{t2cp:63,oi:oi+4}),
+ (net.ge(W[0],240,e),'V7_R4',{t2cp:(W[0]-240)*262144+(W[1]-128)*4096+(W[2]-128)*64+(W[3]-128)-65536,oi:oi+4}),
  (net.or_(net.gt(W[0],126,e),net.lt(W[0],32,e),net.ge(clen,1000,e)),'TX2',{oi:oi+1}),
  # plain text always lands at the end of the paragraph being read, so it is written here and the next byte is already on its way
  (None,'TX3',{w1:(cb+co,W[0]),w2:(cb+1024+co,csi+rhi),w3:(cb+LEN,clen+1),co:co+1,clen:clen+1,oi:oi+1,rl:OA+oi+1}))

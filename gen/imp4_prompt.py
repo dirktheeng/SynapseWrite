@@ -60,3 +60,22 @@ on('V4_TN1',(None,'V4_TN2',{r1:as_x(FNT)+(ity.n+FNS)*32+v4j}))
 e=S('V4_TN2'); on('V4_TN2',(net.or_(net.eq(R1,0,e),net.ge(sx,206,e)),'T1_POST',None),(None,'V4_TN1',{gly:(R1,9,sx,68,0,0),sx:sx+adv,v4j:v4j+1}))
 FN_ROM=[[FNT+(i_+1)*32+j_,ord(c_)] for i_,n_ in enumerate(FNSEED) for j_,c_ in enumerate(n_)]
 for k_ in (3,4,6): on(f'V4_PS{k_}',(None,'V4_PR',{prk:k_}))
+# ---- characters past Latin-1 ----
+net.group('extended characters')
+# leaving as UTF-8: a code unit, and a surrogate pair joined into four bytes
+v7h=R();v7l=R()
+e=S('V7_U0'); _u=ins_ch-UO; _hi=net.and_(net.ge(_u,0xD800,e),net.lt(_u,0xDC00,e)); _lo=net.and_(net.ge(_u,0xDC00,e),net.lt(_u,0xE000,e),net.step(v7h))
+on('V7_U0',(_hi,'SVC',{v7h:_u-0xD800+1}),(_lo,'V7_U4',{t2cp:(v7h-1)*1024+_u-0xDC00+65536,v7h:0}),(None,'V7_U3',{t2cp:_u,v7h:0}))
+def _emit(st,val,nx):
+    e_=S(st); em_en.lin(e_); em_b.add(e_,val(e_)); on(st,(None,nx,None))
+def _cb_(k_): 
+    return lambda e_: (lambda b_: 128+sum((b_[k_*6+j_]*(1<<j_) for j_ in range(6)),X()))(net.bits(t2cp,21,e_))
+e=S('V7_U3'); on('V7_U3',(net.lt(t2cp,0x800,e),'V7_B2',None),(None,'V7_B3',None))
+_emit('V7_B2',lambda e_:(lambda b_:192+sum((b_[6+j_]*(1<<j_) for j_ in range(5)),X()))(net.bits(t2cp,21,e_)),'V7_B0')
+_emit('V7_B3',lambda e_:(lambda b_:224+sum((b_[12+j_]*(1<<j_) for j_ in range(4)),X()))(net.bits(t2cp,21,e_)),'V7_B1')
+_emit('V7_U4',lambda e_:(lambda b_:240+sum((b_[18+j_]*(1<<j_) for j_ in range(3)),X()))(net.bits(t2cp,21,e_)),'V7_B5')
+_emit('V7_B5',_cb_(2),'V7_B1'); _emit('V7_B1',_cb_(1),'V7_B0'); _emit('V7_B0',_cb_(0),'SVC')
+# arriving as four UTF-8 bytes: two cells, as in the browser's own strings
+e=S('V7_R4'); _rb=net.bits(t2cp,20,e)
+on('V7_R4',(None,'INS',{ins_ch:as_x(UO)+0xD800+sum((_rb[10+j_]*(1<<j_) for j_ in range(10)),X()),ins_st:csi+rhi,v7l:sum((_rb[j_]*(1<<j_) for j_ in range(10)),X()),oret.r:oret.id('V7_R5')}))
+on('V7_R5',(None,'INS',{ins_ch:as_x(UO)+0xDC00+v7l,ins_st:csi+rhi,oret.r:oret.id('TX2')}))

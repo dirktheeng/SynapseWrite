@@ -99,6 +99,7 @@ def edges(cs):
             if a[1]==b[1]: continue
             E.append((a[1],a[0],b[1],b[0],1) if a[1]<b[1] else (b[1],b[0],a[1],a[0],-1))
     return E
+EXTTAG=(1<<30,0); PFM={}
 def _ymax(fi,bo,it,ch):
     cs=contours(fi,bo,it,ord(ch)); ys=[p[1] for c in cs for p in c]; return (max(ys),min(ys)) if ys else (0.0,0.0)
 _FM={}
@@ -226,7 +227,8 @@ class GlyphUnit:
         retry=net.reg(); s0=net.reg(); s1=net.reg(); net.rec(s0,go+retry); net.rec(s1,s0)
         g.FK=rom.NSZ*256
         g.key=Lface*g.FK+Lsz*256+Lch
-        kw=net.wire(); net.connect(kw,net.gate(g.key+g.TAG,s0))
+        _xf,_xt=EXTTAG; _xd=_xt-g.TAG-_xf*g.FK; g.tagaddr=lambda k_,en_: net.gate(k_+g.TAG,en_)+net.gate(Lface*0+_xd,net.step(en_*M-M+Lface-_xf+0.5))
+        kw=net.wire(); net.connect(kw,g.tagaddr(g.key,s0))
         tagout=net.input(1+HDR); tag,H=tagout[0],tagout[1:]
         rd=_TagRead(s0,kw,tag,g.STORE,1+HDR); net.ports.append(rd); rd.dom=1
         kl=net.gate(g.key+1,s1)          # the block must carry this key
@@ -355,7 +357,7 @@ class GlyphUnit:
         sx=net.and_(net.step(xrule),net.ge(Lpt,11,st),net.lt(Lpt,19,st))
         def per_face(name):
             e=X()
-            for fi,f in enumerate(g.faces):
+            for fi,f in list(enumerate(g.faces))+list(PFM.items()):
                 z=face_metrics(*f)[name]
                 e=e+net.gate(I_s*z,fh[fi])
             return e
@@ -369,7 +371,7 @@ class GlyphUnit:
             return floor_(v+off,sy)+net.gate(v,ny), v
         kn=g.kn={}
         v_des=X()
-        for fi,f in enumerate(g.faces): v_des=v_des+net.gate(I_s*(-face_metrics(*f)['des']),fh[fi])
+        for fi,f in list(enumerate(g.faces))+list(PFM.items()): v_des=v_des+net.gate(I_s*(-face_metrics(*f)['des']),fh[fi])
         kn['D']=latch(floor_(v_des+0.5,sy)+net.gate(v_des,ny))
         kxh,vxh=knot('xh'); kcap,vcap=knot('cap'); kasc,vasc=knot('asc')
         kn['XH']=latch(kxh); kn['CAP']=latch(kcap); kn['ASC']=latch(kasc)
@@ -406,7 +408,7 @@ class GlyphUnit:
         for w_,v_ in zip(hw,(net.gate(key+1,st),rowsv,net.gate(cells,st),net.gate(OX,st),net.gate(T,st))): net.connect(w_,v_)
         net.aligned.append([next(iter(w.t)) for w in hw])
         a0w=net.wire(); net.connect(a0w,a0)
-        tagv=net.wire(); net.connect(tagv,a0-st*g.STORE); tkw=net.wire(); net.connect(tkw,net.gate(key+g.TAG,st))
+        tagv=net.wire(); net.connect(tagv,a0-st*g.STORE); tkw=net.wire(); net.connect(tkw,g.tagaddr(key,st))
         p=_Write(st,a0w,hw[0],5); net.ports.append(p); p.dom=1
         # a new block has no record yet: two cells from the record plane, which is at rest here
         a5w=net.wire(); net.connect(a5w,a0+st*5); p=_Write(st,a5w,g.recin[0],2); net.ports.append(p); p.dom=1
@@ -460,7 +462,7 @@ class GlyphUnit:
         for fi,d in g.pseudo.items():
             for c,(cs,raw) in d.items():
                 k=(fi,'pseudo',c); E=edges(cs); sl,nu,nd=g._slots(E)
-                fm=face_metrics(*g.faces[fi]) if fi<len(g.faces) else None
+                fm=face_metrics(*g.faces[fi]) if fi<len(g.faces) else (face_metrics(*PFM[fi]) if fi in PFM else None)
                 prog[k]=dict(cs=cs,E=E,sl=sl,nup=nu,ndn=nd,acc=False,raw=raw,st=[],fm=fm,lf=net.wire()); comp[fi,c]=[(('pseudo',c),0.0,0.0)]
         nu=max([1]+[p['nup'] for p in prog.values() if not p['acc']]); nd=max([1]+[p['ndn'] for p in prog.values() if not p['acc']])
         nua=max([0]+[p['nup'] for p in prog.values() if p['acc']]); nda=max([0]+[p['ndn'] for p in prog.values() if p['acc']])

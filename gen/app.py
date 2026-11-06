@@ -20,9 +20,9 @@ net=Net(); fsm=FSM(net); on=fsm.on; ONE=net.ONE; G_=net.gate
 # STYT 1100000 is the interned style table; PUS 999000 and PFT 999100 hold PDF face use and offsets. Glyph tag table TAGB 61000000, glyph store GSTORE 61500000, PDF font bytes FROMB 63000000.
 # The bank is paged by the engine: a page takes wasm memory only when first written, so far apart regions cost nothing until used.
 # High cells: undo 14500000, OUTB 20000000, IMG0 24000000, SAVEB 32000000 and everything from OUTP up only matters while reading, so a large save may run over it.
-PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; SAVEB=32000000; OUTP=40000000; PNGB=46000000; AUXB=50000000; RELB=51000000; CMB=51200000; FILE=53000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000; TAGB=61000000; GSTORE=61600000; GSTORE_END=63000000; FROMB=63000000; BANK=67108864
+PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; SAVEB=32000000; OUTP=40000000; PNGB=46000000; AUXB=50000000; RELB=51000000; CMB=51200000; FILE=53000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000; EXTTAG=67200000; TAGB=61000000; GSTORE=61600000; GSTORE_END=63000000; FROMB=63000000; BANK=67108864
 # Regions fail the build if they overlap: see region() in nn.py. Bounds are exclusive at the end.
-for r_ in (('undo',14500000,20000000),('STYT interned styles',1100000,1100000+4*4096),('TAGB glyph tags',61000000,61600000),('GSTORE glyph store',61600000,63000000),('FROMB PDF fonts',63000000,64000000),
+for r_ in (('undo',14500000,20000000),('STYT interned styles',1100000,1100000+4*4096),('extended glyph tags',67200000,68000000),('TAGB glyph tags',61000000,61600000),('GSTORE glyph store',61600000,63000000),('FROMB PDF fonts',63000000,64000000),
  ('a4 PDF numbering table',23800,25000),('a6 PDBM bookmarks',1200000,1264016),('a6 SGB suggestions',1302000,1310000),('a6 DICTB user words',1310000,1320000),('a6 AUTHB authors',1320000,1330000),('a6 EQT math records',1330000,1375000),
  ('a7 free slots and zero cells',1384000,1389100),('PTRB pointer',1390000,1391000),('a11 reserved',1391000,1393200),('CB clipboard',1400000,1600000),('CB2',1600000,2000000),('slots',2000000,14400000),
  ('MGB mail merge',100000,500000),('FNB',500000,900000),('XR',900000,999000),('PUS and PFT',999000,1000000),('ZT and PDFN',1000000,1020000)): region(*r_)
@@ -156,7 +156,7 @@ NS=rom.NSZ
 _leaf=_tree(GE,SD['sb'],NS)
 raw_hot=_leaf[:NS]
 # character index in binary; values past the table (code 255) clamp to an empty entry
-_chv=net.relu(g_ch.w-32+1+GE*M-M)
+UO_=1<<20; _chv=net.relu(g_ch.w-32+1+GE*M-M)
 _chok=net.step(_chv)
 _chbits=net.bits(_chv-1-net.relu(_chv-225),8,_chok)
 def chartree(root,bits,k,idxs,leaf):
@@ -206,6 +206,18 @@ for f_ in FACES:
     if f_==(0,0,0): tb_[SQUIG-32]=4/12
     def _al(G,ix,tb_=tb_): net.connect(aem,G*tb_[ix])
     chartree(tnode(FH[f_],_chok),_chbits,7,tb_,_al)
+# a character past Latin-1: the page's tree gives the advance, and the unit gets a pseudo face and a code in its upper half
+_xuk=net.step(g_ch.w-UO_+0.5+GE*M-M); _xb=net.bits(g_ch.w-UO_,16,_xuk); _xpg={}
+def _xpl(G,ix): _xpg[ix<<7]=G
+chartree(_xuk,_xb[7:],8,[p_>>7 for p_ in rom.EXT_PAGES],_xpl)
+_xbo=SD['bold']; _xit=SD['ital']; _xhit=net.wire(); _xfl={}
+for p_ in rom.EXT_PAGES:
+    for v_,ln_ in (((0,0,0),net.and_(_xpg[p_],ONE-_xbo,ONE-_xit)),((0,1,0),net.and_(_xpg[p_],_xbo)),((0,0,1),net.and_(_xpg[p_],ONE-_xbo,_xit))):
+        _xfl[p_,v_]=ln_; d_=rom.ext_page(v_,p_)
+        def _xal(G,ix,d_=d_,v_=v_): net.connect(aem,G*rom.ext_adv(v_,d_[ix])); net.connect(_xhit,G)
+        chartree(ln_,_xb[:7],6,list(d_),_xal)
+_xhb=net.step(_xhit); _xno=net.step(_xuk-_xhb-0.5); net.connect(aem,_xno*0.6)
+_xlow=sum((_xb[b_]*(1<<b_) for b_ in range(7)),X())
 for si,h in enumerate(size_hot): net.connect(adv,net.gate(aem*round(rom.SZ[si]*96/72),h))
 # kerning: a tree over the previous character, then over the current one. A pair that exists fires kany.
 kp_en=Bus(net); kp_in=Bus(net)
@@ -235,17 +247,30 @@ net.group('glyph unit')
 exec(open('ptr_shapes.py').read())
 _sq=_layer([".K..","K.K.","...K"],0,rom.metrics(9)[0],'K')
 _pseudo={0:{SQUIG:(_sq,True)},len(FACES):PTR_GLYPHS}
+# extended characters: one pseudo face per page and variant, then one with the box for anything else
+UO=rom.UO; XF0=len(FACES)+1; XF={}; _pfm={}
+for p_ in rom.EXT_PAGES:
+    for v_ in rom.EXT_VARS:
+        _i=XF0+len(XF); XF[p_,v_]=_i; _pfm[_i]=v_
+        _pseudo[_i]={128+l_:(glyphnet.named(*v_,*sg_),False) for l_,sg_ in rom.ext_page(v_,p_).items()}
+        _pseudo[_i]={c_:d_ for c_,d_ in _pseudo[_i].items() if d_[0]} or {128:([[(0.1,0.0),(0.1,0.1),(0.2,0.1)]],False)}
+XFT=XF0+len(XF); _pfm[XFT]=(0,0,0)
+_pseudo[XFT]={128:([[(0.08,0.0),(0.08,0.66),(0.52,0.66),(0.52,0.0)],[(0.14,0.06),(0.46,0.06),(0.46,0.6),(0.14,0.6)]],False)}
+glyphnet.EXTTAG=(XF0,EXTTAG); glyphnet.PFM=_pfm
 glyph_unit=glyphnet.GlyphUnit(net,FACES,rom.CODES,_pseudo,GLW,TAGB,GSTORE,GSTORE_END,(clip0,clip1),PAL_F,PAL_B,ONE,PatchPort,SpritePort)
 _A=glyph_unit.A
 _face=net.wire(); _sz=net.wire(); _ppem=net.wire(); _pt=net.wire(); _fg=net.wire(); _bg=net.wire(); _base=net.wire(); g_nc=Bus(net); g_fx=Bus(net); g_fc=Bus(net)
 for f_ in FACES: net.connect(_face,FH[f_]*FACES.index(f_))
 net.connect(_face,g_fx.w)
+_facef=net.wire(); net.connect(_facef,_face-net.gate(_face,_xuk)+_xno*XFT)
+for k_,ln_ in _xfl.items(): net.connect(_facef,net.and_(ln_,_xhb)*XF[k_])
+_gch=net.wire(); net.connect(_gch,g_ch.w-net.gate(g_ch.w-128-G_(_xlow,_xhb),_xuk))
 for si,h in enumerate(zoom_sizes(size_hot)):
     px=round(rom.SZ[si]*96/72); net.connect(_sz,h*si); net.connect(_ppem,h*px); net.connect(_pt,h*rom.SZ[si])
 for j,b_ in enumerate(fg): net.connect(_fg,b_.w*(j+1))
 for j,b_ in enumerate(bg): net.connect(_bg,b_.w*(j+1))
 net.connect(_base,zgy(g_y.w+asc_e))
-GCALL=CallPort(net.step(g_draw.w),glyph_unit.fin,[(net.step(g_draw.w),_A['go']),(g_ch.w,_A['ch']),(_face,_A['face']),(_sz,_A['sz']),(_ppem,_A['ppem']),(_pt,_A['pt']),(zgx(g_x.w),_A['x']),(_base,_A['y']),(_fg,_A['fg']),(_bg,_A['bg']),(g_nc.w,_A['nc']),(g_fc.w,_A['fc'])])
+GCALL=CallPort(net.step(g_draw.w),glyph_unit.fin,[(net.step(g_draw.w),_A['go']),(_gch,_A['ch']),(_facef,_A['face']),(_sz,_A['sz']),(_ppem,_A['ppem']),(_pt,_A['pt']),(zgx(g_x.w),_A['x']),(_base,_A['y']),(_fg,_A['fg']),(_bg,_A['bg']),(g_nc.w,_A['nc']),(g_fc.w,_A['fc'])])
 # the style table's interner: its own domain too, called with a record value, returns the record's index
 net.domain(1); net.group('style interner')
 I_go=net.input(); I_val=net.input(); I_fb=net.input(); I_k=net.input(); I_n=net.input(); I_y=net.input()
@@ -347,14 +372,16 @@ _rv_hf=S('HF'); _rv_bg=net.or_(bgp,t1_cntp); timer.lin(_rv_hf*530-net.and_(_rv_h
 net.group('character maps')
 um_en=Bus(net); um_in=Bus(net); UMV=um_in.w; UME=um_en.w
 um_out=net.gate(UMV,net.lt(UMV,127,UME))+net.gate(UMV,net.and_(net.ge(UMV,160,UME),net.lt(UMV,256,UME)))
-for u_,c_ in rom.UNI_MAP.items(): um_out=um_out+net.eq(UMV,u_,UME)*c_
+_umk=X()
+for u_,c_ in rom.UNI_MAP.items(): _e_=net.eq(UMV,u_,net.and_(UME,net.ge(UMV,256,UME))); um_out=um_out+_e_*c_; _umk=_umk+_e_
+um_out=um_out+net.gate(UMV+UO,net.and_(UME,net.ge(UMV,256,UME),ONE-net.step(_umk)))   # past Latin-1 the code unit is kept
 def i2u(v,en):
     "Internal code to unicode point for text leaving the network."
     o=net.and_(en,net.ge(v,128,en),net.lt(v,160,en)); hi=net.decode(as_x(v)-128,32,o); ex_=X()
     for c_ in range(128,160):
         ch_=rom.cp1252(c_)
         if ch_: ex_=ex_+hi[c_-128]*(ord(ch_)-c_)
-    return as_x(v)+ex_
+    return as_x(v)+ex_-net.ge(v,UO,en)*UO
 # ---- key handling ----
 net.group('key handling')
 en=S('KEY'); k=net.decode(eva,256,en); kb=net.bits(evb,2,en); ctrl=kb[0]; shf=kb[1]; nc=ONE-ctrl
@@ -805,8 +832,7 @@ for i_,b_ in enumerate(BULS): bch=bch+bh[i_]*b_
 _lm=list_mark(lfm,e); bch=bch+_lm[4]
 on('BUL',(None,'C0',{gly:(bch,0,x-24,gly_y,0,0)}))
 mk_i=R()
-e=S('NUM'); _lm=list_mark(lfm,e); on('NUM',(net.step(_lm[2]),'V6_NP',{mk_i:0,sx:x-24,gly:(_lm[2],0,x-24,gly_y,0,0)}),(None,'NUM2',{mk_i:0,sx:x-24}))
-on('V6_NP',(None,'NUM2',{sx:sx+adv}))
+e=S('NUM'); _lm=list_mark(lfm,e); on('NUM',(net.step(_lm[2]),'NUM2',{mk_i:0,sx:x-24+adv,gly:(_lm[2],0,x-24,gly_y,0,0)}),(None,'NUM2',{mk_i:0,sx:x-24}))
 e=S('NUM2'); _lm=list_mark(lfm,e); on('NUM2',(None,'NUM3',{r1:as_x(MKT)+(_lm[0]+G_(net.min_(plvl,2),ONE-net.step(lfm)))*2048+mkn*8+mk_i}))
 e=S('NUM3'); _lm=list_mark(lfm,e); _dot=net.eq(R1,46,e); _sf=_lm[3]+G_(as_x(46),ONE-net.step(lfm)); _ch=R1-net.and_(_lm[1],net.ge(R1,97,e))*32+G_(_sf,_dot)-_dot*46
 on('NUM3',(net.and_(net.step(R1),_dot,ONE-net.step(_sf)),'C0',None),(net.step(R1),'NUM2',{gly:(_ch,0,sx,gly_y,0,0),sx:sx+adv,mk_i:mk_i+1}),(None,'C0',None))
@@ -816,7 +842,7 @@ on('C0',(net.ge(off,le_,e),'CE',None),(net.and_(rv_hl,net.ge(off,rv_mhe,e)),'RVA
 fsm.set(kprev,S('R8'),0)
 e=S('C1')
 Kp=pi*2048+off; insel=net.and_(net.ge(Kp,Lo,e),net.lt(Kp,Hi,e)); rv_mh=net.and_(rv_hl,ONE-insel,net.lt(off,rv_mhe,e)); nosel=e-insel-rv_mh
-isfnc=net.ge(R1,1000,e); isp=net.eq(R1,32,e); xtra=G_(lex,isp)+rv_tabw(x-(tx0+48),net.eq(R1,9,e)); _rv_ne=net.and_(e,rv_eol); chere=net.and_(net.eq(pi,cp,e),net.eq(off,co,e),ONE-net.eq(off,ls_,_rv_ne))
+_xue=net.ge(R1,UO,e); isfnc=net.and_(net.ge(R1,1000,e),ONE-_xue); isp=net.eq(R1,32,e); xtra=G_(lex,isp)+rv_tabw(x-(tx0+48),net.eq(R1,9,e)); _rv_ne=net.and_(e,rv_eol); chere=net.and_(net.eq(pi,cp,e),net.eq(off,co,e),ONE-net.eq(off,ls_,_rv_ne))
 fsm.set(cx,chere,x);fsm.set(cacol,chere,col)
 g_en.lin(e);g_ch.add(e,R1);g_st.add(e,RSR);g_fl.add(e,RSC);g_x.add(e,x+kern+0.5);g_y.add(e,gly_y+YB)
 ke2=net.and_(e,net.step(kprev));kp_en.lin(ke2);kp_in.add(ke2,kprev)
@@ -855,7 +881,7 @@ for rr,en_,yv in ((rC,und,sy+lasc+2-rise),(rD,ske,sy+lasc-strk-rise)):
 mk_=net.and_(e,isp,t1_marks,ONE-und); rC.drive(mk_,(x+net.gate(adv*0.5,mk_),sy+lasc-6,2,2,(120,120,160),col))
 exec(open('t4_spell.py').read())
 adv_c={x:x+adv+kern+xtra,col:col+1,off:off+1,kprev:R1}
-on('C1',(net.eq(R1,9,e),'A4_PT0',None),(net.and_(net.ge(R1,300,e),ONE-isfnc),'A6Q_C0',{a6qk:R1-300,a6qs:insel}),(isfnc,'T3_CF0',None),(sp_bad,'A6D_0',{**adv_c,sx:sp_x0,sp_xe:x,sp_r:0,a6oe:off}),(net.ge(off+1,le_,e),'CE',adv_c),(rv_hl,'C0',adv_c),(None,'C1',{**adv_c,r1:pbs+off+1,rs:pbs+1024+off+1}))
+on('C1',(net.eq(R1,9,e),'A4_PT0',None),(net.and_(net.ge(R1,300,e),ONE-isfnc,ONE-_xue),'A6Q_C0',{a6qk:R1-300,a6qs:insel}),(isfnc,'T3_CF0',None),(sp_bad,'A6D_0',{**adv_c,sx:sp_x0,sp_xe:x,sp_r:0,a6oe:off}),(net.ge(off+1,le_,e),'CE',adv_c),(rv_hl,'C0',adv_c),(None,'C1',{**adv_c,r1:pbs+off+1,rs:pbs+1024+off+1}))
 e=S('CE'); chere2=net.and_(net.eq(pi,cp,e),net.eq(off,co,e))
 fsm.set(cx,chere2,x);fsm.set(cacol,chere2,col)
 mk2=net.and_(e,t1_marks,net.eq(le_,plen_,e)); rB.drive(mk2,(x+5,sy+lasc-12,1,14,(120,120,160),col)); rC.drive(mk2,(x+1,sy+lasc-12,4,6,(120,120,160),col))
@@ -904,8 +930,8 @@ hasb=net.gt(lb,ls_,e); nsp=e-sp
 lastc=net.ge(off+1,plen_,e); newword=net.and_(nsp,prevsp)
 advance={kprev:R1,lx:lx+adv+kern+_rv_lt,lasc:net.max_(asc,lasc),lhh:net.max_(lh,lhh),off:off+1,prevsp:_rv_sb,wc:wc+newword,lsn:lsn+sp}
 fsm.set(lb,net.and_(_rv_sb,ONE-over),off+1);fsm.set(lbx,net.and_(_rv_sb,ONE-over),lx+kern+_rv_lt);fsm.set(lspb,net.and_(_rv_sb,ONE-over),lsn)
-isfl=net.ge(R1,1000,e); fsm.set(lfnb,net.and_(_rv_sb,ONE-over),lfn);fsm.set(lfhb,net.and_(_rv_sb,ONE-over),lfh)
-on('L2',(net.eq(R1,9,e),'A4_LT0',{ra4t:pbs+A4T,lasc:net.max_(asc,lasc),lhh:net.max_(lh,lhh)}),(net.and_(net.ge(R1,300,e),ONE-isfl),'A6Q_L0',{a6qk:R1-300,r1:as_x(1330000)+(R1-300)*64+1,r2:as_x(1330000)+(R1-300)*64}),(isfl,'T3_LF0',{r1:as_x(FNB)+(R1-1000)*256+254}),(_rv_vt,'EM',{**advance,prevsp:ONE,lend:off+1,lwid:lx,lspc:lsn,llast:0}),(net.and_(over,hasb),'EM',{lend:lb,lwid:lbx,lspc:lspb,off:lb,llast:0,lfn:lfnb,lfh:lfhb}),
+_xuf=net.ge(R1,UO,e); isfl=net.and_(net.ge(R1,1000,e),ONE-_xuf); fsm.set(lfnb,net.and_(_rv_sb,ONE-over),lfn);fsm.set(lfhb,net.and_(_rv_sb,ONE-over),lfh)
+on('L2',(net.eq(R1,9,e),'A4_LT0',{ra4t:pbs+A4T,lasc:net.max_(asc,lasc),lhh:net.max_(lh,lhh)}),(net.and_(net.ge(R1,300,e),ONE-isfl,ONE-_xuf),'A6Q_L0',{a6qk:R1-300,r1:as_x(1330000)+(R1-300)*64+1,r2:as_x(1330000)+(R1-300)*64}),(isfl,'T3_LF0',{r1:as_x(FNB)+(R1-1000)*256+254}),(_rv_vt,'EM',{**advance,prevsp:ONE,lend:off+1,lwid:lx,lspc:lsn,llast:0}),(net.and_(over,hasb),'EM',{lend:lb,lwid:lbx,lspc:lspb,off:lb,llast:0,lfn:lfnb,lfh:lfhb}),
  (over,'EM',{lend:off,lwid:lx,lspc:lsn,llast:0}),
  (lastc,'EM',{**advance,lend:off+1,lwid:lx+adv+kern+_rv_lt,lspc:lsn,llast:1}),
  (None,'L2',{**advance,r1:pbs+off+1,rs:pbs+1024+off+1}))
