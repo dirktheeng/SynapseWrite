@@ -19,10 +19,11 @@ for(const [a,n,w] of h.rom)for(let i=0;i<n;i++){let x=0;for(let j=w;j--;)x=x*256
 window.annMem=()=>mem().byteLength;
 try{const s=JSON.parse(localStorage.getItem('synapse_dict')||'[]');for(let i=0;i<s.length;i++)e.bset(h.dict+i,s[i]);}catch(_){}
 const cv=document.getElementById('screen'),ctx=cv.getContext('2d',{alpha:false,willReadFrequently:true});let img=null;const shown=()=>{if(!img||!img.data.length)img=new ImageData(new Uint8ClampedArray(mem(),e.p_img(),1280*800*4),1280,800);return img;};
-let evm=0;let timer=0,pendClip=null;
+let evm=0;let timer=0,pendClip=null,ph='';
 // Clipboard write: the async API, then the copy event, then a code telling the network that only its own copy holds the text.
-const writeClip=t=>{const fail=()=>{let ok=false;try{ok=document.execCommand('copy');}catch(_){}if(!ok)dispatch(13,2);};try{navigator.clipboard.writeText(t).catch(fail);}catch(_){fail();}};
-window.addEventListener('copy',ev=>{if(pendClip!==null){ev.clipboardData.setData('text/plain',pendClip);ev.preventDefault();}});window.addEventListener('cut',ev=>{if(pendClip!==null){ev.clipboardData.setData('text/plain',pendClip);ev.preventDefault();}});
+// The HTML twin the network wrote goes beside the plain text, as it was written.
+const writeClip=t=>{const fail=()=>{let ok=false;try{ok=document.execCommand('copy');}catch(_){}if(!ok)dispatch(13,2);};try{const it={'text/plain':new Blob([t],{type:'text/plain'})};if(ph)it['text/html']=new Blob([ph],{type:'text/html'});navigator.clipboard.write([new ClipboardItem(it)]).catch(fail);}catch(_){fail();}};
+window.addEventListener('copy',ev=>{if(pendClip!==null){ev.clipboardData.setData('text/plain',pendClip);if(ph)ev.clipboardData.setData('text/html',ph);ev.preventDefault();}});window.addEventListener('cut',ev=>{if(pendClip!==null){ev.clipboardData.setData('text/plain',pendClip);if(ph)ev.clipboardData.setData('text/html',ph);ev.preventDefault();}});
 const stats=window.annStats={ticks:0,ms:0,edges:0,events:0};
 let busy=false;const pendq=[];
 // A text the network placed in the bank: code units to a browser string.
@@ -36,7 +37,7 @@ const dispatch=(k,a=0,b=0,c=0)=>{
  // Inference continues in slices so a long computation never leaves the network stopped half way, and the page stays alive.
  const go=()=>{const lim=window.annMax||5000000,m=e.run(h.halt,lim);n+=m;paint();if(m>=lim&&!window.annMax){busy=true;setTimeout(go,0);return;}busy=false;
  // Commands from the network, each read from its own output neuron.
- const held=e.val(h.chold),clip=e.val(h.clipout);if(held)pendClip=null;if(clip){const t=text(h.cb,clip-1);window.annClip=t;pendClip=t;if(!held)writeClip(t);}
+ const held=e.val(h.chold),clip=e.val(h.clipout);if(held)pendClip=null;if(clip){const t=text(h.cb,clip-1);window.annClip=t;pendClip=t;ph='';const hm=e.val(h.htmlout);if(hm)ph=text(h.hb,hm-1);window.annHtml=ph;if(!held)writeClip(t);}
  const fl=e.val(h.fileout);if(fl){const a0=e.val(h.outbase);const u=new Uint8Array(fl);for(let i=0;i<fl;i++)u[i]=e.bget(a0+i);saveFile(u,text(e.val(h.namea),e.val(h.namen)));}
  {const ds=e.val(h.dsave);if(ds)try{const a=[];for(let i=0;i<ds;i++)a.push(e.bget(h.dict+i));localStorage.setItem('synapse_dict',JSON.stringify(a));}catch(_){}}
  if(e.val(h.wpic))pick(openPic);
@@ -51,7 +52,8 @@ const dispatch=(k,a=0,b=0,c=0)=>{
  const nx=pendq.shift();if(nx)dispatch(...nx);};go();
 };
 const units=(a,t,n)=>{for(let i=0;i<n;i++)e.bset(a+i,t.charCodeAt(i));};
-const pasteText=(t,fromKey=0)=>{const n=Math.min(t.length,h.cb2max);units(h.cb2,t,n);dispatch(8,fromKey,0,n);};
+// Pasted HTML goes in as code units beside the plain text; the network reads it.
+const pasteText=(t,fromKey=0,hm='')=>{const n=Math.min(t.length,h.cb2max);units(h.cb2,t,n);const m=Math.min(hm.length,h.hpmax);units(h.hp,hm,m);dispatch(8,fromKey,m,n);};
 const bytes=(k)=>async f=>{const u=new Uint8Array(await f.arrayBuffer());const n=Math.min(u.length,h.fmax);for(let i=0;i<n;i++)e.bset(h.file+i,u[i]);dispatch(k,0,0,n);};
 const openFile=bytes(9),openPic=bytes(10);window.annPic=openPic;window.annOpen=openFile;window.addEventListener('dragover',ev=>ev.preventDefault());window.addEventListener('drop',ev=>{ev.preventDefault();if(ev.dataTransfer.files[0])openFile(ev.dataTransfer.files[0]);});
 window.annPaste=t=>pasteText(t);
@@ -61,7 +63,7 @@ const saveFile=async (u,name)=>{let dl=null;try{dl=window.claude?await window.cl
 // Keys: the code units of the key name, its length, and raw modifier bits. The network names them and says whether the browser default stands.
 window.addEventListener('keydown',ev=>{const s=ev.key||'';for(let i=0;i<6;i++)e.inject(h.keyv[i],s.charCodeAt(i)||0);e.inject(h.keyl,s.length);
  dispatch(2,0,ev.ctrlKey+2*ev.shiftKey+4*ev.metaKey+8*ev.repeat+16*ev.altKey,Math.floor(performance.now()));if(!e.val(h.pass_))ev.preventDefault();});
-window.addEventListener('paste',ev=>{ev.preventDefault();pasteText(ev.clipboardData.getData('text'),1);});
+window.addEventListener('paste',ev=>{ev.preventDefault();pasteText(ev.clipboardData.getData('text'),1,ev.clipboardData.getData('text/html'));});
 const pos=ev=>{const r=cv.getBoundingClientRect();return [Math.round((ev.clientX-r.left)*1280/r.width),Math.round((ev.clientY-r.top)*800/r.height)];};
 cv.addEventListener('mousedown',ev=>{cv.focus({preventScroll:true});const [x,y]=pos(ev);evm=ev.ctrlKey+2*ev.shiftKey+4*ev.metaKey+8*ev.button;dispatch(3,x,y,Math.floor(performance.now()));});cv.addEventListener('contextmenu',ev=>ev.preventDefault());
 window.addEventListener('mouseup',ev=>{const [x,y]=pos(ev);dispatch(4,x,y);});

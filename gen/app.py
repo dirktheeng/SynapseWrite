@@ -602,6 +602,7 @@ on('CUT',(has_sel,'W0',{wp:lo_p,wo:lo_o,wn:0,wm:1,wret.r:wret.id('CUT2'),grp:grp
 e=S('CUT2'); on('CUT2',(net.ge(wn,589900,e),'RD0',{pcut:PMSG,clipn:0}),(None,'IMP3_CS0',{csd:1}))
 e=S('COPYE'); on('COPYE',(net.ge(wn,589900,e),'RD0',{pcpy:PMSG,clipn:0}),(None,'IMP3_CS0',{csd:0}))
 clipout.add(S('HF'),clipl); fsm.set(clipl,S('HF'),0)
+p1_htmlout.add(S('HF'),p1hl); fsm.set(p1hl,S('HF'),0)   # p1: the HTML twin of the copy, for the glue
 wantp=Bus(net); wantp.lin(S('HF')*0+wpaste); fsm.set(wpaste,S('HF'),0)
 e=S('W0')
 on('W0',(None,'W1',{r1:as_x(PT)+wp}))
@@ -1178,7 +1179,7 @@ exec(open('imp4_prompt.py').read())
 exec(open('t4_features.py').read())
 exec(open('t2_features.py').read())
 exec(open('t3_features.py').read())
-exec(open('imp4_style.py').read()); exec(open('imp4_list2.py').read()); exec(open('imp5_breaks.py').read()); exec(open('imp5_vruler.py').read()); exec(open('imp6_feat.py').read()); exec(open('p1_ribbon.py').read())
+exec(open('imp4_style.py').read()); exec(open('imp4_list2.py').read()); exec(open('imp5_breaks.py').read()); exec(open('imp5_vruler.py').read()); exec(open('imp6_feat.py').read()); exec(open('p1_ribbon.py').read()); exec(open('p1_html.py').read())
 net.group('late commands')
 exec(open('rv_a2_canvas.py').read())
 exec(open('rv_a4_features.py').read())
@@ -1232,6 +1233,7 @@ wvl_data=[wlog,wln,wvl,w1,w2,w3,w4,fw,fw2,wo,imw,wl_i,xw,wht]+T3_WPORTS
 for p in wvl_data: net.aligned.append([nid(b.w) for b in p.d])
 net.aligned.append([nid(b.w) for b in iW.d])
 net.keep=[nid(q) for q in (dsave.w,halt.w,timer.w,clipout.w,saveout.w,outbase.w,pdfout.w,picout.w,openout.w,wantp.w,ev_kind,ev_a,ev_b,ev_c,ev_t,ev_m)]
+net.keep.append(nid(p1_htmlout.w))
 net.keep+=[nid(q) for q in (a11bad,*kv,kvl,c_pass.w,c_ff.w,c_fb.w,c_hold.w,c_chold.w,c_kbo.w,c_file.w,c_namea.w,c_namen.w)]
 for p in net.ports:
     for q in p.rec(None)[1:]:
@@ -1299,6 +1301,7 @@ hdr=dict(dsave=new[nid(dsave.w)],dict=DICTB,fmax=TAGB-FILE,outbase=new[nid(outba
  ev=[new[nid(q)] for q in (ev_kind,ev_a,ev_b,ev_c,ev_t,ev_m)],cb=CB,cb2=CB2,n1=c['n1'],init=[[new[i],v] for i,v in net.init.items() if not net.dom[i]],init1=[[new[i],v] for i,v in net.init.items() if net.dom[i]],
  bank_init=[*[[SECB+i_,v_] for i_,v_ in enumerate((1,816,PH,PX,TX,TW,96,864))],[LEN+SLOT0,0],[DIRTY+SLOT0,1],[PT,SLOT0],[SLOT0+SAVE,112],[SLOT0+SAVE+1,16],[SLOT0+SAVE+2,1],[SLOT0+PSPA,DEFSPA]]+T2_ROM+PF_INIT)
 hdr.update(keyv=[new[nid(q)] for q in kv],keyl=new[nid(kvl)],pass_=new[nid(c_pass.w)],ffield=new[nid(c_ff.w)],fback=new[nid(c_fb.w)],hold=new[nid(c_hold.w)],chold=new[nid(c_chold.w)],kbo=new[nid(c_kbo.w)],fileout=new[nid(c_file.w)],namea=new[nid(c_namea.w)],namen=new[nid(c_namen.w)],kbv=KBV,kbq=KBQ,screenbad=new[nid(a11bad)],kbmax=KBMAX,cb2max=390000)
+hdr.update(hb=P1HB,hp=P1HB,hpmax=P1HMAX,htmlout=new[nid(p1_htmlout.w)])   # p1: clipboard HTML
 hdr['bank_init']+=[[KBL+i_,126] for i_ in range(KBSEN)]+[[KBQ+i_,126] for i_ in range(KBSEN)]+[[NAMEB+i_,ord(c_)] for i_,c_ in enumerate(NAME_DOCX+NAME_PDF)]
 import os
 raw=b''.join([_zb,np.array(c['lstart'],dtype=np.int32).tobytes(),np.array(pr,dtype=np.int32).tobytes(),np.array(wtab,dtype=np.float64).tobytes(),np.array(btab,dtype=np.float64).tobytes()])

@@ -63,6 +63,7 @@ PURPOSE={
  'column breaks':'Column breaks: typed with Ctrl+Shift+Enter, read and written as w:br of type column, laid out as a move to the second column.',
  'vertical ruler drag':'Top and bottom margin drags on the vertical ruler, released through the section edit with undo.',
  'find across paragraphs':'One matcher for queries holding paragraph marks, used by the walker, the counter and the highlight.',
+ 'clipboard html':'Writes an HTML twin of each copy and reads HTML pasted from other programs into runs and paragraphs.',
  'find codes':'Reads the Word find codes ^t ^l ^^ ^s ^- ^? ^# ^$ for the shared matcher, and the character codes in a replacement.',
  'tier 1 ribbon commands':'Sets the arguments for the Column Break, Text Wrapping, Comment ribbon commands and dispatches the Ctrl+Alt shortcuts.',
  'clipboard formatting':'Keeps style cells and paragraph records of the own copy and puts them back when the pasted text equals it.',
