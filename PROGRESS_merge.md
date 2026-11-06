@@ -83,3 +83,9 @@ Audit edits, for review (the allow lists encode a11's earlier glue, and each new
 Test edits, for review: rv_a11_input F12 removed from keys that do nothing (a3 gives it Save As). fuzz_selftest port table follows the merged ports.
 a11's failing redo tests: t3_pic resize redo PASS, undo and redo PASS; t3_misc run, see next line. touch.js 'no pointer on touch' printed false once under load, true twice alone, a caret blink between two screenshots.
 Runs: rv_a11_input all passed, rv_a11_screen all passed, t3_pic all PASS, audit 67 of 67, e2e 210/210, rv_a3 49/49.
+## Step 6: a9 (9048875), looked at, taken by hand
+Taken: display lists only. gen/rv_a9_dl.py is a9's sequencer, adapted: records through rom.lit, hover background chosen per record, 128 conditions, 16 colors. Lists sit in a new ROM run, region a9 display lists 66 M to 67 M, BANK now 67 M, 24 bit cells. Common chrome is one sublist. t1_text labels became lists too.
+Result: 450,014 to 442,591 neurons, 1,014,204 to 959,404 edges, page 3,185,495 to 3,157,555. Regress screen hashes and docx hashes unchanged; total ticks 5,063,085 to 5,063,171.
+Skipped, a10 already has it: literal ROM player, number writer, field writer, hex digits partly, window comparator, deflate and color tables, palette string families (T2Rk, PD_Co, T3_SV, T3_PT). a8's prune covers a9's hash consing.
+Skipped on purpose: a9's ROM range 1030000 to 1390000, which overlaps a6, a7, fonts. Character sink through text_chain: items hold registers and the chrome group is only 1,494 neurons. T2Rh highlight literals: 7 entries, too small. T4P hex in one state: small. Undo and redo as one walker: about 400 states on a9's base, but a3, a4, a6, a7 added log operations since, and a blind port is a risk for little: not attempted. Shared page count decoder and menu row ladder: not attempted.
+Also fixed: a11's group 'screen check' stayed open and labelled the ribbon; group reset after rv_a11_out.

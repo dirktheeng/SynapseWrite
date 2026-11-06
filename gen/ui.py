@@ -296,34 +296,7 @@ def backstage():
     u.t(230+(132-twidth('Blank document'))//2,282,'Blank document',9,0,0)
     u.t(230,330,'Open and Save use .docx files. Print writes a PDF.',9,1,0)
     return u
-def emit(net,fsm,rA,bus,YB,items,seq0_state,hv_reg,hb,bg,prs=None):
-    """Writes a token chain for the items and returns the last token."""
-    g_en,g_ch,g_st,g_x,g_y,g_draw,fg=bus
-    tok=fsm.S(seq0_state); fsm.states[seq0_state][1].append((tok,None))
-    seq=[net.reg() for _ in range(len(items)+1)]
-    net.rec(seq[0],tok)
-    for i,it in enumerate(items):
-        t=seq[i]
-        if it[0]=='r':
-            _,x,y,w,h,c,a,hc,key=it; rA.lin(t,x,y,w,h,c,a)
-            if hc is not None:
-                on=net.eq(hv_reg,key,t)
-                for j in range(3):
-                    if hc[j]!=c[j]: rA.b[5+j].lin(on*(hc[j]-c[j]))
-                if prs is not None and hc is HVG:
-                    pr_=net.and_(on,prs)
-                    for j in range(3): rA.b[5+j].lin(pr_*(PRS[j]-hc[j]))
-                fsm.set(hb,t,on)
-        elif it[0]=='k':
-            _,cond,x,y,w,h,c,a=it; rA.lin(net.and_(t,cond),x,y,w,h,c,a)
-        else:
-            _,ch,st,x,y,f,b,hv=it
-            g_en.lin(t);g_draw.lin(t);g_ch.lin(t*ch);g_st.lin(t*rom.lit(st));g_x.lin(t*x);g_y.lin(t*(y+YB));fg[f].lin(t)
-            if hv:
-                c=net.and_(t,hb); bg[b].lin(t-c); bg[5 if hv is True else hv].lin(c)
-            else: bg[b].lin(t)
-        net.rec(seq[i+1],t)
-    return seq[len(items)]
+emit=None   # set by rv_a9_dl.py: one sequencer plays every display list from memory
 def a4_ribbon(u,k):
     "Commands past the 8 bit id space, each with its own hover key."
     import rv_a4_btn as q_
@@ -346,7 +319,7 @@ def build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,hov,hb,hvo,bs,
     fsm.on('UI',(bs,'BS_UI',None),*[(hot[i],f'UI_{i}',None) for i in range(6)],(None,'RD0',None))
     last=emit(net,fsm,rA,bus,YB,backstage().i,'BS_UI',hov,hb,bg); net.rec(fsm.state('T1_END'),last)
     for k in range(6):
-        u=L(); u.tab=k; u.i=list(u0.i); tabbar(u,names,k)
+        u=L(); u.tab=k; tabbar(u,names,k)
         (home,insert,layout,refs,review,view)[k](u)
         for bt in t3_btn.BTNS:
             if bt[0]==k:
@@ -356,7 +329,7 @@ def build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,hov,hb,hvo,bs,
                 elif (k,id_) in t3_btn.ICONS: u.art(x_+3,y_+(h_-16)//2,t3_btn.ICONS[(k,id_)],200+id_); u.t(x_+22,y_+(h_-rom.metrics(9)[1])//2+1,lb_,9,0,3,True)
                 elif lb_: u.t(x_+(w_-twidth(lb_))//2,y_+(h_-rom.metrics(9)[1])//2+1,lb_,9,0,3,True)
         a4_ribbon(u,k)
-        last=emit(net,fsm,rA,bus,YB,u.i,f'UI_{k}',hov,hb,bg,prs)
+        last=emit(net,fsm,rA,bus,YB,u.i,f'UI_{k}',hov,hb,bg,prs,u0.i)
         c=net.and_(last,hvo)   # a hover redraw skips the document walk
         net.rec(fsm.state('RD0'),last-c); net.rec(fsm.state('TB0'),c)
 

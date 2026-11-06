@@ -12,13 +12,11 @@ def t1_isw(v,en):
     "A word character: letter, digit, underscore or apostrophe."
     return net.or_(net.and_(net.ge(v,192,en),ONE-net.eq(v,215,en),ONE-net.eq(v,247,en)),net.and_(net.ge(v,65,en),net.lt(v,91,en)),net.and_(net.ge(v,97,en),net.lt(v,123,en)),net.and_(net.ge(v,48,en),net.lt(v,58,en)),net.eq(v,95,en),net.eq(v,39,en))
 def t1_text(start,txt,x0,y,f,b,nxt,st=9):
-    "One glyph per token; advances are weights."
-    cur=start;xx=x0;si=st&15
-    for i,ch in enumerate(txt):
-        n=f'{start}_{i}'
-        on(cur,(None,n,{gly:(ord(ch),st,xx,y,f,b)}))
-        xx+=rom.adv_px(0,(st>>4)&1,0,si,ord(ch)); cur=n
-    on(cur,(None,nxt,None))
+    "A display list of glyphs at fixed pens."
+    xx=x0;si=st&15;u=ui.L()
+    for ch in txt:
+        u.i.append(('g',ord(ch),st,xx,y,f,b,False)); xx+=rom.adv_px(0,(st>>4)&1,0,si,ord(ch))
+    net.rec(S(nxt),ui.emit(net,fsm,rA,None,YB,u.i,start,t1_mrow,t1_hb,bg))
 #@@ keys
 # undo grouping inputs: a pause or any navigation or command key starts a new group
 fsm.set(t1_pz,en,t1_pzn); fsm.set(t1_kt,en,evc)
