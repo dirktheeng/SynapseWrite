@@ -195,7 +195,7 @@ const cell=(r,c)=>click(880+c*26+8,64+r*22+8);const lay=(r,c)=>click(590+c*26+8,
  const fontm=click(182,75),sizem=click(228,75),colm=click(287,102);
  await same('font menu matches font box',['abc',key('Control+a'),fontm,click(150,120),key('End')],['abc',key('Control+a'),click(149,75),key('End')]);
  await same('size menu matches grow button',['abc',key('Control+a'),sizem,click(210,207),key('End')],['abc',key('Control+a'),click(251,75),click(251,75),key('End')]);
- await same('size menu sets a typing size',[sizem,click(210,185),'abc'],['abc',key('Control+a'),sizem,click(210,207),key('End')]);
+ await same('size menu sets a typing size',[sizem,click(210,207),'abc'],['abc',key('Control+a'),sizem,click(210,207),key('End')]);
  await same('color menu matches swatch',['abc',key('Control+a'),colm,click(240,215),key('End')],['abc',key('Control+a'),click(239,102),key('End')]);
  await same('escape closes a menu',['abc',sizem,key('Escape')],['abc']);
  await same('click away closes a menu',['abc',sizem,click(700,500)],['abc']);
