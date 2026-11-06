@@ -46,15 +46,15 @@ e=S('A6R_A4'); on('A6R_A4',(net.eq(R1,a6an,e),'A6R_A5',{a6ai2:0}),(None,'A6R_A3'
 e=S('A6R_A5'); on('A6R_A5',(net.ge(a6ai2,a6an,e),'T4_TS',{w1:(cb+PAUTH,a6ak)}),(None,'A6R_A6',{r1:_arow(a6ak)+1+a6ai2,r2:_arow(a6ac+1)+1+a6ai2}))
 e=S('A6R_A6'); on('A6R_A6',(net.eq(R1,R2,e),'A6R_A5',{a6ai2:a6ai2+1}),(None,'A6R_A3',{a6ak:a6ak+1}))
 e=S('A6R_AN'); on('A6R_AN',(net.ge(a6ac,15,e),'T4_TS',None),(None,'T4_TS',{w1:(cb+PAUTH,a6ac+1),a6ac:a6ac+1}))
-on('A6R_D0',(None,'A6R_D1',{rl:OA+oi,r1:OA+oi+8}))
+on('A6R_D0',(None,'A6R_D1',{rl:OA+oi,r1:OA+oi+8,r2:OA+oi+9}))
 e=S('A6R_D1'); W7=rl.out
-_y=(W7[0]-48)*1000+(W7[1]-48)*100+(W7[2]-48)*10+(W7[3]-48); _m=(W7[5]-48)*10+(W7[6]-48); _d=(W7[7]-48)*10+(R1-48)
+_y=(W7[0]-48)*1000+(W7[1]-48)*100+(W7[2]-48)*10+(W7[3]-48); _m=(W7[5]-48)*10+(W7[6]-48); _d=(R1-48)*10+(R2-48)
 _yy=net.gate(_y,e); _b=net.bits(net.relu(_yy-1969),8,e); _q=sum((_b[i_+2]*(1<<i_) for i_ in range(6)),X())
 _lb=net.bits(_yy,2,e); _ly=net.and_(e,ONE-_lb[0],ONE-_lb[1]); _mhr=net.decode(_m,13,e); _cum=X(); _c=0
 for m_,d_ in enumerate((31,28,31,30,31,30,31,31,30,31,30,31),1): _cum=_cum+_mhr[m_]*_c; _c+=d_
 _late=sum((_mhr[m_] for m_ in range(3,13)),X())
 _days=net.relu(_yy-1970)*365+_q+_cum+net.step(_late+_ly-1.5)+net.relu(_d-1)
-on('A6R_D1',(None,'T4_TS',{w1:(cb+PDATE,_days+1),oi:oi+9}))
+on('A6R_D1',(None,'T4_TS',{w1:(cb+PDATE,_days+1),oi:oi+10}))
 
 # ---- tracked Backspace and Delete across a paragraph mark ----
 a6t=R();a6tc=R();a6q=R()
@@ -86,9 +86,9 @@ on('A6T_M2',(None,'MERGE',{oret.r:oret.id('A6T_M3')}))
 on('A6T_M3',(None,'T4_AL',{a_ep:net.relu(a_ep-1),fastok:0}))
 # ---- live fields: after a pause, a change in the word or page total refreshes every field run, without touching undo ----
 fsm.set(a6hf,S('T4_FI'),1); fsm.set(a6hf,net.step(rfk),1)
-on('T4_AF',(a6fg,'RD0',{a6fg:0,nolog:0,lc:1,fastok:0}),(None,'AFTER_ED',{fastok:0}))
+on('T4_AF',(a6fg,'RD0',{a6fg:0,nolog:0,lc:1,fastok:0,ap:cp,ao:co}),(None,'AFTER_ED',{fastok:0}))
 _e=net.and_(S('D3'),a6fg); _e1=net.and_(_e,net.eq(cp,a_sp,_e),net.lt(co,a_so,_e)); fsm.set(a_so,_e1,a_so-1)
-_e=net.and_(S('I2'),a6fg); _e1=net.and_(_e,net.eq(cp,a_sp,_e),net.lt(co,a_so,_e)); fsm.set(a_so,_e1,a_so+1)
+_e=net.and_(S('I2'),a6fg); _e1=net.and_(_e,net.eq(cp,a_sp,_e),net.ge(a_so,co,_e)); fsm.set(a_so,_e1,a_so+1)
 # ---- writer: a merge field is the characters between the guillemets ----
 _nmc=lambda v,en: net.or_(net.and_(net.ge(v,65,en),net.lt(v,91,en)),net.and_(net.ge(v,97,en),net.lt(v,123,en)),net.and_(net.ge(v,48,en),net.lt(v,58,en)),net.eq(v,95,en))
 fsm.set(a6wp,S('SVch'),0)
