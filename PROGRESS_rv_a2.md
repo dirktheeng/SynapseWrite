@@ -8,3 +8,9 @@ Not fixed: rom.metrics rounds line pitch to 22 px for 11 pt (Word about 19.3 px)
 
 ## Scroll limit
 Short document could not reach its page foot: a wheel past the last text snapped back, so footnotes and footers on page one were unreachable. ytot now holds the end of the last page; scroll clamps to end of page plus a small gap.
+
+## Test runs under load (load average 25 to 40, other agents building)
+a2_canvas 19 of 19 once corrected (two earlier failures were my test: the caret and page edge counted as ink).
+Under load, image hash comparisons fail when the caret blink fires between two shots. Checked m1 against m1c for 'footnote redo restores': the only difference is the caret column. Baseline build also failed differently under load ('Ctrl+V pastes text from outside', and suites killed).
+Crashes ('Target crashed', goto aborted, download timeouts) occur on both builds and are memory or time pressure.
+Not fixed: selection does not fill space after paragraphs, overlapping balloons do not stack, picture has three grips (only those work), find field text can run past its field.

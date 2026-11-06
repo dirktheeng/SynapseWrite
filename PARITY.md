@@ -58,6 +58,9 @@ Evidence: `test/e2e.js`, `test/t3_table.js`, `test/t3_pic.js`, `test/t3_misc.js`
 | .docx deflate | Passed | Greedy LZ77 with a hash head table and fixed Huffman codes. 87,469 bytes to about 2.3 KB on a repetitive document. Zip CRC checks and own inflate rereads it. No dynamic Huffman blocks. |
 | styles.xml | Passed | The numbering, styles, document member walk reads docDefaults, `w:style`, `basedOn`, `pStyle`, `rStyle`, `jc`; `w:b w:val="0"` handled. Matches direct formatting pixel for pixel (`test/t4_docx.js`). Character styles replace rather than overlay the paragraph style. Other parts (numbering, theme) are not read. |
 
+## Canvas look (rv_a2)
+Compared by eye with how Word looks, from memory; no copy of Word was available. List items of a list sit together with contextual spacing, saved to the file. Headings use Word's spacing; Heading 2 is 14 pt because 13 pt is not compiled. Line pitch at 11 pt is 22 px against about 19.3 px in Word (rom.metrics).
+
 ## Deployment targets
 | Target | Result |
 |---|---|
