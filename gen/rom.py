@@ -34,7 +34,7 @@ def lit(st):
     return sz_raw(SZ.index(PTS[st&15]))+(st&(16|32|64))+font_raw(st_font(st))+(st&0x7FF00)
 GLW=180     # pixel columns of the glyph unit's row plane: the widest glyph at 72 pt
 FACES=[(fi,bo,it) for fi in range(len(FAM)) for bo in range(1+FAM_FACES[fi][0]) for it in range(1+FAM_FACES[fi][1])]
-def x_snap_face(fi,bo,it): return fi==0 and not it
+def x_snap_face(fi,bo,it): return False      # viewed side by side (shots/fonts_xsnap_compare.png): stems snapped in x are crisper, but letters space unevenly because pens are whole pixels
 def face_of(fi,bo,it): return (fi,bo if FAM_FACES[fi][0] else 0,it if FAM_FACES[fi][1] else 0)
 def st_of_font(f): return ((f&1)<<7)+((f>>1)<<25)
 _MS={}
