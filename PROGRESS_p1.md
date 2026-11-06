@@ -66,3 +66,6 @@ Not done: the page count still follows the view's pagination (draft pages hold m
 
 ## 12. Text above 72 pt (measured, scratch build, not committed)
 Extending rom.SZ with 80, 88, 96, 108, 120, 144 pt (the record's size field has room: 7 bits) and letting zoom pick them: builds, 20 pt text at 500 percent draws at 96 pt (ink 104 rows against 77 at the 72 pt ceiling). Cost: page +1,044 bytes; typing one letter at 500 percent 177,867 edges against 116,079; per event FLOPs at 100 percent unchanged within noise (type at end +481 over base, the rest below base). Not committed: it changes rom.py's size table, which belongs to the fonts work (p2), and makes files keep sizes above 72 pt, a Font size row change.
+
+## Full run at 556adf2
+All exit 0: p1 36/36, p1_clip 13/13, e2e 210/210, tier2 49/49, look 31/31, t3_table 9, t3_pic 9, t3_misc 13, t4_docx 18/18, t4_pdf 7/7, roundtrip, touch, a4 50/50, a5_docx 37/37 (open 6,784,033 edges; base 6,784,308), fonts 23/23, imp2 45, imp3 49/49, imp4 101/101, imp5 49/49, imp6 20/20, feat1 24/24, feat2 35/35, t4, flops (every event below base; largest change -26), audit 67/67. Two builds byte identical. Page 2,979,349 bytes (base 2,953,717).
