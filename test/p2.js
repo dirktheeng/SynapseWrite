@@ -56,6 +56,16 @@ xs=[q[0] for q in b];ys=[q[1] for q in b]
 wt=sum(1 for y in range(min(ys),max(ys)+1) for x in range(min(xs),max(xs)+1) if min(p[x,y])>235)
 print([len(b),wt])`));
  ok('PDF prints the dark blue highlight in its exact color',hc[0]>500,hc);
+ // lists in PDF: numbering goes on across a plain paragraph within one numId and restarts at a new one
+ {const NUM='<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:abstractNum w:abstractNumId="0"><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num><w:num w:numId="2"><w:abstractNumId w:val="0"/></w:num></w:numbering>';
+  const L=(id,t)=>`<w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="${id}"/></w:numPr></w:pPr><w:r><w:t>${t}</w:t></w:r></w:p>`;
+  fs.writeFileSync(`${O}/num.xml`,NUM);const f=mk('lists',L(1,'one')+L(1,'two')+P(Rn('plain'))+L(1,'three')+P(Rn('plain again'))+L(2,'fresh'));
+  py(`import zipfile
+z=zipfile.ZipFile('${f}','a')
+z.writestr('word/numbering.xml',open('${O}/num.xml').read())
+z.close()`);
+  await open(f);await pdf(`${O}/lists.pdf`);const t=sh(`pdftotext -layout ${O}/lists.pdf -`).replace(/\s+/g,' ');
+  ok('PDF numbers 1, 2, 3 across the plain paragraph and 1 for the new numId',/1\. one 2\. two plain 3\. three plain again 1\. fresh/.test(t),t.slice(0,120));}
  await A.b.close();
  // the headless parts: character style update, based on styles, further highlights
  await require('./p2_lib')(ok,process.argv[2]);

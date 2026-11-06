@@ -125,7 +125,7 @@ on('T2W1',(None,'T2SS',{t2w:as_x(STY)+psty*STYN+8,t2sr.r:t2sr.id('T2W1b')}))
 lit('T2W1b',b'"/>','T2W2')
 on('T2W2',(a4wk,'A4_WK',None),(None,'A4_W2',None)); lit('T2W3',b'<w:pageBreakBefore/>','F1_WW')
 e=S('T2W4')
-newrun=net.and_(e,net.eq(lsf,2,e),ONE-net.eq(t2pk,2,e))
+newrun=net.and_(e,net.eq(lsf,2,e),net.or_(net.and_(p2wrs,ONE-net.step(t2pk)),ONE-net.step(t2run)))   # p2: numbering goes on across other paragraphs unless the item restarts
 fsm.set(t2run,newrun,t2run+1); fsm.set(t2pk,e,lsf)
 on('T2W4',(net.step(lsf),'T2W5',None),(None,'T2W9',None))
 lit('T2W5',b'<w:numPr><w:ilvl w:val="','T2W6')

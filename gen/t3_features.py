@@ -350,7 +350,7 @@ qload=lambda W_:{qnc:W_[0],qpw:W_[1],qph:W_[2],qml:W_[4]-W_[3],qmt:W_[6],qth:W_[
 on('T3_PQ0',(None,'T3_PQ1',{rl:as_x(SECB)}))
 on('T3_PQ1',(None,'PD_0',qload(RL)))
 on('T3_PQ2',(None,'T3_PQ3',{qtoc:MT[4],qsrc:MT[5],qtpg:MT[6],qcw:MT[0],qcx:MT[1],qsh:MT[2],rl:as_x(SECB)+MT[7]*8,r1:qb+RBOT,r2:qb+RBOT+1}))
-on('T3_PQ3',(None,'PD_3',{**qload(RL),qrb:R1,qrt:R2,rl:qb+SAVE,rc:qb+2062,rim:qb+IMF,r2:qb+LIST,rp6:qb+PIND}))
+on('T3_PQ3',(None,'PD_3',{**qload(RL),qrb:R1,qrt:R2,rl:qb+SAVE,rc:qb+2062,rim:qb+IMF,r2:qb+LIST,rp6:qb+PIND,rV:qb+F1PX}))
 e=S('PD_4')
 on('PD_4',(net.step(qcols),'T3_PT0',None),(None,'T3_PT9',None))
 on('T3_PT9',(None,'A4_Q0',{ra4:qb+A4C,rmeta:qb+META}))

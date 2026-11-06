@@ -15,7 +15,7 @@ def F1_PX(e):
      (pat('<w:vanis',e),'F1_TV',{f1bit:X_HID,oi:oi+9}),(net.and_(a4inr,pat('<w:spaci',e)),'F1_SP',{oi:oi+10}),(net.and_(a4inr,pat('<w:shd ',e)),'F1_SH',{oi:oi+7}),
      (pat('<w:hyper',e),'F1_HL',{oi:oi+12,f1ll:nid_l,f1nl:nid_l,w1:(as_x(F1LT)+nid_l*F1LS,0),w2:(as_x(F1LT)+nid_l*F1LS+1,0)}),(pat('</w:hype',e),'PX',{f1ll:0,oi:oi+8}),
      (pat('<w:bookm',e),'F1_BK',{rl:OA+oi+11}),
-     (net.and_(dx,pat('<w:conte',e)),'PX',{a5cx:1,f1pc:1,w1:(cb+F1PX,1+f1pw*2),oi:oi+8}),
+     (net.and_(dx,pat('<w:conte',e)),'PX',{a5cx:1,f1pc:1,w1:(cb+F1PX,1+f1pw*2+p2rsr*0.25),oi:oi+8}),
      (net.and_(dx,pat('<w:widow',e)),'F1_WC',{oi:oi+15})]
 def F1_META(e):
     "Paragraph extras for layout: widow control off is bit 1 of the cell."

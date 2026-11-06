@@ -812,14 +812,24 @@ pnew={**pfsave,fnp:0,ptop:ptop+s_ps,yy:ptop+s_ps+s_mt,pages:pages+1,xcol:0}
 on('R3B',(net.and_(net.eq(pbk,2,e),net.eq(ncol,2,e),ONE-net.step(xcol),ONE-net.step(tcols),net.gt(yy,ptop+s_mt,e)),'R4',{yy:ptop+s_mt,xcol:col2+24}),(net.and_(net.step(tcols),net.eq(tci,0,e),ONE-a4hw,net.gt(yy,ptop+s_mt,e),net.step(net.step(pi+1-a4kd-0.5)+net.step(a4kd-pi-1-0.5))),'A4_KR0',None),(net.and_(a4kf,ONE-net.step(tcols),net.gt(yy,ptop+s_mt,e),net.step(net.step(pi+1-a4kd-0.5)+net.step(a4kd-pi-1-0.5))),'A4_K0',None),(net.and_(pb_,full),'PSH_B',{**pnew,rB:(s_px-2,ptop+s_ps+DOCY-scroll-1,s_pw+5,s_ph+4,(216,216,216),0),rC:(s_px-1,ptop+s_ps+DOCY-scroll,s_pw+3,s_ph+2,(198,198,198),0)}),(pb_,'A4_H0',pnew),(None,'R4',None))
 e=S('R4'); e_=net.and_(e,ONE-a4hw)
 w4.drive(e_,(pbs+FNHT,fnh))
-def list_step(ln_,kind,lvl,e):
-    "Multi level list counters, 8 bits per level packed in one cell. Returns the new pack and this item's number."
-    lbits=net.bits(ln_,24,e); lc0=sum((lbits[i]*(1<<i) for i in range(8)),X()); lc1=sum((lbits[8+i]*(1<<i) for i in range(8)),X()); lc2=sum((lbits[16+i]*(1<<i) for i in range(8)),X())
-    lvh=net.decode(lvl,4,e); isnum=net.eq(kind,2,e); inlist=net.step(kind)
+def list_step(ln_,kind,lvl,e,rs=None):
+    """Multi level list counters, 8 bits per level packed in one cell (7 for the third), and in bit 23 whether the paragraph before was a list item.
+    Returns the new pack and this item's number. p2: as in Word, numbering goes on across paragraphs that are not list items; a list item restarts
+    its level only when it carries the restart flag rs (a new numId in a file) and the paragraph before it was not a list item. The work sits behind
+    a gate opened by a list item, so a paragraph of plain text reads the old pack and, if it is set, one compare."""
+    inl=net.step(kind); en=net.gate(e,inl)
+    lbits=net.bits(ln_,24,en); lc0=sum((lbits[i]*(1<<i) for i in range(8)),X()); lc1=sum((lbits[8+i]*(1<<i) for i in range(8)),X()); lc2=sum((lbits[16+i]*(1<<i) for i in range(7)),X()); prev=lbits[23]
+    lvh=net.decode(lvl,4,en); isnum=net.eq(kind,2,en)
     deep=lvh[2]+lvh[3]
-    n0=G_(lc0+net.and_(isnum,lvh[0]),net.and_(e,inlist,ONE-net.and_(lvh[0],net.eq(kind,1,e)))); n1=G_(lc1+net.and_(isnum,lvh[1]),net.and_(e,inlist,ONE-lvh[0])); n2=G_(lc2+net.and_(isnum,deep),net.and_(e,inlist,deep))
-    return n0+n1*256+n2*65536, G_(n0,lvh[0])+G_(n1,lvh[1])+G_(n2,deep)
-nlist,mk_now=list_step(listn,lsf,plvl,e)
+    rsn=net.and_(en,rs,ONE-prev) if rs is not None else X()
+    r0=net.and_(rsn,lvh[0]) if rs is not None else X(); r1=net.and_(rsn,lvh[1]) if rs is not None else X(); r2=net.and_(rsn,deep) if rs is not None else X()
+    n0=G_(lc0+net.and_(isnum,lvh[0]),en-r0)+G_(net.and_(isnum,lvh[0]),r0)
+    n1=G_(lc1+net.and_(isnum,lvh[1]),net.and_(en,ONE-lvh[0])-r1)+G_(net.and_(isnum,lvh[1]),r1)
+    n2=G_(net.min_(lc2+net.and_(isnum,deep),127),net.and_(en,deep)-r2)+G_(net.and_(isnum,deep),r2)
+    nen=net.gate(e,ONE-inl); pnl=net.ge(ln_,1<<23,nen)   # a paragraph that is not a list item keeps the counters and clears the flag
+    return G_(as_x(ln_)-pnl*(1<<23),nen)+G_(n0+n1*256+n2*65536+(1<<23),en), G_(n0,lvh[0])+G_(n1,lvh[1])+G_(n2,deep)
+_p2i3=net.gate(e3,net.step(lb3[0]+lb3[1]*2)); fsm.set(p2rs,_p2i3,net.bits(A4O[7]*4,4,_p2i3)[0])   # p2: the restart flag is a quarter in feat1's paragraph cell, read only for a list item
+nlist,mk_now=list_step(listn,lsf,plvl,e,p2rs)
 fsm.set(mkn,e,mk_now)
 w3.drive(e_,(pbs+SSI,cursec));wln.drive(e_,(pbs+SAVE,yy,ptop,pages,wsum,listn,xcol));w1.drive(e_,(pbs+FNS,fnn));w2.drive(e_,(pbs+FNS+1,fnp))
 intab=net.step(tcols); c0=net.eq(tci,0,e)

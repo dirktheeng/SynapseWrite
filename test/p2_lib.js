@@ -52,4 +52,32 @@ module.exports=async(ok,only)=>{
   let C=await lib();C.file(9,doc('<w:p><w:r><w:rPr><w:caps/><w:spacing w:val="40"/><w:highlight w:val="darkRed"/></w:rPr><w:t>spaced</w:t></w:r></w:p>'));C.settle();const y=part(C,'word/document.xml');
   ok('caps, spacing and a further highlight together are kept',/<w:caps\/>/.test(y)&&/w:spacing w:val="40"/.test(y)&&/darkRed/.test(y),runs(y).join(' | '));
  }
+
+ if(!only||only=='lists'){
+  // numbering goes on across plain paragraphs within one numId and restarts at a new numId, as in Word
+  const num=`<w:numbering ${W}><w:abstractNum w:abstractNumId="0"><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num><w:num w:numId="2"><w:abstractNumId w:val="0"/><w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride></w:num></w:numbering>`;
+  const L=(id,t)=>`<w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="${id}"/></w:numPr></w:pPr><w:r><w:t>${t}</w:t></w:r></w:p>`,Pp=t=>`<w:p><w:r><w:t>${t}</w:t></w:r></w:p>`;
+  const body=L(1,'one')+L(1,'two')+Pp('a plain paragraph')+L(1,'three')+Pp('another plain one')+L(2,'new one')+L(2,'new two');
+  // the reference draws the numbers Word would show as typed text with the same indents: 1 2 _ 3 _ 1 2
+  let A=await lib();A.file(9,doc(body,{'word/numbering.xml':num}));A.settle();A.click(600,700);A.settle();A.shot('build/p2/lists.png');
+  const x=part(A,'word/document.xml');const ids=[...x.matchAll(/<w:numId w:val="(\d+)"\/>/g)].map(m=>+m[1]);
+  ok('saved: the interrupted list keeps one numId, the new list another',ids.length==5&&ids[0]==ids[1]&&ids[1]==ids[2]&&ids[3]==ids[4]&&ids[2]!=ids[3],ids.join(' '));
+  const nx=part(A,'word/numbering.xml');const ov=id=>new RegExp(`<w:num w:numId="${id}">(?:(?!</w:num>).)*startOverride`).test(nx);
+  ok('saved: the first list and the restarted list each start at 1, by override',ov(ids[0])&&ov(ids[3]),ids[0]+' '+ids[3]);
+  // the markers on screen: each list line's marker is pixel equal to the marker of the same number in a plain five item list
+  const lines=Z=>{const f=Z.fb(),t=[];let on=false;for(let y=180;y<700;y++){let n=0;for(let x=300;x<700;x++){const i=(y*1280+x)*4;if(f[i]<128)n++;}if(n&&!on){t.push(y);on=true;}if(!n)on=false;}return t;};
+  const mk=(Z,y)=>{const f=Z.fb(),o=[];for(let yy=y-2;yy<y+14;yy++)for(let x=300;x<345;x++)o.push(f[(yy*1280+x)*4]>128?1:0);return o.join('');};
+  let B=await lib();B.file(9,doc(L(1,'x').repeat(5),{'word/numbering.xml':num}));B.settle();B.click(600,700);B.settle();
+  const la=lines(A),lb=lines(B),ref=[0,1,2,3,4].map(k=>mk(B,lb[k]));const got=[0,1,3,5,6].map(k=>ref.indexOf(mk(A,la[k]))+1);
+  ok('screen numbers: 1 2, plain, 3, plain, then 1 2 again',got.join()=='1,2,3,1,2',got.join());
+  // Restart at 1 from the List Style menu on the third item, then undo, then Continue Numbering on the restarted list
+  const at=(Z,k)=>{Z.click(600,lines(Z)[k]+6);Z.settle();};
+  at(A,3);A.click(1247,74);A.settle();A.shot('build/p2/lists_menu.png');A.click(1150,127+19*22+11);A.settle();A.click(600,700);A.settle();
+  let g2=[0,1,3,5,6].map(k=>ref.indexOf(mk(A,lines(A)[k]))+1);ok('Restart at 1 on the third item numbers it 1',g2.join()=='1,2,1,1,2',g2.join());
+  let x2=part(A,'word/document.xml');let id2=[...x2.matchAll(/<w:numId w:val="(\d+)"\/>/g)].map(m=>+m[1]);ok('saved: the restarted item opens its own numId',id2[2]!=id2[1]&&id2[2]!=id2[3],id2.join(' '));
+  A.key(122,1);A.settle();A.click(600,700);A.settle();g2=[0,1,3,5,6].map(k=>ref.indexOf(mk(A,lines(A)[k]))+1);ok('undo brings back 3',g2.join()=='1,2,3,1,2',g2.join());
+  at(A,5);A.click(1247,74);A.settle();A.click(1150,127+20*22+11);A.settle();A.click(600,700);A.settle();
+  g2=[0,1,3,5,6].map(k=>ref.indexOf(mk(A,lines(A)[k]))+1);ok('Continue Numbering on the second list goes on from 3',g2.join()=='1,2,3,4,5',g2.join()+' '+[...part(A,'word/document.xml').matchAll(/<w:numId w:val="(\d+)"\/>/g)].map(m=>m[1]).join(' '));
+  A.shot('build/p2/lists.png');
+ }
 };

@@ -18,3 +18,11 @@ for k_,(o_,n_) in enumerate(((p2x0,v4uk),(p2x1,v4un),(p2x2,p2mk))):
 on('P2_U5',(None,'W0',{wp:0,p2_wo:0,wm:2,wfirst:1,ap:0,ao:0,cp:npar,co:0,ysr:t2nr_,fpk:v4uk,fpn:v4un,ymsk:p2mk,fpy:t2si+1,fm:16,fcol:0,p2fon:1,p2fys:t2si+1,wret.r:wret.id('P2_CE')}))
 on('P2_CE',(None,'RD0',{lc:1,p2fon:0,p2fys:0,cp:p2sc,co:p2so,ap:p2sa,ao:p2sb}))
 net.group(_p2g)
+
+# ---- p2: Restart at 1 and Continue Numbering, from the List Style menu ----
+# The caret paragraph's restart flag is a quarter in feat1's paragraph cell (below every threshold its other readers use); alv says set (1) or clear (0).
+_p2l=net.cur[0]; net.group('p2 list restart')
+on('P2_RS0',(None,'P2_RS1',{r1:cb+F1PX}))
+e=S('P2_RS1'); _q=net.bits(R1*4,4,e)[0]; _nv=as_x(R1)-_q*0.25+alv*0.25; log(e,6,cp,F1PX,R1,_nv)
+on('P2_RS1',(None,'RD0',{w1:(cb+F1PX,_nv),w2:(cb+DIRTY,1),lc:1}))
+net.group(_p2l)
