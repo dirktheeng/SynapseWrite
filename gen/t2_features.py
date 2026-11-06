@@ -1,0 +1,259 @@
+# ---- Tier 2 subsystems: style table, paragraph commands, list keys, typed size, docx reader helpers ----
+net.group('tier 2')
+# ROM images. Written once at build time; the network reads them through its memory ports.
+T2_ROM=[]
+def _rec(i,run,al=0,ind=0,fi=0,lsp=0,spb=0,spa=DEFSPA,sid='',name=''):
+    vals=[run,al,ind,fi,lsp,spb,spa,0]
+    for base in (STY0,STY):
+        a=base+i*STYN
+        for j,v in enumerate(vals):
+            if v: T2_ROM.append([a+j,v])
+        for j,c in enumerate(sid): T2_ROM.append([a+8+j,ord(c)])
+        for j,c in enumerate(name): T2_ROM.append([a+28+j,ord(c)])
+BLUE3=3*256
+_rec(0,0,sid='Normal',name='Normal')
+_rec(1,7,spa=4,sid='Title',name='Title')
+_rec(2,3+BLUE3,spb=16,spa=5,sid='Heading1',name='heading 1')
+_rec(3,1+BLUE3+16,spb=12,spa=4,sid='Heading2',name='heading 2')
+_rec(4,0+BLUE3+16,spb=8,spa=4,sid='Heading3',name='heading 3')
+_rec(5,0+1*256+32,ind=48,spb=8,spa=8,sid='Quote',name='Quote')
+def _roman(n):
+    r=''
+    for v,t in ((100,'c'),(90,'xc'),(50,'l'),(40,'xl'),(10,'x'),(9,'ix'),(5,'v'),(4,'iv'),(1,'i')):
+        while n>=v: r+=t; n-=v
+    return r
+def _alpha(n):
+    q,m=divmod(n-1,26); return chr(97+m)*(q+1)
+for lv,fn in enumerate((str,_alpha,_roman)):
+    for n in range(1,256):
+        for j,ch in enumerate((fn(n)+'.')[:7]): T2_ROM.append([MKT+lv*2048+n*8+j,ord(ch)])
+# keys outside Latin-1 go through the code map, and bypass the key decoder
+e=S('T2_KU'); um_en.lin(e); um_in.add(e,eva)
+on('T2_KM',(net.ge(eva,256,S('T2_KM')),'T2_KU',None),(None,'KEY',None))
+on('T2_KU',(net.and_(net.step(um_out),findon),'FTYPE',{eva:um_out}),(net.step(um_out),'TYPE',{eva:um_out}),(None,'HALT',None))
+e=S('T2_PS'); um_en.lin(e); um_in.add(e,ins_ch)
+on('T2_PS',(net.step(um_out),'INS',{ins_ch:um_out,ins_st:TST,oret.r:oret.id('PS2')}),(None,'PS2',None))
+e=S('T2_U8'); um_en.lin(e); um_in.add(e,t2cp)
+on('T2_U8',(None,'T2_U9',{ins_ch:um_out}))
+e=S('T2_U9')
+on('T2_U9',(net.ge(clen,1000,e),'TX2',None),(net.step(ins_ch),'INS',{ins_st:cs+rhi,oret.r:oret.id('TX2')}),(None,'INS',{ins_ch:63,ins_st:cs+rhi,oret.r:oret.id('TX2')}))
+# typed font size
+e=S('T2_TD'); dig=net.and_(net.ge(eva,48,e),net.lt(eva,58,e))
+on('T2_TD',(dig,'RD0',{td1:td0,td0:eva-48}),(None,'RD0',None))
+e=S('T2_TS'); szv=td1*10+td0; hz=net.decode(szv,100,e); near=X()
+for v_ in range(100):
+    near=near+hz[v_]*min(range(len(rom.PTS)),key=lambda i:(abs(rom.PTS[i]-v_),rom.PTS[i]))
+on('T2_TS',(net.eq(szv,0,e),'RD0',None),(None,'FMTS',{fm:9,fsi:near}))
+# list toggles and keys
+e=S('T2_LI0')
+on('T2_LI',(None,'T2_LI0',{r1:cb+LIST}))
+lb0=net.bits(R1,4,e); kind0=lb0[0]+lb0[1]*2; lvl0=lb0[2]*4+lb0[3]*8
+on('T2_LI0',(net.eq(kind0,alv,e),'SETLI',{alv:0}),(None,'SETLI',{alv:alv+lvl0}))
+e=S('T2_TB'); lb1=net.bits(R1,4,e); k1_=lb1[0]+lb1[1]*2; l1_=lb1[2]+lb1[3]*2
+inlist1=net.and_(e,net.step(k1_),net.or_(net.eq(co,0,e),has_sel))
+on('T2_TB',(net.and_(inlist1,shiftk),'PA0',{pwalk:lo_p,pfld:LIST,alv:k1_+net.relu(l1_-1)*4,grp:grp+1}),
+ (inlist1,'PA0',{pwalk:lo_p,pfld:LIST,alv:k1_+net.min_(l1_+1,2)*4,grp:grp+1}),
+ (None,'TAB2',{ins_ch:32,ins_st:TST,oret.r:oret.id('TAB3')}))
+t2es=R()
+e=S('T2_EN0'); lb2=net.bits(R1,4,e); k2_=lb2[0]+lb2[1]*2; l2_=lb2[2]+lb2[3]*2
+emp=net.and_(e,net.step(k2_),net.eq(clen,0,e))
+on('T2_EN0',(net.and_(emp,net.step(l2_)),'PA0',{pwalk:cp,pfld:LIST,alv:k2_+(l2_-1)*4}),(emp,'PA0',{pwalk:cp,pfld:LIST,alv:0}),(None,'SPLIT',{t2es:R2,oret.r:oret.id('T2_EN1')}))
+# after a styled paragraph ends at its last character, the next paragraph is Normal
+e=S('T2_EN1')
+on('T2_EN1',(net.and_(net.step(t2es),net.eq(clen,0,e)),'T2_EN2',{rl:as_x(STY)}),(None,'AFTER_ED',None))
+W_=rl.out
+on('T2_EN2',(None,'AFTER_ED',{ty:W_[0],w1:(cb+ALIGN,W_[1]),wln:(cb+PIND,W_[2],W_[3],W_[4],W_[5],W_[6],0)}))
+on('T2_BK',(net.step(R1),'PA0',{pwalk:cp,pfld:LIST,alv:0}),(net.step(cp),'MG0',{}),(None,'AFTER_ED',None))
+# applying a style: format the runs, then write each paragraph property with undo records
+t2f=[R() for _ in range(8)]; t2lo=R();t2hi=R();t2i_=R();t2o=R();t2val=R();t2um=R()
+on('T2_SA0',(None,'T2_SA1',{rl:as_x(STY)+t2si*STYN,t2um:0}))
+on('T2_SA1',(None,'T2_SA2',{fpre:W_[0],t2f[1]:W_[1],t2f[2]:W_[2],t2f[3]:W_[3],t2f[4]:W_[4],t2f[5]:W_[5],t2f[6]:W_[6],fm:8,t2lo:lo_p,t2hi:hi_p,grp:grp+1,ap:lo_p,ao:0}))
+on('T2_SA2',(None,'J0',{jp:t2hi,jo:2047,jret.r:jret.id('FMTS')}))
+on('T2_SP0',(None,'T2_SP1',{pwalk:t2lo}))
+on('T2_SP1',(None,'T2_SP2',{r1:as_x(PT)+pwalk}))
+on('T2_SP2',(None,'T2_SF',{t2b:R1,t2i_:0}))
+e=S('T2_SF'); hf=net.decode(t2i_,7,e); FLD=[ALIGN,PIND,PFIRST,PLSP,PSPB,PSPA,PSTY]; off_=X(); val_=X()
+for i_,f_ in enumerate(FLD):
+    off_=off_+hf[i_]*f_
+    val_=val_+(G_(t2si,hf[i_]) if f_==PSTY else G_(t2f[i_+1],hf[i_]))
+on('T2_SF',(None,'T2_SG',{t2o:off_,t2val:val_,r2:t2b+off_}))
+e=S('T2_SG'); log(e,6,pwalk,t2o,R2,t2val)
+on('T2_SG',(net.lt(t2i_,6,e),'T2_SF',{t2i_:t2i_+1,w1:(t2b+t2o,t2val),w2:(t2b+DIRTY,1)}),
+ (t2um,'T2_UC0',{w1:(t2b+t2o,t2val),w2:(t2b+DIRTY,1)}),
+ (net.lt(pwalk,t2hi,e),'T2_SP1',{pwalk:pwalk+1,w1:(t2b+t2o,t2val),w2:(t2b+DIRTY,1)}),
+ (None,'RD0',{lc:1,ap:cp,ao:co,w1:(t2b+t2o,t2val),w2:(t2b+DIRTY,1)}))
+# update a style from the caret paragraph, then carry the change to all its paragraphs
+t2or=R();t2nr_=R();t2c=R();t2l=R()
+on('T2_UM0',(None,'T2_UM1',{r1:cb+PSTY,r2:cb+1024,rl:cb+LEN,rp6:cb+PIND}))
+e=S('T2_UM1'); hasc=net.step(clen)
+on('T2_UM1',(None,'T2_UM2',{t2si:R1,t2nr_:G_(R2,hasc)+G_(ty,e-net.and_(e,hasc)),t2f[1]:rl.out[2],t2f[2]:rp6.out[0],t2f[3]:rp6.out[1],t2f[4]:rp6.out[2],t2f[5]:rp6.out[3],t2f[6]:rp6.out[4],grp:grp+1}))
+on('T2_UM2',(None,'T2_UM3',{r1:as_x(STY)+t2si*STYN}))
+on('T2_UM3',(None,'T2_UT',{t2or:R1,t2i_:0}))
+e=S('T2_UT'); hq=net.decode(t2i_,7,e); vq=G_(t2nr_,hq[0])
+for i_ in range(1,7): vq=vq+G_(t2f[i_],hq[i_])
+on('T2_UT',(None,'T2_UU',{t2val:vq,r2:as_x(STY)+t2si*STYN+t2i_}))
+e=S('T2_UU'); log(e,7,as_x(STY)+t2si*STYN+t2i_,0,R2,t2val)
+on('T2_UU',(net.lt(t2i_,6,e),'T2_UT',{t2i_:t2i_+1,w1:(as_x(STY)+t2si*STYN+t2i_,t2val)}),(None,'T2_UW',{pwalk:0,t2um:1,w1:(as_x(STY)+t2si*STYN+t2i_,t2val)}))
+e=S('T2_UW'); on('T2_UW',(net.ge(pwalk,npar,e),'RD0',{lc:1,dfrom:0,t2um:0,ty:t2nr_}),(None,'T2_UX',{r1:as_x(PT)+pwalk}))
+on('T2_UX',(None,'T2_UY',{t2b:R1,r2:R1+PSTY,rl:R1+LEN}))
+e=S('T2_UY'); on('T2_UY',(net.eq(R2,t2si,e),'T2_SF',{t2i_:0,t2l:rl.out[0]}),(None,'T2_UW',{pwalk:pwalk+1}))
+on('T2_UC0',(None,'T2_UC1',{t2c:0}))
+e=S('T2_UC1'); on('T2_UC1',(net.ge(t2c,t2l,e),'T2_UW',{pwalk:pwalk+1}),(None,'T2_UC2',{r2:t2b+1024+t2c}))
+e=S('T2_UC2'); hit_=net.eq(R2,t2or,e); log(hit_,5,pwalk,t2c,R2,t2nr_); w1.drive(hit_,(t2b+1024+t2c,t2nr_))
+on('T2_UC2',(None,'T2_UC1',{t2c:t2c+1}))
+# paragraph property stepping
+t2d=R();t2mn=R()
+on('T2_PD',(None,'T2_PD0',{pwalk:lo_p,grp:grp+1}))
+on('T2_PD0',(None,'T2_PD1',{r1:as_x(PT)+pwalk}))
+on('T2_PD1',(None,'T2_PD2',{t2b:R1,r2:R1+pfld,r1:R1+PIND}))
+e=S('T2_PD2'); nv2=G_(net.max_(R2+t2d,as_x(0)-R1),t2mn)+G_(net.relu(R2+t2d),e-net.and_(e,t2mn))
+on('T2_PD2',(None,'T2_PD3',{t2val:nv2,t2o:R2}))
+e=S('T2_PD3'); log(e,6,pwalk,pfld,t2o,t2val)
+on('T2_PD3',(net.lt(pwalk,hi_p,e),'T2_PD0',{pwalk:pwalk+1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}),(None,'RD0',{lc:1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}))
+# ribbon cells found by position: one object id covers a whole grid of commands
+import ui as _ui
+e=S('T2_HIT')
+gx0=net.gate(as_x(_ui.HOME_X),net.eq(tab,0,e))+net.gate(as_x(_ui.LAY_X),net.eq(tab,2,e))
+col_=X()
+for i_ in range(1,15): col_=col_+net.ge(hx_-gx0,i_*_ui.CW,e)
+row_=X()
+for i_ in range(1,3): row_=row_+net.ge(hy_-64,i_*_ui.CH,e)
+hb2=net.decode(net.eq(tab,2,e)*45+row_*15+col_,90,e)
+rules2=[(hb2[0],'FMTS',{fm:12}),(hb2[1],'FMTS',{fm:13}),(hb2[2],'FMTS',{fm:14}),
+ (hb2[3],'T2_PD',{pfld:PIND,t2d:-24,t2mn:0}),(hb2[4],'T2_PD',{pfld:PIND,t2d:24,t2mn:0})]
+for i_ in range(8): rules2.append((hb2[5+i_],'FMTS',{fm:15,fhl:i_}))
+rules2+=[(hb2[13],'T2_SA0',{t2si:4}),(hb2[14],'T2_SA0',{t2si:5})]
+for i_ in range(15): rules2.append((hb2[15+i_],'FMTS',{fm:7,fcol:8+i_}))
+for i_ in range(9): rules2.append((hb2[30+i_],'FMTS',{fm:7,fcol:23+i_}))
+for i_ in range(3): rules2.append((hb2[39+i_],'T2_UM0',None))
+L0=45
+for i_,(fld,dv,mn) in enumerate(((PIND,-24,0),(PIND,24,0),(PFIRST,-24,1),(PFIRST,24,1),(PSPB,-8,0),(PSPB,8,0),(PSPA,-8,0),(PSPA,8,0))):
+    rules2.append((hb2[L0+i_],'T2_PD',{pfld:fld,t2d:dv,t2mn:mn}))
+for i_ in range(6): rules2.append((hb2[L0+8+i_],'PA0',{pwalk:lo_p,pfld:PLSP,alv:i_,grp:grp+1}))
+on('T2_HIT',*rules2,(None,'HALT',None))
+# ---- .docx reader helpers ----
+net.group('docx reader tier 2')
+# open: restore the built in styles and clear the numbering tables
+t2z=R()
+on('T2_OR0',(None,'T2_OR1',{rb:(as_x(STY0),6*STYN)}))
+on('T2_OR1',(None,'T2_OR2',{wb:(as_x(STY),6*STYN),t2z:0,w1:(cb+PSPA,0),w2:(as_x(STY)+6,0)}))
+e=S('T2_OR2'); on('T2_OR2',(net.ge(t2z,512,e),'OP1',{w1:(t2cb0+PSPA,DEFSPA)}),(None,'T2_OR2',{w1:(as_x(NUMT)+t2z,0),t2z:t2z+1}))
+# member walk: numbering, then styles, then the document
+e=S('T2_ZN')
+on('T2_ZN',(net.eq(xm,2,e),'X_C0',{xm:1,zp:t2cd,cb:SCR,cs:0,t2df:0,t2ps:0,w1:(as_x(SCR)+ALIGN,0),w2:(as_x(SCR)+LIST,0),wln:(as_x(SCR)+PIND,0,0,0,0,0,0)}),
+ (net.eq(xm,1,e),'X_C0',{xm:0,zp:t2cd,cb:t2cb0,t2skip:0}),
+ (None,'OPEND',None))
+# attribute search: moves oi to the first value after w:val=" in this tag
+e=S('T2_VF1')
+on('T2_VF',(None,'T2_VF1',{rl:OA+oi}))
+on('T2_VF1',(net.eq(W[0],62,e),'PX',None),(pat('w:val="',e),'T2RR',{oi:oi+7}),(None,'T2_VF',{oi:oi+1}))
+# number after the next quote
+on('T2_NM',(None,'T2_NM1',{rl:OA+oi}))
+e=S('T2_NM1'); on('T2_NM1',(net.eq(W[0],34,e),'T2_NM2',{oi:oi+1,t2n_:0}),(None,'T2_NM',{oi:oi+1}))
+on('T2_NM2',(None,'T2_NM3',{rl:OA+oi}))
+e=S('T2_NM3'); dg_=net.and_(net.ge(W[0],48,e),net.lt(W[0],58,e))
+on('T2_NM3',(dg_,'T2_NM2',{t2n_:t2n_*10+W[0]-48,oi:oi+1}),(net.eq(W[0],45,e),'T2_NM2',{oi:oi+1}),(None,'T2RR',None))
+# twips to pixels by repeated subtraction, rounding
+t2q=R()
+e=S('T2_DV')
+on('T2_DV',(net.ge(t2n_,1500,e),'T2_DV',{t2n_:t2n_-1500,t2q:t2q+100}),(net.ge(t2n_,150,e),'T2_DV',{t2n_:t2n_-150,t2q:t2q+10}),(net.ge(t2n_,15,e),'T2_DV',{t2n_:t2n_-15,t2q:t2q+1}),(net.ge(t2n_,8,e),'T2SR',{t2q:t2q+1}),(None,'T2SR',None))
+# run property write: decode the current style once per tag
+cse=S('T2_C'); CSD=style_decode(cs,cse); hk=net.decode(t2k,10,cse)
+csn=(G_(cs-CSD['bold']*16+t2v*16,hk[0])+G_(cs-CSD['ital']*32+t2v*32,hk[1])+G_(cs-CSD['und']*64+t2v*64,hk[2])+G_(cs-CSD['font']*128+t2v*128,hk[3])
+ +G_(cs-CSD['strike']*ST_STRIKE+t2v*ST_STRIKE,hk[4])+G_(cs-CSD['vert']*ST_VERT+t2v*ST_VERT,hk[5])+G_(cs-CSD['hl']*ST_HL+t2v*ST_HL,hk[6])+G_(cs-CSD['size']+t2v,hk[8])+G_(cs-CSD['nop']*ST_NOP+t2v*ST_NOP,hk[9]))
+tvc=R()
+vb_=net.bits(t2v,5,hk[7]); csn=csn+G_(cs-CSD['colraw']+vb_[0]*256+vb_[1]*512+vb_[2]*1024+vb_[3]*131072+vb_[4]*262144,hk[7])
+on('T2_C',(None,'PX',{cs:csn}))
+# on or off: a bare tag is on; a value starting 0, f or n is off
+on('T2_TV',(None,'T2_TV1',{rl:OA+oi}))
+e=S('T2_TV1')
+on('T2_TV1',(net.eq(W[0],47,e),'T2_C',{t2v:1}),(None,'T2_TV2',{rl:OA+oi+8}))
+e=S('T2_TV2')
+on('T2_TV2',(net.or_(net.eq(W[0],48,e),net.eq(W[0],102,e),net.eq(W[0],110,e)),'T2_C',{t2v:0}),(None,'T2_C',{t2v:1}))
+e=S('T2_HL'); hv=X()
+for i_,nm_ in enumerate(HL_NAMES): hv=hv+pat(nm_[:8],e)*(i_+1)
+on('T2_HL',(None,'T2_C',{t2k:6,t2v:hv,oi:oi+20}))
+e=S('T2_VA'); sup_=pat('sup',e); sub_=pat('sub',e)
+on('T2_VA',(None,'T2_C',{t2k:5,t2v:sup_+sub_*2,oi:oi+20}))
+# spacing and indent attributes
+t2fld=R()
+on('T2_IN',(net.step(R1),'PX',None),(None,'T2_AT',None))
+on('T2_AT',(None,'T2_AT1',{rl:OA+oi}))
+e=S('T2_AT1')
+def att(p_,fld,nxt='T2_A0'): return (pat(p_,e),'T2_NM',{oi:oi+len(p_)-(1 if p_.endswith('"') else 0),t2fld:fld,t2n_:0,t2rr.r:t2rr.id(nxt)})
+on('T2_AT1',(net.eq(W[0],62,e),'PX',None),
+ att('w:before',PSPB),att('w:after=',PSPA),att('w:left="',PIND),att('w:start=',PIND),att('w:firstL',PFIRST),att('w:hangin',PFIRST,'T2_A2'),att('w:line="',PLSP,'T2_A4'),
+ (pat('w:lineRu',e),'T2_A6',{rl:OA+oi+12}),(None,'T2_AT',{oi:oi+1}))
+on('T2_A0',(None,'T2_DV',{t2q:0,t2sr.r:t2sr.id('T2_A1')}))
+on('T2_A1',(None,'T2_AT',{w1:(cb+t2fld,t2q)}))
+on('T2_A2',(None,'T2_DV',{t2q:0,t2sr.r:t2sr.id('T2_A3')}))
+on('T2_A3',(None,'T2_AT',{w1:(cb+t2fld,as_x(0)-t2q)}))
+e=S('T2_A4'); lv_=net.gt(t2n_,250,e)+net.gt(t2n_,300,e)+net.gt(t2n_,420,e)+net.gt(t2n_,540,e)+net.gt(t2n_,660,e)
+on('T2_A4',(None,'T2_AT',{w1:(cb+PLSP,lv_)}))
+e=S('T2_A6'); notauto=net.or_(net.eq(W[0],101,e),net.and_(net.eq(W[0],97,e),net.eq(W[1],116,e)))
+on('T2_A6',(notauto,'T2_AT',{oi:oi+12,w1:(cb+PLSP,0)}),(None,'T2_AT',{oi:oi+12}))
+# numbering part
+t2an=R();t2nx=R();t2lv=R();t2il=R()
+e=S('T2_AB'); isdef=pat('actNum ',e); isref=pat('actNumId',e)
+on('T2_AB',(isdef,'T2_NM',{oi:oi+8,t2n_:0,t2rr.r:t2rr.id('T2_AB2')}),(isref,'T2_NM',{oi:oi+8,t2n_:0,t2rr.r:t2rr.id('T2_AB3')}),(None,'PX',{oi:oi+8}))
+on('T2_AB2',(None,'PX',{t2an:net.min_(t2n_,255)}))
+on('T2_AB3',(None,'T2_AB4',{r1:as_x(NUMT)+256+net.min_(t2n_,255)}))
+on('T2_AB4',(None,'PX',{w1:(as_x(NUMT)+t2nx,R1)}))
+on('T2_NX',(None,'PX',{t2nx:net.min_(t2n_,255)}))
+on('T2_LV',(None,'PX',{t2lv:t2n_}))
+e=S('T2_FM'); isbul=net.and_(net.eq(W[0],98,e),net.eq(W[1],117,e))
+lz=net.and_(e,net.eq(t2lv,0,e)); w1.drive(lz,(as_x(NUMT)+256+t2an,2-isbul))
+on('T2_FM',(None,'PX',{oi:oi+18}))
+on('T2_IL',(None,'PX',{t2il:net.min_(t2n_,2)}))
+on('T2_NI',(None,'T2_NI1',{r1:as_x(NUMT)+net.min_(t2n_,255)}))
+e=S('T2_NI1'); kd=R1+net.and_(e,ONE-net.step(R1))
+on('T2_NI1',(net.step(t2n_),'PX',{w1:(cb+LIST,kd+t2il*4),w2:(cb+PIND,0),w3:(cb+PFIRST,0),t2il:0}),(None,'PX',{w1:(cb+LIST,0),t2il:0}))
+# style part
+t2ido=R();t2oi=R();t2i=R();t2jj=R();t2fnd=R()
+e=S('T2_STQ'); on('T2_STQ',(net.or_(net.eq(W[0],32,e),net.eq(W[0],62,e)),'T2_ST0',{oi:oi+8}),(None,'PX',{oi:oi+8}))
+on('T2_ST0',(net.step(ONE-t2df),'T2_SW',{t2si:DEFREC,t2df:1,t2rr.r:t2rr.id('T2_ST0b')}),(None,'T2_ST0b',None))
+t2chr=R()
+on('T2_ST0b',(None,'T2_ST',{t2skip:1,t2ido:0,t2chr:0}))
+on('T2_ST',(None,'T2_ST1',{rl:OA+oi}))
+e=S('T2_ST1')
+on('T2_ST1',(net.eq(W[0],62,e),'T2_ST2',None),(pat('w:type="',e),'T2_ST3',{rl:OA+oi+8}),(pat('w:styleI',e),'T2_ST',{t2ido:oi+11,oi:oi+11}),(None,'T2_ST',{oi:oi+1}))
+e=S('T2_ST3'); on('T2_ST3',(pat('paragrap',e),'T2_ST',{t2skip:0,oi:oi+8}),(pat('characte',e),'T2_ST',{t2skip:0,t2chr:1,oi:oi+8}),(None,'T2_ST',{oi:oi+8}))
+on('T2_ST2',(t2skip,'PX',None),(None,'T2_FS',{t2oi:oi,oi:t2ido,t2i:0,t2jj:0,t2rr.r:t2rr.id('T2_ST4')}))
+# id search: compares the string at oi against each table id
+e=S('T2_FS'); on('T2_FS',(net.ge(t2i,nsty,e),'T2RR',{t2fnd:0}),(None,'T2_FS1',{r1:as_x(STY)+t2i*STYN+8+t2jj,r2:OA+oi+t2jj}))
+e=S('T2_FS1'); q_=net.eq(R2,34,e)
+on('T2_FS1',(net.and_(q_,net.eq(R1,0,e)),'T2RR',{t2fnd:1}),(net.and_(ONE-q_,net.eq(R1,R2,e)),'T2_FS',{t2jj:t2jj+1}),(None,'T2_FS',{t2i:t2i+1,t2jj:0}))
+e=S('T2_ST4')
+on('T2_ST4',(t2fnd,'T2_ST9',{t2si:t2i}),(net.lt(nsty,STYMAX,e),'T2_ST5',{t2si:nsty,nsty:nsty+1,t2jj:0}),(None,'T2_ST9',{t2si:DEFREC+1}))
+on('T2_ST5',(None,'T2_ST6',{r1:OA+oi+t2jj}))
+e=S('T2_ST6'); on('T2_ST6',(net.or_(net.eq(R1,34,e),net.ge(t2jj,19,e)),'T2_ST9',{w1:(as_x(STY)+t2si*STYN+8+t2jj,0)}),(None,'T2_ST5',{w1:(as_x(STY)+t2si*STYN+8+t2jj,R1),t2jj:t2jj+1}))
+on('T2_ST9',(None,'T2_AP',{oi:t2oi,t2i:DEFREC}))
+on('T2_NA',(t2skip,'PX',None),(None,'T2_NA1',{t2jj:0}))
+on('T2_NA1',(None,'T2_NA2',{r1:OA+oi+t2jj}))
+e=S('T2_NA2'); on('T2_NA2',(net.or_(net.eq(R1,34,e),net.ge(t2jj,18,e)),'PX',{w1:(as_x(STY)+t2si*STYN+28+t2jj,0),oi:oi+t2jj}),(None,'T2_NA1',{w1:(as_x(STY)+t2si*STYN+28+t2jj,R1),t2jj:t2jj+1}))
+# save the scratch record into the table
+on('T2_SW',(None,'T2_SW1',{rl:as_x(SCR)+ALIGN,rp6:as_x(SCR)+PIND}))
+on('T2_SW1',(None,'T2RR',{wln:(as_x(STY)+t2si*STYN,cs,rl.out[0],rp6.out[0],rp6.out[1],rp6.out[2],rp6.out[3]),w1:(as_x(STY)+t2si*STYN+6,rp6.out[4]),w2:(as_x(STY)+t2si*STYN+7,rl.out[1]),w3:(as_x(STY)+t2si*STYN+47,t2chr)}))
+on('T2_SC',(None,'PX',{t2skip:0}))
+# a run style reference: the run starts from the character style's properties
+on('T2_RS1',(None,'T2_FS',{t2i:0,t2jj:0,t2rr.r:t2rr.id('T2_RS2')}))
+on('T2_RS2',(t2fnd,'T2_RS3',{rl:as_x(STY)+t2i*STYN}),(None,'PX',None))
+on('T2_RS3',(None,'PX',{cs:W[0]}))
+# paragraph style reference, also basedOn: apply a table record to the current record
+on('T2_PS1',(None,'T2_FS',{t2i:0,t2jj:0,t2rr.r:t2rr.id('T2_PS2')}))
+on('T2_PS2',(t2fnd,'T2_AP',None),(None,'PX',None))
+on('T2_PR',(None,'T2_AP',{t2i:0}))
+on('T2_AP',(None,'T2_AP1',{rl:as_x(STY)+t2i*STYN}))
+on('T2_AP1',(None,'PX',{t2il:0,t2ps:W[0],cs:W[0],w1:(cb+ALIGN,W[1]),w2:(cb+LIST,W[7]),wln:(cb+PIND,W[2],W[3],W[4],W[5],W[6],t2i)}))
+# PDF list markers, in the page's pixel coordinates
+e=S('T2_PM'); on('T2_PM',(net.and_(net.eq(qs,0,e),net.step(qk)),'T2_PMa',None),(None,'PD_R',None))
+lit('T2_PMa',b'BT /F0 15 Tf 0 0 0 rg 1 0 0 1 ','T2_PMb')
+e=S('T2_PMb'); number('T2_PMb',qx+qind+qxc-20-net.eq(qk,2,e)*6,'T2_PMc'); lit('T2_PMc',b' ','T2_PMd')
+number('T2_PMd',qyb,'T2_PMe'); lit('T2_PMe',b' Tm (','T2_PMf')
+e=S('T2_PMf'); on('T2_PMf',(net.eq(qk,1,e),'T2_PMg',None),(None,'T2_PMh',{qi:0}))
+e=S('T2_PMg'); bq=net.decode(ql,4,e); em_en.lin(e); em_b.add(e,bq[0]*149+bq[1]*111+bq[2]*150+bq[3]*150)
+on('T2_PMg',(None,'T2_PMz',None))
+on('T2_PMh',(None,'T2_PMi',{r1:as_x(MKT)+net.min_(ql,2)*2048+qmk*8+qi}))
+e=S('T2_PMi'); go=net.and_(e,net.step(R1)); em_en.lin(go); em_b.add(go,R1)
+on('T2_PMi',(net.step(R1),'T2_PMh',{qi:qi+1}),(None,'T2_PMz',None))
+lit('T2_PMz',b')Tj ET\n','PD_R')

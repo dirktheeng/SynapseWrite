@@ -2,7 +2,8 @@
 All icons are original pixel art written below as text rows; each run becomes a rectangle."""
 import rom
 from nn import X
-BLUE=(24,90,189);LG=(243,242,241);BD=(210,208,206);WHT=(255,255,255);HVG=(225,225,225);HVB=(58,118,208);INK=(50,49,48)
+from app_pal import B as _PB
+BLUE=_PB[4];LG=_PB[3];BD=(204,204,204);WHT=(255,255,255);HVG=_PB[5];HVB=(51,119,204);INK=(51,51,51)
 TBLUE=3  # palette index of blue text
 def twidth(s,si=9,b=0):
     return sum(rom.glyph(0,b,0,si,ord(c))[0] for c in s)
@@ -117,7 +118,7 @@ def home(u):
     u.big(x,64,50,62,'Paste',36,'paste'); u.ibtn(x+52,64,50,22,'Cut',38,'cut'); u.ibtn(x+52,88,50,22,'Copy',37,'copy'); group_label(u,x,102,'Clipboard'); x+=112
     # boxes hold the current font and size, drawn live by the network
     u.r(x,64,58,22,BD,206); u.btn(x+58,64,14,22,'',42); u.art(x+57,68,'chev',242)
-    u.r(x+74,64,30,22,BD,240); u.btn(x+104,64,14,22,'',40); u.art(x+103,68,'chev',240)
+    u.r(x+74,64,30,22,BD,243); u.btn(x+104,64,14,22,'',40); u.art(x+103,68,'chev',240)
     u.btn(x+120,64,24,22,'A+',4); u.btn(x+146,64,24,22,'A-',5)
     for c,xx in ((0,x+82),(4,x+108),(3,x+134)):
         u.r(xx,90,24,24,LG,200+7+c,HVG); u.t(xx+7,92,'A',9,0,3,True); u.r(xx+3,108,18,4,__import__('app_pal').F[c],200+7+c)
@@ -137,6 +138,34 @@ def home(u):
         u.t(x+i*88+(84-tw)//2,64+(50-rom.metrics(st&15)[1])//2,nm,st,f,0,True)
     group_label(u,x,348,'Styles'); x+=358
     u.ibtn(x,64,70,24,'Find',25,'find'); u.ibtn(x,90,70,24,'Replace',26,'repl'); group_label(u,x,72,'Editing')
+# Grids of small commands found by position. Each has one object id per tab: raw 44 on Home, raw 45 on Layout.
+HOME_X=880;LAY_X=590;CW=26;CH=22;HGID=44;LGID=45
+def cell(u,ox,row,col,label='',span=1,col_rgb=None,GID=HGID):
+    x=ox+col*CW;y=64+row*CH;w=CW*span-2;h=CH-2
+    u.r(x,y,w,h,LG,200+GID)
+    if col_rgb is not None: u.r(x+3,y+3,w-6,h-6,col_rgb,200+GID)
+    if label:
+        tw=twidth(label); u.t(x+(w-tw)//2,y+(h-rom.metrics(9)[1])//2,label)
+def home2(u):
+    F=__import__('app_pal').F;B=__import__('app_pal').B
+    ox=HOME_X
+    for c,l in enumerate(('S','x\xb2','x','<|','|>')): cell(u,ox,0,c,l)
+    u.t(ox+2*CW+14,64+9,'2',11)
+    u.r(ox+4,64+10,CW-10,1,(0,0,0),200+HGID)
+    cell(u,ox,0,5,'',1,(255,255,255)); u.r(ox+5*CW+4,64+10,CW-10,1,(0,0,0),200+HGID)
+    for i in range(7): cell(u,ox,0,6+i,'',1,B[6+i])
+    cell(u,ox,0,13,'H3'); cell(u,ox,0,14,'Q')
+    for i in range(15): cell(u,ox,1,i,'',1,F[8+i])
+    for i in range(9): cell(u,ox,2,i,'',1,F[23+i])
+    cell(u,ox,2,9,'Update Style',3)
+    group_label(u,ox,390,'Font, Highlight, More')
+def layout2(u):
+    ox=LAY_X
+    for i,l in enumerate(('-','+')*4): cell(u,ox,0,i,l,GID=LGID)
+    for i,l in enumerate(('1.0','1.15','1.5','2.0','2.5','3.0')): cell(u,ox,0,8+i,l,GID=LGID)
+    for i,l in enumerate(('Left','First','Before','After')): u.t(ox+i*2*CW+4,88,l,9,1,3)
+    u.t(ox+8*CW+4,88,'Line spacing',9,1,3)
+    group_label(u,ox,14*CW,'Paragraph')
 def insert(u):
     u.ibtn(8,64,70,24,'2 x 2',40,'table'); u.ibtn(82,64,70,24,'3 x 3',41,'table'); u.ibtn(156,64,70,24,'4 x 4',42,'table'); group_label(u,8,218,'Tables')
     u.ibtn(240,64,70,24,'Header',46,'head'); group_label(u,240,72,'Header'); u.ibtn(322,64,70,24,'Picture',52,'pic'); group_label(u,322,72,'Pictures')
@@ -190,6 +219,8 @@ def build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,hov,hb,hvo):
     for k in range(6):
         u=L(); u.i=list(u0.i); tabbar(u,names,k)
         (home,insert,layout,refs,review,view)[k](u)
+        if k==0: home2(u)
+        if k==2: layout2(u)
         last=emit(net,fsm,rA,bus,YB,u.i,f'UI_{k}',hov,hb,bg)
         c=net.and_(last,hvo)   # a hover redraw skips the document walk
         net.rec(fsm.state('RD0'),last-c); net.rec(fsm.state('TB0'),c)

@@ -3,9 +3,9 @@ net.group('tier 4 features')
 t4r=Ret('T4_RR'); fvr=Ret('T4_FVR')
 def fd_in(*names):
     for n_ in names: fin.add(S(n_),R2); fen.lin(S(n_))
-# wavy underline: repeated code 128 glyph over the word's extent
+# wavy underline: repeated squiggle glyph over the word's extent
 e=S('T4_SQ')
-on('T4_SQ',(net.ge(sx,sp_xe,e),'T4_SQ1',None),(None,'T4_SQ',{gly:(128,9,sx,sy+lasc+1,4,0),sx:sx+adv}))
+on('T4_SQ',(net.ge(sx,sp_xe,e),'T4_SQ1',None),(None,'T4_SQ',{gly:(SQUIG,9,sx,sy+lasc+1,4,0),sx:sx+adv}))
 on('T4_SQ1',(sp_r,'CE',{sp_r:0}),(None,'C0',None))
 # status bar flag
 on('T4_ST',(trk,'T4_ST1',None),(None,'T4_ST2',None))
@@ -16,12 +16,12 @@ text_chain('T4_ST3',['     Spelling: Off'],'FB0')
 e=S('T4_BK')
 on('T4_BK',(net.step(co),'T4_BK1',{r2:cb+1024+co-1}),(net.step(cp),'MVJ',{jp:cp-1,jo:2047,jret.r:jret.id('AFTER_ED')}),(None,'AFTER_ED',None))
 fd_in('T4_BK1','T4_DK1','T4_AM','T4_UM','T4_UE','T4_EM')
-e=S('T4_BK1'); mk=net.and_(e,ONE-FD['ins'],ONE-FD['dele']); log(mk,5,cp,co-1,R2,R2+4096)
-on('T4_BK1',(FD['ins'],'DEL',{co:co-1,oret.r:oret.id('AFTER_ED')}),(FD['dele'],'AFTER_ED',{co:co-1}),(None,'AFTER_ED',{co:co-1,w1:(cb+1024+co-1,R2+4096),w2:(cb+DIRTY,1)}))
+e=S('T4_BK1'); mk=net.and_(e,ONE-FD['ins'],ONE-FD['dele']); log(mk,5,cp,co-1,R2,R2+ST_DEL)
+on('T4_BK1',(FD['ins'],'DEL',{co:co-1,oret.r:oret.id('AFTER_ED')}),(FD['dele'],'AFTER_ED',{co:co-1}),(None,'AFTER_ED',{co:co-1,w1:(cb+1024+co-1,R2+ST_DEL),w2:(cb+DIRTY,1)}))
 e=S('T4_DK')
 on('T4_DK',(net.lt(co,clen,e),'T4_DK1',{r2:cb+1024+co}),(net.lt(cp+1,npar,e),'MVJ',{jp:cp+1,jo:0,jret.r:jret.id('AFTER_ED')}),(None,'AFTER_ED',None))
-e=S('T4_DK1'); mk=net.and_(e,ONE-FD['ins'],ONE-FD['dele']); log(mk,5,cp,co,R2,R2+4096)
-on('T4_DK1',(FD['ins'],'DEL',{oret.r:oret.id('AFTER_ED')}),(FD['dele'],'AFTER_ED',{co:co+1}),(None,'AFTER_ED',{co:co+1,w1:(cb+1024+co,R2+4096),w2:(cb+DIRTY,1)}))
+e=S('T4_DK1'); mk=net.and_(e,ONE-FD['ins'],ONE-FD['dele']); log(mk,5,cp,co,R2,R2+ST_DEL)
+on('T4_DK1',(FD['ins'],'DEL',{oret.r:oret.id('AFTER_ED')}),(FD['dele'],'AFTER_ED',{co:co+1}),(None,'AFTER_ED',{co:co+1,w1:(cb+1024+co,R2+ST_DEL),w2:(cb+DIRTY,1)}))
 on('T4_DS0',(None,'W0',None))
 on('T4_DS1',(None,'MVJ',{jp:hi_p,jo:hi_o,jret.r:jret.id('T4_DS2')}))
 on('T4_DS2',(None,'DR',{ap:cp,ao:co}))
@@ -44,13 +44,13 @@ range_start('T4_AR','T4_AL',False); range_loop('T4_AL','T4_AM')
 e=S('T4_AM')
 rmv=net.or_(net.and_(arj,FD['ins']),net.and_(ONE-arj,FD['dele']))
 clr=net.and_(e,ONE-rmv,net.or_(FD['ins'],FD['dele']))
-newa=R2-FD['ins']*2048-FD['dele']*4096
+newa=R2-FD['ins']*ST_INS-FD['dele']*ST_DEL
 log(clr,5,cp,co,R2,newa)
 on('T4_AM',(rmv,'DEL',{a_eo:a_eo-net.eq(cp,a_ep,e),oret.r:oret.id('T4_AL')}),(clr,'T4_AL',{w1:(cb+1024+co,newa),w2:(cb+DIRTY,1),co:co+1}),(None,'T4_AL',{co:co+1}))
 # ---- fields: runs of characters whose style word holds the field kind ----
 fst=R();t4nv=R();t4y=R();t4d=R();t4m=R();t4lp=R()
 on('T4_FI',(has_sel,'DS0',{dret.r:dret.id('T4_FI2'),grp:grp+1}),(None,'T4_FI2',{grp:grp+1}))
-on('T4_FI2',(None,'T4_FV',{fst:TST+t4k*8192,fvr.r:fvr.id('AFTER_ED')}))
+on('T4_FI2',(None,'T4_FV',{fst:TST+t4k*ST_F0,fvr.r:fvr.id('AFTER_ED')}))
 on('T4_FV',(None,'T4_FV1',{r1:cb+SAVE+2}))
 e=S('T4_FV1')
 on('T4_FV1',(net.eq(t4k,1,e),'T4_NI',{t4nv:R1,t4r.r:t4r.id('T4_FVR')}),(net.eq(t4k,2,e),'T4_NI',{t4nv:wtot,t4r.r:t4r.id('T4_FVR')}),(None,'T4_DY1',{t4y:1970,t4d:evt}))
@@ -98,7 +98,7 @@ isc=net.eq(R1,94,e);isb=net.eq(R1,95,e);opn=net.and_(net.eq(R1,123,e),eq_pre);cl
 app=net.and_(e,ONE-isc,ONE-isb,ONE-opn,ONE-cls)
 lo_=low0(R1,e); lett=net.and_(net.ge(lo_,97,e),net.lt(lo_,123,e),app)
 hsc=net.and_(app,net.step(eq_sc)); s1=net.and_(hsc,net.eq(eq_sc,1,e)); s2=net.and_(hsc,net.eq(eq_sc,2,e))
-neweq=R2+G_(ONE-FD['ital'],lett)*32+G_(ONE-FD['font'],app)*128+G_(ONE-FD['nop'],app)*131072+G_(as_x(9),hsc)-G_(FD['size'],hsc)+G_(ONE-FD['sup'],s1)*32768+G_(ONE-FD['sub'],s2)*65536
+neweq=R2+G_(ONE-FD['ital'],lett)*32+G_(ONE-FD['font'],app)*128+G_(ONE-FD['nop'],app)*ST_NOP+G_(ONE-FD['sup'],s1)*ST_SUP+G_(ONE-FD['sub'],s2)*ST_SUB
 log(app,5,cp,co,R2,neweq)
 adj_=a_eo-net.eq(cp,a_ep,e)
 dl_={a_eo:adj_,oret.r:oret.id('T4_EL')}
@@ -106,7 +106,7 @@ on('T4_EM',(isc,'DEL',{**dl_,eq_sc:1,eq_gr:0,eq_pre:1}),(isb,'DEL',{**dl_,eq_sc:
  (None,'T4_EL',{w1:(cb+1024+co,neweq),w2:(cb+DIRTY,1),co:co+1,eq_pre:0,eq_sc:G_(eq_sc,eq_gr)}))
 # ---- mail merge: CSV from the clipboard buffer into a cell table, then one copy of the document per row ----
 MGT=60000; MGB=100000
-mi=R();mq=R();mo=R();mfs=R();mc=R();mrb=R();mnr=R();mncol=R();mn0=R();mr=R();mrba=R();mp=R();msb=R();mlen=R();mso=R();mol=R();mst=R();mnb=R();mnl=R();mk=R();mhs=R();mi2=R();mvl=R();mpb=R();mimw=R();mimh=R();mimo=R()
+mpp=[R() for _ in range(6)];mi=R();mq=R();mo=R();mfs=R();mc=R();mrb=R();mnr=R();mncol=R();mn0=R();mr=R();mrba=R();mp=R();msb=R();mlen=R();mso=R();mol=R();mst=R();mnb=R();mnl=R();mk=R();mhs=R();mi2=R();mvl=R();mpb=R();mimw=R();mimh=R();mimo=R()
 BANNER='Mail Merge: paste CSV now (Ctrl+V). The first row is the header; {Name} in the document is replaced. Esc cancels.'
 on('T4_MB',(None,'T4_MBa',{rA:(PX,DOCY,816,28,(255,242,171),0),sx:PX+8}))
 cur_='T4_MBa'
@@ -138,12 +138,12 @@ e=S('T4_M6')
 on('T4_M6',(net.ge(mr,mnr,e),'T4_MZ',{mi2:0}),(None,'T4_M7',{mp:0}))
 e=S('T4_M7')
 on('T4_M7',(net.ge(mp,mn0,e),'T4_M6',{mr:mr+1,mrba:mrba+64}),(net.ge(nextb,SLOTMAX,e),'T4_MZ',{mi2:0}),(None,'T4_M8',{r1:as_x(PT)+mp}))
-mpi=R();mps=R();mpl=R()
-on('T4_M8',(None,'T4_M9',{msb:R1,rl:R1+LEN,rc:R1+2062,rim:R1+IMF,rt:R1+T1_IND}))
+on('T4_M8',(None,'T4_M9',{msb:R1,rl:R1+LEN,rc:R1+2062,rim:R1+IMF,rp6:R1+PIND}))
 e=S('T4_M9'); WL=rl.out
-on('T4_M9',(None,'T4_MA',{mlen:WL[0],w1:(nextb+ALIGN,WL[2]),w2:(nextb+LIST,WL[3]),w3:(nextb+2062,rc.out[0]),w4:(nextb+2063,rc.out[1]),mimw:rim.out[0],mimh:rim.out[1],mimo:rim.out[2],mpi:rt.out[0],mps:rt.out[1],mpl:rt.out[2],mpb:net.step(WL[7]+net.and_(net.eq(mp,0,e),net.gt(mr,1,e)))}))
+on('T4_M9',(None,'T4_MA',{mlen:WL[0],w1:(nextb+ALIGN,WL[2]),w2:(nextb+LIST,WL[3]),w3:(nextb+2062,rc.out[0]),w4:(nextb+2063,rc.out[1]),mimw:rim.out[0],mimh:rim.out[1],mimo:rim.out[2],**{mpp[i_]:rp6.out[i_] for i_ in range(6)},mpb:net.step(WL[7]+net.and_(net.eq(mp,0,e),net.gt(mr,1,e)))}))
 on('T4_MA',(None,'T4_MA2',{w1:(nextb+IMF,mimw),w2:(nextb+IMF+1,mimh),w3:(nextb+IMF+2,mimo),w4:(nextb+PBRK,mpb)}))
-on('T4_MA2',(None,'T4_MC',{w1:(as_x(PT)+npar,nextb),w2:(nextb+T1_IND,mpi),w3:(nextb+T1_SPA,mps),w4:(nextb+T1_LSP,mpl),wln:(nextb+SAVE,112,16,1,0,0,0),mso:0,mol:0}))
+on('T4_MA2',(None,'T4_MA3',{w1:(as_x(PT)+npar,nextb),wln:(nextb+SAVE,112,16,1,0,0,0),mso:0,mol:0}))
+on('T4_MA3',(None,'T4_MC',{wln:(nextb+PIND,*mpp)}))
 e=S('T4_MC')
 on('T4_MC',(net.ge(mso,mlen,e),'T4_MP',None),(net.ge(mol,1000,e),'T4_MP',None),(None,'T4_MD',{r1:msb+mso,r2:msb+1024+mso}))
 e=S('T4_MD')
@@ -175,10 +175,10 @@ on('T4_MW',(None,'SYNC',{nolog:0,usp:UB,urp:UB,autos:1,lc:1,dfrom:0,scroll:0,bgp
 
 # ---- .docx writer: tracked change and field wrappers, extra run properties ----
 t4id=R()
-SV_ST=('T4_SO','T4_SO1','T4_SO2','T4_NP','T4_VA','T4_VA1','T4_TO')
+SV_ST=('T4_SO','T4_SO1','T4_SO2','T4_TO')
 for n_ in SV_ST: sv_en.lin(S(n_)); sv_in.add(S(n_),ins_st)
 SV_LS=('T4_SC','T4_SC2','T4_SC3','T4_SC4')
-for n_ in SV_LS: sv_en.lin(S(n_)); sv_in.add(S(n_),lsf)
+for n_ in SV_LS: sv_en.lin(S(n_)); sv_in.add(S(n_),t2psv)
 AUTH=b'" w:author="SynapseWrite">'
 on('T4_SO',(SV['ins'],'T4_SOia',None),(None,'T4_SO1',None))
 lit('T4_SOia',b'<w:ins w:id="','T4_SOib'); number('T4_SOib',t4id,'T4_SOic'); lit('T4_SOic',AUTH,'T4_SOid'); on('T4_SOid',(None,'T4_SO1',{t4id:t4id+1}))
@@ -187,9 +187,6 @@ lit('T4_SOda',b'<w:del w:id="','T4_SOdb'); number('T4_SOdb',t4id,'T4_SOdc'); lit
 e=S('T4_SO2'); kind_=SV['f0']+SV['f1']*2; kh_=net.decode(kind_,4,e)
 on('T4_SO2',(kh_[1],'T4_Ff1',None),(kh_[2],'T4_Ff2',None),(kh_[3],'T4_Ff3',None),(None,'SVo',None))
 for j_,nm_ in ((1,b'PAGE'),(2,b'NUMWORDS'),(3,b'DATE')): lit(f'T4_Ff{j_}',b'<w:fldSimple w:instr=" '+nm_+b' ">','SVo')
-on('T4_NP',(SV['nop'],'T4_NPa',None),(None,'SVs4',None)); lit('T4_NPa',b'<w:noProof/>','SVs4')
-on('T4_VA',(SV['sup'],'T4_VAu',None),(None,'T4_VA1',None)); lit('T4_VAu',b'<w:vertAlign w:val="superscript"/>','SVs7')
-on('T4_VA1',(SV['sub'],'T4_VAb',None),(None,'SVs7',None)); lit('T4_VAb',b'<w:vertAlign w:val="subscript"/>','SVs7')
 on('T4_TO',(SV['dele'],'T4_TOd',None),(None,'T4_TOt',None))
 lit('T4_TOd',b'<w:delText xml:space="preserve">','SVrs'); lit('T4_TOt',b'<w:t xml:space="preserve">','SVrs')
 on('T4_SC',(SV['dele'],'T4_SCd',None),(None,'T4_SCt',None))
@@ -199,8 +196,8 @@ on('T4_SC3',(SV['dele'],'T4_SCe',None),(None,'T4_SC4',None)); lit('T4_SCe',b'</w
 on('T4_SC4',(SV['ins'],'T4_SCi',None),(None,'T4_CR',None)); lit('T4_SCi',b'</w:ins>','T4_CR')
 # ---- deflate: greedy LZ77 with a hash head table, fixed Huffman codes ----
 net.group('docx deflate')
-zret=Ret('T4_ZR'); rz=RPort(8); HT=40000; RA=as_x(OUTB)
-zi=R();zo=R();zcur=R();zn=R();zw=R();zc=R();zk=R();zus=R();zm=R();zcs=R();zb0=R();zh=R();zx=R();zxn=R();zj=R();zhi=R()
+zret=Ret('T4_ZR'); rz=RPort(8); HT=50000; RA=as_x(OUTB)
+zi=R();zcur=R();zn=R();zw=R();zc=R();zk=R();zus=R();zm=R();zcs=R();zb0=R();zh=R();zx=R();zxn=R();zj=R();zhi=R()
 zw8=WPort(1)
 def rev(v,n): return int(format(v,f'0{n}b')[::-1],2)
 def fixed(sym):
@@ -208,7 +205,7 @@ def fixed(sym):
     if sym<256: return rev(0x190+sym-144,9),9
     if sym<280: return rev(sym-256,7),7
     return rev(0xC0+sym-280,8),8
-on('T4_Z0',(None,'T4_Z0a',{zi:0,zo:docstart,zcur:0,zn:0,zw:1,zhi:0,zus:fp}))
+on('T4_Z0',(None,'T4_Z0a',{zi:0,zcur:0,zn:0,zw:1,zhi:0,zus:fp}))
 e=S('T4_Z0a')
 on('T4_Z0a',(net.ge(zhi,4096,e),'T4_ZH',None),(None,'T4_Z0a',{w1:(as_x(HT)+zhi,0),zhi:zhi+1}))
 on('T4_ZH',(None,'T4_ZP',{zc:3,zk:3,zret.r:zret.id('T4_Z1')}))
@@ -265,49 +262,13 @@ on('T4_ZI2',(None,'T4_ZI',{w1:(as_x(HT)+hash3(e),zi+zj+1),zj:zj+1}))
 on('T4_ZE',(None,'T4_ZP',{zc:0,zk:7,zret.r:zret.id('T4_ZF')}))
 e=S('T4_ZF'); zw8.drive(net.and_(e,net.step(zn)),(as_x(SAVEB)+zo,zcur))
 on('T4_ZF',(net.step(zn),'T4_ZG',{zo:zo+1}),(None,'T4_ZG',None))
-on('T4_ZG',(None,'SVF1',{fp:zo,embase:SAVEB,dsize:zo-docstart,cdst:zo}))
-# ---- .docx reader: tracked marks, fields, style table from word/styles.xml ----
+on('T4_ZG',(None,'T2ZD',{dsize:zo-t2st}))
+# ---- .docx reader: tracked marks and fields ----
 net.group('docx reader tier 4')
-rvo=R()
-e=S('T4_RV')   # value of an on/off property; 0, false and none turn it off
-vo=net.or_(net.eq(rl.out[0],48,e),net.eq(rl.out[0],102,e),net.eq(rl.out[0],110,e))
-on('T4_RV',(None,'T4_RV2',{rvo:vo}))
-e=S('T4_RV2'); rh_=net.decode(rvb,3,e)
-b0_=net.and_(net.step(rh_[0]),ONE-rvo); b1_=net.and_(net.step(rh_[1]),ONE-rvo); b2_=net.and_(net.step(rh_[2]),ONE-rvo)
-c0_=net.and_(net.step(rh_[0]),rvo); c1_=net.and_(net.step(rh_[1]),rvo); c2_=net.and_(net.step(rh_[2]),rvo)
-on('T4_RV2',(None,'PX',{cs:cs+G_(ONE-csd['bold'],b0_)*16-G_(csd['bold'],c0_)*16+G_(ONE-csd['ital'],b1_)*32-G_(csd['ital'],c1_)*32+G_(ONE-csd['und'],b2_)*64-G_(csd['und'],c2_)*64,oi:oi+5}))
-e=S('T4_RA')
-on('T4_RA',(net.eq(rl.out[2],112,e),'T4_RA2',{rvb:1}),(net.eq(rl.out[2],98,e),'T4_RA2',{rvb:2}),(None,'PX',{oi:oi+8}))
-e=S('T4_RA2')
-on('T4_RA2',(None,'PX',{cs:cs+G_(ONE-csd['sup'],net.eq(rvb,1,e))*32768+G_(ONE-csd['sub'],net.eq(rvb,2,e))*65536,oi:oi+8}))
 on('T4_TS',(None,'T4_TS1',{rl:OA+oi}))
 e=S('T4_TS1'); W_=rl.out
 on('T4_TS1',(net.and_(net.eq(W_[0],47,e),net.eq(W_[1],62,e)),'PX',{oi:oi+2}),
  (net.and_(net.eq(W_[0],62,e),net.eq(rvb,3,e)),'PX',{oi:oi+1,rins:1}),(net.eq(W_[0],62,e),'PX',{oi:oi+1,rdel:1}),(None,'T4_TS',{oi:oi+1}))
 e=S('T4_FL')
 on('T4_FL',(None,'PX',{rfk:pat('PAGE',e)+pat('NUMW',e)*2+pat('DATE',e)*3,oi:oi+8}))
-# style lookup: compares the name in the XML with each stored style id
-lk=R();lkb=R();lki=R();lkv=R();lkj=R();lkf=R();sk=R()
-on('T4_LK',(None,'T4_L1',{lk:0,lkb:STY,lkf:0}))
-e=S('T4_L1')
-on('T4_L1',(net.ge(lk,nsty,e),'T4_LR',None),(None,'T4_L2',{lki:0}))
-on('T4_L2',(None,'T4_L3',{r1:OA+lva+lki,r2:lkb+lki}))
-e=S('T4_L3'); isq=net.eq(R1,34,e)
-on('T4_L3',(net.and_(isq,net.eq(R2,0,e)),'T4_L4',{rc:lkb+25}),(net.or_(isq,ONE-net.eq(R1,R2,e)),'T4_L1',{lk:lk+1,lkb:lkb+32}),(None,'T4_L2',{lki:lki+1}))
-on('T4_L4',(None,'T4_LR',{lkv:rc.out[0],lkj:rc.out[1],lkf:1}))
-on('T4_PS',(lkf,'PX',{pcs:lkv,cs:lkv,w1:(cb+ALIGN,lkj)}),(None,'PX',None))
-on('T4_RS',(lkf,'PX',{cs:lkv}),(None,'PX',None))
-on('T4_BO',(lkf,'PX',{cs:lkv,sjc:lkj}),(None,'PX',None))
-e=S('T4_S0')
-on('T4_S0',(net.and_(net.eq(rl.out[0],32,e),net.lt(nsty,180,e)),'T4_S1',{oi:oi+8}),(None,'PX',{oi:oi+8}))
-on('T4_S1',(None,'T4_S1b',{rl:OA+oi}))
-e=S('T4_S1b')
-on('T4_S1b',(pat('styleId=',e),'T4_S2',{oi:oi+9,sk:0}),(net.eq(rl.out[0],62,e),'PX',None),(None,'T4_S1',{oi:oi+1}))
-on('T4_S2',(None,'T4_S3',{r1:OA+oi}))
-e=S('T4_S3'); sa_=as_x(STY)+nsty*32
-on('T4_S3',(net.eq(R1,34,e),'T4_S4',None),(net.ge(sk,23,e),'T4_S2',{oi:oi+1}),(None,'T4_S2',{w1:(sa_+sk,R1),sk:sk+1,oi:oi+1}))
-on('T4_S4',(None,'PX',{w1:(sa_+sk,0),cs:ddef,sjc:0}))
-on('T4_SE',(None,'T4_SF',{rl:sa_}))
-e=S('T4_SF')
-on('T4_SF',(net.and_(pat('Normal',e),net.eq(rl.out[6],0,e)),'PX',{pdef:cs,pdefjc:sjc,nsty:nsty+1}),(None,'PX',{nsty:nsty+1}))
 fsm.set(t4id,S('SAVE'),0)

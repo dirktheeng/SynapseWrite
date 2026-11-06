@@ -57,6 +57,37 @@ const B=[120+11,102];const I=[146+11,102];const U=[172+11,102];
  await diff('comment shows balloon',['text',click(322,47),click(58,76),'note',key('Enter'),click(80,47)],['text',click(322,47),click(80,47)]);
  await same('comment backspace',['text',click(322,47),click(58,76),'nox',key('Backspace'),'te',key('Enter'),click(80,47)],['text',click(322,47),click(58,76),'note',key('Enter'),click(80,47)]);
  await diff('footnote shows on page',['text',click(262,47),click(190,76),'see',key('Enter'),click(80,47)],['text',click(262,47),click(80,47)]);
+const cell=(r,c)=>click(880+c*26+8,64+r*22+8);const lay=(r,c)=>click(590+c*26+8,64+r*22+8);const tabL=click(192,47),tabH=click(80,47);
+ const uni=t=>async p=>{for(const ch of t)await p.evaluate(c=>window.dispatchEvent(new KeyboardEvent('keydown',{key:c})),ch);};
+ const paste=t=>async p=>{await p.evaluate(x=>annPaste(x),t);await p.waitForTimeout(100);};
+ await same('accented key equals paste',[uni('\u00e9\u00f1\u20ac')],[paste('\u00e9\u00f1\u20ac')]);
+ await diff('accent changes the glyph',[uni('\u00e9')],['e']);
+ await same('find folds Latin-1 case',[paste('\u00c9t\u00e9 x'),key('Home'),key('Control+f'),uni('\u00e9t'),key('Enter'),key('Escape'),'A'],[paste('A\u00e9 x'),key('Home'),key('ArrowRight')]);
+ await same('backspace over an accent',[uni('a\u00e9'),key('Backspace')],['a']);
+ await same('Ctrl+Home goes to the start',['ab',key('Enter'),'cd',key('Control+Home'),'X'],['Xab',key('Enter'),'cd',key('ArrowUp'),key('Home'),key('ArrowRight')]);
+ await diff('strike changes pixels',['abc',key('Shift+Home'),cell(0,0),key('End')],['abc']);
+ await same('strike toggles off',['abc',key('Shift+Home'),cell(0,0),cell(0,0),key('End')],['abc']);
+ await same('superscript toggles off',['abc',key('Shift+Home'),cell(0,1),cell(0,1),key('End')],['abc']);
+ await diff('superscript differs from subscript',['abc',key('Shift+Home'),cell(0,1),key('End')],['abc',key('Shift+Home'),cell(0,2),key('End')]);
+ await same('sub replaces sup',['abc',key('Shift+Home'),cell(0,1),cell(0,2),key('End')],['abc',key('Shift+Home'),cell(0,2),key('End')]);
+ await diff('highlight changes pixels',['abc',key('Shift+Home'),cell(0,6),key('End')],['abc']);
+ await same('highlight none clears',['abc',key('Shift+Home'),cell(0,6),cell(0,5),key('End')],['abc']);
+ await same('undo of highlight',['abc',key('Shift+Home'),cell(0,6),key('Control+z'),key('End')],['abc']);
+ await diff('new colors differ',['abc',key('Shift+Home'),cell(1,1),key('End')],['abc',key('Shift+Home'),cell(2,1),key('End')]);
+ await diff('left indent moves text',['abc',tabL,lay(0,1),tabH],['abc']);
+ await same('left indent steps cancel',['abc',tabL,lay(0,1),lay(0,0),tabH],['abc']);
+ await same('undo of indent',['abc',tabL,lay(0,1),tabH,key('Control+z'),key('End')],['abc']);
+ await same('redo of indent',['abc',tabL,lay(0,1),tabH,key('Control+z'),key('Control+y'),key('End')],['abc',tabL,lay(0,1),tabH,key('End')]);
+ await diff('line spacing moves the next line',['a',key('Enter'),'b',key('ArrowUp'),tabL,lay(0,11),tabH,key('End')],['a',key('Enter'),'b',key('ArrowUp'),key('End')]);
+ await diff('space before moves text',['a',key('Enter'),'b',tabL,lay(0,5),tabH],['a',key('Enter'),'b']);
+ await same('undo of alignment',['abc',key('Control+e'),key('Control+z'),key('End')],['abc']);
+ await same('style undo restores paragraph spacing',['a',key('Enter'),'b',click(660,88),key('Control+z'),key('End')],['a',key('Enter'),'b']);
+ await same('tab then shift tab returns list level',[click(330,75),'a',key('Enter'),key('Tab'),key('Shift+Tab'),'b'],[click(330,75),'a',key('Enter'),'b']);
+ await diff('tab in a list item indents',[click(330,75),'a',key('Enter'),key('Tab'),'b'],[click(330,75),'a',key('Enter'),'b']);
+ await same('backspace at list start removes the marker',[click(330,75),'a',key('Home'),key('Backspace'),key('End')],['a']);
+ // kerning: same letters in a kerned order are narrower. The caret column finds the width.
+ {const caret=async s=>{const A=await fresh();await A.p.keyboard.type(s);await A.p.mouse.move(1270,5);const png=await A.p.screenshot({clip:{x:319,y:280,width:400,height:30}});const {execSync}=require('child_process');fs.writeFileSync('build/k.png',png);const r=execSync(`python3 -c "from PIL import Image;im=Image.open('build/k.png').convert('L');w,h=im.size;print(max(x for x in range(w) if all(im.getpixel((x,y))<40 for y in range(10,20))))"`).toString();await A.b.close();return +r;};
+  const a=await caret('AVAVAVAVAVAV'),b=await caret('AAAAAAVVVVVV');const ok=a<b-2;results.push(['kerning narrows AV pairs',ok]);console.log(ok?'PASS':'FAIL','kerning narrows AV pairs',a,b);}
  // page break by volume
  await diff('pagination grows',[async p=>{await p.evaluate(()=>{let s='';for(let i=0;i<60;i++)s+='line\n';annPaste(s);});}],[async p=>{await p.evaluate(()=>{let s='';for(let i=0;i<20;i++)s+='line\n';annPaste(s);});}]);
  // ---- tier 4 ----
@@ -90,7 +121,6 @@ const B=[120+11,102];const I=[146+11,102];const U=[172+11,102];
  await same('equation is undoable',['E=mc^2',INS,EQN,HOME,key('Control+z'),key('End')],['E=mc^2',INS,HOME,key('End')]);
  await diff('equation group differs from plain script',['x^{ab}',INS,EQN,HOME],['x^ab',INS,EQN,HOME]);
  check('equation letters are not spell checked',await reds(['qzx^2 ',INS,EQN,HOME,key('End'),key('Enter')])===0);
- const paste=t=>async p=>{await p.evaluate(x=>annPaste(x),t);await p.waitForTimeout(100);};
  await same('mail merge equals typed result',['Hello {Name}, from {City}!',REFS,MM,paste('Name,City\nAnn,"Rome, IT"\n'),HOME],[paste('Hello Ann, from Rome, IT!'),key('Control+Home'),key('Home'),HOME]);
  await same('merge is case insensitive; unknown stays',['{name} {who}',REFS,MM,paste('Name\nBo\n'),HOME],['Bo {who}',key('Home'),HOME]);
  await same('merge escape cancels',['ab',REFS,MM,key('Escape'),HOME],['ab',REFS,HOME]);
