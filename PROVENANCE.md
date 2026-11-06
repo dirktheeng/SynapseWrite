@@ -16,7 +16,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | glyph store | Keeps drawn glyphs in memory and copies them to the screen. | gen/glyphnet.py (17) | 17 | 54 |
 | stem units | Stem position units for the hinting of letters. |  | 0 | 0 |
 | row sequencer | Steps the glyph unit through the rows of a character. | gen/glyphnet.py (29) | 29 | 72 |
-| glyph weights (outline edges) | Font outlines as edges in weights, one group per glyph program. | gen/glyphnet.py (143996) | 143996 | 718257 |
+| glyph weights (outline edges) | Font outlines as edges in weights, one group per glyph program. | gen/glyphnet.py (143996) | 143996 | 718258 |
 | ramp bank | Coverage ramps for the edge network. | gen/glyphnet.py (4978) | 4978 | 10819 |
 | coverage | Adds edge coverage into pixel coverage. | gen/glyphnet.py (1816), gen/imp3_zoom_pre.py (582), gen/app.py (38) | 2436 | 12958 |
 | style interner | Finds or adds a style record in the interned table, in its own clock domain. | gen/app.py (103) | 103 | 232 |

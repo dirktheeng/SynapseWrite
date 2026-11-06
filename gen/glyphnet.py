@@ -224,7 +224,7 @@ def _shift_weights(xm,st):
             t=round((xm-a[0])/(b[0]-a[0])*8)/8
             return [(u_,e_,w_) for u_,e_,w_ in ((a[1],a[2],1-t),(b[1],b[2],t)) if w_]
     return []
-SLOPE_BITS=9
+SLOPE_BITS=8
 def q_slope(m):
     "Keeps a fixed number of significant bits so that slopes share the engine's weight dictionary."
     if m==0: return 0.0
