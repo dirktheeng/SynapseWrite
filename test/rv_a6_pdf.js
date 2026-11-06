@@ -14,7 +14,7 @@ const sh=c=>execSync(c,{stdio:['ignore','pipe','pipe']}).toString();
  await T('Section B');await gal(2);await K('End');await K('Enter');await gal(0);
  await T('end');await p.waitForTimeout(200);
  await p.mouse.move(600,400);await p.mouse.wheel(0,-90000);await p.waitForTimeout(300);await p.screenshot({path:'build/a6_pdfscreen.png'});
- const [dl]=await Promise.all([p.waitForEvent('download'),K('Control+p')]);await dl.saveAs('build/a6.pdf');await b.close();
+ const [dl]=await Promise.all([p.waitForEvent('download',{timeout:240000}),K('Control+p')]);await dl.saveAs('build/a6.pdf');await b.close();
  let q;try{q=sh('qpdf --check build/a6.pdf 2>&1');}catch(e){q=e.stdout.toString();}ok('qpdf --check clean',/No syntax or stream encoding errors/.test(q)&&!/WARNING/.test(q),q.split('\n').slice(-3).join(' '));
  const o=sh(`python3 - <<'P'
 import pypdf

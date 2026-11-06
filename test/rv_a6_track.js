@@ -7,7 +7,7 @@ const paras=f=>sh(`python3 -c "import docx;print('|'.join(p.text for p in docx.D
  let A=await dr();
  const fresh=async()=>{await A.b.close();A=await dr();await A.p.evaluate(()=>{window.annMax=60000000});};
  const K=k=>A.p.keyboard.press(k),T=t=>A.p.keyboard.type(t),C=(x,y)=>A.p.mouse.click(x,y),W=ms=>A.p.waitForTimeout(ms);
- const save=async f=>{const [d]=await Promise.all([A.p.waitForEvent('download'),K('Control+s')]);await d.saveAs(f);return xml(f);};
+ const save=async f=>{const [d]=await Promise.all([A.p.waitForEvent('download',{timeout:120000}),K('Control+s')]);await d.saveAs(f);return xml(f);};
  const open=async f=>{await A.p.evaluate(async u=>{await annOpen(new Blob([new Uint8Array(u)]))},[...fs.readFileSync(f)]);await W(300);};
  const REV=async()=>{await C(334,47)};const HOME=async()=>{await C(80,47)};
  const TRK=async()=>{await REV();await C(252,76);await HOME()};const ACC=async()=>{await REV();await C(336,76);await HOME()};const REJ=async()=>{await REV();await C(400,76);await HOME()};

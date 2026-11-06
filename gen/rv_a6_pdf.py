@@ -1,7 +1,7 @@
 # ---- rv_a6: PDF highlight and bookmarks from headings ----
 # Highlight: a Multiply blend rectangle painted after the chunk, so the text stays dark without measuring the chunk first.
 # Bookmarks: one record per heading is taken during the page walk; a forward pass links parents and siblings, then one outline object per record.
-PDBM=1300000; PDST=16; OROOT=27
+PDBM=1200000; PDST=16; OROOT=27
 a6pn=R();a6pi=R();a6pp=R();a6pv=R();a6l1=R();a6l2=R();a6pb=R();a6pt=R();a6pk=R();a6pl=R()
 a6r=[R() for _ in range(9)]
 fsm.set(a6pn,S('PDF'),0)
