@@ -2,7 +2,7 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-442929 neurons, 939279 edges, 166 layers, 3371 control states.
+442929 neurons, 939285 edges, 166 layers, 3371 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
@@ -21,7 +21,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | style interner | Finds or adds a style record in the interned table, in its own clock domain. | gen/app.py (53) | 53 | 122 |
 | glyph patch | Assembles glyph coverage into a color patch for the patch port. | gen/app.py (6) | 6 | 84 |
 | shared control registers | Editor state registers and the selection order comparators. | gen/app.py (228), gen/rv_a4_regs.py (81), gen/t1_features.py (45), gen/rv_a3_pre.py (38) | 392 | 3831 |
-| ribbon display list | Token chain whose weights hold each ribbon draw item. | gen/app.py (8882), gen/rv_a9_dl.py (150) | 9032 | 33868 |
+| ribbon display list | Token chain whose weights hold each ribbon draw item. | gen/app.py (8882), gen/rv_a9_dl.py (150) | 9032 | 33859 |
 | event dispatch | Routes each cooked event to its handler; timer, wheel and move handling. | gen/app.py (1) | 1 | 3 |
 | pointer | Draws the mouse pointer, saves and restores the colors under it, and chooses its shape from the screen. | gen/pointer.py (48), gen/pointer2.py (43), gen/app.py (15) | 106 | 713 |
 | raw event interpretation | Turns raw browser events (key name code units, button masks, pointer types, field text, touch positions) into cooked events and browser commands. | gen/rv_a11_input.py (215), gen/app.py (79) | 294 | 1200 |
@@ -42,7 +42,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | docx writer | Writes the document XML parts. | gen/t2_write.py (588), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1031 | 8809 |
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2771), gen/app.py (4) | 2775 | 74350 |
 | pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1236) | 1236 | 3878 |
-| docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (1843) | 1843 | 13603 |
+| docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (1843) | 1843 | 13612 |
 | png reader | Decodes PNG files to pixel words. | gen/docx_read.py (307), gen/a12_guard.py (58) | 365 | 3890 |
 | tier 4 features | Tracked changes, fields, equations, mail merge. | gen/t4_features.py (699) | 699 | 1906 |
 | docx deflate | LZ77 with fixed Huffman compression for the zip container. | gen/t4_features.py (242) | 242 | 863 |

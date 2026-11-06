@@ -275,6 +275,10 @@ class Dec(X):
     __slots__=('k',)
     def __init__(s,r,k): X.__init__(s,dict(r.t),r.c-k); s.k=k
 def ONE_(net): return net.ONE
+class Shift(X):
+    """A new value the rule knows is not negative and within k of the old one: only the change is gated, lifted by k."""
+    __slots__=('k',)
+    def __init__(s,v,k): X.__init__(s,dict(v.t),v.c); s.k=k
 class FSM:
     """Control registers whose next values are gated sums over one-hot state neurons."""
     def __init__(s,net): s.net=net; s.states={}; s.assign={}
@@ -339,6 +343,7 @@ class FSM:
             for c,v in lst:
                 d=v-r
                 if isinstance(v,Dec): add=add-c*v.k
+                elif isinstance(v,Shift): add=add+net.gate(d+v.k,c)-c*v.k
                 elif d.is_const() and d.c>0: add=add+c*d.c
                 elif d.c>=0 and d.t and all(w>0 and (net.kind[j]=='reg' or net.act[j]!=ID) for j,w in d.t.items()): add=add+net.gate(d,c)   # a growing register: only the growth is gated
                 else: rest.append((c,v))
