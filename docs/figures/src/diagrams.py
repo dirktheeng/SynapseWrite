@@ -112,7 +112,7 @@ write('glue_boundary',svg(1000,456,b,'The network holds all application logic; g
 # ---------- pipeline: build ----------
 T=7;b=defs(LINE)
 b+=t(30,38,'From Python to weights to a single web page',20,INK,'start',700)
-st=[(30,'gen/*.py',['Deterministic','weight generator'],BLUE),(225,'Open fonts',['Outlines become','edge neurons'],VIO),(420,'Optimizer passes',['Dead code, merge','duplicates'],MUT),(615,'Compact stream',['Layer order,','varints, gzip'],TEAL),(810,'index.html',['3.2 MB, static,','one file'],AMB)]
+st=[(30,'gen/*.py',['Deterministic','weight generator'],BLUE),(225,'Open fonts',['Outlines become','edge neurons'],VIO),(420,'Optimizer passes',['Dead code, merge','duplicates'],MUT),(615,'Compact stream',['Layer order,','varints, gzip'],TEAL),(810,'index.html',['3.8 MB, static,','one file'],AMB)]
 for i,(x,a,s_,c) in enumerate(st):
     b+=box(x,70,160,92,c,a,s_)
     if i<4: b+=arrow(f'M{x+160} 116H{st[i+1][0]-2}'); b+=pulse(f'M{x+160} 116H{st[i+1][0]-2}',c,i*1.3,1,T)
