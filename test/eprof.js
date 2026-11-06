@@ -10,5 +10,5 @@ load().then(({e,h,bank})=>{const gn=JSON.parse(fs.readFileSync('build/ngroups.js
  if(process.argv[2]){const u=fs.readFileSync(process.argv[2]);const b=bank();for(let i=0;i<u.length;i++)b[h.file+i]=u[i];D('open',9,0,0,u.length);return;}
  let s='';for(let i=0;i<1900;i++)s+='This paragraph number '+i+' exists to make a long document that spans well over one hundred pages so we can measure how the network behaves at that scale with real line breaking and pagination work.\n';
  s=s.slice(0,390000);{const b=bank();for(let i=0;i<s.length;i++)b[h.cb2+i]=s.charCodeAt(i);}D('paste1900',8,0,0,s.length);
- for(let i=0;i<3;i++)D('type at end',2,120);D('wheel',6,0,0,400);D('selall',2,97,1);D('left',2,128);D('type at top',2,122);D('down',2,131);D('enter',2,13);D('undo',2,122,1);
+ for(let i=0;i<3;i++)D('type at end'+i,2,120);D('wheel',6,0,0,400);D('selall',2,97,1);D('left',2,128);D('type at top',2,122);D('down',2,131);D('enter',2,13);D('undo',2,122,1);
 });

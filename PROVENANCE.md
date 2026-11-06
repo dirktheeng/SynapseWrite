@@ -2,7 +2,7 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-247358 neurons, 490060 edges, 188 layers, 3947 control states.
+247361 neurons, 490060 edges, 188 layers, 3947 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
@@ -38,16 +38,16 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | bulk edits | Window walkers for bulk formatting, copy, save, paste and find. | gen/rv_a7_bulk.py (659) | 659 | 6762 |
 | find across paragraphs | One matcher for queries holding paragraph marks, used by the walker, the counter and the highlight. | gen/imp3_find.py (205), gen/imp3_find_paint.py (28) | 233 | 649 |
 | clipboard formatting | Keeps style cells and paragraph records of the own copy and puts them back when the pasted text equals it. | gen/imp3_clip.py (103) | 103 | 242 |
-| layout and paint | Walks paragraphs, places lines and words, draws text, selection, pictures. | gen/app.py (977), gen/rv_a3_paint.py (96), gen/imp4_list.py (31), gen/rv_a3_pre.py (30), gen/t4_spell.py (26), gen/rv_a4_regs.py (20) | 1180 | 4717 |
+| layout and paint | Walks paragraphs, places lines and words, draws text, selection, pictures. | gen/app.py (977), gen/rv_a3_paint.py (96), gen/imp4_list.py (31), gen/rv_a3_pre.py (31), gen/t4_spell.py (26), gen/rv_a4_regs.py (20) | 1181 | 4658 |
 | spell dictionary | Walks a word automaton held as a read only table, one read per painted letter, and marks words. | gen/t4_spell.py (67) | 67 | 165 |
-| line breaking | Greedy line breaker and alignment. | gen/app.py (268), gen/rv_a3_pre.py (30) | 298 | 862 |
+| line breaking | Greedy line breaker and alignment. | gen/app.py (268), gen/rv_a3_pre.py (31) | 299 | 863 |
 | chrome | Autoscroll, caret, scrollbar and status bar. | gen/app.py (1661) | 1661 | 11788 |
 | zoom | Zoom levels and read mode commands, status bar controls, and pictures at other scales. | gen/imp3_zoom.py (457) | 457 | 3692 |
 | view: side scroll and vertical ruler | Slides a page wider than the window, its bar, and draws the vertical ruler. | gen/imp4_view.py (301), gen/app.py (212), gen/t1_features.py (44) | 557 | 3209 |
 | ribbon actions | Maps button ids to commands. | gen/app.py (155) | 155 | 256 |
 | docx writer | Writes the document XML parts. | gen/t2_write.py (648), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1091 | 9261 |
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2707), gen/app.py (4) | 2711 | 41587 |
-| pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1395) | 1395 | 4413 |
+| pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1396) | 1396 | 4444 |
 | docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (2829) | 2829 | 16385 |
 | png reader | Decodes PNG files to pixel words. | gen/docx_read.py (311), gen/a12_guard.py (61) | 372 | 4192 |
 | zip crc check | Zip CRC check on open: the inflated main part runs through the save CRC network and must match the central directory. | gen/a12_guard.py (18) | 18 | 104 |
@@ -89,4 +89,4 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | rv a3 interaction | Editing keys, word and page motion, right click, autoscroll, context menu, and the late tier 1 features. | gen/t1_features.py (2039), gen/rv_a3_keys.py (655), gen/pointer3.py (86), gen/rv_a4_features.py (79), gen/ui.py (42) | 2901 | 25112 |
 | file output command | Selects the length, data base and file name the glue saves. | gen/rv_a11_out.py (5) | 5 | 8 |
 | screen check | Compares one line of the screen id plane against the line table on each blink tick and repairs by repainting. | gen/rv_a11_out.py (23) | 23 | 56 |
-| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (9992) | 9992 | 54942 |
+| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (9992) | 9992 | 54582 |
