@@ -73,5 +73,20 @@ const thumb=A=>{const f=A.fb();let a=-1,b=-1;for(let x=0;x<1262;x++){const i=(77
   A=await lib();A.type('first');A.key(13,3);A.type('second');A.settle();x=part(A,'word/document.xml');A.shot('build/imp5_cb4.png');
   B=await lib();B.type('first');B.key(13,1);B.type('second');B.settle();B.shot('build/imp5_cb5.png');ok('in one column it breaks the page, drawn as Ctrl+Enter draws',/type="column"/.test(x)&&A.hash(0,800)===B.hash(0,800));
  }
+
+ if(!only||only=='pick'){
+  const px=(A,x,y)=>{const f=A.fb(),i=(y*1280+x)*4;return [f[i],f[i+1],f[i+2]];};const hx=c=>c.map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase();
+  let A=await lib();A.type('Picked words');A.key(97,1);A.settle();A.click(299,102);A.settle();A.click(300,236);A.settle();A.shot('build/imp5_p1.png');
+  const want=[[4,1],[6,5],[1,7]].map(([r,c])=>[r,c,px(A,270+c*22+11,115+r*22+11)]);
+  ok('the picker grid opens from the color menu',new Set(want.map(w=>hx(w[2]))).size==3&&want.every(w=>hx(w[2])!='FFFFFF'),want.map(w=>hx(w[2])).join(' '));
+  const [r,c,col]=want[0];A.click(270+c*22+11,115+r*22+11);A.settle();A.click(600,700);A.settle();A.shot('build/imp5_p2.png');
+  let x=part(A,'word/document.xml');ok('a pick sets that exact color',new RegExp('w:color w:val="'+hx(col)+'"').test(x),hx(col)+' '+(x.match(/w:color[^>]*/)||[])[0]);
+  const n=count(A,223,1039,174,776,(a,b,d)=>Math.abs(a-col[0])<=2&&Math.abs(b-col[1])<=2&&Math.abs(d-col[2])<=2);ok('drawn in that exact color',n>20,n);
+  A.key(122,1);A.settle();x=part(A,'word/document.xml');ok('undo takes it off',!new RegExp(hx(col)).test(x));
+  // another cell, through the keyboard free path: open, pick a dark teal
+  A.key(97,1);A.settle();A.click(299,102);A.settle();A.click(300,236);A.settle();const [r2,c2,col2]=want[1];A.click(270+c2*22+11,115+r2*22+11);A.settle();x=part(A,'word/document.xml');ok('a second pick',new RegExp('w:color w:val="'+hx(col2)+'"').test(x),hx(col2));
+  // Esc closes it with no change
+  A=await lib();A.type('none');A.key(97,1);A.settle();A.click(299,102);A.settle();A.click(300,236);A.settle();A.key(27);A.settle();x=part(A,'word/document.xml');ok('Esc leaves the color alone',!/w:color w:val="(?!000000)/.test(x));
+ }
  const f=R.filter(x=>!x).length;console.log(`imp5: ${R.length-f} passed, ${f} failed`);process.exit(f?1:0);
 })();

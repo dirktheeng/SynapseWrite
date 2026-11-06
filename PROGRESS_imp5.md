@@ -22,3 +22,9 @@ imp5 keys: 9 passed, 0 failed.
 Why: files with w:br type column lost the break (the reader skipped it), and there was no way to type one.
 What: PBRK in the paragraph record now holds 2 for a column break. gen/imp5_breaks.py: Ctrl+Shift+Enter (split, mark, undo record kind 6 as the page break uses); save writes a run with w:br type column after the paragraph's pPr; open splits at an in-run column break and marks the second part. Layout (app.py R3B): one new rule moves a column break paragraph that starts in the first of two columns to the top of the second; elsewhere it acts as a page break (pb_ now steps pbk so the value 2 stays boolean in the AND). The writer writes pageBreakBefore only for value 1.
 Runs: imp5 colbr: first run 6 of 7, the undo check undid only 2 of 11 typing groups (each typed key here is its own group, by the time gap), so the test now undoes until the break is gone and checks that the typing went first. 8 passed, 0 failed. Screenshot build/imp5_cb2.png: "typed right" at the top of column two.
+
+## 5. Color picker
+Why: Text color row says there is no color picker.
+What: gen/imp5_picker.py. A second extra row "Color Picker..." in the text color grid menu (gmenu takes a second extra row; More Colors stays where it was, so imp4 clicks still land). It opens menu 15, a 64 cell grid (gray plus seven hues across, tints to shades down, from HLS at build time). The pick rule decodes the cell and sends its color, a weighted sum of decoder lines, as v4h into V4_HY, the More Colors hex path, which finds the nearest palette entry and applies the exact color with undo.
+Runs: screenshots build/imp5_p0.png (menu with the new row) and imp5_p1.png (grid) looked right. imp5 pick: first run 5 of 6; the drawn color check demanded exact pixels where imp4 uses a tolerance of 2 (glyph pixels blend); with that tolerance 37 pixels: 6 passed.
+No list of recent colors yet.
