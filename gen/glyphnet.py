@@ -215,13 +215,13 @@ class GlyphUnit:
     def _build(g):
         net=g.net; ONE=net.ONE; LW=g.LW
         # ---- arguments, valid on the go tick only ----
-        A=g.A=dict(go=net.input(),ch=net.input(),face=net.input(),sz=net.input(),ppem=net.input(),pt=net.input(),x=net.input(),y=net.input(),fg=net.input(),bg=net.input(),nc=net.input())
+        A=g.A=dict(go=net.input(),ch=net.input(),face=net.input(),sz=net.input(),ppem=net.input(),pt=net.input(),x=net.input(),y=net.input(),fg=net.input(),bg=net.input(),nc=net.input(),fc=net.input())
         go=A['go']
         fin=net.wire()
         def L0(val,load,clear): 
             r=net.reg(); net.rec(r,r-net.relu(r+clear*M-M)+net.gate(val,load)); return r
         def L(val,load=go): return L0(val,load,fin)
-        Lch=L(A['ch']);Lface=L(A['face']);Lsz=L(A['sz']);Lppem=L(A['ppem']);Lpt=L(A['pt']);Lx=L(A['x']);Ly=L(A['y']);Lfg=L(A['fg']);Lbg=L(A['bg']);Lnc=L(A['nc'])
+        Lch=L(A['ch']);Lface=L(A['face']);Lsz=L(A['sz']);Lppem=L(A['ppem']);Lpt=L(A['pt']);Lx=L(A['x']);Ly=L(A['y']);Lfg=L(A['fg']);Lbg=L(A['bg']);Lnc=L(A['nc']);Lfc=L(A['fc'])
         # ---- tag read ----
         retry=net.reg(); s0=net.reg(); s1=net.reg(); net.rec(s0,go+retry); net.rec(s1,s0)
         g.FK=rom.NSZ*256
@@ -255,12 +255,12 @@ class GlyphUnit:
         rr=_RowRead(brun,baddr,rowcov[0],LW,bcells); net.ports.append(rr); rr.dom=1
         # ---- colour: one line per channel bit of the selected palette entries, held during the draw ----
         sg=net.reg(); s1g=net.reg(); net.rec(sg,go); net.rec(s1g,sg)      # first pass only; a retry after a miss loads nothing twice
-        fgb=net.eq(Lfg,1,sg)
+        fcu=net.step(Lfc); fgb=net.and_(net.eq(Lfg,1,sg),ONE-fcu)
         fast=L(net.and_(fgb,net.eq(Lbg,1,sg)),sg); fsel=L(net.and_(fgb,net.eq(Lbg,2,sg)),sg)
         net.connect(fast_,fast); net.connect(fnc_,Lnc)
         slow0=net.and_(s1g,ONE-fast,ONE-empty)
-        def lines(pal,val):
-            h=net.decode(val-1,len(pal),slow0); out=[]
+        def lines(pal,val,en_=None):
+            h=net.decode(val-1,len(pal),slow0 if en_ is None else en_); out=[]
             for k in range(3):
                 for b_,wt in enumerate(GRIDW):
                     e_=X()
@@ -268,7 +268,11 @@ class GlyphUnit:
                         if gridbits(col[k])[b_]: e_=e_+h[j]
                     if e_.t: out.append((k,wt,L(net.step(e_),slow0)))
             return out
-        fgl=lines(g.palF,Lfg); bgl=lines(g.palB,Lbg)
+        fce=net.and_(slow0,fcu); fgl=lines(g.palF,Lfg,net.and_(slow0,ONE-fcu)); bgl=lines(g.palB,Lbg)
+        # an exact color: one line per bit of each channel, weighted as a binary number
+        _fcb=net.bits(Lfc-1,24,fce)
+        for k in range(3):
+            for b_ in range(8): fgl.append((k,1<<b_,L(_fcb[16-8*k+b_],fce)))
         # ---- row plane ----
         data=[net.wire() for _ in range(4*LW)]
         nonw=ONE-fast
