@@ -517,7 +517,7 @@ on('W0',(None,'W1',{r1:as_x(PT)+wp}))
 on('W1',(None,'W2',{wbase:R1,r2:R1+LEN}))
 on('W2',(None,'W3',{wlen:R2}))
 e=S('W3')
-on('W3',(net.ge(Kw,Hi,e),'WR',None),(net.ge(wo,wlen,e),'WNL',{}),(None,'W4',{r1:wbase+wo,r2:wbase+1024+wo}))
+on('W3',(net.ge(Kw,Hi,e),'WR',None),(net.and_(net.eq(wm,1,e),net.ge(wn,590000,e)),'WR',None),(net.ge(wo,wlen,e),'WNL',{}),(None,'W4',{r1:wbase+wo,r2:wbase+1024+wo}))
 e=S('WNL')
 on('WNL',(None,'WNL2',{wp:wp+1,wo:0,wn:wn+net.eq(wm,1,e)}))
 wnl_c=net.and_(e,net.eq(wm,1,e)); w1.drive(wnl_c,(as_x(CB)+wn,10))
@@ -1017,8 +1017,10 @@ on('BS_MD',(None,'BS_M1',{pix:(hx_,hy_)}))
 e=S('BS_M1')
 on('BS_M1',(net.eq(A_,201,e),'UI',{bstg:0,clip0:0,clip1:0}),(net.or_(net.eq(A_,202,e),net.eq(A_,206,e)),'SELALL',{bsn:1}),(net.eq(A_,203,e),'HALT',{wopen:1,bsq:1}),(net.eq(A_,204,e),'SAVE',{bsq:1}),(net.eq(A_,205,e),'PDF',{bsq:1}),(None,'HALT',None))
 # ---- internal clipboard: the network's own copy feeds paste when the system clipboard can't ----
-e=S('CLI0'); on('CLI0',(net.ge(cli,clipn,e),'PASTE',{evc:clipn}),(None,'CLI1',{rb:(as_x(CB)+cli,1000)}))
-on('CLI1',(None,'CLI0',{wb:(as_x(CB2)+cli,1000),cli:cli+1000}))
+# The two buffers overlap when the copy is long, so the blocks move from the top down.
+clik=R(); CLIMAX=390000; _clk=net.min_(cli,1000)
+e=S('CLI0'); on('CLI0',(net.eq(cli,0,e),'PASTE',{evc:net.min_(clipn,CLIMAX)}),(None,'CLI1',{rb:(as_x(CB)+cli-_clk,_clk),clik:_clk}))
+on('CLI1',(None,'CLI0',{wb:(as_x(CB2)+cli-clik,clik),cli:cli-clik}))
 # ---- ribbon drawn by a chain of tokens; each token's outgoing weights hold one draw item ----
 net.group('ribbon display list')
 import ui
