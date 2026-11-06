@@ -12,3 +12,5 @@ Captured every tab, menus and File screen with real clicks, viewed each. Finding
 - Scrollbar judged fine: current Word also hides arrows until hover. Adding arrows would change thumb scale and the drag test constant, not done.
 ## After first build
 Build OK: 3,391,652 byte page, 2,461,755 edges. test/rv_a1.js 38/38. Viewed all tabs and File from the real build; they match the preview. Narrow margins now move the ruler scale. Next: full suites one at a time.
+## Suites (load average near 36, repeated page crashes from out of memory, baseline crashed too)
+look 31/31, rv_a1 38/38, t3_table and t4_pdf 7/7 no failures. t3_pic "resize redo" and t3_misc "footnote redo restores" also fail on the baseline build. t4_docx styles check failed twice, differing in a 1 x 37 px caret column; with a 6 s settle it passes, so timing under load. tier2 38 passes then download timeout. e2e never completed: best 65 passes, 0 failures before termination. touch never gave a clean rerun. roundtrip and audit exited 0.
