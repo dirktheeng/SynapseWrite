@@ -10,7 +10,7 @@ a11pass=R();a11ff=R();a11fb=R();a11hold=R();a11chold=R();a11kbo=R(KBSEN+1)
 # the name of a key reaches the network as code units; four coordinates separate the names it knows
 _kh=kv[0]+kv[1]*128+kv[5]*16384+kvl*2097152
 def _khash(s): return ord(s[0])+ord(s[1])*128+(ord(s[5]) if len(s)>5 else 0)*16384+len(s)*2097152
-KEYNAMES={'Backspace':8,'Tab':9,'Enter':13,'Escape':27,'Delete':127,'ArrowLeft':128,'ArrowUp':129,'ArrowRight':130,'ArrowDown':131,'Home':132,'End':133,'PageUp':134,'PageDown':135,'Insert':136,'F3':137,'F9':138,'F12':140,'ContextMenu':141}
+KEYNAMES={'Backspace':8,'Tab':9,'Enter':13,'Escape':27,'Delete':127,'ArrowLeft':128,'ArrowUp':129,'ArrowRight':130,'ArrowDown':131,'Home':132,'End':133,'PageUp':134,'PageDown':135,'Insert':136,'F3':137,'F9':138,'F4':139,'F12':140,'ContextMenu':141}
 assert len({_khash(s) for s in KEYNAMES})==len(KEYNAMES)
 _cook={evk:ev_kind,eva:ev_a,evb:ev_b,evc:ev_c,evt:ev_t,evm:ev_m}
 on('IDLE',(net.step(kvl),'A11_R',{a11k:1,eva:kv[0],evb:ev_b,evc:ev_c,evt:ev_t,evm:ev_m,a11kh:_kh,a11kl:kvl}),

@@ -21,7 +21,7 @@ def a7_crc_tables():
             for j in range(32):
                 if o>>j&1: out[j]=out[j]+leaf
     for j in range(32):
-        s_=out[j]; par=net.step(s_-0.5)-net.step(s_-1.5)+net.step(s_-2.5)-net.step(s_-3.5)
+        s_=out[j]; par=s_-2*net.step(s_-1.5)-2*net.step(s_-3.5)   # parity of a count 0..4 with two thresholds
         fsm.set(crcr[j],e,par)
 a7_crc_tables()
 # picture chunks are written with their running CRC, so that stream still feeds the byte network

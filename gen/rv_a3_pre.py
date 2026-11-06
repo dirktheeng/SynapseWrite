@@ -29,7 +29,7 @@ def rv_key_rules():
      (KD(60),'FMTS',{fm:5}),(KD(91),'FMTS',{fm:5}),(KD(62),'FMTS',{fm:4}),(KD(93),'FMTS',{fm:4}),(KD(61),'FMTS',{fm:14}),(KD(43),'FMTS',{fm:13}),
      (net.and_(KD(ord('m')),shf),'PA0',PI_(-48)),(KD(ord('m')),'PA0',PI_(48)),
      (KD(ord('1')),'PA0',LS_(6)),(KD(ord('5')),'PA0',LS_(2)),(KD(ord('2')),'PA0',LS_(3)),
-     *imp5_key_rules(KD,ND),
+     *imp5_key_rules(KD,ND),*imp6_key_rules(KD,ND),
      (net.and_(KD(ord('l')),shf),'T2_LI',{alv:1}),(net.and_(KD(ord('n')),shf),'T2_SA0',{t2si:0}),
     ]
 def rv_tabw(p,en_):

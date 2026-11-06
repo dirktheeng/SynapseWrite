@@ -2,3 +2,4 @@
 v8dg=R();v8x0=R();v8h0=R()
 exec(open('imp5_keys.py').read())
 exec(open('imp5_picker.py').read())
+exec(open('imp6_keys.py').read())
