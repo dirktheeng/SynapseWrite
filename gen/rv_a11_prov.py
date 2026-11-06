@@ -59,6 +59,7 @@ PURPOSE={
  'view: wheel and thumb drag':'Shift+wheel and sideways wheel deltas slide a wide page; the thumb of the bar at the foot drags at its drawn scale.',
  'zip crc check':'Zip CRC check on open: the inflated main part runs through the save CRC network and must match the central directory.',
  'repeat last command':'F4 repeats the last character format, alignment, paragraph style or list command.',
+ 'p2 character style update':'Update on a character style: the caret format becomes its definition and is laid over every run of the style, with undo.',
  'recent colors':'Recent colors: the last eight exact text colors, drawn under Color Picker and applied again with a click.',
  'column breaks':'Column breaks: typed with Ctrl+Shift+Enter, read and written as w:br of type column, laid out as a move to the second column.',
  'vertical ruler drag':'Top and bottom margin drags on the vertical ruler, released through the section edit with undo.',

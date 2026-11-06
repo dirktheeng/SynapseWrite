@@ -356,7 +356,7 @@ def T1(n): exec(T1S[n],globals())
 T1('regs')
 exec(open('rv_a4_regs.py').read())
 exec(open('imp3_regs.py').read()); exec(open('imp4_regs.py').read()); exec(open('imp5_regs.py').read()); exec(open('imp4_list.py').read())
-exec(open('feat1_regs.py').read())
+exec(open('feat1_regs.py').read()); exec(open('p2_regs.py').read())
 cbb=R();qrep=R();a7_vw=R();a7_far=R();a7_jmp=R();a7_wb=R();impf=R();impk=R();impc=R();impsc=R();impyt=R();stp=R();stg=R();stw=R();stm=R();tbm=R();A7BUD=15000   # characters of layout one event may do before the rest goes to the background
 # dispatch tables for subroutine returns
 class Ret:
@@ -597,7 +597,7 @@ on('VCK',(net.lt(usp,urp,S('VCK')),'VCK2',{rlog:usp}),(None,'UEND',None))
 on('VCK2',(net.eq(U[5],ug,S('VCK2')),'V1',{rlog:usp}),(None,'UEND',None))
 # ---- range walker for copy and formatting ----
 net.group('range walker')
-wp=R();wbase=R();wo=R();wlen=R();wn=R();wm=R();wfirst=R();ftgt=R()
+wp=R();wbase=R();wo=R();wlen=R();wn=R();wm=R();wfirst=R();ftgt=R(); p2_wo=wo   # p2: wo is rebound to a write port later
 on('DS0',(trk,'T4_DS0',{wp:lo_p,wo:lo_o,wm:2,wfirst:1,fm:11,wret.r:wret.id('T4_DS1')}),(None,'DS1',{ap:lo_p,ao:lo_o,jp:hi_p,jo:hi_o,jret.r:jret.id('DSL')}));on('DS1',(None,'J0',None))
 Kw=wp*2048+wo; wsel=Bus(net)
 on('COPY',(has_sel,'W0',{wp:lo_p,wo:lo_o,wn:0,wm:1,wret.r:wret.id('COPYE')}),(None,'HALT',None))
@@ -1181,7 +1181,7 @@ exec(open('imp4_prompt.py').read())
 exec(open('t4_features.py').read())
 exec(open('t2_features.py').read())
 exec(open('t3_features.py').read())
-exec(open('imp4_style.py').read()); exec(open('imp4_list2.py').read()); exec(open('imp5_breaks.py').read()); exec(open('imp5_vruler.py').read()); exec(open('imp6_feat.py').read())
+exec(open('imp4_style.py').read()); exec(open('imp4_list2.py').read()); exec(open('imp5_breaks.py').read()); exec(open('imp5_vruler.py').read()); exec(open('imp6_feat.py').read()); exec(open('p2_style.py').read())
 net.group('late commands')
 exec(open('rv_a2_canvas.py').read())
 exec(open('rv_a4_features.py').read())
@@ -1193,7 +1193,7 @@ _L0=[(PIND,-24,0),(PIND,24,0),(PFIRST,-24,1),(PFIRST,24,1),(PSPB,-8,0),(PSPB,8,0
 fr_=[(TB(8,0),'RD0',{mode:1,field:0,qrep:1}),(TB(9,0),'RD0',{mode:2,field:0,qrep:1}),(TB(10,0),'FMTS',{fm:12}),(TB(11,0),'FMTS',{fm:13}),(TB(12,0),'FMTS',{fm:14}),
  (TB(13,0),'T2_PD',{pfld:PIND,t2d:1000-24,t2mn:0}),(TB(14,0),'T2_PD',{pfld:PIND,t2d:1000+24,t2mn:0}),(TB(7,0),'FMTS',{fm:7,fcol:4}),(TB(44,0),'FMTS',{fm:15,fhl:1}),
  (TB(45,0),'T1_M0',{t1_mop:7,t1_mrow:99,t1_mtop:115,t1_mx:306,clip0:0,clip1:0}),(TB(46,0),'T1_M0',{t1_mop:8,t1_mrow:99,t1_mtop:115,clip0:0,clip1:0}),
- (TB(49,0),'T2_SA0',{t2si:4}),(TB(51,0),'T2_SA0',{t2si:5}),(TB(52,0),'T2_UM0',None)]
+ (TB(49,0),'T2_SA0',{t2si:4}),(TB(51,0),'T2_SA0',{t2si:5}),(TB(52,0),'P2_UA',None)]
 for i_,(fld,dv,mn) in enumerate(_L0): fr_.append((TB(16+i_,2),'T2_PD',{pfld:fld,t2d:1000+dv,t2mn:mn}))
 for i_,id_ in enumerate((24,36,37,38,39,40)): fr_.append((TB(id_,2),'PA0',{pwalk:lo_p,pfld:PLSP,alv:i_ or 6,grp:grp+1}))
 fr_.append((TB(15,2),'T3_C_SB',None))
