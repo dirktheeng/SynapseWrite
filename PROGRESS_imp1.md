@@ -39,3 +39,6 @@ Test edits: t3_table yb 335 to 305 and t3_pic by 472 to 435, because table and p
 Full run 1: e2e 207/210 (row above then delete row, delete column then undo, delete row then undo), a4 48/50, tier2 48/49, the others clean, audit 67/67.
 Cause of e2e and a4 failures: a table in paragraph 0. Row and column operations and MERGE assume a paragraph before the table. So at cp 0 a table keeps the leading empty paragraph, and the reader change is reverted; only cp>0 reuses the empty paragraph. Pictures reuse it everywhere. t3_table edit reverted.
 tier2 stranded line: 46 fillers encoded the old 33 px step; at 30 px no position in the ten crosses a page. Now 49 fillers, same check.
+
+## Full run 2 at ea4d7b0
+e2e exit 0;tier2 exit 0;look exit 0;t3_table exit 0;t3_pic exit 0;t3_misc exit 0;t4_docx exit 0;t4_pdf exit 0;roundtrip exit 0;touch exit 0;a4 exit 0;rv_a3 exit 0;fonts exit 0;a5_docx exit 0;a7_type exit 0;rv_a1 exit 0;t4 exit 0;imp_far exit 0;imp_misc exit 0;audit exit 0;FINISHED;
