@@ -199,6 +199,7 @@ class Net:
             if s.act[j]==STEP or j in boolreg: return 0.0,1.0
             if s.act[j]==RELU: return 0.0,INF
             return -INF,INF
+        glyphw=set(s.groups.get('glyph weights (outline edges)',()))
         ins=[]; push=[None]*n; npush=[0]*n; nread=[0]*n; trig={}
         for i in range(n):
             agg={}
@@ -209,7 +210,7 @@ class Net:
             else:
                 P=set(agg)
                 if s.act[i] in (STEP,RELU):
-                    ctl=[j for j,w in agg.items() if abs(w)>=M/2]
+                    ctl=[j for j,w in agg.items() if (w>=M/2 if i not in glyphw else abs(w)>=M/2)]   # a closing input is read lazily: only an opening input can wake a closed gate. Outline edges keep both, as lazy lists compress worse
                     if s.bias[i]<=-M/2 and ctl: P=set(ctl)
                     else:
                         tops=[]; boolin=i in getattr(s,'bool_in',())
