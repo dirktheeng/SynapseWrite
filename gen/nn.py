@@ -128,10 +128,15 @@ class Net:
                     j=ins[idx][0]; idx+=1
                     if state[j]==0: stack.append((i,idx)); stack.append((j,0)); adv=True; break
                     if state[j]==1:
+<<<<<<< HEAD
                         names={n_:k_ for k_,v_ in s.groups.items() for n_ in v_}
                         chain=[x_[0] for x_ in stack]+[i,j]
                         k0=chain.index(j)
                         raise Exception('combinational loop at neuron %d: %s'%(i,[(q,names.get(q),s.act[q],round(s.bias[q],1),[(a_,round(b_,2)) for a_,b_ in s.inp[q]][:5]) for q in chain[k0:]]))
+=======
+                        cyc=[x for x,_ in stack]+[j]; gn={k:g for g,v in s.groups.items() for k in v}
+                        raise Exception('combinational loop at neuron %d: %s'%(i,[(c_,gn.get(c_),s.kind[c_],len(s.inp[c_])) for c_ in cyc[-25:]]))
+>>>>>>> tier3
                 if adv: continue
                 layer[i]=1+max([layer[j] for j,_ in ins],default=0); state[i]=2
         L=max(layer)+1
