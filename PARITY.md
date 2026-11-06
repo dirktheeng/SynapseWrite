@@ -60,13 +60,13 @@ Evidence: `test/e2e.js`, `test/t3_table.js`, `test/t3_pic.js`, `test/t3_misc.js`
 ## Deployment targets
 | Target | Result |
 |---|---|
-| Static page | Self-contained HTML, 3.2 MB, about 398,000 neurons, about 2.34 million weights plus 388,000 read on demand |
+| Static page | Self-contained HTML, 3.3 MB, about 413,000 neurons, about 2.37 million weights plus 420,000 read on demand |
 | Browsers | Tested in headless Chromium only. Edge and Firefox not tested. |
-| Typing, 126 pages | About 4 ms at document end, 10 ms at top on a quiet machine. CPU in this container, no GPU. |
-| Enter, undo near the top, 126 pages | About 50 ms each. Page totals finish in the background. |
-| Wheel, caret jump to top, 126 pages | About 41 ms and 47 ms. |
-| Select all, 126 pages | About 46 ms. |
-| Paste of 1,900 paragraphs | About 14 s. |
+| Typing, 126 pages | About 1 ms at document end, 4 ms at top on a quiet machine. CPU in this container, no GPU. |
+| Enter, undo near the top, 126 pages | About 20 ms each. Page totals finish in the background. |
+| Wheel, caret jump to top, 126 pages | About 16 ms and 18 ms. |
+| Select all, 126 pages | About 19 ms. |
+| Paste of 1,900 paragraphs | About 1.4 s. |
 
 ## Limits
 About 3,000 paragraphs, 1,000 characters per paragraph, 200 characters per line, and no memory reclaim for deleted paragraphs.
@@ -75,7 +75,7 @@ About 3,000 paragraphs, 1,000 characters per paragraph, 200 characters per line,
 - **Lazy gates:** the engine reads a gated neuron's value inputs only after its enable fires. This is an evaluation order choice; the neuron computes the same function.
 - **Real Word:** no copy is available here, so pixel comparisons and .docx verification against Word were not run. Those verification items are open.
 - **Screenshot use:** the network reads the last output image for hit testing, using the hidden alpha channel as an object ID. It does not compare the whole screen against document state.
-- **Compiled logic:** this is a circuit-style network (994 control states) written by a generator. It is not a CPU emulator, but it is much closer to compiled hardware than to a conventional learned model.
+- **Compiled logic:** this is a circuit-style network (2,323 control states) written by a generator. It is not a CPU emulator, but it is much closer to compiled hardware than to a conventional learned model.
 - **Ribbon cell hit test:** alpha ids stop at 255, so the Tier 2 ribbon cells share one object id per tab and the Tier 3 commands share another, and the network finds the command from the click position.
 - **Ports:** memory block copy and rectangle fill run inside the engine as ports the network commands. The network supplies every address, length, color, and enable signal. A stricter reading could count the copy loops as non-ANN work.
 
