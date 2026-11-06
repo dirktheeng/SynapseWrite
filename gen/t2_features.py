@@ -66,7 +66,7 @@ on('T2_BK',(net.step(R1),'PA0',{pwalk:cp,pfld:LIST,alv:0}),(net.step(cp),'MG0',{
 # applying a style: format the runs, then write each paragraph property with undo records
 t2f=[R() for _ in range(8)]; t2lo=R();t2hi=R();t2i_=R();t2o=R();t2val=R();t2um=R()
 on('T2_SA0',(None,'T2_SA1',{rl:as_x(STY)+t2si*STYN,t2um:0}))
-on('T2_SA1',(None,'T2_SA2',{fpre:W_[0],t2f[1]:W_[1],t2f[2]:W_[2],t2f[3]:W_[3],t2f[4]:W_[4],t2f[5]:W_[5],t2f[6]:W_[6],fm:8,t2lo:lo_p,t2hi:hi_p,grp:grp+1,ap:lo_p,ao:0}))
+on('T2_SA1',(None,'T2_SA2',{fpre:W_[0],t2f[1]:W_[1],t2f[2]:W_[2],t2f[3]:W_[3],t2f[4]:W_[4],t2f[5]:W_[5],t2f[6]:W_[6],fm:8,t2lo:lo_p,t2hi:hi_p,grp:grp+1-a4cfq,ap:lo_p,ao:0}))
 on('T2_SA2',(None,'J0',{jp:t2hi,jo:2047,jret.r:jret.id('FMTS')}))
 on('T2_SP0',(None,'T2_SP1',{pwalk:t2lo}))
 on('T2_SP1',(None,'T2_SP2',{r1:as_x(PT)+pwalk}))
@@ -108,14 +108,14 @@ on('T2_PD1',(None,'T2_PD2',{t2b:R1,r2:R1+pfld,r1:R1+PIND}))
 e=S('T2_PD2'); t2dd=t2d-1000; t2nvv=G_(net.max_(pf_val(R2)+t2dd,as_x(0)-R1)+PFO,t2mn)+G_(net.relu(R2+t2dd),e-net.and_(e,t2mn))
 on('T2_PD2',(None,'T2_PD3',{t2val:t2nvv,t2o:R2}))
 e=S('T2_PD3'); log(e,6,pwalk,pfld,t2o,t2val)
-on('T2_PD3',(net.lt(pwalk,hi_p,e),'T2_PD0',{pwalk:pwalk+1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}),(None,'RD0',{lc:1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}))
+on('T2_PD3',(net.lt(pwalk,hi_p,e),'T2_PD0',{pwalk:pwalk+1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}),(a4rc,'T2_PD0',{pwalk:lo_p,a4rc:0,pfld:PFIRST,t2d:as_x(2000)-a4dl,t2mn:1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}),(None,'RD0',{lc:1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}))
 # ---- .docx reader helpers ----
 net.group('docx reader tier 2')
 # open: restore the built in styles and clear the numbering tables
 t2z=R()
 on('T2_OR0',(None,'T2_OR1',{rb:(as_x(STY0),6*STYN)}))
 on('T2_OR1',(None,'T2_OR2',{wb:(as_x(STY),6*STYN),t2z:0,w1:(cb+PSPA,0),w2:(as_x(STY)+6,0)}))
-e=S('T2_OR2'); on('T2_OR2',(net.ge(t2z,512,e),'OP1',{w1:(t2cb0+PSPA,DEFSPA)}),(None,'T2_OR2',{w1:(as_x(NUMT)+t2z,0),t2z:t2z+1}))
+e=S('T2_OR2'); on('T2_OR2',(net.ge(t2z,512,e),'OP1',{w1:(t2cb0+PSPA,DEFSPA)}),(None,'T2_OR2',{w1:(as_x(NUMT)+t2z,0),w2:(as_x(A4PT_)+t2z,0),t2z:t2z+1}))
 # member walk order is in T3_ZN; end of a scanned part moves to the next part
 e=S('T2_ZN')
 on('T2_ZN',(net.eq(ztarget,6,e),'T3_Z6n',None),(net.eq(ztarget,7,e),'T3_Z7n',None),(None,'OPEND',None))
@@ -162,7 +162,7 @@ on('T2_AT',(None,'T2_AT1',{rl:OA+oi}))
 e=S('T2_AT1')
 def att(p_,fld,nxt='T2_A0'): return (pat(p_,e),'T2_NM',{oi:oi+len(p_)-(1 if p_.endswith('"') else 0),t2fld:fld,t2n_:0,t2rr.r:t2rr.id(nxt)})
 on('T2_AT1',(net.eq(W[0],62,e),'PX',None),
- att('w:before',PSPB),att('w:after=',PSPA),att('w:left="',PIND),att('w:start=',PIND),att('w:firstL',PFIRST,'T2_A2b'),att('w:hangin',PFIRST,'T2_A2'),att('w:line="',PLSP,'T2_A4'),
+ att('w:right=',A4R),att('w:end="',A4R),att('w:before',PSPB),att('w:after=',PSPA),att('w:left="',PIND),att('w:start=',PIND),att('w:firstL',PFIRST,'T2_A2b'),att('w:hangin',PFIRST,'T2_A2'),att('w:line="',PLSP,'T2_A4'),
  (pat('w:lineRu',e),'T2_A6',{rl:OA+oi+12}),(None,'T2_AT',{oi:oi+1}))
 on('T2_A0',(None,'T2_DV',{t2q:0,t2sr.r:t2sr.id('T2_A1')}))
 on('T2_A1',(None,'T2_AT',{w1:(cb+t2fld,t2q)}))
@@ -224,7 +224,7 @@ on('T2_RS3',(None,'PX',{ics:W[0]}))
 # paragraph style reference, also basedOn: apply a table record to the current record
 on('T2_PS1',(None,'T2_FS',{t2i:0,t2jj:0,t2rr.r:t2rr.id('T2_PS2')}))
 on('T2_PS2',(t2fnd,'T2_AP',None),(None,'PX',None))
-on('T2_PR',(None,'T2_AP',{t2i:0}))
+on('T2_PR',(None,'T2_AP',{t2i:0,a4rsn:0,a4inb:0,a4inr:0,wvl:(cb+A4K,0,0,0,a4rhc,0,0),wht:(cb+A4T,0,0,0,0,0,0)}))
 on('T2_AP',(None,'T2_AP1',{rl:as_x(STY)+t2i*STYN}))
 on('T2_AP1',(None,'PX',{t2il:0,t2ps:W[0],ics:W[0],w1:(cb+ALIGN,W[1]),w2:(cb+LIST,W[7]),wln:(cb+PIND,W[2],W[3],W[4],W[5],W[6],t2i)}))
 # PDF list markers, in the page's pixel coordinates
