@@ -228,7 +228,7 @@ def home(u):
     u.ic(x+114,90,28,24,46,'lsp')
     group_label(u,x,144,'Paragraph')
     x=504
-    TL=(('Normal',9-9+0,0,0),('Heading 1',2,TBLUE,2),('Heading 2',1,TBLUE,3),('Heading 3',0+16,TBLUE,4),('Title',3,0,1),('Quote',0+32,1,5))
+    TL=(('Normal',9-9+0,0,0),('Heading 1',3,TBLUE,2),('Heading 2',2,TBLUE,3),('Heading 3',1,TBLUE,4),('Title',3,0,1),('Quote',0+32,1,5))
     IDT={0:21,1:22,2:23,3:24,4:49,5:51}
     for i,(nm,st,f,sid) in enumerate(TL):
         tx=x+i*84; id_=IDT[sid]

@@ -180,7 +180,7 @@ lit('T4P_N0',b'0 0 0 rg ','T4P_N1'); number('T4P_N1',qml,'T4P_N2'); lit('T4P_N2'
 e=S('T4P_NL'); on('T4P_NL',(net.ge(qfi,qfc,e),'T4P_NR',{qf0:qfc,qfh:0}),(None,'T4P_NA',{r1:as_x(PDFN)+qfi}))
 on('T4P_NA',(None,'T4P_NB',{wb_:as_x(FNB)+R1*256,r2:as_x(FNB)+R1*256+255}))
 on('T4P_NB',(None,'T4P_NC',{wl_:R2}))
-lit('T4P_NC',b'BT /F0 15 Tf 0 0 0 rg 1 0 0 1 ','T4P_ND'); number('T4P_ND',qml,'T4P_NE'); lit('T4P_NE',b' ','T4P_NF'); number('T4P_NF',qph-wdy-A9,'T4P_NG'); lit('T4P_NG',b' Tm (','T4P_NH'); numz('T4P_NH',qfi+1,'T4P_NI'); lit('T4P_NI',b')Tj ET\n','T4P_NJ')
+lit('T4P_NC',b'BT /F0 13 Tf 0 0 0 rg 1 0 0 1 ','T4P_ND'); number('T4P_ND',qml,'T4P_NE'); lit('T4P_NE',b' ','T4P_NF'); number('T4P_NF',qph-wdy-A9,'T4P_NG'); lit('T4P_NG',b' Tm (','T4P_NH'); numz('T4P_NH',qfi+1,'T4P_NI'); lit('T4P_NI',b')Tj ET\n','T4P_NJ')
 on('T4P_NJ',(None,'T3_W',{wdx:qml+20,wdw:qtw-22,wdd:2,wbgf:0,qfi:qfi+1,wret_.r:wret_.id('T4P_NL')}))
 # a picture as an inline image with hex filter; the cells hold packed RGB
 lit('T4P_IM',b'q ','T4P_I1'); number('T4P_I1',qiw,'T4P_I2'); lit('T4P_I2',b' 0 0 ','T4P_I3'); number('T4P_I3',qih,'T4P_I4'); lit('T4P_I4',b' ','T4P_I5')

@@ -132,7 +132,7 @@ text_chain('T1_CTa',[t1_ci,' of ',t1_cn],'T1_CE',y=DOCY+6,f=0,b=3)
 text_chain('T1_CTb',[t1_cn,' found'],'T1_CE',y=DOCY+6,f=0,b=3)
 t1_text('T1_CTn','No results',PX+388,DOCY+6,0,3,'T1_CE')
 on('T1_CE',(t1_cr,'HALT',{t1_cr:0}),(None,'T1_FY',None))
-e=S('T1_FY'); on('T1_FY',(net.eq(mode,2,e),'FB4',{rA:(PX+504,DOCY+4,236,20,WHITE,0),rB:(PX+750,DOCY+4,60,20,PAL_B[5],200+39),fi_:0,sx:PX+508}),(None,'TB0',None))
+e=S('T1_FY'); on('T1_FY',(net.eq(mode,2,e),'FB4',{rA:(PX+504,DOCY+4,236,20,WHITE,0),rB:(PX+750,DOCY+4,60,20,PAL_B[5],200+39),rC:(PX+504,DOCY+3,236,1,(160,160,160),0),rD:(PX+504,DOCY+24,236,1,(160,160,160),0),fi_:0,sx:PX+508}),(None,'TB0',None))
 t1_text('T1_FZ','With',PX+470,DOCY+6,0,3,'T1_FZ2')
 t1_text('T1_FZ2','All',PX+770,DOCY+6,0,5,'TB0')
 # ---- post paint: ribbon refresh after a menu closes, ruler, view checks, open menu ----

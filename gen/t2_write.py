@@ -67,7 +67,7 @@ e=S('T2Pi2'); on('T2Pi2',(net.step(pfv),'T2Pi3',None),(net.step(-pfv),'T2Pi5',No
 lit('T2Pi3',b'" w:firstLine="','T2Pi4'); vnum('T2Pi4',pfv*15,'T2Pi7')
 lit('T2Pi5',b'" w:hanging="','T2Pi6'); vnum('T2Pi6',pfv*(-15),'T2Pi7')
 lit('T2Pi7',b'"/>','T2Pj')
-lit('T2Pj',b'<w:jc w:val="','T2Pk')
+on('T2Pj',(net.step(lsf),'A2_CSL',None),(None,'A2_JC',None)); lit('A2_CSL',b'<w:contextualSpacing/>','A2_JC'); lit('A2_JC',b'<w:jc w:val="','T2Pk')
 e=S('T2Pk'); h_=net.decode(al,4,e)
 on('T2Pk',(h_[1],'T2Pc1',None),(h_[2],'T2Pc2',None),(h_[3],'T2Pc3',None),(None,'T2Pc0',None))
 lit('T2Pc0',b'left','T2Pl');lit('T2Pc1',b'center','T2Pl');lit('T2Pc2',b'right','T2Pl');lit('T2Pc3',b'both','T2Pl')
