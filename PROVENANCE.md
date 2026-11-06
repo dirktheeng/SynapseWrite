@@ -2,11 +2,11 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-443303 neurons, 939863 edges, 166 layers, 3371 control states.
+443331 neurons, 939944 edges, 166 layers, 3373 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
-| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1287) | 1287 | 6673 |
+| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1287) | 1287 | 6682 |
 | glyph network | Selects and addresses a character cell for drawing. | gen/app.py (507) | 507 | 6867 |
 | glyph metrics | Character advance and kerning trees. | gen/app.py (17875) | 17875 | 50620 |
 | glyph unit | Draws a character from its edge network into the glyph store, in its own clock domain. | gen/glyphnet.py (19503) | 19503 | 59479 |
@@ -20,13 +20,13 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | coverage | Adds edge coverage into pixel coverage. | gen/glyphnet.py (1816), gen/app.py (11) | 1827 | 10496 |
 | style interner | Finds or adds a style record in the interned table, in its own clock domain. | gen/app.py (53) | 53 | 122 |
 | glyph patch | Assembles glyph coverage into a color patch for the patch port. | gen/app.py (6) | 6 | 84 |
-| shared control registers | Editor state registers and the selection order comparators. | gen/app.py (228), gen/rv_a4_regs.py (81), gen/t1_features.py (45), gen/rv_a3_pre.py (38) | 392 | 3835 |
-| ribbon display list | Token chain whose weights hold each ribbon draw item. | gen/app.py (8884), gen/rv_a9_dl.py (150) | 9034 | 33884 |
+| shared control registers | Editor state registers and the selection order comparators. | gen/app.py (229), gen/rv_a4_regs.py (81), gen/t1_features.py (45), gen/rv_a3_pre.py (38) | 393 | 3858 |
+| ribbon display list | Token chain whose weights hold each ribbon draw item. | gen/app.py (8902), gen/rv_a9_dl.py (150) | 9052 | 33951 |
 | event dispatch | Routes each cooked event to its handler; timer, wheel and move handling. | gen/app.py (1) | 1 | 3 |
-| pointer | Draws the mouse pointer, saves and restores the colors under it, and chooses its shape from the screen. | gen/pointer.py (48), gen/pointer2.py (43), gen/app.py (15) | 106 | 713 |
+| pointer | Draws the mouse pointer, saves and restores the colors under it, and chooses its shape from the screen. | gen/pointer.py (48), gen/pointer2.py (43), gen/app.py (15) | 106 | 712 |
 | raw event interpretation | Turns raw browser events (key name code units, button masks, pointer types, field text, touch positions) into cooked events and browser commands. | gen/rv_a11_input.py (215), gen/app.py (79) | 294 | 1200 |
 | character maps | Unicode to internal code tables and back (Windows-1252 block). | gen/app.py (89) | 89 | 182 |
-| key handling | Maps each key and modifier to its editing command. | gen/app.py (410), gen/rv_a3_pre.py (69), gen/t1_features.py (2) | 481 | 4520 |
+| key handling | Maps each key and modifier to its editing command. | gen/app.py (412), gen/rv_a3_pre.py (69), gen/t1_features.py (2) | 483 | 4532 |
 | screenshot hit test | Reads object ids from the screen image and maps a click to a document position; also the blink tick check of the screen against the line table. | gen/t1_features.py (151), gen/rv_a7_regs.py (115), gen/app.py (110) | 376 | 1018 |
 | edit primitives | Character and paragraph insert and delete with undo logging. | gen/app.py (195), gen/rv_a7_regs.py (2) | 197 | 570 |
 | undo | Undo and redo walkers over the log. | gen/app.py (107) | 107 | 438 |
@@ -34,16 +34,16 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | find and replace | Search automaton over the document and replace. | gen/t1_features.py (196), gen/app.py (82) | 278 | 719 |
 | paste | Inserts clipboard text with paragraph splitting. | gen/app.py (199) | 199 | 2595 |
 | bulk edits | Window walkers for bulk formatting, copy, save, paste and find. | gen/rv_a7_bulk.py (656) | 656 | 6750 |
-| layout and paint | Walks paragraphs, places lines and words, draws text, selection, pictures. | gen/app.py (838), gen/rv_a3_paint.py (95), gen/rv_a3_pre.py (30), gen/t4_spell.py (26), gen/rv_a4_regs.py (20) | 1009 | 3689 |
+| layout and paint | Walks paragraphs, places lines and words, draws text, selection, pictures. | gen/app.py (839), gen/rv_a3_paint.py (95), gen/rv_a3_pre.py (30), gen/t4_spell.py (26), gen/rv_a4_regs.py (20) | 1010 | 3695 |
 | spell dictionary | Word list stored as an automaton in weights, with word marks. | gen/t4_spell.py (67) | 67 | 165 |
 | line breaking | Greedy line breaker and alignment. | gen/app.py (249), gen/rv_a3_pre.py (30) | 279 | 810 |
-| chrome | Autoscroll, caret, scrollbar and status bar. | gen/app.py (1450), gen/t1_features.py (44) | 1494 | 11223 |
+| chrome | Autoscroll, caret, scrollbar and status bar. | gen/app.py (1456), gen/t1_features.py (44) | 1500 | 11234 |
 | ribbon actions | Maps button ids to commands. | gen/app.py (152) | 152 | 250 |
 | docx writer | Writes the document XML parts. | gen/t2_write.py (589), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1032 | 8810 |
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2771), gen/app.py (4) | 2775 | 74350 |
 | pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1236) | 1236 | 3878 |
 | docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (1843) | 1843 | 13612 |
-| png reader | Decodes PNG files to pixel words. | gen/docx_read.py (307), gen/a12_guard.py (58) | 365 | 3890 |
+| png reader | Decodes PNG files to pixel words. | gen/docx_read.py (307), gen/a12_guard.py (58) | 365 | 3892 |
 | tier 4 features | Tracked changes, fields, equations, mail merge. | gen/t4_features.py (699) | 699 | 1906 |
 | docx deflate | LZ77 with fixed Huffman compression for the zip container. | gen/t4_features.py (242) | 242 | 863 |
 | docx reader tier 4 | Reads tracked marks and fields. | gen/t4_features.py (1368) | 1368 | 3425 |
