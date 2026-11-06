@@ -14,7 +14,7 @@ Generator, one tick per sample line:
   ramp bank: R_q = relu(q - x), so a pixel's share of a crossing is R_(q+1) - R_q (analytic in x).
   signed sum = winding. A clamp gives coverage. K sample lines accumulate into one pixel row.
 Size scales through the s input. Vertical snapping is a piecewise linear height map whose knots are rounded font metrics.
-Horizontal snapping shifts edges by the rounded offsets of their nearest stems.
+Horizontal snapping (edges shifted by the rounded offsets of their nearest stems) exists here, but no face in the current font table uses it.
 An accented letter fires its base letter's program and its accent's program, using the font's own composite data."""
 import math
 from fontTools.pens.basePen import BasePen

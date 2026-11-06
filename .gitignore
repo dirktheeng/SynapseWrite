@@ -1,5 +1,5 @@
 build/
 dist/
 *.bak*
-gen/__pycache__/
+__pycache__/
 fonts/*.tgz

@@ -32,7 +32,7 @@ P=json.load(open(PROV))
 # ---------- one tick ----------
 T=8;b=defs(LINE,TEAL,VIO,MUT)
 b+=t(30,38,'One tick of the neural program',20,INK,'start',700)+t(30,60,'Every event starts ticks. Ticks repeat until the network raises halt.',14,MUT)
-L=[(90,'Event vector','key, mouse, timer, file',AMB),(180,'Memory read vectors','asked for on the last tick',TEAL),(270,'Recurrent state','one-hot states, registers',BLUE),(360,'Last screenshot','pixels and id plane',VIO)]
+L=[(90,'Event vector','key, mouse, timer, file',AMB),(180,'Memory read vectors','asked for on the last tick',TEAL),(270,'Recurrent state','one-hot states, registers',BLUE),(360,'Last screenshot','read by pixel, through a port',VIO)]
 R=[(80,'Next screenshot','RGBA tensor',VIO),(155,'Memory operations','address, write, mask',TEAL),(230,'Recurrent state','next values',BLUE),(305,'Timer request','for example caret blink',AMB),(380,'Halt','stop and wait',RED)]
 for y,a,s,c in L: b+=box(30,y,210,66,c,a,s)+arrow(f'M240 {y+33}H372')
 for y,a,s,c in R: b+=box(760,y,210,60,c,a,s)+arrow(f'M628 {y+30}H758')
@@ -80,7 +80,7 @@ write('neuron_gate',svg(1000,326,b,'Identity, step and ReLU neurons, and a big-M
 # ---------- FSM ----------
 T=7.5;b=defs(LINE,AMB)
 b+=t(30,38,'Control flow is a token moving through one-hot state neurons',20,INK,'start',700)
-b+=t(30,60,'Exactly one state neuron is 1. Its weights open the gates that load registers and drive ports.',14,MUT)
+b+=t(30,60,'In each clock domain, exactly one state neuron is 1. Its weights open the gates that load registers and drive ports.',14,MUT)
 S=[('Idle','waiting',90),('Key handling','name the key',270),('Edit','write text cell',450),('Layout','break lines',630),('Paint','draw glyphs',810)]
 Y=90
 for i,(a,s_,x) in enumerate(S):
@@ -136,7 +136,7 @@ b+=pulse(f'M30 92H{30+5*(W+G)+W}',BLUE,0,4.5,T,7)+pulse(f'M30 212H{30+5*(W+G)+W}
 b+=t(500,322,'Pictures (PNG) and PDF export follow the same pattern, including embedded font subsets in the PDF.',13.5,MUT,'middle')
 write('docx_pipeline',svg(1000,342,b,'Open and save pipelines through zip, inflate, XML, deflate and CRC networks'))
 # ---------- memory map ----------
-R_=[('0 to 100 K','Fixed tables: hit targets, styles, numbering, sections',BLUE),('100 K to 1.02 M','Mail merge, footnotes, zip records, headers and footers',BLUE),('1.1 M to 1.4 M','Interned styles, bookmarks, spell suggestions, equations',VIO),('1.4 M to 2 M','Clipboards',AMB),('2 M to 14.4 M','Paragraph slots: 4,096 cells each',TEAL),('14.5 M to 20 M','Undo log',AMB),('20 M to 61 M','Output bytes, pictures, save and load work space',MUT),('61 M to 63 M','Glyph cache: tags, then drawn glyphs',VIO),('63 M to 67 M','Read only tables: PDF fonts, literals, display lists',BLUE)]
+R_=[('0 to 100 K','Fixed tables: hit targets, styles, numbering, sections',BLUE),('100 K to 1.02 M','Mail merge, footnotes, zip records, headers and footers',BLUE),('1.1 M to 1.4 M','Interned styles, bookmarks, spell suggestions, equations',VIO),('1.4 M to 2 M','Clipboards',AMB),('2 M to 14.4 M','Paragraph slots: 4,096 cells each',TEAL),('14.5 M to 20 M','Undo log',AMB),('20 M to 61 M','Output bytes, pictures, save and load work space',MUT),('61 M to 63 M','Glyph cache: tags, then drawn glyphs',VIO),('63 M to 67 M','Read only tables: PDF fonts, literals, spell table, display lists',BLUE)]
 b=t(30,38,'One passive memory bank',20,INK,'start',700)+t(30,60,'Cells are 32-bit floats. Pages exist only once written, so far apart regions cost nothing until used. Not to scale.',14,MUT)
 for i,(a,s_,c) in enumerate(R_):
     y=78+i*38;b+=f'<rect x="30" y="{y}" width="150" height="32" rx="6" fill="{TINT[c]}" stroke="{c}"/>'+t(105,y+21,a,13,INK,'middle',600)+t(196,y+21,s_,14)
@@ -144,9 +144,9 @@ b+=t(30,y+60,'The build fails if any two declared regions overlap: region() in g
 write('memory_map',svg(800,y+74,b,'Memory bank map'))
 # ---------- how the families connect ----------
 T=12;b=defs(LINE)
-b+=t(30,38,'The path of one key press through the sub-networks',20,INK,'start',700)+t(30,60,'The main stops, simplified. Each box is a named sub-network.',14,MUT)
-A=[('raw event interpretation','names the key',AMB),('event dispatch','picks a handler',AMB),('key handling','chooses the command',BLUE),('edit primitives','changes memory, logs undo',TEAL)]
-B=[('line breaking','finds where lines end',BLUE),('layout and paint','walks lines and words',BLUE),('glyph network','selects the character',VIO),('glyph store','cached rows, or glyph unit',VIO)]
+b+=t(30,38,'The path of one key press through the sub-networks',20,INK,'start',700)+t(30,60,'Simplified to the main stops, from the paint path and a traced key press. Each state also runs through compiled control.',14,MUT)
+A=[('raw event interpretation','names the key',AMB),('pointer','restores pixels under it',VIO),('key handling','chooses the command',BLUE),('edit primitives','changes memory, logs undo',TEAL)]
+B=[('line breaking','finds where lines end',BLUE),('layout and paint','walks lines and words',BLUE),('glyph network','selects the character',VIO),('glyph unit','cached rows, or draw it',VIO)]
 W_=215;G_x=21
 for i,(n,s_,c) in enumerate(A):
     x=30+i*(W_+G_x);b+=box(x,86,W_,76,c,n,s_,14)
@@ -155,7 +155,7 @@ for i,(n,s_,c) in enumerate(B):
     x=30+i*(W_+G_x);b+=box(x,206,W_,76,c,n,s_,14)
     if i<3:b+=arrow(f'M{x+W_} 244H{x+W_+G_x-2}')
 b+=arrow(f'M{30+3*(W_+G_x)+W_/2} 162V184H{30+W_/2}V204')
-b+=box(30,326,W_,64,VIO,'glyph patch','coverage becomes color',14)+box(266,326,W_,64,BLUE,'chrome','caret, scrollbar, status',14)+box(502,326,W_,64,VIO,'pointer','redrawn on top',14)+box(738,326,232,64,RED,'halt neuron','the glue stops ticking',14)
+b+=box(30,326,W_,64,VIO,'glyph patch','glyph pixels are colored',14)+box(266,326,W_,64,BLUE,'chrome','caret, scrollbar, status',14)+box(502,326,W_,64,VIO,'pointer','redrawn on top',14)+box(738,326,232,64,RED,'halt neuron','the glue stops ticking',14)
 b+=arrow(f'M{30+3*(W_+G_x)+W_/2} 282V304H{30+W_/2}V324')
 for i in range(3):
     x=30+i*(W_+G_x);b+=arrow(f'M{x+W_} 358H{x+W_+G_x-2}')
@@ -163,7 +163,7 @@ d=f'M{30+W_/2} 124H{30+3*(W_+G_x)+W_/2}V184H{30+W_/2}V244H{30+3*(W_+G_x)+W_/2}V3
 b+=pulse(d,AMB,0,10.5,T,7)
 write('network_path',svg(1000,410,b,'Path of a key press through the sub-networks'))
 # ---------- charts ----------
-G_=P['groups'];fam={'Font outlines as neurons':['glyph weights (outline edges)'],'Glyph machinery and metrics':['glyph unit','glyph metrics','ramp bank','coverage','glyph network','snapping layer','glyph geometry','row sequencer','glyph store','glyph patch','style interner'],'Ribbon and chrome':['ribbon display list','chrome','ribbon actions','pointer','canvas look','a4 ruler'],'File formats':[k for k in G_ if k.startswith(('docx','pdf','zip','png'))]}
+G_=P['groups'];fam={'Font outlines as neurons':['glyph weights (outline edges)'],'Glyph machinery and metrics':['glyph unit','glyph metrics','ramp bank','coverage','glyph network','snapping layer','glyph geometry','row sequencer','glyph store','glyph patch','style interner'],'Ribbon and chrome':['ribbon display list','chrome','ribbon actions','pointer','canvas look','a4 ruler'],'Compiled control and registers':['compiled control','shared control registers','bank and port wiring'],'File formats':[k for k in G_ if k.startswith(('docx','pdf','zip','png'))]}
 used=set(sum(fam.values(),[]));fam['Editing, layout and everything else']=[k for k in G_ if k not in used]
 rows=sorted(((k,sum(G_[g]['neurons'] for g in v if g in G_)) for k,v in fam.items()),key=lambda r:-r[1]);tot=sum(r[1] for r in rows)
 assert tot==P['neurons']

@@ -32,7 +32,7 @@ px=np.zeros((N,2),int)
 for i,g in enumerate(gs):
     x,y,w,h=rects[g];w_=max(int(w)-2,1);h_=max(int(h)-2,1);k=int(pos[i]*w_*h_/cnt[g]);px[i]=(int(x)+1+k%w_,int(y)+1+k//w_)
 base=Image.new('RGB',(W0,H0),(238,241,244));d=ImageDraw.Draw(base)
-SHORT={'glyph weights (outline edges)':'font outlines','glyph unit':'glyph unit','glyph metrics':'metrics','ribbon display list':'ribbon','ramp bank':'ramps','docx crc':'crc','rv a3 interaction':'interaction','docx reader':'docx reader','coverage':'coverage','chrome':'chrome','layout and paint':'layout + paint','key handling':'keys','screenshot hit test':'hit test','line breaking':'lines','edit primitives':'edit','pointer':'pointer','pdf writer':'pdf',}
+SHORT={'glyph weights (outline edges)':'font outlines','glyph unit':'glyph unit','glyph metrics':'metrics','ribbon display list':'ribbon','compiled control':'compiled control','ramp bank':'ramps','docx crc':'crc','rv a3 interaction':'interaction','docx reader':'docx reader','coverage':'coverage','chrome':'chrome','layout and paint':'layout + paint','key handling':'keys','screenshot hit test':'hit test','line breaking':'lines','edit primitives':'edit','pointer':'pointer','pdf writer':'pdf',}
 for g,(x,y,w,h) in rects.items():
     d.rectangle([x,y,x+w,y+h],outline=(255,255,255))
 lab=Image.new('RGBA',(W0,H0),(0,0,0,0));dl=ImageDraw.Draw(lab)
