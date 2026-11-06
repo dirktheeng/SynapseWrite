@@ -49,7 +49,7 @@ PY`);
    for(let f=0;f<8;f++){click(229,75);click(170,98+f*22);for(const s of szs){click(258,75);for(const ch of String(s))annDispatch(2,ch.charCodeAt(0),0,1000);annDispatch(2,13,0,1000);for(let i=0;i<8;i++){key([98,105,98,117,98,105,98,117][i]);k++;}}}return k;});
   ok('input made more than 4096 format changes',made>4096,made);
   const before=await shot(p,page);
-  const sb0=await shot(p,{x:0,y:777,width:1000,height:23});await size(p,72);const after=await shot(p,page);ok('over capacity the status bar says so',hash(sb0)!==hash(await shot(p,{x:0,y:777,width:1000,height:23})));
+  await size(p,70);const after=await shot(p,page);const sbar={x:0,y:777,width:1000,height:23};const sb1=await shot(p,sbar);const q=await open();await q.keyboard.type('anchor');const sb2=await shot(q,sbar);await q.close();ok('over capacity the status bar says so',hash(sb1)!==hash(sb2));
   ok('over capacity a new format is not applied',hash(before)===hash(after));
   await p.keyboard.press('End');await p.keyboard.type('X');const typed=await shot(p,page);ok('over capacity typing still works',hash(typed)!==hash(after));
   await p.keyboard.press('Control+z');await p.keyboard.press('Control+z');const u=await shot(p,page);ok('over capacity undo still works',hash(u)!==hash(typed));

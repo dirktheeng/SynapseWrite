@@ -184,7 +184,7 @@ t4id=R()
 SV_ST=('T4_SO','T4_SO1','T4_SO2','T4_TO')
 for n_ in SV_ST: sv_en.lin(S(n_)); sv_in.add(S(n_),ins_rec); sv_fl.add(S(n_),ins_st)
 SV_LS=('T4_SC','T4_SC2','T4_SC3','T4_SC4')
-for n_ in SV_LS: sv_en.lin(S(n_)); sv_in.add(S(n_),t2psv)
+for n_ in SV_LS: sv_en.lin(S(n_)); sv_fl.add(S(n_),t2psv)    # closing tags need only the flags of the run just ended
 AUTH=b'" w:author="SynapseWrite">'
 on('T4_SO',(SV['ins'],'T4_SOia',None),(None,'T4_SO1',None))
 lit('T4_SOia',b'<w:ins w:id="','T4_SOib'); number('T4_SOib',t4id,'T4_SOic'); lit('T4_SOic',AUTH,'T4_SOid'); on('T4_SOid',(None,'T4_SO1',{t4id:t4id+1}))
