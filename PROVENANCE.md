@@ -51,7 +51,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2707), gen/app.py (4) | 2711 | 41587 |
 | pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1435) | 1435 | 4658 |
 | feat2 pdf run effects | Prints character spacing, run shading, double strike and external links as link annotations. | gen/pdf_write.py (290) | 290 | 1106 |
-| docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (2911) | 2911 | 17147 |
+| docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (2911) | 2911 | 17168 |
 | png reader | Decodes PNG files to pixel words. | gen/docx_read.py (311), gen/a12_guard.py (61) | 372 | 4918 |
 | zip crc check | Zip CRC check on open: the inflated main part runs through the save CRC network and must match the central directory. | gen/a12_guard.py (18) | 18 | 104 |
 | prompt bar | One bar that takes a short text for a color, a style name or a font name. | gen/imp4_prompt.py (525) | 525 | 2042 |
@@ -81,7 +81,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | repeat last command | F4 repeats the last character format, alignment, paragraph style or list command. | gen/imp6_feat.py (21) | 21 | 47 |
 | recent colors | Recent colors: the last eight exact text colors, drawn under Color Picker and applied again with a click. | gen/imp6_feat.py (276) | 276 | 2793 |
 | tier 1 ribbon commands | Sets the arguments for the Column Break, Text Wrapping, Comment ribbon commands and dispatches the Ctrl+Alt shortcuts. | gen/p1_ribbon.py (597) | 597 | 6588 |
-| clipboard html | Writes an HTML twin of each copy and reads HTML pasted from other programs into runs and paragraphs. | gen/p1_html.py (2559) | 2559 | 6620 |
+| clipboard html | Writes an HTML twin of each copy and reads HTML pasted from other programs into runs and paragraphs. | gen/p1_html.py (2559) | 2559 | 6599 |
 | canvas look | Page shadow and the canvas around the page. | gen/rv_a2_canvas.py (82) | 82 | 197 |
 | a4 commands | Word commands: repeat, format painter, keep rules and others. | gen/rv_a4_features.py (344) | 344 | 1272 |
 | a4 keep | Keep with next and keep lines in pagination. | gen/rv_a4_features.py (55) | 55 | 143 |
