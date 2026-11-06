@@ -32,7 +32,7 @@ e=S('A6Q_D0'); on('A6Q_D0',(net.ge(a6qp,clen,e),'A6Q_S0',SKIP),(None,'A6Q_D1',{r
 e=S('A6Q_D1'); on('A6Q_D1',(net.eq(R1,40,e),'A6Q_D2',{a6qj:a6qp+1,a6qd:1}),(net.and_(_aln(R1,e),net.eq(a6qkd,1,e)),'A6Q_D5',{a6qj:a6qp}),(None,'A6Q_S0',SKIP))
 e=S('A6Q_D2'); on('A6Q_D2',(net.ge(a6qj,clen,e),'A6Q_S0',SKIP),(None,'A6Q_D3',{r1:cb+a6qj}))
 e=S('A6Q_D3'); _op=net.eq(R1,40,e);_cl=net.eq(R1,41,e)
-on('A6Q_D3',(_op,'A6Q_D2',{a6qd:a6qd+1,a6qj:a6qj+1}),(net.and_(_cl,net.eq(a6qd,1,e)),'A6Q_B0',{a6qdb:a6qp+1,a6qdl:a6qj-a6qp-1,a6qe:a6qj+1}),(_cl,'A6Q_D2',{a6qd:a6qd-1,a6qj:a6qj+1}),(None,'A6Q_D2',{a6qj:a6qj+1}))
+on('A6Q_D3',(_op,'A6Q_D2',{a6qd:a6qd+1,a6qj:a6qj+1}),(net.and_(_cl,net.eq(a6qd,1,e)),'P3_MR0',{a6qdb:a6qp+1,a6qdl:a6qj-a6qp-1,a6qe:a6qj+1}),(_cl,'A6Q_D2',{a6qd:a6qd-1,a6qj:a6qj+1}),(None,'A6Q_D2',{a6qj:a6qj+1}))
 e=S('A6Q_D5'); on('A6Q_D5',(net.ge(a6qj,clen,e),'A6Q_B0',{a6qdb:a6qp,a6qdl:a6qj-a6qp,a6qe:a6qj}),(None,'A6Q_D6',{r1:cb+a6qj}))
 e=S('A6Q_D6'); on('A6Q_D6',(_aln(R1,e),'A6Q_D5',{a6qj:a6qj+1}),(None,'A6Q_B0',{a6qdb:a6qp,a6qdl:a6qj-a6qp,a6qe:a6qj}))
 # the record
@@ -58,6 +58,7 @@ fsm.set(co,net.and_(S('A6Q_RR'),net.or_(ONE-a6qa,net.step(a6qcv))),clen)
 # layout: taller line, width from the record
 e=S('A6Q_L0'); _lastq=net.ge(a6off+1,plen_,e); _kq=[net.eq(R2,k_,e) for k_ in range(1,8)]   # feat2: ascent and height per kind; a delimiter takes the line's
 _aq=sum((G_(as_x(v_),k_) for v_,k_ in zip((18,17,20,26,18,0,18),_kq)),X()); _hq=sum((G_(as_x(v_),k_) for v_,k_ in zip((28,23,26,46,24,0,28),_kq)),X())
+_p3mr=G_(net.relu(rl.out[6]-2),_kq[6]); _aq=_aq+_p3mr*((rom.metrics(9)[0]+4)//2); _hq=_hq+_p3mr*(rom.metrics(9)[0]+3)   # p3: a matrix of more rows is taller
 _qcom={lasc:net.max_(_aq,lasc),lhh:net.max_(_hq,lhh),a6off:a6off+1}
 on('A6Q_L0',(_lastq,'EM',{**_qcom,lend:a6off+1,lwid:lx+R1,lspc:lsn,llast:1}),(None,'L1',{**_qcom,lx:lx+R1,prevsp:0,kprev:0}))
 # paint
@@ -120,3 +121,4 @@ _prect('A6Q_Pr',qxx+1,qyb+5,3,1,'A6Q_Pr2'); _prect('A6Q_Pr2',qxx+4,net.relu(qyb-
 _ptext('A6Q_Pr5',qxx+7,qyb,15,_qrec(a6qk)+8,a6qnl,'A6Q_PE')
 on('A6Q_PE',(None,'PD_9',{qxx:qxx+a6qwd,qsty:999999,qop:0}))
 exec(open('feat2_eq.py').read())
+exec(open('p3_eq.py').read())

@@ -43,7 +43,7 @@ for j_,t_ in enumerate((b'<w:outline/>',b'<w:shadow/>',b'<w:emboss/>',b'<w:impri
     nx_=f'P3_R{j_+1}' if j_<3 else 'T2R4n'
     on(f'P3_R{j_}',(p3wf[j_],f'P3_Rt{j_}',None),(None,nx_,None)); lit(f'P3_Rt{j_}',t_,nx_)
 # after spacing: the scale
-on('P3_W0',(net.step(p3ws),'P3_W1',None),(None,'F1_R7z',None)); lit('P3_W1',b'<w:w w:val="','P3_W2'); vnum('P3_W2',p3ws,'P3_W3'); lit('P3_W3',b'"/>','F1_R7z')
+on('P3_SW0',(net.step(p3ws),'P3_SW1',None),(None,'F1_R7z',None)); lit('P3_SW1',b'<w:w w:val="','P3_SW2'); vnum('P3_SW2',p3ws,'P3_SW3'); lit('P3_SW3',b'"/>','F1_R7z')
 # after vertical alignment: the language, its attribute text as read
 on('P3_LW0',(net.step(p3wl),'P3_LW1',None),(None,'T2RC',None)); lit('P3_LW1',b'<w:lang ','P3_LW2')
 on('P3_LW2',(None,'T2SS',{t2w:_lb(p3wl),t2sr.r:t2sr.id('P3_LW3')})); lit('P3_LW3',b'/>','T2RC')

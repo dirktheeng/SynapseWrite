@@ -5,6 +5,7 @@ PURPOSE={
  'p3 pdf destinations':'Prints bookmarks as named destinations and outline items, and internal links as GoTo link annotations.',
  'p3 docx properties':'Reads emboss, imprint, outline, shadow, character scale, language and paragraph outline level from a .docx.',
  'p3 docx writer':'Writes emboss, imprint, outline, shadow, character scale, language and paragraph outline level back.',
+ 'p3 matrix':'Matrices of any number of rows with aligned columns, on screen, in PDF and as OMML.',
  'feat1 run effects':'Decodes the extended field of a style entry for the glyph network: caps and small caps draw and measure the capital, small capitals take a smaller size, hidden text takes no width or ink, character spacing joins the advance.',
  'feat1 docx reader':'Reads caps, small caps, double strike, hidden text, character spacing, run shading, links with their targets, bookmarks, contextual spacing and widow control from a .docx.',
  'feat1 docx writer':'Writes those run and paragraph properties back, opens and closes links and bookmarks around runs, and lists external link targets as relationships.',

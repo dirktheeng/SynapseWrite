@@ -100,10 +100,68 @@ print(json.dumps({'dests':dests,'outline':walk(r.outline,0),'links':links,'pages
   const v=sh(`python3 test/a5_validate.py ${O}/rp1.docx || true`);ok('save passes schema, content type and relationship checks',/ OK\n/.test(v),v.slice(0,300));
   await open(`${O}/rp1.docx`);const s2=await shot();ok('save and reopen is pixel identical',hh(s2)===hh(s1b));
   await save(`${O}/rp2.docx`);ok('second save XML identical',xml(`${O}/rp2.docx`)===x1);
-  await b.close();
   sh(`rm -rf ${O}/lo; timeout 120 soffice --headless --convert-to docx:"MS Word 2007 XML" --outdir ${O}/lo ${O}/rp1.docx >/dev/null 2>&1`);
   const lo=xml(`${O}/lo/rp1.docx`);const want=['<w:emboss/>','<w:imprint/>','<w:outline/>','<w:shadow/>','w:val="200"','w:val="66"','de-DE','en-GB'];
   ok('LibreOffice reads emboss, imprint, outline, shadow, scale and language (stand-in, not Word)',want.every(s=>lo.includes(s)),want.filter(s=>!lo.includes(s)).join(' '));
   ok('LibreOffice reads the outline level (stand-in, not Word)',/<w:outlineLvl w:val="2"\/>/.test(lo));
  }
+ if(!only||only==='eq'){
+  const C=(x,y)=>p.mouse.click(x,y),T=t=>p.keyboard.type(t),Wt=ms=>p.waitForTimeout(ms);
+  const eqshot=async n=>{const f=`${O}/${n}.png`;await p.screenshot({clip:{x:223,y:150,width:816,height:300},path:f});return f;};
+  const py=s=>sh(`python3 - <<'P'\n${s}\nP`).trim();
+  const same=(a,b)=>+py(`from PIL import Image,ImageChops;b=ImageChops.difference(Image.open('${a}').convert('RGB'),Image.open('${b}').convert('RGB')).getbbox();print(0 if not b else b[2]-b[0])`)<=2;
+  // cells of a matrix in a screenshot: ink row blocks between the two marker letters, and in each block the ink runs apart by 4 or more columns
+  const cells=f=>JSON.parse(py(`from PIL import Image
+im=Image.open('${f}').convert('L');w,h=im.size;p=im.load()
+dk=lambda x,y:p[x,y]<160
+cols=[x for x in range(w) if any(dk(x,y) for y in range(40,220))]
+segs=[];
+for x in cols:
+  if segs and x-segs[-1][1]<=3: segs[-1][1]=x
+  else: segs.append([x,x])
+# the matrix lies between the first marker word and the last one
+x0,x1=segs[0][1]+1,segs[-1][0]-1
+rows=[y for y in range(30,220) if any(dk(x,y) for x in range(x0,x1+1))]
+blk=[]
+for y in rows:
+  if blk and y-blk[-1][1]<=1: blk[-1][1]=y
+  else: blk.append([y,y])
+out=[]
+for a,b in blk:
+  xs=[x for x in range(x0,x1+1) if any(dk(x,y) for y in range(a,b+1))]
+  r=[]
+  for x in xs:
+    if r and x-r[-1][1]<4: r[-1][1]=x
+    else: r.append([x,x])
+  out.append({'y':[a,b],'c':[(u+v)/2 for u,v in r]})
+print(json.dumps({'box':[x0,x1],'rows':out}) if True else '')`.replace('from PIL','import json\nfrom PIL')));
+  const LINE='M mat(a&bbb)(cc&d)(eee&f) z';
+  await T(LINE);await C(135,47);await C(725,76);await C(80,47);await K('Control+Home');await K('End');await Wt(200);
+  const s0=await eqshot('mat3');const x=xml(await (async()=>{await save(`${O}/m3.docx`);return `${O}/m3.docx`;})());fs.writeFileSync(`${O}/m3.xml`,x);
+  const t_=s=>`<m:r><m:t xml:space="preserve">${s}</m:t></m:r>`;
+  ok('a three row matrix is saved as m:m with three m:mr of two cells',x.includes(`<m:m><m:mr><m:e>${t_('a')}</m:e><m:e>${t_('bbb')}</m:e></m:mr><m:mr><m:e>${t_('cc')}</m:e><m:e>${t_('d')}</m:e></m:mr><m:mr><m:e>${t_('eee')}</m:e><m:e>${t_('f')}</m:e></m:mr></m:m>`),(x.match(/<m:m>.*<\/m:m>/)||[''])[0]);
+  const c0=cells(s0);console.log(JSON.stringify(c0));const R0=c0.rows.filter(r=>r.y[1]-r.y[0]>=3);
+  ok('three rows of ink, each of two cells',R0.length===3&&R0.every(r=>r.c.length===2),JSON.stringify(R0));
+  const spread=k=>{const v=R0.map(r=>r.c[k]);return Math.max(...v)-Math.min(...v);};
+  ok('cells of different widths are centred in their columns on screen (centres within 1.5 px)',R0.length===3&&spread(0)<=1.5&&spread(1)<=1.5,`${R0.length===3?spread(0):''} ${R0.length===3?spread(1):''}`);
+  await open(`${O}/m3.docx`);await K('Control+Home');await K('End');await Wt(200);const s1=await eqshot('mat3_re');ok('saved and opened again, pixel identical',same(s0,s1));
+  await pdf(`${O}/m3.pdf`);let qc;try{qc=sh(`qpdf --check ${O}/m3.pdf 2>&1`);}catch(e){qc=e.stdout.toString();}
+  ok('PDF is clean for qpdf',/No syntax or stream encoding errors/.test(qc));
+  const bb=sh(`pdftotext -bbox ${O}/m3.pdf -`);const wd={};for(const m of bb.matchAll(/xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">([^<]*)</g))wd[m[5]]=wd[m[5]]||{cx:(+m[1]+ +m[3])/2,y:+m[2]};
+  console.log(JSON.stringify(wd));const has=['a','bbb','cc','d','eee','f'].every(k=>wd[k]);
+  ok('PDF prints every cell, in three rows',has&&wd.a.y<wd.cc.y&&wd.cc.y<wd.eee.y&&Math.abs(wd.a.y-wd.bbb.y)<1&&Math.abs(wd.eee.y-wd.f.y)<1);
+  ok('PDF centres the cells in their columns (within 1 pt)',has&&Math.max(wd.a.cx,wd.cc.cx,wd.eee.cx)-Math.min(wd.a.cx,wd.cc.cx,wd.eee.cx)<=1&&Math.max(wd.bbb.cx,wd.d.cx,wd.f.cx)-Math.min(wd.bbb.cx,wd.d.cx,wd.f.cx)<=1);
+  sh(`pdftoppm -r 96 -f 1 -l 1 -png ${O}/m3.pdf ${O}/m3p`);
+  // a foreign file: a four row, three column matrix in OMML reads back with all rows
+  const NS='xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"';const rr=t=>`<m:e><m:r><m:t>${t}</m:t></m:r></m:e>`;
+  const om=`<m:oMath><m:m>${[['1','0','x'],['0','22','y'],['0','0','333'],['4','5','6']].map(r=>'<m:mr>'+r.map(rr).join('')+'</m:mr>').join('')}</m:m></m:oMath>`;
+  const ff=mk('m4',P(Rn('Q '),om,Rn(' end')));await open(ff);await K('Control+Home');await K('End');await Wt(200);const s2=await eqshot('mat4');
+  await save(`${O}/m4s.docx`);const x4=xml(`${O}/m4s.docx`);
+  ok('a foreign four row, three column matrix keeps every row and cell',x4.includes(`<m:mr><m:e>${t_('0')}</m:e><m:e>${t_('22')}</m:e><m:e>${t_('y')}</m:e></m:mr>`)&&x4.includes(`<m:mr><m:e>${t_('4')}</m:e><m:e>${t_('5')}</m:e><m:e>${t_('6')}</m:e></m:mr></m:m>`)&&(x4.match(/<m:mr>/g)||[]).length===4,(x4.match(/<m:m>.*<\/m:m>/)||[''])[0]);
+  const c4=cells(s2);const R4=c4.rows.filter(r=>r.y[1]-r.y[0]>=3);console.log(JSON.stringify(R4));
+  ok('four rows drawn, three cells each, columns aligned',R4.length===4&&R4.every(r=>r.c.length===3)&&[0,1,2].every(k=>{const v=R4.map(r=>r.c[k]);return Math.max(...v)-Math.min(...v)<=1.5;}));
+  const two=mk('m2',P(Rn('Q '),`<m:oMath><m:m><m:mr>${rr('a')+rr('b')}</m:mr><m:mr>${rr('c')+rr('d')}</m:mr></m:m></m:oMath>`,Rn(' end')));await open(two);await K('Control+Home');await K('End');await Wt(200);const h2=cells(await eqshot('mat2')),h4=c4;
+  ok('a four row matrix makes its line taller than a two row one',(h4.rows.slice(-1)[0].y[1]-h4.rows[0].y[0])>(h2.rows.slice(-1)[0].y[1]-h2.rows[0].y[0])+20,JSON.stringify([h2.rows.map(r=>r.y),h4.rows.map(r=>r.y)]));
+ }
+ await b.close();
  console.log(`${res.filter(r=>r[1]).length}/${res.length} passed`);process.exit(0);})();

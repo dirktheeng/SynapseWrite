@@ -46,6 +46,7 @@ F=[
 ('p3 pdf destinations','Gives each printed bookmark a named destination in the PDF and, unless its name is hidden, an outline item; links to a place in the document become link annotations that go to that destination.','A bookmark and an internal link should still take the reader to the same place in the PDF as in the document.'),
 ('p3 docx properties','Reads emboss, imprint, outline, shadow, character scale and language of a run, and the outline level of a paragraph, into the fields a style entry already has room for.','Word files carry these on many runs; a file opened and saved here should come back with them.'),
 ('p3 docx writer','Writes those run and paragraph properties back in schema order, the language as the attribute text it was read with.','What was read must be written again for a round trip to keep the file.'),
+('p3 matrix','Builds, measures, draws, prints and saves matrices of any number of rows, each column as wide as its widest cell and each cell centred in it.','A matrix reads by its columns; cells of different widths should still line up, and a matrix is not limited to two rows.'),
 ('style interner','Finds or adds a style record in the interned table, in its own clock domain.','Each character stores a short index instead of a full record. That makes the text compact and makes comparing two styles a single check.'),
 ]),
 ('Laying out and painting the page','These networks decide where everything goes, then draw it.',[

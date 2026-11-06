@@ -21,6 +21,6 @@ def F2Q_WD(e):
     return (G_(net.relu(a6qnw-2)+a6qdw+10,k(3))+G_(net.max_(net.max_(a6qsw,a6qnw),a6qdw)+4,k(4))+G_(a6qnw+2,k(5))+G_(as_x(6),k(6)))
 def F2Q_PAINT(e,RQ,qs,bg):
     return [(net.eq(RQ[0],3,e),'F2Q_K3',{**qs,rA:bg,sx:x}),(net.eq(RQ[0],4,e),'F2Q_K4',{**qs,rA:bg}),(net.eq(RQ[0],5,e),'F2Q_K5',{**qs,rA:bg,sx:x+1}),
-            (net.eq(RQ[0],6,e),'F2Q_K6',{**qs,rA:bg}),(net.eq(RQ[0],7,e),'F2Q_K7',{**qs,rA:bg,sx:x+(RQ[1]-RQ[4])*0.5})]
-def F2Q_XML(e,out,qx): return [(net.eq(out[0],k_,e),f'F2Q_X{k_}',qx) for k_ in range(3,8)]
-def F2Q_PDF(e): return [(net.eq(a6qkd,k_,e),f'F2Q_P{k_}',None) for k_ in range(3,8)]
+            (net.eq(RQ[0],6,e),'F2Q_K6',{**qs,rA:bg}),(net.eq(RQ[0],7,e),'P3_MP0',{**qs,rA:bg})]
+def F2Q_XML(e,out,qx): return [(net.eq(out[0],k_,e),f'F2Q_X{k_}' if k_<7 else 'P3_X7',qx) for k_ in range(3,8)]
+def F2Q_PDF(e): return [(net.eq(a6qkd,k_,e),f'F2Q_P{k_}' if k_<7 else 'P3_PP0',None) for k_ in range(3,8)]
