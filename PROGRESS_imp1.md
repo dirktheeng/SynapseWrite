@@ -34,3 +34,8 @@ e2e run 1 at the pitch commit: 197/210, all same-image failures from the squiggl
 Done: empty paragraph takes inserted table or picture; reader first table takes first paragraph; find field replaced on reopen; refusal message (pfile); selection highlight across space after and before; balloons stack (cbb, full walks only); cut of 589900+ refused with a message and no deletion.
 Not done: a valid zip with broken deflate still replaces the document (would need a snapshot of the page table and registers or a dry inflate).
 Test edits: t3_table yb 335 to 305 and t3_pic by 472 to 435, because table and picture now sit one paragraph higher.
+
+## Full run 1 and follow up
+Full run 1: e2e 207/210 (row above then delete row, delete column then undo, delete row then undo), a4 48/50, tier2 48/49, the others clean, audit 67/67.
+Cause of e2e and a4 failures: a table in paragraph 0. Row and column operations and MERGE assume a paragraph before the table. So at cp 0 a table keeps the leading empty paragraph, and the reader change is reverted; only cp>0 reuses the empty paragraph. Pictures reuse it everywhere. t3_table edit reverted.
+tier2 stranded line: 46 fillers encoded the old 33 px step; at 30 px no position in the ten crosses a page. Now 49 fillers, same check.

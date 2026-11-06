@@ -44,7 +44,7 @@ def jump(st,p,o,ret):
 tin_w=R()
 for i_,n_ in enumerate((2,3,4)): pass
 on('TI0',(None,'A4_TI',{r1:cb+2062}))
-e=S('A4_TI'); on('A4_TI',(net.step(R1),'RD0',None),(net.eq(clen,0,e),'T3_TI0',{tip:cp}),(None,'SPLIT',{oret.r:oret.id('T3_TI0'),tip:cp+1}))   # no nested tables
+e=S('A4_TI'); on('A4_TI',(net.step(R1),'RD0',None),(net.and_(net.eq(clen,0,e),net.step(cp)),'T3_TI0',{tip:cp}),(None,'SPLIT',{oret.r:oret.id('T3_TI0'),tip:cp+1}))   # no nested tables
 e=S('T3_TI0'); hti=net.decode(tin,9,e)
 on('T3_TI0',(None,'TI1',{tin_w:floorv(G_(s_tw*0.5,hti[2])+G_(s_tw*(1.0/3),hti[3])+G_(s_tw*0.25,hti[4])+G_(s_tw*0.2,hti[5])+G_(s_tw*(1.0/6),hti[6])+G_(s_tw*(1.0/7),hti[7])+G_(s_tw*0.125,hti[8]),e),run:0}))
 e=S('TI1'); wr=net.ge(tic+1,tin,e)
@@ -320,7 +320,7 @@ on('T3_NB1',(isd,'T3_NB',{aval:aval*10+W[0]-48,oi:oi+1}),(None,'T3_NMR',None))
 on('T3_GC',(None,'T3_NA',{nmret.r:nmret.id('T3_GC2')}))
 e=S('T3_GC2')
 on('T3_GC2',(None,'PX',{w1:(as_x(TGW)+gcount,floorv(aval*(1.0/15)+0.5,e)),gcount:gcount+1}))
-on('T3_TC0',(pfirst,'T3_TC1',{pfirst:0}),(None,'SPLIT',{oret.r:oret.id('T3_TC1')}))   # a table first in the file takes the first paragraph
+on('T3_TC0',(None,'SPLIT',{oret.r:oret.id('T3_TC1')}))
 on('T3_TC1',(None,'T3_TC2',{r1:as_x(TGW)+tcidx}))
 on('T3_TC2',(None,'T3_TC3',{w1:(cb+2062,gcount),w2:(cb+2063,tcidx),w3:(cb+CWO,R1),w4:(cb+CXO,gx),gx:gx+R1,incell:1}))
 on('T3_TC3',(a5pad,'A5_TCE',{w1:(cb+ALIGN,0),w2:(cb+CSH,0),a5pad:0}),(None,'PX',{w1:(cb+ALIGN,0),w2:(cb+CSH,0)}))

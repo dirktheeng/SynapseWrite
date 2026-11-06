@@ -17,7 +17,7 @@ const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);}
  await K('Control+z');await CL();const h5u=await shot(p);ok('shading undo restores',h5u===h4);
  await K('Control+y');await CL();const h5r=await shot(p);ok('shading redo',h5r===h5);
  // column width drag on the first inner border: x=319+208
- const yb=170+150+15-30;await p.mouse.move(319+208,yb);await p.mouse.down();await p.mouse.move(319+260,yb);await p.waitForTimeout(60);await p.mouse.up();await CL();
+ const yb=170+150+15;await p.mouse.move(319+208,yb);await p.mouse.down();await p.mouse.move(319+260,yb);await p.waitForTimeout(60);await p.mouse.up();await CL();
  const h6=await shot(p,'tb6');ok('column drag changes image',h6!==h5);
  await K('Control+z');await CL();const h6u=await shot(p);ok('column drag undo restores',h6u===h5);
  await K('Control+y');await p.waitForTimeout(40);require('fs');
