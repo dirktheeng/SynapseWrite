@@ -36,5 +36,5 @@ def rv_tabw(p,en_):
     "Width from pen position p to the next default stop, every half inch (48 px). All in weights."
     g_=net.relu(as_x(p)+en_*M-M); k_=X()
     for i_ in range(1,30): k_=k_+net.step(g_-48*i_+0.001)
-    return en_*48+k_*48-g_
+    return net.gate(k_*48-g_+48,en_)    # read behind the tab flag: an ordinary letter does not read the 29 stops
 RV_HALT=[(rv_rekey,'KEY',{rv_rekey:0}),(rv_pgq,'RVA3_PG1',{rv_pgq:0}),(rv_asq,'RVA3_AS1',{rv_asq:0}),(rv_cmq,'RVA3_CM2',None),(rv_rp,'RD0',{rv_rp:0})]

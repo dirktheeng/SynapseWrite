@@ -59,17 +59,26 @@ def reversed_(e_):
 def getn(st,n,ret):
     on(st,(None,'GBL',{gbn:n,gbv:0,gbw:1,gbi:0,gret.r:gret.id(ret)}))
 e=S('GBL'); hbit=nextbit(e)
-on('GBL',(net.ge(gbi,gbn,e),'GR',None),(net.eq(nb,0,e),'GBR',{r1:ibase+ip,ip:ip+1}),(None,'GBL',{gbv:gbv+G_(gbw,hbit),gbw:gbw*2,gbi:gbi+1,cur:Shift((cur-hbit*128)*2,512),nb:Dec(nb,1)}))
+# a whole field that the current byte still holds is taken in one tick: the byte's bits, then one line per field width
+_gq=net.and_(e,net.eq(gbi,0,e),net.ge(nb,gbn,e)); _gb=net.bits(cur,8,_gq); _gh=net.decode(gbn,9,_gq)
+_gv=X(); _gc=X()
+for n_ in range(1,9):
+    _gv=_gv+net.gate(sum((_gb[7-k_]*(2**k_) for k_ in range(n_)),X()),_gh[n_])
+    _gc=_gc+net.gate(sum((_gb[7-k_]*(2**(7-k_+n_)) for k_ in range(n_,8)),X()),_gh[n_])
+on('GBL',(net.ge(gbi,gbn,e),'GR',None),(net.and_(_gq,net.step(gbn)),'GR',{gbv:_gv,gbi:gbn,cur:_gc,nb:nb-gbn}),(net.eq(nb,0,e),'GBR',{r1:ibase+ip,ip:ip+1}),(None,'GBL',{gbv:gbv+G_(gbw,hbit),gbw:gbw*2,gbi:gbi+1,cur:Shift((cur-hbit*128)*2,512),nb:Dec(nb,1)}))
 on('GBR',(net.gt(ip,ilim,S('GBR')),'A12_IE',None),(None,'GBL',{cur:reversed_(S('GBR')),nb:8}))
-# Huffman decode, after puff: count[] at hb, symbols at hb+16
-on('DEC',(None,'X_Dl',{code:0,first:0,index:0,hlen:1}))
+# Huffman decode, after puff: count[] at hb, symbols at hb+16. Each length's limit (first code plus count) and the
+# symbol offset less its first code (lifted by HBASE, as memory writes cannot carry a negative) sit at hb+HLIM+2*len,
+# so one read per bit decides and no first or index register has to be carried along.
+HLIM=320; HBASE=65536; fq=R()
+on('DEC',(None,'X_Dl',{code:0,hlen:1}))
 e=S('X_Dl'); hbit=nextbit(e)
-on('X_Dl',(net.eq(nb,0,e),'XDR',{r1:ibase+ip,ip:ip+1}),(None,'X_D3',{code:code+hbit,cur:Shift((cur-hbit*128)*2,512),nb:Dec(nb,1),r1:hb+hlen}))
+on('X_Dl',(net.eq(nb,0,e),'XDR',{r1:ibase+ip,ip:ip+1}),(None,'X_D3',{code:code+hbit,cur:Shift((cur-hbit*128)*2,512),nb:Dec(nb,1),rl:hb+HLIM+hlen*2}))
 on('XDR',(net.gt(ip,ilim,S('XDR')),'A12_IE',None),(None,'X_Dl',{cur:reversed_(S('XDR')),nb:8}))
 e=S('X_D3'); hbit=nextbit(e)
-on('X_D3',(net.lt(code,first+R1,e),'D4',{r2:hb+16+index+code-first}),(net.ge(hlen,15,e),'OPEND',None),
- (net.eq(nb,0,e),'X_Dl',{index:index+R1,first:(first+R1)*2,code:code*2,hlen:hlen+1}),
- (None,'X_D3',{index:index+R1,first:(first+R1)*2,code:code*2+hbit,cur:Shift((cur-hbit*128)*2,512),nb:Dec(nb,1),hlen:hlen+1,r1:hb+hlen+1}))
+on('X_D3',(net.lt(code,W[0],e),'D4',{r2:hb+W[1]-HBASE+code}),(net.ge(hlen,15,e),'OPEND',None),
+ (net.eq(nb,0,e),'X_Dl',{code:code*2,hlen:hlen+1}),
+ (None,'X_D3',{code:code*2+hbit,cur:Shift((cur-hbit*128)*2,512),nb:Dec(nb,1),hlen:hlen+1,rl:hb+HLIM+2+hlen*2}))
 on('D4',(None,'HR',{sym:R2}))
 # build table from lengths LN[lb..lb+ln)
 bi=R();bo=R()
@@ -77,12 +86,12 @@ on('BLD',(None,'BC',{bi:0}))
 e=S('BC')
 on('BC',(net.ge(bi,16,e),'BD',{bi:0}),(None,'BC',{w1:(hb+bi,0),bi:bi+1}))
 e=S('BD')
-on('BD',(net.ge(bi,ln,e),'BE',{bi:1,bo:0}),(None,'BD1',{r1:as_x(LN)+lb+bi}))
+on('BD',(net.ge(bi,ln,e),'BE',{bi:1,bo:0,fq:0}),(None,'BD1',{r1:as_x(LN)+lb+bi}))
 on('BD1',(None,'BD2',{r2:hb+R1,cval:R1}))
 on('BD2',(None,'BD',{w1:(hb+cval,R2+1),bi:bi+1}))
 e=S('BE')
 on('BE',(net.ge(bi,16,e),'BF',{bi:0}),(None,'BE1',{r1:hb+bi}))
-on('BE1',(None,'BE',{w1:(as_x(OFFS)+bi,bo),bo:bo+R1,bi:bi+1}))
+on('BE1',(None,'BE',{w1:(as_x(OFFS)+bi,bo),w2:(hb+HLIM+bi*2,fq+R1),w3:(hb+HLIM+1+bi*2,as_x(HBASE+16)+bo-fq),fq:(fq+R1)*2,bo:bo+R1,bi:bi+1}))
 e=S('BF')
 on('BF',(net.ge(bi,ln,e),'CR',None),(None,'BF1',{r1:as_x(LN)+lb+bi}))
 e=S('BF1')

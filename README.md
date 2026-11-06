@@ -348,12 +348,12 @@ So buttons, tabs and menu rows need no table of rectangles: they paint their ids
 
 ### How a letter gets drawn
 
-There is no stored bitmap font, and no transform basis. Open font outlines are compiled straight into weights. Each outline edge is a neuron whose weights are that edge's line coefficients. A glyph is literally a small program made of neurons.
+There is no stored bitmap font, and no transform basis. Open font outlines are compiled straight into weights. Each monotone chain of outline edges is one neuron whose weights are the chain's start, its first slope and the slope change at each vertex. A glyph is literally a small program made of neurons.
 
 <p align="center"><img src="docs/figures/glyph_raster.gif" width="860" alt="Animation of an outline being converted to pixel coverage by edge neurons, ramps and winding"></p>
 
 1. A binary tree over the glyph's outline heights selects the edges that cross the current sample line.
-2. Each edge neuron computes `x = X0*s + m*(y - Y0)`, where `s` scales for the font size.
+2. Each chain neuron computes `x = X0*s + m0*(y - Y0) + sum of (m_k - m_(k-1))*relu(y - Y_k)` over its inner vertices, where `s` scales for the font size. One threshold per chain end decides when it is live, and the ramps `relu(y - Y_k)` are shared by every glyph of the face.
 3. A shared bank of ramps, `R_q = relu(q - x)`, turns a crossing into pixel shares: `R_(q+1) - R_q`.
 4. The signed sum is the winding number. A clamp makes it coverage.
 5. Four sample lines accumulate into one pixel row.
@@ -519,7 +519,7 @@ This is the largest family. It is what replaces a font engine. The method is des
 
 | Sub-network | Neurons | What it does | Why it exists |
 |---|---:|---|---|
-| `glyph weights (outline edges)` | 430,017 | Holds the font outlines as edge neurons, one small program per glyph. | This is the font itself, written as weights. It accounts for most of the neurons, since eight families with their faces hold many edges. |
+| `glyph weights (outline edges)` | 130,598 | Holds the font outlines as chain neurons, one small program per glyph. | This is the font itself, written as weights. It accounts for most of the neurons, since eight families with their faces hold many edges. |
 | `glyph metrics` | 20,493 | Holds advance widths and kerning as decision trees. | Layout needs widths for each character, and it should not have to draw a glyph to learn one. |
 | `glyph pixel records` | 19,104 | Records a small glyph drawn black on white, so that later draws take one read and one patch. | Most repaint cost was glyph rows. Replaying a record is much cheaper for the common case of plain text. |
 | `glyph unit` | 10,800 | Runs the drawing of one glyph, in its own clock domain. | Paint can stall while a glyph is generated, and that keeps the paint loop simple. |
