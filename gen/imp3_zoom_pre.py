@@ -2,16 +2,18 @@ TAGB_SPAN=600000
 # Zoom: a linear map between the document's own pixels and the screen, sitting between the paint buses and the ports.
 # Levels are one-hot registers; at 100 percent none is on, so every gate here stays closed and adds no work.
 # Layout, hit lists and saved files keep document pixels; only what reaches the ports and what comes back from the mouse is mapped.
-ZL=[0.5,0.75,1.25,1.5]; ZLH=[net.reg() for _ in ZL]; ZCX=631
+ZL=[0.5,0.75,1.25,1.5,1.75,2.0]; ZLH=[net.reg() for _ in ZL]; ZCX=631
 zany=net.or_(*ZLH); zdoc=net.step(zany*M-M+clip0-173.5); zrul=net.reg(); VHZ=net.reg(DOCB-DOCY); zt=net.reg(2); zpct=net.reg(100); rdm=net.reg()
 _zx=[net.and_(h_,net.or_(zdoc,zrul)) for h_ in ZLH]; _zy=[net.and_(h_,zdoc) for h_ in ZLH]
+zsf=net.reg(4096); zwd=net.reg()   # a page wider than the window slides sideways: zsf is the slide plus 4096, zwd says one is on
+def zsl(en): return net.gate(zsf,en)-en*4096
 def _zmap(e,hs,factor,a):
     e=as_x(e); o=e
     for h_,z_ in zip(hs,ZL): o=o+(factor(z_)-1)*(net.gate(e,h_)-h_*a)
     return o
-def zfx0(e): return _zmap(e,ZLH,lambda z_:z_,ZCX)
+def zfx0(e): return _zmap(e,ZLH,lambda z_:z_,ZCX)+zsl(zwd)
 def zfy0(e): return _zmap(e,ZLH,lambda z_:z_,DOCY)
-def zev(e): return _zmap(e,ZLH,lambda z_:1/z_,ZCX)
+def zev(e): return _zmap(as_x(e)-zsl(zwd),ZLH,lambda z_:1/z_,ZCX)
 def zevy(e): return _zmap(e,ZLH,lambda z_:1/z_,DOCY)
 def _zw(e,hs):
     e=as_x(e); o=e
@@ -21,7 +23,7 @@ def _zwire(e): w_=net.wire(); net.connect(w_,e); return w_
 # the scrollbar rule fires on the tick that closes the document clip
 _ZRE2=fsm.S('RE2')
 for r_ in (rA,rB,rC,rD):
-    r_.z={1:_zwire(_zmap(r_.b[1].w,[net.and_(h_,ONE-_ZRE2) for h_ in _zx],lambda z_:z_,ZCX)),2:_zwire(_zmap(r_.b[2].w,[net.and_(h_,ONE-_ZRE2) for h_ in _zy],lambda z_:z_,DOCY+YB)),
+    r_.z={1:_zwire(_zmap(r_.b[1].w,[net.and_(h_,ONE-_ZRE2) for h_ in _zx],lambda z_:z_,ZCX)+zsl(net.and_(zwd,net.or_(zdoc,zrul),ONE-_ZRE2))),2:_zwire(_zmap(r_.b[2].w,[net.and_(h_,ONE-_ZRE2) for h_ in _zy],lambda z_:z_,DOCY+YB)),
           3:_zwire(_zw(r_.b[3].w,[net.and_(h_,ONE-_ZRE2) for h_ in _zx])),4:_zwire(_zw(r_.b[4].w,[net.and_(h_,ONE-_ZRE2) for h_ in _zy]))}
 _zgh={}
 def _zgl():
@@ -29,7 +31,7 @@ def _zgl():
         p_=ONE-net.step(g_fx.w)     # the pointer is a glyph and stays on the screen's own pixels
         _zgh['x']=[net.and_(h_,p_) for h_ in _zx]; _zgh['y']=[net.and_(h_,p_) for h_ in _zy]
     return _zgh
-def zgx(e): return _zwire(_zmap(e,_zgl()['x'],lambda z_:z_,ZCX))
+def zgx(e): return _zwire(_zmap(e,_zgl()['x'],lambda z_:z_,ZCX)+zsl(net.and_(zwd,net.or_(zdoc,zrul),ONE-net.step(g_fx.w)))+net.step(g_draw.w)*glyphnet.XO)
 def zgy(e): return _zwire(_zmap(e,_zgl()['y'],lambda z_:z_,DOCY+YB))
 def zfyb(e): return _zmap(as_x(e)+YB,ZLH,lambda z_:z_,DOCY+YB)-YB
 def zoom_sizes(size_hot):

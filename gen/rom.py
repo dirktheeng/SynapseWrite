@@ -118,3 +118,22 @@ def kern_pairs(thr=0.014):
                                     if cb>=127: continue
                                     out.setdefault((ca,cb),{})[(fi,bo,it)]=v/upm
     return out
+# ---- characters past Latin-1: a cell holds UO plus the UTF-16 code unit. Pages of 128 are drawn from Carlito's own subsets; others draw a box and stay in the text. ----
+UO=1<<20
+EXT_PAGES=[0x100,0x380,0x400,0x2000,0x2080,0x2100]
+EXT_SUBS=('latin','latin-ext','greek','cyrillic','cyrillic-ext')
+EXT_VARS=[(0,0,0),(0,1,0),(0,0,1)]
+_XC={}
+def ext_cmap(v):
+    "Code point to (subset, glyph) for one Carlito face."
+    if v not in _XC:
+        m={}
+        for sub in EXT_SUBS:
+            for u,g in tt(*v,sub).getBestCmap().items(): m.setdefault(u,(sub,g))
+        _XC[v]=m
+    return _XC[v]
+def ext_page(v,p):
+    "{low 7 bits:(subset,glyph)} of a page of one face. Blank glyphs and the cp1252 punctuation stay as they are."
+    m=ext_cmap(v); return {u-p:m[u] for u in range(p,p+128) if u in m and u not in UNI_MAP}
+def ext_adv(v,sg):
+    sub,g=sg; f=tt(*v,sub); return f['hmtx'][g][0]/f['head'].unitsPerEm

@@ -173,7 +173,7 @@ on('PX2',(net.ge(nextb,SLOTMAX,e),'T2_ZN',None),(net.and_(t2skip,ONE-pat('</w:st
  *A5_PX_EARLY(e),
  (tag('<w:p',' >'),'PN1',{oi:oi+4}),
  (tag('<w:t',' >'),'TX0',{oi:oi+4}),
- (tag('<w:r',' >'),'PX',{ics:t2ps,rnop:0,oi:oi+4}),
+ (tag('<w:r',' >'),'PX',{ics:(t2ps,t2pK,t2pN,X()),rnop:0,oi:oi+4}),
  (tag('<w:b','/ '),'T2_TV',{t2k:0,oi:oi+4}),
  (tag('<w:i','/ '),'T2_TV',{t2k:1,oi:oi+4}),
  (tag('<w:u','/ '),'T2_TV',{t2k:2,oi:oi+4}),
@@ -206,7 +206,7 @@ on('PX2',(net.ge(nextb,SLOTMAX,e),'T2_ZN',None),(net.and_(t2skip,ONE-pat('</w:st
  (pat('<w:abstr',e),'T2_AB',{rl:OA+oi+8}),
  (pat('<w:num ',e),'T2_NM',{oi:oi+7,t2n_:0,t2rr.r:t2rr.id('T2_NX')}),
  (pat('<w:lvl ',e),'T2_NM',{oi:oi+7,t2n_:0,t2rr.r:t2rr.id('T2_LV')}),
- (pat('<w:numFm',e),'T2_FM',{rl:OA+oi+17}),
+ (pat('<w:numFm',e),'T2_FM',{rl:OA+oi+17}),(lpat('<w:lvlTe',e),'V6_LT',{rl:OA+oi+18}),
  *A4_PX(e),
  *A6_PX_RULES(e),*T3_PX_RULES(e),
  (None,'PX',{oi:oi+1}))
@@ -246,16 +246,17 @@ on('TX3',(_tgo,'TX2',{oi:oi+_ntx2,co:co+_ntx2,clen:clen+_ntx2}),(ltx,'PX',None),
  (net.and_(amp_,net.eq(W[1],103,e)),'INS',{ins_ch:62,ins_st:csi+rhi,oi:oi+4,oret.r:oret.id('TX2')}),
  (net.and_(net.ge(W[0],192,e),net.lt(W[0],224,e)),'T2_U8',{t2cp:(W[0]-192)*64+(W[1]-128),oi:oi+2}),
  (net.and_(net.ge(W[0],224,e),net.lt(W[0],240,e)),'T2_U8',{t2cp:(W[0]-224)*4096+(W[1]-128)*64+(W[2]-128),oi:oi+3}),
- (net.ge(W[0],240,e),'T2_U8',{t2cp:63,oi:oi+4}),
+ (net.ge(W[0],240,e),'V7_R4',{t2cp:(W[0]-240)*262144+(W[1]-128)*4096+(W[2]-128)*64+(W[3]-128)-65536,oi:oi+4}),
  (net.or_(net.gt(W[0],126,e),net.lt(W[0],32,e),net.ge(clen,1000,e)),'TX2',{oi:oi+1}),
  # plain text always lands at the end of the paragraph being read, so it is written here and the next byte is already on its way
  (None,'TX3',{w1:(cb+co,W[0]),w2:(cb+1024+co,csi+rhi),w3:(cb+LEN,clen+1),co:co+1,clen:clen+1,oi:oi+1,rl:OA+oi+1}))
 e=S('RF9')
-_RF=[('Caladea',1,0),('Cambria',1,1),('Arimo',2,0),('Arial',2,1),('Helvetic',2,0),('Tinos',3,0),('Times',3,1),('Georgia',3,0),('Garamond',3,0),('Cousine',4,0),('Courier',4,1),('Consolas',4,0),('Open San',5,0),('Verdana',5,0),('Tahoma',5,0),('Oswald',6,0),('Caveat',7,0),('Carlito',0,0),('Calibri',0,1)]
-on('RF9',(pat('Liberati',e),'A5_LIB',{rl:OA+oi+11}),*[(pat(n_,e),'T2_C',{t2k:3,t2v:f_,oi:oi+8,**({falias[f_]:1} if a_ else {})}) for n_,f_,a_ in _RF],(None,'T2_C',{t2k:3,t2v:0,oi:oi+8}))
+def _seed1(n_): return 1+next((i_ for i_,q_ in enumerate(FNSEED) if q_.startswith(n_)),0)
+_RF=[('Segoe',5,0),('Book Ant',3,0),('Palatino',3,0),('Century',3,0),('Baskervi',3,0),('Lucida C',4,0),('Liberati',2,0),('Trebuche',5,0),('Noto San',5,0),('Noto Ser',3,0),('Roboto',2,0),('Aptos',0,0),('Corbel',0,0),('Candara',0,0),('Constant',1,0),('Caladea',1,0),('Cambria',1,1),('Arimo',2,0),('Arial',2,1),('Helvetic',2,0),('Tinos',3,0),('Times',3,1),('Georgia',3,0),('Garamond',3,0),('Cousine',4,0),('Courier',4,1),('Consolas',4,0),('Open San',5,0),('Verdana',5,0),('Tahoma',5,0),('Oswald',6,0),('Caveat',7,0),('Carlito',0,0),('Calibri',0,1)]
+on('RF9',(pat('Liberati',e),'A5_LIB',{rl:OA+oi+11}),*[(lpat(n_,e),'V4_FS',{t2k:3,t2v:f_,v4i:_seed1(n_),v4f:1,v4j:0,**({falias[f_]:1} if a_ else {})}) for n_,f_,a_ in _RF],(None,'V4_FS',{t2k:3,t2v:0,v4i:1,v4j:0}))
 e=S('CO0'); cvv=X(); exact=X()
 for j_ in range(1,32):
-    p_=pat('%02X%02X%02X'%PAL_F[j_],e); cvv=cvv+p_*j_; exact=exact+p_
+    p_=lpat('%02X%02X%02X'%PAL_F[j_],e); cvv=cvv+p_*j_; exact=exact+p_
 def hexd(c_,en): return as_x(c_)-48-net.ge(c_,65,en)*7-net.ge(c_,97,en)*32
 hr=net.bits(hexd(W[0],e),4,e);hg=net.bits(hexd(W[2],e),4,e);hb_=net.bits(hexd(W[4],e),4,e)
 hix=(hr[1]+hr[2]*2+hr[3]*4)*64+(hg[1]+hg[2]*2+hg[3]*4)*8+(hb_[1]+hb_[2]*2+hb_[3]*4)
@@ -265,7 +266,9 @@ for i_ in range(512):
     r_,g_,b_=((i_>>6)&7)*36+18,((i_>>3)&7)*36+18,(i_&7)*36+18
     _ctab.append(min(range(32),key=lambda j:(PAL_F[j][0]-r_)**2+(PAL_F[j][1]-g_)**2+(PAL_F[j][2]-b_)**2))
 _ctab=rom_table(_ctab)
-on('CO0',(au,'T2_C',{t2k:7,t2v:0,oi:oi+6}),(exf,'T2_C',{t2k:7,t2v:cvv,oi:oi+6}),(None,'A10_CO',{r1:as_x(_ctab)+hix,oi:oi+6}))
+def _hx(c_): return hexd(c_,e)
+_rgbv=_hx(W[0])*(1<<20)+_hx(W[1])*(1<<16)+_hx(W[2])*(1<<12)+_hx(W[3])*(1<<8)+_hx(W[4])*16+_hx(W[5])+1
+on('CO0',(au,'T2_C',{t2k:7,t2v:0,oi:oi+6}),(exf,'T2_C',{t2k:7,t2v:cvv,oi:oi+6}),(None,'A10_CO',{r1:as_x(_ctab)+hix,oi:oi+6,t2kx:_rgbv}))
 on('A10_CO',(None,'T2_C',{t2k:7,t2v:R1}))
 on('OPEND',(vdry,'IMP_VF',None),(None,'OPE2',{nolog:0,clip0:0,clip1:0}))
 on('OPE2',(None,'A5_CX0',{autos:1,lc:1,dfrom:0,ity:as_x(0),a5i:1}))

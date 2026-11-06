@@ -24,4 +24,9 @@ def pat(st,e,offs=0):
     return _wlines[(st,offs)]
 def tag(n,end): return net.or_(*[pat(n+q,e) for q in end])   # one bounded neuron, so a rule's state can wake it and the window lines are read only when asked
 tagA=tag
+def lpat(st,e):
+    "A pattern for a rare rule: bytes tested in turn from its fourth, each enabled by the one before, so it adds no threshold to the shared window."
+    c=e
+    for i_ in list(range(3,len(st)))+list(range(min(3,len(st)))): c=net.eq(W[i_],ord(st[i_]),c)
+    return c
 def pat_finish(): print('window comparator patterns',len(_wlines),'thresholds',len(_wth[0])+len(_wth[1]),file=sys.stderr)

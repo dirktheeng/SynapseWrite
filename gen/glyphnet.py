@@ -72,11 +72,11 @@ def merge(c,tol,quant):
         q=o
     return q
 _NC={}
-def named(fi,bo,it,sub,name):
-    "Closed flattened contours of one font glyph in em units (y up)."
-    key=(fi,bo,it,sub,name)
+def named(fi,bo,it,sub,name,tm=1.0):
+    "Closed flattened contours of one font glyph in em units (y up). tm widens the flattening tolerance."
+    key=(fi,bo,it,sub,name,tm)
     if key in _NC: return _NC[key]
-    f=rom.tt(fi,bo,it,sub); gs=f.getGlyphSet(); upm=f['head'].unitsPerEm; t_=tol_em()*upm
+    f=rom.tt(fi,bo,it,sub); gs=f.getGlyphSet(); upm=f['head'].unitsPerEm; t_=tol_em()*upm*tm
     p=Flat(gs,t_); gs[name].draw(p); out=[]
     for c in p.cs:
         m=merge(c,t_/8,GRID_EM/upm)
@@ -99,6 +99,7 @@ def edges(cs):
             if a[1]==b[1]: continue
             E.append((a[1],a[0],b[1],b[0],1) if a[1]<b[1] else (b[1],b[0],a[1],a[0],-1))
     return E
+EXTTAG=(1<<30,0); PFM={}; XO=4096    # glyph x arrives lifted by XO: a page wider than the window draws to the left of it
 def _ymax(fi,bo,it,ch):
     cs=contours(fi,bo,it,ord(ch)); ys=[p[1] for c in cs for p in c]; return (max(ys),min(ys)) if ys else (0.0,0.0)
 _FM={}
@@ -215,18 +216,19 @@ class GlyphUnit:
     def _build(g):
         net=g.net; ONE=net.ONE; LW=g.LW
         # ---- arguments, valid on the go tick only ----
-        A=g.A=dict(go=net.input(),ch=net.input(),face=net.input(),sz=net.input(),ppem=net.input(),pt=net.input(),x=net.input(),y=net.input(),fg=net.input(),bg=net.input(),nc=net.input())
+        A=g.A=dict(go=net.input(),ch=net.input(),face=net.input(),sz=net.input(),ppem=net.input(),pt=net.input(),x=net.input(),y=net.input(),fg=net.input(),bg=net.input(),nc=net.input(),fc=net.input())
         go=A['go']
         fin=net.wire()
         def L0(val,load,clear): 
             r=net.reg(); net.rec(r,r-net.relu(r+clear*M-M)+net.gate(val,load)); return r
         def L(val,load=go): return L0(val,load,fin)
-        Lch=L(A['ch']);Lface=L(A['face']);Lsz=L(A['sz']);Lppem=L(A['ppem']);Lpt=L(A['pt']);Lx=L(A['x']);Ly=L(A['y']);Lfg=L(A['fg']);Lbg=L(A['bg']);Lnc=L(A['nc'])
+        Lch=L(A['ch']);Lface=L(A['face']);Lsz=L(A['sz']);Lppem=L(A['ppem']);Lpt=L(A['pt']);Lx=L(A['x']);Ly=L(A['y']);Lfg=L(A['fg']);Lbg=L(A['bg']);Lnc=L(A['nc']);Lfc=L(A['fc'])
         # ---- tag read ----
         retry=net.reg(); s0=net.reg(); s1=net.reg(); net.rec(s0,go+retry); net.rec(s1,s0)
         g.FK=rom.NSZ*256
         g.key=Lface*g.FK+Lsz*256+Lch
-        kw=net.wire(); net.connect(kw,net.gate(g.key+g.TAG,s0))
+        _xf,_xt=EXTTAG; _xd=_xt-g.TAG-_xf*g.FK; g.tagaddr=lambda k_,en_: net.gate(k_+g.TAG,en_)+net.gate(Lface*0+_xd,net.step(en_*M-M+Lface-_xf+0.5))
+        kw=net.wire(); net.connect(kw,g.tagaddr(g.key,s0))
         tagout=net.input(1+HDR); tag,H=tagout[0],tagout[1:]
         rd=_TagRead(s0,kw,tag,g.STORE,1+HDR); net.ports.append(rd); rd.dom=1
         kl=net.gate(g.key+1,s1)          # the block must carry this key
@@ -237,7 +239,7 @@ class GlyphUnit:
         # A small glyph drawn black on white before: its pixels were recorded off the row plane, so one read and one patch draw it, with no row loop and no plane.
         recg=net.reg()
         fast_=net.wire(); fnc_=net.wire()
-        blk=net.and_(hit,rowsz,fast_,ONE-fnc_,net.step(H[5]-0.5),net.ge(H[6],recg,hit),net.ge(recg,H[6],hit))
+        fs_=net.wire(); blk=net.and_(hit,rowsz,net.step(fast_+fs_),ONE-fnc_,net.step(H[5]-0.5),net.ge(H[6],recg,hit),net.ge(recg,H[6],hit))
         start=net.and_(hit,rowsz,ONE-blk); empty=hit-net.and_(hit,rowsz)
         brun=net.reg(); brows=net.reg(); bcells=L(H[2],start)
         baddr=net.reg(); bpy=net.reg(); bwr=net.reg(); blast=net.reg()
@@ -255,12 +257,12 @@ class GlyphUnit:
         rr=_RowRead(brun,baddr,rowcov[0],LW,bcells); net.ports.append(rr); rr.dom=1
         # ---- colour: one line per channel bit of the selected palette entries, held during the draw ----
         sg=net.reg(); s1g=net.reg(); net.rec(sg,go); net.rec(s1g,sg)      # first pass only; a retry after a miss loads nothing twice
-        fgb=net.eq(Lfg,1,sg)
+        fcu=net.step(Lfc); fgb=net.and_(net.eq(Lfg,1,sg),ONE-fcu)
         fast=L(net.and_(fgb,net.eq(Lbg,1,sg)),sg); fsel=L(net.and_(fgb,net.eq(Lbg,2,sg)),sg)
-        net.connect(fast_,fast); net.connect(fnc_,Lnc)
+        bgw=L(net.eq(Lbg,1,sg),sg); net.connect(fast_,fast); net.connect(fs_,fsel); net.connect(fnc_,Lnc)   # selected text takes the same record: on the selection color the darker pixel wins, as it does for overlapping letters
         slow0=net.and_(s1g,ONE-fast,ONE-empty)
-        def lines(pal,val):
-            h=net.decode(val-1,len(pal),slow0); out=[]
+        def lines(pal,val,en_=None):
+            h=net.decode(val-1,len(pal),slow0 if en_ is None else en_); out=[]
             for k in range(3):
                 for b_,wt in enumerate(GRIDW):
                     e_=X()
@@ -268,7 +270,12 @@ class GlyphUnit:
                         if gridbits(col[k])[b_]: e_=e_+h[j]
                     if e_.t: out.append((k,wt,L(net.step(e_),slow0)))
             return out
-        fgl=lines(g.palF,Lfg); bgl=lines(g.palB,Lbg)
+        fce=net.and_(slow0,fcu); fxl=[]; fxv=[]; fgl=lines(g.palF,Lfg,net.and_(slow0,ONE-fcu)); bgl=lines(g.palB,Lbg)
+        # an exact color: one line per bit of each channel, weighted as a binary number
+        _fcb=net.bits(Lfc-1,24,fce)
+        for k in range(3):
+            for b_ in range(4,8): fxl.append((k,17<<(b_-4),L(_fcb[16-8*k+b_],fce)))
+            fxv.append(L(sum((_fcb[16-8*k+b_]*(1<<b_) for b_ in range(8)),X()),fce))
         # ---- row plane ----
         data=[net.wire() for _ in range(4*LW)]
         nonw=ONE-fast
@@ -279,15 +286,21 @@ class GlyphUnit:
             sl=net.step(nw*M-M+fsel-0.5); slow=net.step(nw*M-M+(ONE-fsel)-0.5)
             cs=net.relu(sl*M-M+m-c)
             for k in range(3): o[k]=o[k]+cs*(g.palB[1][k]-255)
-            ic=net.relu(slow*M-M+m-c)
+            slb=net.step(slow*M-M+(ONE-bgw)-0.5)   # on white the base term above is already the background, so its lines rest
+            ic=net.relu(slb*M-M+m-c)
             for k in range(3): o[k]=o[k]-ic*255
-            for k,wt,ln in fgl: o[k]=o[k]+net.relu(slow*M-M+c+ln-1)*wt
-            for k,wt,ln in bgl: o[k]=o[k]+net.relu(slow*M-M+m-c+ln-1)*wt
+            slz=net.step(slow*M-M+(ONE-fcu)-0.5)   # the palette's lines rest for an exact color, whose own wake instead
+            for k,wt,ln in fgl: o[k]=o[k]+net.relu(slz*M-M+c+ln-1)*wt
+            # An exact color: a fully covered pixel takes the channel values as they are, three neurons; an edge pixel blends the top four bits of each.
+            slx=net.step(slow*M-M+fcu-0.5); fuq=net.step(slx*M-M+c-0.9); slq=net.step(slx-fuq-0.5)
+            for k in range(3): o[k]=o[k]+net.relu(fuq*M-M+fxv[k])
+            for k,wt,ln in fxl: o[k]=o[k]+net.relu(slq*M-M+c+ln-1)*wt
+            for k,wt,ln in bgl: o[k]=o[k]+net.relu(slb*M-M+m-c+ln-1)*wt
             for k in range(3): net.connect(data[4*i+k],o[k])
             net.connect(data[4*i+3],m)
         net.aligned.append([next(iter(w.t)) for w in data])
         px=net.wire(); py=net.wire()
-        net.connect(px,net.gate(bpx,bwr)-bwr*OFF); net.connect(py,net.gate(bpy,bwr))
+        net.connect(px,net.gate(bpx,bwr)-bwr*(OFF+XO)); net.connect(py,net.gate(bpy,bwr))
         p1=g.patch_cls(net.step(bwr-Lnc*2-fast*2-0.5),px,py,data,LW,1); p2=g.sprite_cls(net.step(bwr+Lnc*2-2.5),px,py,data,LW,1); p3=g.patch_cls(net.step(bwr+fast-Lnc*2-1.5),px,py,data,LW,1); p3.kind=11
         p1.dom=1;p2.dom=1;p3.dom=1
         # ---- pixel records ----
@@ -296,7 +309,7 @@ class GlyphUnit:
         rp=net.reg(init=1.0); net.rec(recg,recg+net.step(blast*M-M+rp-(RECE-RECB-RECW*RECH*4-8)))   # the ring wraps: older records are stale by generation
         rd4=_RowRead(blk,net.gate(H[5]-1+RECB,blk),recin[0],4*RECW*RECH,net.gate(H[1]*(4*RECW),blk)); net.ports.append(rd4); rd4.dom=1
         rbx=L(Lx-H[3]+OFF+OFF,blk); rby=L(Ly-H[4]+OFF,blk)
-        qx=net.wire(); qy=net.wire(); net.connect(qx,net.gate(rbx,blk1)-blk1*OFF); net.connect(qy,net.gate(rby,blk1))
+        qx=net.wire(); qy=net.wire(); net.connect(qx,net.gate(rbx,blk1)-blk1*(OFF+XO)); net.connect(qy,net.gate(rby,blk1))
         p4=g.patch_cls(blk1,qx,qy,recin,RECW,RECH); p4.kind=11; p4.dom=1
         # a first draw records: rows are written from the row plane, then the block's header takes the record's place
         small=net.and_(start,ONE-net.step(H[1]-RECH-0.5),ONE-net.step(H[2]-RECW-0.5),fast_,ONE-fnc_)
@@ -325,7 +338,10 @@ class GlyphUnit:
         # one hot face and a binary tree over the character, walked only on the start tick
         faceidx=Lface
         NF=max(len(g.faces),max(g.pseudo)+1)
-        fh=net.decode(faceidx,NF,st,hot=True)
+        # extended pages have a decoder of their own, so a common face does not pay for them
+        _xf0=EXTTAG[0] if EXTTAG[0]<NF else NF
+        stx=net.step(st*M-M+faceidx-_xf0+0.5); st0=net.step(st-stx-0.5)
+        fh=net.decode(faceidx,_xf0,st0,hot=True)+(net.decode(faceidx-_xf0,NF-_xf0,stx,hot=True) if NF>_xf0 else [])
         chv=net.relu(Lch-32+1+st*M-M); chok=net.step(chv); bits=net.bits(chv-1,8,chok)
         leaf={}
         def tnode(p,sel,neg=False): return net.step(p*M-M+((ONE-sel) if neg else sel)-0.5)
@@ -351,7 +367,7 @@ class GlyphUnit:
         sx=net.and_(net.step(xrule),net.ge(Lpt,11,st),net.lt(Lpt,19,st))
         def per_face(name):
             e=X()
-            for fi,f in enumerate(g.faces):
+            for fi,f in list(enumerate(g.faces))+list(PFM.items()):
                 z=face_metrics(*f)[name]
                 e=e+net.gate(I_s*z,fh[fi])
             return e
@@ -365,7 +381,7 @@ class GlyphUnit:
             return floor_(v+off,sy)+net.gate(v,ny), v
         kn=g.kn={}
         v_des=X()
-        for fi,f in enumerate(g.faces): v_des=v_des+net.gate(I_s*(-face_metrics(*f)['des']),fh[fi])
+        for fi,f in list(enumerate(g.faces))+list(PFM.items()): v_des=v_des+net.gate(I_s*(-face_metrics(*f)['des']),fh[fi])
         kn['D']=latch(floor_(v_des+0.5,sy)+net.gate(v_des,ny))
         kxh,vxh=knot('xh'); kcap,vcap=knot('cap'); kasc,vasc=knot('asc')
         kn['XH']=latch(kxh); kn['CAP']=latch(kcap); kn['ASC']=latch(kasc)
@@ -402,7 +418,7 @@ class GlyphUnit:
         for w_,v_ in zip(hw,(net.gate(key+1,st),rowsv,net.gate(cells,st),net.gate(OX,st),net.gate(T,st))): net.connect(w_,v_)
         net.aligned.append([next(iter(w.t)) for w in hw])
         a0w=net.wire(); net.connect(a0w,a0)
-        tagv=net.wire(); net.connect(tagv,a0-st*g.STORE); tkw=net.wire(); net.connect(tkw,net.gate(key+g.TAG,st))
+        tagv=net.wire(); net.connect(tagv,a0-st*g.STORE); tkw=net.wire(); net.connect(tkw,g.tagaddr(key,st))
         p=_Write(st,a0w,hw[0],5); net.ports.append(p); p.dom=1
         # a new block has no record yet: two cells from the record plane, which is at rest here
         a5w=net.wire(); net.connect(a5w,a0+st*5); p=_Write(st,a5w,g.recin[0],2); net.ports.append(p); p.dom=1
@@ -453,10 +469,16 @@ class GlyphUnit:
                     if k not in prog:
                         cs=named(*f,*pk); E=edges(cs); sl,nu,nd=g._slots(E)
                         prog[k]=dict(cs=cs,E=E,sl=sl,nup=nu,ndn=nd,acc=pk in acc,raw=False,st=stems(*f,cs) if rom.x_snap_face(*f) and pk not in acc else [],fm=face_metrics(*f),lf=net.wire())
+        _same={(f,str(p_['cs'])):k_ for k_,p_ in prog.items() for f in [g.faces[k_[0]]] if not p_['acc'] and p_['cs']}
         for fi,d in g.pseudo.items():
             for c,(cs,raw) in d.items():
+                # the same outline in the same face is one program: a Cyrillic A fires the Latin A's weights
+                if fi in PFM and cs:
+                    q_=_same.get((PFM[fi],str(cs)))
+                    if q_: comp[fi,c]=[(('alias',q_),0.0,0.0)]; continue
                 k=(fi,'pseudo',c); E=edges(cs); sl,nu,nd=g._slots(E)
-                fm=face_metrics(*g.faces[fi]) if fi<len(g.faces) else None
+                if fi in PFM and cs: _same[PFM[fi],str(cs)]=k
+                fm=face_metrics(*g.faces[fi]) if fi<len(g.faces) else (face_metrics(*PFM[fi]) if fi in PFM else None)
                 prog[k]=dict(cs=cs,E=E,sl=sl,nup=nu,ndn=nd,acc=False,raw=raw,st=[],fm=fm,lf=net.wire()); comp[fi,c]=[(('pseudo',c),0.0,0.0)]
         nu=max([1]+[p['nup'] for p in prog.values() if not p['acc']]); nd=max([1]+[p['ndn'] for p in prog.values() if not p['acc']])
         nua=max([0]+[p['nup'] for p in prog.values() if p['acc']]); nda=max([0]+[p['ndn'] for p in prog.values() if p['acc']])
@@ -468,7 +490,7 @@ class GlyphUnit:
             lf=leaf.get((fi,c))
             if lf is None: continue
             for j,(pk,dx,dy) in enumerate(parts):
-                k=(fi,)+pk; P=prog[k]
+                k=pk[1] if pk[0]=='alias' else (fi,)+pk; P=prog[k]
                 if P['E']: net.connect(haswire,lf)
                 net.connect(P['lf'],lf)
                 if j==1:

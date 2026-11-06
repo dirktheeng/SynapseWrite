@@ -38,7 +38,8 @@ _nl=net.eq(R1,10,e); _bad=net.and_(net.lt(R1,32,e),ONE-net.eq(R1,9,e),ONE-_nl)
 _lim=net.ge(_tl+2,QMAX,e)
 _cf=net.and_(e,field); _cq=e-_cf
 _adv=lambda n_:{qlen:qlen+G_(as_x(n_),_cq),rlen:rlen+G_(as_x(n_),_cf)}
-on('IMP3_P2',(net.or_(_bad,_lim),'IMP3_P1',{pi_:pi_+1}),(_nl,'IMP3_P3',{w1:(_tgt,94),w2:(_tgt+1,112),pi_:pi_+1,**_adv(2)}),(None,'IMP3_P1',{w1:(_tgt,R1),pi_:pi_+1,**_adv(1)}))
+on('IMP3_P2',(net.or_(_bad,_lim),'IMP3_P1',{pi_:pi_+1}),(_nl,'IMP3_P3',{w1:(_tgt,94),w2:(_tgt+1,112),pi_:pi_+1,**_adv(2)}),(None,'IMP3_P1',{w1:(_tgt,um_out+G_(R1,net.eq(R1,9,e))),pi_:pi_+1,**_adv(1)}))
+um_en.lin(e); um_in.add(e,R1)
 on('IMP3_P3',(None,'IMP3_P1',None))
 on('IMP3_RQ',(field,'IMP3_P0',{qrep:0}),(qrep,'IMP3_P0',{qlen:0,qrep:0,**CSTART}),(None,'IMP3_P0',CSTART))
 e=S('RP3'); on('RP3',(net.and_(net.eq(R1,94,e),net.lt(ri+1,rlen,e)),'IMP3_R1',{r1:as_x(RPL)+ri+1}),(None,'INS',{ins_ch:R1,ins_st:TST,ri:ri+1,oret.r:oret.id('RP2')}))

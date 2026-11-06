@@ -104,7 +104,7 @@ on('T1_HV',(None,'T1_HV1',{pix:(hx_,hy_)}))
 e=S('T1_HV1'); isb=net.or_(net.and_(net.ge(A_,201,e),net.lt(A_,250,e)),net.and_(net.ge(A_,251,e),net.lt(A_,254,e)),net.eq(A_,255,e))
 newh=G_(A_,isb)+a4_hover(e); hch=net.step(net.gt(newh,t1_hov,e)+net.lt(newh,t1_hov,e))
 inrow=net.eq(A_,254,e); nr=X()
-for k_ in range(1,11): nr=nr+net.ge(hy_,t1_mtop+RH*k_,e)
+for k_ in range(1,20): nr=nr+net.ge(hy_,t1_mtop+RH*k_,e)
 _gm=net.or_(net.eq(t1_mop,3,e),net.eq(t1_mop,7,e),net.eq(t1_mop,10,e)); _gc=X()
 for k_ in range(1,8): _gc=_gc+net.ge(hx_,t1_mx+GC*k_,e)
 newr=G_(nr,net.and_(inrow,ONE-_gm))+G_(nr*8+_gc,net.and_(inrow,_gm))+(e-inrow)*99; rch=net.step(net.gt(newr,t1_mrow,e)+net.lt(newr,t1_mrow,e))
@@ -140,7 +140,7 @@ on('T1_R0',(None,'T1_R1',{ra4t:cb+A4T,ra4:cb+A4C,rc:cb+2062,rl:cb+SAVE,rp6:cb+PI
 e=S('T1_R1'); tb9=net.step(rc.out[0]); two9=net.and_(ONE-tb9,net.eq(ncol,2,e)); one9=net.and_(e,ONE-tb9,ONE-two9)
 rL9=s_tx+G_(MT[1],tb9)+tb9*6+net.gate(rl.out[5],e)
 rW9=G_(MT[0],tb9)+G_(s_tw,one9)+G_((s_tw-24)*0.5,two9)
-_lb9=net.bits(R1,4,e); rI9=net.gate(rp6.out[0],e)+net.step(R1)*48+(_lb9[2]+_lb9[3]*2)*48
+_lb9=net.bits(R1,9,e); rI9=net.gate(rp6.out[0],e)+net.step(R1)*48+(_lb9[2]+_lb9[3]*2)*48
 on('T1_R1',(net.and_(e,ONE-t1_ruler),'T1_V0',None),
  (net.and_(t1_rv,net.eq(rL9,t1_rL,e),net.eq(rW9,t1_rW,e),net.eq(rI9,t1_rI,e),net.eq(rp6.out[1],a4rF,e),net.eq(A4O[6],a4rR,e),net.eq(A4TO[0]+A4TO[1]*3+A4TO[2]*7+A4TO[3]*13,a4rS,e)),'T1_V0',None),
  (None,'T1_RDz',{zrul:1,t1_rL:rL9,t1_rW:rW9,t1_rI:rI9,t1_rv:1,a4rF:rp6.out[1],a4rR:A4O[6],a4rS:A4TO[0]+A4TO[1]*3+A4TO[2]*7+A4TO[3]*13,a4m[0]:A4TO[0],a4m[1]:A4TO[1],a4m[2]:A4TO[2],a4m[3]:A4TO[3]}))
@@ -159,10 +159,12 @@ on('T1_V1',(None,'T1_M0',None))
 # ---- menus: rows use alpha 254, the row is computed from the pointer y ----
 T1_SZ=[8,9,10,11,12,14,16,18,20,22,24,26,28,36,48,72]    # rows of the size menu, in points
 T1_CN=['Black','Gray','White','Blue','Red','Green','Orange','Purple']
-def t1_gmenu(k,x,y,colors):
+def t1_gmenu(k,x,y,colors,more=None):
     "A grid of color swatches; the cell comes from the pointer x and y."
     u=ui.L(); rows_=(len(colors)+7)//8
-    u.r(x+2,y+2,GC*8+1,GC*rows_+1,(200,198,196),0); u.r(x-1,y-1,GC*8+2,GC*rows_+2,(150,148,146),0)
+    n_=rows_+(1 if more else 0)
+    u.r(x+2,y+2,GC*8+1,GC*n_+1,(200,198,196),0); u.r(x-1,y-1,GC*8+2,GC*n_+2,(150,148,146),0)
+    if more: u.r(x,y+rows_*GC,GC*8,GC,WHITE,254,PAL_B[5],rows_*8); u.t(x+8,y+rows_*GC+1,more,9,0,0,True)
     for i_,c_ in enumerate(colors):
         cx_=x+(i_%8)*GC; cy_=y+(i_//8)*GC
         u.r(cx_,cy_,GC,GC,WHITE,254,PAL_B[5],i_); u.r(cx_+3,cy_+3,GC-6,GC-6,(150,150,150),254); u.r(cx_+4,cy_+4,GC-8,GC-8,c_,254)
@@ -175,41 +177,44 @@ def t1_menu(k,x,y,w,labels,draw=None):
         if draw: draw(u,r_,x,y+r_*RH)
         else: u.t(x+8,y+r_*RH+2,lb,9,0,0,True)
     t1_chain(f'T1_MM{k}',u,'T1_END')
-def _fnt(u,r_,x,y): u.t(x+8,y+2,rom.FAM_NAMES[r_],9+rom.st_of_font(r_),0,0,True)
+def _fnt(u,r_,x,y): u.t(x+8,y+2,(rom.FAM_NAMES+['Other font...'])[r_],9+rom.st_of_font(r_ if r_<len(rom.FAM) else 0),0,0,True)
 def _col(u,r_,x,y):
     u.r(x+6,y+4,14,14,(120,120,120),254); u.r(x+7,y+5,12,12,PAL_F[r_],254); u.t(x+26,y+2,T1_CN[r_],9,0,0,True)
 def _fop(u,r_,x,y):
     u.r(x+6,y+4,14,14,(120,120,120),254); u.r(x+7,y+5,12,12,WHITE,254); u.k(t1_fw if r_ else t1_case,x+9,y+7,8,8,ui.BLUE,254)
     u.t(x+26,y+2,['Match case','Whole words'][r_],9,0,0,True)
-t1_menu(1,112,87,128,[0]*len(rom.FAM),_fnt)
+t1_menu(1,112,87,128,[0]*(len(rom.FAM)+1),_fnt)
 t1_menu(2,242,87,48,[str(i_) for i_ in T1_SZ])
-t1_gmenu(3,270,115,PAL_F)
+t1_gmenu(3,270,115,PAL_F,'More Colors...')
 t1_gmenu(7,306,115,[(255,255,255)]+PAL_B[6:13])
 t1_menu(8,464,115,70,['1.0','1.15','1.5','2.0'])
 t1_menu(4,PX+362,DOCY+27,130,[0,0],_fop)
 t1_menu(5,6,127,190,['Normal: 1 in sides','Moderate: 0.75 in sides','Narrow: 0.5 in'])
 t1_menu(6,708,127,70,['1.0','1.15','1.5','2.0'])
+t1_menu(14,LFX,LFY,130,LF_LABELS)
 e=S('T1_M0'); mh=net.decode(t1_mop,21,e)
-on('T1_M0',(mh[12],'RVA3_MM0',None),*[(mh[k_],f'T1_MM{k_}',None) for k_ in (*range(1,12),13,20)],(None,'T1_END',None))
+on('T1_M0',(mh[12],'RVA3_MM0',None),*[(mh[k_],f'T1_MM{k_}',None) for k_ in (*range(1,12),13,14,20)],(None,'T1_END',None))
 on('T1_END',(t1_nh,'T1_HH',{t1_nh:0,t1_hvo:0,rB:(1265,thumb,12,net.min_(t1_thh,net.relu(as_x(DOCB)-thumb)),tuple(as_x(205)-net.eq(t1_hov,255,S('T1_END'))*65 for _ in range(3)),255)}),(None,'HALT',{t1_hvo:0}))
 on('T1_MD',(None,'T1_MD1',{pix:(hx_,hy_)}))
 e=S('T1_MD1'); nr1=X()
-for k_ in range(1,11): nr1=nr1+net.ge(hy_,t1_mtop+RH*k_,e)
+for k_ in range(1,20): nr1=nr1+net.ge(hy_,t1_mtop+RH*k_,e)
 _gm1=net.or_(net.eq(t1_mop,3,e),net.eq(t1_mop,7,e),net.eq(t1_mop,10,e)); _gc1=X()
 for k_ in range(1,8): _gc1=_gc1+net.ge(hx_,t1_mx+GC*k_,e)
 on('T1_MD1',(net.eq(A_,254,e),'T1_MR',{t1_mrow:G_(nr1,ONE-_gm1)+G_(nr1*8+_gc1,_gm1)}),(None,'T1_MX',None))
 on('T1_MX',(None,'RD0',{t1_mop:0,t1_uid:1,t1_mrow:99}))
 e=S('T1_MK'); nrw=mh_n=X()
 mk0=net.decode(t1_mop,21,e); nrw=nrw+G_(a6nr,mk0[20])
-for k_,c_ in ((1,2),(2,11),(3,32),(4,2),(5,3),(6,4),(7,8),(8,4),(9,5),(10,64),(11,7),(12,8),(13,11)): nrw=nrw+mk0[k_]*c_
+for k_,c_ in ((1,9),(2,11),(3,33),(4,2),(5,3),(6,4),(7,8),(8,4),(9,5),(10,64),(11,7),(12,8),(13,11),(14,19)): nrw=nrw+mk0[k_]*c_
 on('T1_MK',(net.eq(eva,27,e),'T1_MX',None),(net.and_(net.eq(eva,13,e),net.lt(t1_mrow,64,e)),'T1_MR',None),(net.eq(eva,13,e),'T1_MX',None),
  (net.and_(net.eq(eva,131,e),net.ge(t1_mrow+1,nrw,e)),'T1_M0',{t1_mrow:0}),(net.eq(eva,131,e),'T1_M0',{t1_mrow:t1_mrow+1}),
  (net.and_(net.eq(eva,129,e),net.or_(net.eq(t1_mrow,0,e),net.eq(t1_mrow,99,e))),'T1_M0',{t1_mrow:nrw-1}),(net.eq(eva,129,e),'T1_M0',{t1_mrow:t1_mrow-1}),(None,'HALT',None))
-e=S('T1_MR'); mr=net.decode(t1_mop,21,e); rr_=net.decode(t1_mrow,32,e); CM={t1_mop:0,t1_uid:1,t1_mrow:99}; mrules=[]
+e=S('T1_MR'); mr=net.decode(t1_mop,21,e); rr_=net.decode(t1_mrow,34,e); CM={t1_mop:0,t1_uid:1,t1_mrow:99}; mrules=[]
 def mc(k_,r_): return net.and_(net.step(mr[k_]),net.step(rr_[r_]))
-for r_ in range(len(rom.FAM)): mrules.append((mc(1,r_),'FMTS',{fm:10,fcol:r_,**CM}))
+for r_ in range(len(rom.FAM)): mrules.append((mc(1,r_),'FMTS',{fm:10,fcol:r_,fnx:0,**CM}))
+mrules.append((mc(1,8),'V4_PR',{prk:5,**CM}))
 for r_,si_ in enumerate(T1_SZ): mrules.append((mc(2,r_),'FMTS',{fm:9,fsi:rom.sz_raw(rom.SZ.index(si_)),**CM}))
-for r_ in range(32): mrules.append((mc(3,r_),'FMTS',{fm:7,fcol:r_,**CM}))
+for r_ in range(32): mrules.append((mc(3,r_),'FMTS',{fm:7,fcol:r_,fck:0,**CM}))
+mrules.append((net.and_(net.step(mr[3]),net.ge(t1_mrow,32,e),net.lt(t1_mrow,64,e)),'V4_PR',{prk:1,**CM}))
 for r_ in range(8): mrules.append((mc(7,r_),'FMTS',{fm:15,fhl:r_,**CM}))
 mrules.append((mc(4,0),'RD0',{t1_case:ONE-t1_case,**CSTART,**CM}))
 mrules.append((mc(4,1),'RD0',{t1_fw:ONE-t1_fw,**CSTART,**CM}))
@@ -219,6 +224,7 @@ for r_ in range(4):
 for r_,(st_,a_) in enumerate((('CUT',{rv_rp:1}),('COPY',{rv_rp:1}),('HALT',{wpaste:1,rv_rp:1}),('SELALL',{}),('FMTS',{fm:1}),('FMTS',{fm:2}),('FMTS',{fm:3}),('RD0',{mode:1,field:0,qrep:1,**CSTART}))): mrules.append((mc(12,r_),st_,{**a_,**CM}))
 mrules+=a4_mrules(mc,CM,e)+a4_mrules2(mc,CM,e)
 for r_ in range(8): mrules.append((mc(20,r_),'A6S_PK',{a6sr:r_,**CM}))
-for r_ in range(10): mrules.append((mc(13,r_),'IMP3_SA',{t2si:zso+r_,**CM}))
+for r_ in range(10): mrules.append((mc(13,r_),'V5_MP',{t2si:zso+r_,**CM}))
 mrules.append((mc(13,10),'T1_M0',{zso:zso+10,t1_mrow:99}))
+for r_ in range(19): mrules.append((mc(14,r_),'V6_LF',{alv:r_+1,**CM}))
 on('T1_MR',*mrules,(None,'T1_MX',None))

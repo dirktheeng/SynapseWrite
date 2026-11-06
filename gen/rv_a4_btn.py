@@ -14,3 +14,5 @@ from app_pal import B as _B
 for i,k in enumerate((0,2,5,13,14,15)): add(2,980+(i%3)*22,86+(i//3)*22,21,21,'','A4_SH%d'%k,None,_B[k])
 LABELS=[(2,840,76,'Pagination'),(2,922,124,'Borders, Shading')]
 LABELS1=[(1,826,128,'Table Tools'),(1,958,90,'Page Numbers')]
+add(0,1156,64,60,21,'New Style','V4_PS3'); add(0,1156,86,60,21,'Char Style','V4_PS6'); add(0,1156,108,60,21,'Rename','V4_PS4'); add(0,1218,64,58,21,'List Style','V6_LM')
+LABELS1+=[(0,1156,60,'Style Tools')]

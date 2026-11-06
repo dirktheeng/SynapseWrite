@@ -1,0 +1,44 @@
+# imp4 progress log
+Started from imp3 51aba01. Order: tier 2 (custom colors, style create and rename, character styles, list formats, font names and Unicode), tier 1 (vertical ruler, zoom above 150), hyphenation, select all cost.
+Baseline build: 3,234,739 byte page, 946,543 stored edges.
+
+## Style table entries, first commit
+Records are full at 24 bits in a float32 cell. Why a wider table entry and not free bits in the cell: an entry of four cells (record, exact color plus one, font name id, character style id plus one) keeps every cell copy, undo log and clipboard path unchanged, since they only move indices, and the engine's read through an index cell already takes a stride and a length. So the style port returns all four with no engine change; the interner keys on all four.
+Exact color: the glyph unit gets the color beside the nearest palette entry, and has 24 more channel lines weighted as binary digits, so the screen color is exact, not on the 4 bit grid. First run: no file color reached the cell, because the interner's new four cell write port was not in an aligned group, so its data neurons were not consecutive; fixed by aligning it.
+Prompt bar: mode 8, one bar with many duties (color, new style, rename, font name). Bad hex leaves it open.
+
+## Style create, rename, character styles
+A new style is written from the caret paragraph by the same reads Update Style uses, with an id made of the name without spaces; an id already in the table is refused and the bar stays open. Rename rewrites all name cells with undo records (op 7). A character style has cell 47 set and a nine bit mask of the fields it sets, kept in the entry's third extension cell. style_over replaces only masked fields, in both the format command (fm 16) and the reader's rStyle, so rStyle now overlays rather than replaces. Runs keep the style index plus one in the fourth cell of the table entry, which writes w:rStyle. First run: a character style wrote sz; the exact color exit skipped the mask check, fixed. The reopen test found one pixel a single level off between a recorded glyph and its plane draw, so it asserts at most one level.
+
+## List formats
+LIST cell keeps kind+4*level and adds 16*format, so splits, undo and clipboard carry it unchanged; each 4 bit decode became 9 bits. Nineteen formats (numbers with . ) () or nothing, letters, roman, bullets). One marker table: capitals subtract 32, the table's dot becomes the format's closing character. numbering.xml has an abstractNum per format and 8 numIds each so numbers can restart. The reader takes numFmt and lvlText per level; each level's choice is six bits in the numbering table, and the look already fixed by level normalizes to format 0, so files without a change save as before. First run: reader's attribute offset was 17, should be 18 for lvlText; the entity forms of our own bullets were not read.
+
+## Fonts and Unicode
+Font names: a table of up to 64 names, the family's own names seeded so they need no id. The reader looks the name up by a compare loop and adds new ones; the run's entry keeps the id. Save writes it back; the font box shows it. More prefixes pick the drawn family (Segoe to Open Sans, Book Antiqua to Tinos, and so on). A typed name goes through the same reader rules from a small buffer.
+Unicode: why UO offset: cell values 300 to 1000 and from 1000 mean equation and field marks, so past Latin-1 a cell holds 2^20 plus the code unit, and field tests got an upper bound. Surrogate pairs stay as two cells, as in browser strings, and join into four UTF-8 bytes on save. Glyphs: pseudo faces in the unit, one per page of 128 and variant (regular, bold, italic) from Carlito only, for six pages: Latin Extended-A, Greek, Cyrillic, general punctuation, currency and letterlike. Others draw a box, and stay in the text. First run drew accents alone: the unit's height knots were wired only for real faces; fixed. Page grew 3.26 to 3.72 MB for this; choosing only Carlito and three variants was to hold that down. PDF: one simple font per page and variant with a Differences encoding of uni names; 3.88 MB.
+A long bug: pasted text in the second paragraph had two wrong cells. Bisected to my first commit, then traced with a scratch engine that records writes to one cell: the writer was R4 paint writing FNS. I had named my seed count FNS, shadowing the slot cell constant. Renamed FNSD and checked my other new names against other files.
+
+## Zoom and vertical ruler
+175 and 200 percent. A page wider than the window slides: rects carry negative x already, glyph x arrives lifted by 4096 so a gate does not clamp it, and the copy port's lift grew. Mouse maps back through the slide. Caret leaving the window moves the slide. Bar along the foot; a click beside the thumb moves 400 px. Thumb geometry uses a portrait page's width.
+Vertical ruler: scale of the first page in view, at the window's left, 40 one tick tokens on a full paint only.
+
+## Full run 1
+e2e 208/210: page break and narrow margin differed only in the vertical ruler. A walk restarted by an autoscroll left the ruler's capture latched: reset at each walk start. On page 1 the first line starts at its saved place, which a narrow margin does not move (existing behaviour), so the ruler now reads the first line's own top there. tier2: PDF after a LibreOffice file never came: LibreOffice writes nine levels and my lvlText rule did not step past levels above 2, an endless loop on open that the earlier pixel check could not see. Fixed. t4_docx: the styles test expected rStyle to replace the paragraph color, the old limit; its direct text now has the color, listed as a test edit. a5_docx open 10.17 M against its 10 M bound: rare character tests moved behind one neuron. imp3 page width counted the ruler's white band: band is 253 gray now.
+
+## a5_docx edge bound
+Open of a01_format is 10.14 M edges, 9.90 M at imp3, bound 10 M. Tried: rare character tests behind one neuron (no gain), lazy ext compares in the interner (no gain), a separate decoder for extended faces (small gain), exact color lines woken only for an exact color (10.17 to 10.14 M). A once per row pulse made it 13.4 M. The rest is mainly that this file's headings now draw 24 exact color lines per ink pixel. Not fixed; the test is left as it is.
+
+## Full run 2 at fb823ae
+All exit 0 and pass except: a5_docx edge bound (above), tier2 same after a LibreOffice re-save: now it truly opens that file, and its private use level 2 bullet drew round. A symbol font bullet now takes the level's own look. t4: select all 911 K edges, wheel 847 K (779 K at imp3).
+
+## Full run 3 at a30475e
+Every listed suite and audit run. Results in the report; the only failure is the a5_docx edge bound, 10.14 M against 10 M.
+
+## Regressions: edge bound and page size
+Merged the readme branch; PROVENANCE regenerated.
+Edge bound. The bound counts pushed edges. Work by source line showed the colored text path in the row plane. Palette lines now rest for an exact color; background lines and the ic term rest on white, since the base term is already the background (this helps all colored text); exact color takes three neurons on a pixel at least 0.9 covered and the top four bits on an edge pixel, so edge pixels are within a sixteenth of the exact blend; the unit's face and code wires wake only to draw. Tried and of no effect on this count: font lookup starting at its seed, cascaded patterns for rare rules (kept, they read less). 10.14 M to 9.95 M.
+Size. Before, gz of the weight file: imp3 2,398,648, imp4 2,889,111, a growth of 490 K, of which streams 365 K and PDF font ROM 117 K. By group: glyph weights 93 K neurons and 350 K inputs of a total 106 K and 404 K; compiled control 38 K inputs; glyph unit 18 K. Reclaimed: identical outlines in one face are one program (177 programs); outlines past Latin-1 flatten at 1.6 times the tolerance (0.24 px at 36 pt); exact color lines 24 to 12 plus 3 per column; PDF fonts drop name, OS/2 and post names.
+Determinism: my extended PDF fonts recalculated timestamps; pinned, two builds now hash the same.
+
+## Requested suites at 67d2d8f
+Run after the size and edge work; results in the report. Page 3,888,667 to 3,787,439 bytes (imp3 3,234,739).
