@@ -44,7 +44,7 @@ def jump(st,p,o,ret):
 tin_w=R()
 for i_,n_ in enumerate((2,3,4)): pass
 on('TI0',(None,'A4_TI',{r1:cb+2062}))
-on('A4_TI',(net.step(R1),'RD0',None),(None,'SPLIT',{oret.r:oret.id('T3_TI0'),tip:cp+1}))   # no nested tables
+e=S('A4_TI'); on('A4_TI',(net.step(R1),'RD0',None),(net.eq(clen,0,e),'T3_TI0',{tip:cp}),(None,'SPLIT',{oret.r:oret.id('T3_TI0'),tip:cp+1}))   # no nested tables
 e=S('T3_TI0'); hti=net.decode(tin,9,e)
 on('T3_TI0',(None,'TI1',{tin_w:floorv(G_(s_tw*0.5,hti[2])+G_(s_tw*(1.0/3),hti[3])+G_(s_tw*0.25,hti[4])+G_(s_tw*0.2,hti[5])+G_(s_tw*(1.0/6),hti[6])+G_(s_tw*(1.0/7),hti[7])+G_(s_tw*0.125,hti[8]),e),run:0}))
 e=S('TI1'); wr=net.ge(tic+1,tin,e)
@@ -320,7 +320,7 @@ on('T3_NB1',(isd,'T3_NB',{aval:aval*10+W[0]-48,oi:oi+1}),(None,'T3_NMR',None))
 on('T3_GC',(None,'T3_NA',{nmret.r:nmret.id('T3_GC2')}))
 e=S('T3_GC2')
 on('T3_GC2',(None,'PX',{w1:(as_x(TGW)+gcount,floorv(aval*(1.0/15)+0.5,e)),gcount:gcount+1}))
-on('T3_TC0',(None,'SPLIT',{oret.r:oret.id('T3_TC1')}))
+on('T3_TC0',(pfirst,'T3_TC1',{pfirst:0}),(None,'SPLIT',{oret.r:oret.id('T3_TC1')}))   # a table first in the file takes the first paragraph
 on('T3_TC1',(None,'T3_TC2',{r1:as_x(TGW)+tcidx}))
 on('T3_TC2',(None,'T3_TC3',{w1:(cb+2062,gcount),w2:(cb+2063,tcidx),w3:(cb+CWO,R1),w4:(cb+CXO,gx),gx:gx+R1,incell:1}))
 on('T3_TC3',(a5pad,'A5_TCE',{w1:(cb+ALIGN,0),w2:(cb+CSH,0),a5pad:0}),(None,'PX',{w1:(cb+ALIGN,0),w2:(cb+CSH,0)}))
@@ -553,7 +553,7 @@ on('T3_ZNe',(None,'PX',{ob:sob,oi:soi,obase:OUTB}))
 e=S('T3_ZX'); zh2=net.decode(ztarget,9,e)
 on('T3_ZX',(zh2[0],'A5_TH',None),(zh2[8],'A5_EN0',{aux_l:ob}),(zh2[1],'T3_Z2n',{rels_l:ob}),(zh2[2],'T3_FN0',{aux_l:ob}),(zh2[3],'T3_CM0',{aux_l:ob}),(net.and_(zh2[5],ONE-rhf),'T3_ZP',{pgl:ob}),(net.and_(zh2[5],rhf),'T3_HP0',{aux_l:ob}),(None,'PX',{oi:0}))
 on('T3_ZP',(None,'PG_1',{rl:as_x(PNGB),pbase:PNGB,pgdoc:1}))
-on('T3_PF',(pgdoc,'T3_PF2',{ob:sob,oi:soi,obase:OUTB,pgdoc:0}),(None,'HALT',None))
+on('T3_PF',(pgdoc,'T3_PF2',{ob:sob,oi:soi,obase:OUTB,pgdoc:0}),(None,'RD0',{pfile:PMSG}))
 on('T3_PF2',(None,'PX',None))
 on('T3_PQ',(None,'T3_PQa',{ob:sob,oi:soi,obase:OUTB,pgdoc:0,rs_sw:dw,rs_sh:dh,rs_sa:imgp,rs_w:G_(ext_w,net.step(ext_w))+G_(dw,ONE-net.step(ext_w)),rs_h:G_(ext_h,net.step(ext_h))+G_(dh,ONE-net.step(ext_h)),imgp:dst}))
 on('T3_PQa',(None,'T3_PQb',{w1:(cb+IMN,rs_sw),w2:(cb+IMN+1,rs_sh),w3:(cb+IMN+2,rs_sa),w4:(cb+DIRTY,1)}))
@@ -594,7 +594,8 @@ e=S('T3_WF')
 on('T3_WF',(net.ge(wend,wl_,e),'T3_WR',{wcnt:wcnt+1,wdy:wdy+16}),(None,'T3_W1',{wcnt:wcnt+1,wdy:wdy+16,ws_:wend}))
 # balloon: count lines, fill, draw
 on('T3_CB2',(None,'T3_W',None))
-on('T3_CB3',(None,'A2_CB',{rA:(1044,sy,214,wcnt*16+10,(210,210,210),0),rB:(1045,sy+1,212,wcnt*16+8,WHITE,0),rC:(1044,sy,3,wcnt*16+10,(187,0,0),0),rD:(s_tx+s_tw,sy+8,net.relu(as_x(1044)-s_tx-s_tw),1,(220,150,150),0),wdy:sy+5,wdd:1,wret_.r:wret_.id('R9')}))
+_cby=net.max_(sy,cbb)   # a balloon sits under the one above it, and its leader still starts at its own line
+on('T3_CB3',(None,'A2_CB',{cbb:_cby+wcnt*16+14,rA:(1044,_cby,214,wcnt*16+10,(210,210,210),0),rB:(1045,_cby+1,212,wcnt*16+8,WHITE,0),rC:(1044,_cby,3,wcnt*16+10,(187,0,0),0),rD:(s_tx+s_tw,sy+8,net.relu(as_x(1044)-s_tx-s_tw),1,(220,150,150),0),wdy:_cby+5,wdd:1,wret_.r:wret_.id('R9')}))
 on('T3_CB4',(None,'T3_W',None))
 set_chain('T3_C_CD0',[(CMTL,0)],'AFTER_ED')
 on('T3_C_CD',(None,'T3_C_CD0',{grp:grp+1}))

@@ -5,10 +5,10 @@ token out through back edges of the reader's state graph (see FSM.finish). A bud
 rdmode=net.reg(); rdcnt=net.reg(); rddoc=net.reg(); ovp=R(); ovn=R()
 RD_BUDGET=45000000
 # the zip validator: an end record in the last 64 KB, the only place the format allows one
-e=S('A12_OV0'); on('A12_OV0',(net.lt(evc,22,e),'HALT',None),(None,'A12_OV1',{ovp:evc-22,ovn:0}))
+e=S('A12_OV0'); on('A12_OV0',(net.lt(evc,22,e),'RD0',{pfile:PMSG}),(None,'A12_OV1',{ovp:evc-22,ovn:0}))
 on('A12_OV1',(None,'A12_OV2',{rl:FA+ovp}))
 e=S('A12_OV2'); _sig=net.and_(net.eq(W[0],80,e),net.eq(W[1],75,e),net.eq(W[2],5,e),net.eq(W[3],6,e))
-on('A12_OV2',(_sig,'OP0',None),(net.or_(net.eq(ovp,0,e),net.ge(ovn,65535,e)),'HALT',None),(None,'A12_OV1',{ovp:ovp-1,ovn:ovn+1}))
+on('A12_OV2',(_sig,'OP0',None),(net.or_(net.eq(ovp,0,e),net.ge(ovn,65535,e)),'RD0',{pfile:PMSG}),(None,'A12_OV1',{ovp:ovp-1,ovn:ovn+1}))
 fsm.set(obase,S('OP0'),OUTB); fsm.set(rdmode,S('OP0'),1); fsm.set(rddoc,S('OP0'),1)
 fsm.set(rdmode,S('PG_0'),1); fsm.set(rddoc,S('PG_0'),0)
 fsm.set(rdmode,S('OPEND'),0); fsm.set(rdmode,S('HALT'),0)

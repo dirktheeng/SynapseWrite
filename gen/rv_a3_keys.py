@@ -31,7 +31,7 @@ on('RVA3_PG1',(net.and_(same_,rv_pgd),'MVJ',{jp:net.relu(npar-1),jo:2047,jret.r:
 # overtype: delete the character ahead, then insert as usual
 on('RVA3_OV',(None,'INS',{ins_ch:eva,ins_st:TST,oret.r:oret.id('AF_FAST')}))
 # find next
-e=S('RVA3_F3'); on('RVA3_F3',(net.step(qlen),'FN1',{fp:hi_p,fo:hi_o,wrap:0}),(None,'RD0',{mode:1,field:0,**CSTART}))
+e=S('RVA3_F3'); on('RVA3_F3',(net.step(qlen),'FN1',{fp:hi_p,fo:hi_o,wrap:0}),(None,'RD0',{mode:1,field:0,qrep:1,**CSTART}))
 # drag autoscroll: the timer keeps firing while the pointer rests past the top or bottom of the document
 e=S('RVA3_AS0'); rv_up=net.lt(mp_pty,DOCY+8,e); rv_d=G_(as_x(DOCY+8)-mp_pty,rv_up)+G_(mp_pty-(DOCB-8),e-rv_up); rv_sp=e*16+net.min_(rv_d,120)
 on('RVA3_AS0',(rv_up,'RD0',{scroll:net.relu(scroll-rv_sp),rv_asq:1,autos:0}),(None,'RD0',{scroll:scroll+rv_sp,rv_asq:1,autos:0}))

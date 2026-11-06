@@ -11,7 +11,7 @@ exec(open('rv_a5_regs.py').read())
 rtoc=R();rdig=R();tpgv=R();fnc=R();rdsec=R();gcount=R();tcidx=R();gx=R();incell=R()
 exec(open('rv_a6_eqrd.py').read())
 def T3_PX_RULES(e):
-    return [(tag('<w:tbl',' >'),'PX',{gcount:0,tcidx:0,gx:0,pfirst:0,a5ts:0,oi:oi+6}),(pat('<w:gridC',e),'T3_GC',{oi:oi+8}),(tag('<w:tc',' >'),'T3_TC0',{oi:oi+5}),(pat('</w:tc>',e),'A5_TCE',{oi:oi+7}),(pat('</w:tr>',e),'A5_TRE',{oi:oi+7}),(net.and_(net.or_(a5tcp,net.and_(net.eq(ztarget,4,e),ONE-a5tp,ONE-incell)),pat('<w:shd ',e)),'T3_SHD',{oi:oi+7})]+T3_PX_MORE(e)
+    return [(tag('<w:tbl',' >'),'PX',{gcount:0,tcidx:0,gx:0,a5ts:0,oi:oi+6}),(pat('<w:gridC',e),'T3_GC',{oi:oi+8}),(tag('<w:tc',' >'),'T3_TC0',{oi:oi+5}),(pat('</w:tc>',e),'A5_TCE',{oi:oi+7}),(pat('</w:tr>',e),'A5_TRE',{oi:oi+7}),(net.and_(net.or_(a5tcp,net.and_(net.eq(ztarget,4,e),ONE-a5tp,ONE-incell)),pat('<w:shd ',e)),'T3_SHD',{oi:oi+7})]+T3_PX_MORE(e)
 # open: reset the document, then walk zip members
 t2cp=R();t2k=R();t2v=R();t2n_=R();t2cb0=R();t2skip=R();t2df=R();t2ps=R()
 on('OP0',(None,'T3_OP',{**{q_:0 for q_ in falias},cursec:0,nsec:1,imgp:0,fnc:0,rdsec:0,rdp:0,hftp:0,hfl[0]:0,hfl[1]:0,hfl[2]:0,hfl[3]:0,rins:0,rdel:0,rfk:0,t2cb0:nextb,t2skip:0,t2ps:0,nsty:6,wln:(nextb+SAVE,112,16,1,0,0,0),w1:(as_x(PT),nextb),w2:(nextb+DIRTY,1),w3:(nextb+LEN,0),cp:0,cb:nextb,co:0,clen:0,ap:0,ao:0,npar:1,nextb:nextb+STRIDE,usp:UB,urp:UB,scroll:0,nolog:1,zp:0,pfirst:1,cs:0,ity:as_x(0),dfrom:0,lc:1,bgp:0}))
@@ -342,5 +342,5 @@ imw=WPort(1); wl_i=WPort(3)
 imw.drive(e,(as_x(IMG0)+dst,rv+gv*256+bv*65536))
 on('PG_N3',(net.ge(dst,SAVEB-IMG0-2000,e),'T3_PF',None),(net.ge(ck,2,e),'PG_N',{dst:dst+1,dw:dw+1,dcnt:dcnt+pbp,ix:ix+1,kx:1}),(None,'PG_N',{dst:dst+1,dw:dw+1,dcnt:dcnt+pbp,ix:ix+1,kx:0}))
 # insert a picture paragraph at the caret
-on('PG_Q',(pgdoc,'T3_PQ',None),(None,'SPLIT',{oret.r:oret.id('PG_Q2')}))
+e=S('PG_Q'); on('PG_Q',(pgdoc,'T3_PQ',None),(net.eq(clen,0,e),'T3_PG0',None),(None,'SPLIT',{oret.r:oret.id('PG_Q2')}))   # an empty paragraph takes the picture itself
 on('PG_Q2',(None,'T3_PG0',None))
