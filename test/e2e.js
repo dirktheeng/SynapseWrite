@@ -194,8 +194,8 @@ const cell=(r,c)=>click(880+c*26+8,64+r*22+8);const lay=(r,c)=>click(590+c*26+8,
  await same('thumb drag matches wheel distance',[longdoc,drag(190,290)],[longdoc,async p=>{await p.mouse.move(600,400);await p.mouse.wheel(0,THUMB_D);await p.waitForTimeout(150);}]);
  const fontm=click(182,75),sizem=click(228,75),colm=click(287,102);
  await same('font menu matches font box',['abc',key('Control+a'),fontm,click(150,120),key('End')],['abc',key('Control+a'),click(149,75),key('End')]);
- await same('size menu matches grow button',['abc',key('Control+a'),sizem,click(210,185),key('End')],['abc',key('Control+a'),click(251,75),click(251,75),key('End')]);
- await same('size menu sets a typing size',[sizem,click(210,185),'abc'],['abc',key('Control+a'),sizem,click(210,185),key('End')]);
+ await same('size menu matches grow button',['abc',key('Control+a'),sizem,click(210,207),key('End')],['abc',key('Control+a'),click(251,75),click(251,75),key('End')]);
+ await same('size menu sets a typing size',[sizem,click(210,185),'abc'],['abc',key('Control+a'),sizem,click(210,207),key('End')]);
  await same('color menu matches swatch',['abc',key('Control+a'),colm,click(240,215),key('End')],['abc',key('Control+a'),click(239,102),key('End')]);
  await same('escape closes a menu',['abc',sizem,key('Escape')],['abc']);
  await same('click away closes a menu',['abc',sizem,click(700,500)],['abc']);
@@ -250,7 +250,7 @@ const cell=(r,c)=>click(880+c*26+8,64+r*22+8);const lay=(r,c)=>click(590+c*26+8,
  await stay('hover highlights the PDF button',false,[mv(164,16)],[mv(600,600)],RIB);
  check('match case does not change spell check',await reds(['Hello world ',key('Control+f'),fopt,click(640,212),key('Escape')])===0);
  await same('match case does not change mail merge names',[key('Control+f'),fopt,click(640,212),key('Escape'),'{name}',REFS,MM,paste('Name\nBo\n'),HOME,key('End')],[key('Control+f'),fopt,click(640,212),key('Escape'),'Bo',key('Home'),HOME,key('End')]);
- await same('size menu still sets a size after a tracked delete',['abc',REV,TRK,key('Shift+ArrowLeft'),key('Delete'),TRK,HOME,key('Control+a'),sizem,click(210,185),key('End')],['abc',REV,TRK,key('Shift+ArrowLeft'),key('Delete'),TRK,HOME,key('Control+a'),click(251,75),click(251,75),key('End')]);
+ await same('size menu still sets a size after a tracked delete',['abc',REV,TRK,key('Shift+ArrowLeft'),key('Delete'),TRK,HOME,key('Control+a'),sizem,click(210,207),key('End')],['abc',REV,TRK,key('Shift+ArrowLeft'),key('Delete'),TRK,HOME,key('Control+a'),click(251,75),click(251,75),key('End')]);
  await stay('tracked space shows its underline, not a mark',true,[REV,TRK,'a   b',VIEW,click(80,102),HOME],[REV,TRK,'a   b',VIEW,HOME],{x:327,y:285,width:8,height:25});
  await same('mail merge copies the indent',['Hi {A}',LAY,click(377,102),REFS,MM,paste('A\nx\n'),HOME,key('End')],['Hi x',LAY,click(377,102),key('Home'),HOME,key('End')]);
  await diff('formatting marks work with tracked text',[REV,TRK,'a b',VIEW,click(80,102),HOME],[REV,TRK,'a b',VIEW,HOME]);
