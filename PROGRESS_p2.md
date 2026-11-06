@@ -45,3 +45,9 @@ PDF: the chunk's shade value includes the highlight's exact color. White text in
 Writer: names written where the record highlight is written; a record highlight (ribbon) wins, so one highlight per run.
 Runs: part hl 14/14 (eight colors drawn exactly, yellow intact, names saved, reopen pixel identical, ribbon yellow over darkBlue saves once, caps and spacing kept with it). p2.js PDF darkBlue exact color pass.
 Gap: ribbon No Color over a further highlight leaves the further one (clearing it in the format walk costs a read per run).
+
+### Fonts: synthesized italic for Oswald and Caveat (tried, reverted)
+Word slants a family that has no italic face. Two compliant routes tried:
+1. Slanted faces built at generation time (rom.py: fontTools shear of the upright glyf outlines, components moved by the slant of their offsets, advances kept), so screen and PDF need no change. Built and drew, but the page grew from 2,958,397 to 3,280,201 bytes (+321,804 for four faces), over the 3.0 MB limit by about 280 KB. Reverted.
+2. Slant at draw time in the glyph unit (each row's patch x moved by 0.2 times its height above the baseline, cached rows shared with the upright face, a new call argument sl). The italic leaves of the face tree are lazily evaluated, so a pushed wire never sees them; reading them behind the draw gate costs reads on every draw: +22 to +32,879 FLOPs per event (background layout +32,879, bold +22,176), and the slant did not yet show. Reverted.
+Blocker under the rules: route 1 breaks the page size limit, route 2 the FLOPs limit. Closest compliant result: unchanged (italic draws upright in these two families).
