@@ -138,7 +138,8 @@ on('T2W9',(None,'T3_TA0',None))
 e=S('SVC'); on('SVC',(net.step(pim),'T3_SD0',None),(net.ge(off,plen_,e),'SVe',None),(None,'SVr',{r1:pbs+off,r2:pbs+1024+off}))
 a6wk=R();a6wp=R();a6off=off
 e=S('SVr'); chg=net.step(net.step(R2-t2psv)+net.step(t2psv-R2))
-on('SVr',(net.ge(R1,1000,e),'T3_SF0',{ins_ch:R1}),(net.and_(net.eq(R1,171,e),ONE-a6wp),'A6W_0',{ins_ch:R1,ins_st:R2,a6wk:off+1}),(chg,'SVx',{ins_ch:R1,ins_st:R2}),(None,'SVch',{ins_ch:R1,ins_st:R2}))
+a6em=R(); fin.add(e,R2); fen.lin(e); _a6eq=net.and_(FD['font'],FD['nop'],net.lt(R1,1000,e))   # rv_a6: equation characters go out as math
+on('SVr',(net.and_(a6em,ONE-_a6eq),'A6E_CL',None),(_a6eq,'A6E_0',{ins_ch:R1,ins_st:R2}),(net.ge(R1,1000,e),'T3_SF0',{ins_ch:R1}),(net.and_(net.eq(R1,171,e),ONE-a6wp),'A6W_0',{ins_ch:R1,ins_st:R2,a6wk:off+1}),(chg,'SVx',{ins_ch:R1,ins_st:R2}),(None,'SVch',{ins_ch:R1,ins_st:R2}))
 e=S('SVx'); first=net.eq(t2psv,99999,e)
 on('SVx',(first,'T4_SO',None),(None,'T4_SC',{t4cr.r:t4cr.id('T4_SO')}))
 lit('SVo',b'<w:r>','SVo2')
@@ -164,5 +165,5 @@ m0=pun_byte('T2U3','T2U4',0); on('T2U3',(net.step(m0),'T2U4',None),(None,'T2UR',
 m1=pun_byte('T2U4','T2U5',1); on('T2U4',(net.step(m1),'T2U5',None),(None,'T2UR',None))
 m2=pun_byte('T2U5','T2UR',2); on('T2U5',(None,'T2UR',None))
 lit('SVa_',b'&amp;','SVC');lit('SVl_',b'&lt;','SVC');lit('SVg_',b'&gt;','SVC')
-e=S('SVe'); on('SVe',(net.eq(t2psv,99999,e),'SVe2',None),(None,'T4_SC',{t4cr.r:t4cr.id('SVe2')}))
+e=S('SVe'); on('SVe',(a6em,'A6E_CE',None),(net.eq(t2psv,99999,e),'SVe2',None),(None,'T4_SC',{t4cr.r:t4cr.id('SVe2')}))
 on('SVe2',(None,'T3_CE0',None))

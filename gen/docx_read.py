@@ -8,6 +8,7 @@ rins=R();rdel=R();rfk=R();rvb=R();rhi=rins*ST_INS+rdel*ST_DEL+rfk*ST_F0
 LN=TBL+1200; CLH=TBL+800; LH=TBL; DH=TBL+400; OFFS=TBL+1000
 exec(open('t3_px.py').read())
 rtoc=R();rdig=R();tpgv=R();fnc=R();rdsec=R();gcount=R();tcidx=R();gx=R();incell=R()
+exec(open('rv_a6_eqrd.py').read())
 def T3_PX_RULES(e):
     return [(tag('<w:tbl',' >'),'PX',{gcount:0,tcidx:0,gx:0,pfirst:0,oi:oi+6}),(pat('<w:gridC',e),'T3_GC',{oi:oi+8}),(tag('<w:tc',' >'),'T3_TC0',{oi:oi+5}),(pat('</w:tc>',e),'PX',{incell:0,tcidx:tcidx+1,oi:oi+7}),(pat('</w:tr>',e),'PX',{tcidx:0,gx:0,oi:oi+7}),(pat('<w:shd ',e),'T3_SHD',{oi:oi+7})]+T3_PX_MORE(e)
 # open: reset the document, then walk zip members
@@ -207,7 +208,7 @@ on('PX2',(net.and_(t2skip,ONE-pat('</w:styl',e)),'PX',{oi:oi+1}),
  (pat('<w:num ',e),'T2_NM',{oi:oi+7,t2n_:0,t2rr.r:t2rr.id('T2_NX')}),
  (pat('<w:lvl ',e),'T2_NM',{oi:oi+7,t2n_:0,t2rr.r:t2rr.id('T2_LV')}),
  (pat('<w:numFm',e),'T2_FM',{rl:OA+oi+17}),
- *T3_PX_RULES(e),
+ *A6_PX_RULES(e),*T3_PX_RULES(e),
  (None,'PX',{oi:oi+1}))
 e=S('SZ0')
 hpv=(W[0]-48)*10+(W[1]-48)

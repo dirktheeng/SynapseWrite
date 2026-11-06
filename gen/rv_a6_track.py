@@ -113,3 +113,63 @@ on('A6_MF',(None,'A6_MF1',{grp:grp+1}))
 on('A6_MF1',(None,'INS',{ins_ch:171,ins_st:TST,oret.r:oret.id('A6_MF2')}))
 on('A6_MF2',(None,'INS',{ins_ch:187,ins_st:TST,oret.r:oret.id('A6_MF3')}))
 on('A6_MF3',(None,'AFTER_ED',{co:co-1}))
+
+# ---- equations in a saved file: one m:r per character, m:sSup and m:sSub for script runs ----
+a6nk=R();a6er=t3ret('A6E_ER')
+fd_in('A6E_2','A6E_S1')
+lit('A6E_CL',b'</m:oMath>','A6E_CL2'); on('A6E_CL2',(None,'SVr',{a6em:0,r1:pbs+a6off,r2:pbs+1024+a6off}))
+lit('A6E_CE',b'</m:oMath>','A6E_CE2'); on('A6E_CE2',(None,'SVe',{a6em:0}))
+e=S('A6E_0'); on('A6E_0',(net.eq(t2psv,99999,e),'A6E_01',None),(None,'T4_SC',{t4cr.r:t4cr.id('A6E_01')}))
+on('A6E_01',(a6em,'A6E_1',{t2psv:99999}),(None,'A6E_02',{t2psv:99999,a6em:1}))
+lit('A6E_02',b'<m:oMath>','A6E_1')
+e=S('A6E_1'); on('A6E_1',(net.ge(a6off+1,plen_,e),'A6E_B',{a6nk:0}),(None,'A6E_2',{r1:pbs+a6off+1,r2:pbs+1024+a6off+1}))
+e=S('A6E_2'); _eqn=net.and_(FD['font'],FD['nop'],net.lt(R1,1000,e))
+on('A6E_2',(net.and_(_eqn,FD['sup']),'A6E_Bu',{a6nk:1}),(net.and_(_eqn,FD['sub']),'A6E_Bb',{a6nk:2}),(None,'A6E_B',{a6nk:0}))
+lit('A6E_Bu',b'<m:sSup><m:e>','A6E_B'); lit('A6E_Bb',b'<m:sSub><m:e>','A6E_B')
+on('A6E_B',(None,'A6E_R',{a6er.r:a6er.id('A6E_A')}))
+on('A6E_A',(net.eq(a6nk,1,S('A6E_A')),'A6E_Au',{a6off:a6off+1}),(net.eq(a6nk,2,S('A6E_A')),'A6E_Ab',{a6off:a6off+1}),(None,'SVC',{a6off:a6off+1}))
+lit('A6E_Au',b'</m:e><m:sup>','A6E_S0'); lit('A6E_Ab',b'</m:e><m:sub>','A6E_S0')
+e=S('A6E_S0'); on('A6E_S0',(net.ge(a6off,plen_,e),'A6E_SE',None),(None,'A6E_S1',{r1:pbs+a6off,r2:pbs+1024+a6off}))
+e=S('A6E_S1'); _eqn=net.and_(FD['font'],FD['nop'],net.lt(R1,1000,e)); _same=net.or_(net.and_(FD['sup'],net.eq(a6nk,1,e)),net.and_(FD['sub'],net.eq(a6nk,2,e)))
+on('A6E_S1',(net.and_(_eqn,_same),'A6E_R',{ins_ch:R1,ins_st:R2,a6off:a6off+1,a6er.r:a6er.id('A6E_S0')}),(None,'A6E_SE',None))
+e=S('A6E_SE'); on('A6E_SE',(net.eq(a6nk,1,e),'A6E_Eu',None),(None,'A6E_Eb',None))
+lit('A6E_Eu',b'</m:sup></m:sSup>','SVC'); lit('A6E_Eb',b'</m:sub></m:sSub>','SVC')
+# one character: run properties keep size and color, so a file comes back the same
+lit('A6E_R',b'<m:r>','A6E_R1')
+on('A6E_R1',(None,'T2RP',{t2full:net.step(psty),t2pr.r:t2pr.id('A6E_R2')}))
+lit('A6E_R2',b'<m:t xml:space="preserve">','A6E_C')
+e=S('A6E_C'); _amp=net.eq(ins_ch,38,e);_lt=net.eq(ins_ch,60,e);_gt=net.eq(ins_ch,62,e);_hi=net.ge(ins_ch,160,e);_pn=net.and_(net.ge(ins_ch,128,e),net.lt(ins_ch,160,e)); _ot=e-_amp-_lt-_gt-_hi-_pn
+em_en.lin(_ot); em_b.add(_ot,ins_ch)
+on('A6E_C',(_amp,'A6E_Ca',None),(_lt,'A6E_Cl',None),(_gt,'A6E_Cg',None),(_hi,'T2U2',{t2ur.r:t2ur.id('A6E_D')}),(_pn,'T2U3',{t2ur.r:t2ur.id('A6E_D')}),(None,'A6E_D',None))
+lit('A6E_Ca',b'&amp;','A6E_D'); lit('A6E_Cl',b'&lt;','A6E_D'); lit('A6E_Cg',b'&gt;','A6E_D')
+lit('A6E_D',b'</m:t></m:r>','A6E_ER')
+# ---- reader: bytes of m:t become characters styled as the Equation command styles them ----
+fsm.set(a6es,S('OP0'),0)
+ST_EQ=128+ST_NOP
+def _eqstyle(en,chv):
+    fin.add(en,cs+rhi); fen.lin(en)
+    lo=low0(chv,en); lett=net.and_(net.ge(lo,97,en),net.lt(lo,123,en))
+    s1=net.eq(a6es,1,en); s2=net.eq(a6es,2,en)
+    return cs+rhi+G_(ONE-FD['font'],en)*128+G_(ONE-FD['nop'],en)*ST_NOP+G_(ONE-FD['ital'],lett)*32+G_(ONE-FD['sup'],s1)*ST_SUP+G_(ONE-FD['sub'],s2)*ST_SUB
+on('A6E_R0',(None,'A6E_R1a',{rl:OA+oi}))
+e=S('A6E_R1a'); on('A6E_R1a',(net.eq(W[0],62,e),'A6E_R2a',{oi:oi+1}),(None,'A6E_R0',{oi:oi+1}))
+on('A6E_R2a',(None,'A6E_R3',{rl:OA+oi}))
+e=S('A6E_R3'); _am=net.eq(W[0],38,e); _b2=net.and_(net.ge(W[0],192,e),net.lt(W[0],224,e)); _b3=net.ge(W[0],224,e)
+_v2=(W[0]-192)*64+(W[1]-128); _big=net.and_(_b2,net.gt(_v2,255,e))
+_chv=W[0]
+_ent=net.and_(_am,net.eq(W[1],108,e))*60+net.and_(_am,net.eq(W[1],103,e))*62+net.and_(_am,net.eq(W[1],97,e))*38
+_sta=_eqstyle(e,G_(W[0],e))
+on('A6E_R3',(net.eq(W[0],60,e),'PX',None),
+ (net.and_(_am,net.eq(W[1],97,e)),'INS',{ins_ch:38,ins_st:_sta,oi:oi+5,oret.r:oret.id('A6E_R2a')}),
+ (_am,'INS',{ins_ch:_ent,ins_st:_sta,oi:oi+4,oret.r:oret.id('A6E_R2a')}),
+ (_big,'INS',{ins_ch:63,ins_st:_sta,oi:oi+2,oret.r:oret.id('A6E_R2a')}),
+ (_b2,'INS',{ins_ch:_v2,ins_st:_sta,oi:oi+2,oret.r:oret.id('A6E_R2a')}),
+ (_b3,'INS',{ins_ch:63,ins_st:_sta,oi:oi+3,oret.r:oret.id('A6E_R2a')}),
+ (None,'INS',{ins_ch:W[0],ins_st:_sta,oi:oi+1,oret.r:oret.id('A6E_R2a')}))
+# linear form of fractions and roots
+e=S('A6E_I1'); _st=_eqstyle(e,as_x(0)); on('A6E_I1',(None,'INS',{ins_ch:a6ec,ins_st:_st,oret.r:oret.id('PX')}))
+e=S('A6E_I2'); _st=_eqstyle(e,as_x(0)); on('A6E_I2',(None,'INS',{ins_ch:a6ec,ins_st:_st,oret.r:oret.id('A6E_I3')}))
+e=S('A6E_I3'); on('A6E_I3',(None,'A6E_I1',{a6ec:47}))
+for i_,ch_ in enumerate('sqrt('):
+    st=f'A6E_Ra' if i_==0 else f'A6E_Ra{i_}'; nx=f'A6E_Ra{i_+1}' if i_<4 else 'PX'
+    e=S(st); _st=_eqstyle(e,as_x(ord(ch_))); on(st,(None,'INS',{ins_ch:ord(ch_),ins_st:_st,oret.r:oret.id(nx)}))
