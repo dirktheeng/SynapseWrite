@@ -9,7 +9,7 @@ const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);}
  await p.mouse.click(420,400);const h=await sh('pc1');ok('handles appear when picture clicked',H(a)!==H(h));
  // alpha: read pixels by python
  // corner drag
- const bx=519,by=472;
+ const bx=519,by=435;
  await p.mouse.move(bx-2,by);await p.mouse.down();await p.mouse.move(bx+98,by+40);await p.waitForTimeout(80);await p.mouse.up();await p.waitForTimeout(300);await check('resize');
  const r=await sh('pc2');await K('Control+z');await p.waitForTimeout(100);ok('resize undo restores',H(await sh())===H(h));await K('Control+y');await p.waitForTimeout(100);ok('resize redo',H(await sh())===H(r));ok('corner drag resizes',H(r)!==H(h));
   await K('ArrowDown');await K('End');const a2=await sh('pc5');
