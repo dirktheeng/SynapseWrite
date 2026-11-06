@@ -38,7 +38,7 @@ const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);}
  execSync('rm -rf build/mlo; timeout 120 soffice --headless --convert-to docx:"MS Word 2007 XML" --outdir build/mlo build/m.docx >/dev/null 2>&1; timeout 120 soffice --headless --convert-to pdf --outdir build/mlo build/m.docx >/dev/null 2>&1; pdftoppm -r 40 -png build/mlo/m.pdf build/mlo/p');
  await open('build/mlo/m.docx');await nz();const a3=await sh('m9');ok('all features after LibreOffice identical',a===a3);
  const x=f=>require('child_process').execSync(`python3 -c "import zipfile;z=zipfile.ZipFile('${f}');print(z.testzip());[print(n) for n in z.namelist()]"`).toString();console.log(x('build/m.docx').split('\n').join(' '));
- const [dl]=await Promise.all([p.waitForEvent('download'),K('Control+p')]);await dl.saveAs('build/m.pdf');
+ const [dl]=await Promise.all([p.waitForEvent('download'),K('Control+p')]);await dl.saveAs('build/m.pdf');{const t_=execSync('pdftotext -layout build/m.pdf -').toString();ok('PDF has the footnote text',/First note text/.test(t_));ok('PDF has the header and footer',/Head 2/.test(t_)&&/Foot P2/.test(t_));ok('PDF table of contents has dots and page numbers',/Chapter One\s*\.[. ]+\d/.test(t_));}
  // second scenario: two notes numbered in text order, a two column narrow section, shaded table inside the document
  await K('Control+a');await K('Delete');await go('home');
  await T('First');await go('ref');await C(190,76);await T('alpha');await K('Enter');await K('Home');await C(190,76);await T('beta');await K('Enter');await go('home');await K('End');const f2=await sh('n1');

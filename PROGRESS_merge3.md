@@ -10,3 +10,4 @@ Plan and why:
 - Member walk on open: rels, footnotes, comments, numbering, styles, document, by ztarget.
 - First line offset stored as 0 or PFO+offset, pf_val at use. Registers t2d and t1_pdd held negative constants, which cannot be overwritten correctly: r-relu(r+M-M) leaves a negative r in place. Both now hold 1000+delta.
 - Name collisions found by reading: off_, nv2, fsi, pfc, trk, lx, zret, TB, qpw, qph, zo.
+First full e2e after the merge: 201/201 (before merge 3 additions). Added: PDF footnotes, table of contents dots and numbers, table rules in pixel coordinates.
