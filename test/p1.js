@@ -1,6 +1,8 @@
 // p1: tier 1 gaps. Find codes, Ctrl+Alt shortcuts and more. Driven by events, judged on images and saved files.
 const lib=require('./a7_lib'),{xml,paras,count}=require('./imp3_lib');const R=[];const ok=(n,c,x)=>{R.push(!!c);console.log(c?'PASS':'FAIL',n,x===undefined?'':x);};
 const only=process.argv[2];
+// a key through the glue's path: key name code units, length and raw modifier bits (ctrl 1, shift 2, meta 4, alt 16), cooked by the input network
+const rk=(A,name,m)=>{for(let i=0;i<6;i++)A.e.inject(A.h.keyv[i],name.charCodeAt(i)||0);A.e.inject(A.h.keyl,name.length);return A.raw(2,0,m,Date.now()%100000+200000);};
 const yel=(r,g,b)=>r>200&&g>180&&b<170; // match tint
 (async()=>{
  if(!only||only=='find'){
@@ -24,15 +26,17 @@ const yel=(r,g,b)=>r>200&&g>180&&b<170; // match tint
 
  if(!only||only=='alt'){
   // Ctrl+Alt+1 is Heading 1 (not single spacing), Ctrl+Alt+2 Heading 2
-  let A=await lib();A.type('Top');A.key(13);A.type('Sub');A.key(13);A.type('Body');A.settle();A.key(132,1);A.key('1',17);A.settle();A.key(131);A.key('2',17);A.settle();A.shot('build/p1_alt1.png');
+  let A=await lib();A.type('Top');A.key(13);A.type('Sub');A.key(13);A.type('Body');A.settle();A.key(132,1);rk(A,'1',17);A.settle();A.key(131);rk(A,'2',17);A.settle();A.shot('build/p1_alt1.png');
   let x=xml(A);const st=(x.match(/<w:p>.*?<\/w:p>/g)||[]).map(p=>(p.match(/w:pStyle w:val="(\w+)"/)||[])[1]);ok('Ctrl+Alt+1 and 2 apply Heading 1 and 2',st[0]=='Heading1'&&st[1]=='Heading2'&&!st[2],JSON.stringify(st));
   ok('Ctrl+Alt+1 does not set single spacing',!/w:line="240"/.test((x.match(/<w:p>.*?<\/w:p>/)||[''])[0]));
   // symbols
-  A=await lib();A.type('x');A.key('c',17);A.key('r',17);A.key('t',17);A.key('.',17);A.settle();x=xml(A);ok('Ctrl+Alt+C R T . type the signs and an ellipsis',x.includes('x©®™…'),(x.match(/<w:t[^>]*>[^<]*/g)||[]).join('|'));
+  A=await lib();A.type('x');rk(A,'c',17);rk(A,'r',17);rk(A,'t',17);rk(A,'.',17);A.settle();x=xml(A);ok('Ctrl+Alt+C R T . type the signs and an ellipsis',x.includes('x©®™…'),(x.match(/<w:t[^>]*>[^<]*/g)||[]).join('|'));
+  // AltGr arrives as Ctrl+Alt: its character types (an at sign and a euro sign); Ctrl+Alt+C is not a copy
+  A=await lib();A.type('mail');rk(A,'@',17);rk(A,'\u20ac',17);A.type('x');A.settle();x=xml(A);ok('AltGr characters type',x.includes('mail@\u20acx'),(x.match(/<w:t[^>]*>[^<]*/g)||[]).join('|'));
   // a footnote and a comment
-  A=await lib();A.type('Note here');A.key('f',17);A.settle();A.type('the note');A.settle();x=xml(A);const fn=A.part?A.part('word/footnotes.xml'):'';
+  A=await lib();A.type('Note here');rk(A,'f',17);A.settle();A.type('the note');A.settle();x=xml(A);const fn=A.part?A.part('word/footnotes.xml'):'';
   ok('Ctrl+Alt+F inserts a footnote',/w:footnoteReference/.test(x),(x.match(/<w:body>.*<\/w:body>/)||[''])[0].slice(0,300));
-  A=await lib();A.type('Talk');A.key('m',17);A.settle();A.type('a remark');A.key(13);A.settle();A.shot('build/p1_alt2.png');x=xml(A);ok('Ctrl+Alt+M adds a comment',/w:commentReference|w:commentRangeStart/.test(x));
+  A=await lib();A.type('Talk');rk(A,'m',17);A.settle();A.type('a remark');A.key(13);A.settle();A.shot('build/p1_alt2.png');x=xml(A);ok('Ctrl+Alt+M adds a comment',/w:commentReference|w:commentRangeStart/.test(x));
  }
 
  if(!only||only=='ribbon'){

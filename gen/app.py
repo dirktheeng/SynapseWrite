@@ -413,7 +413,7 @@ def i2u(v,en):
     return as_x(v)+ex_-net.ge(v,UO,en)*UO
 # ---- key handling ----
 net.group('key handling')
-en=S('KEY'); k=net.decode(eva,256,en); kb=net.bits(evb,2,en); ctrl=kb[0]; shf=kb[1]; nc=ONE-ctrl
+en=S('KEY'); k=net.decode(eva,256,en); kb=net.bits(evb,3,en); ctrl=kb[0]; shf=kb[1]; p1_alt=kb[2]; nc=ONE-ctrl
 def K(c): return net.and_(k[ord(c) if isinstance(c,str) else c],ctrl)
 def N(c): return net.and_(k[c],nc)
 printable=X()

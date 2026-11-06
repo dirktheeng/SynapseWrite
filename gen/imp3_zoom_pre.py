@@ -8,18 +8,27 @@ zany=net.or_(*ZLH); zdoc=net.step(zany*M-M+clip0-173.5); zrul=net.reg(); VHZ=net
 _zx=[net.and_(h_,net.or_(zdoc,zrul)) for h_ in ZLH]; _zy=[net.and_(h_,zdoc) for h_ in ZLH]
 zsf=net.reg(4096); zwd=net.reg()   # a page wider than the window slides sideways: zsf is the slide plus 4096, zwd says one is on
 def zsl(en): return net.gate(zsf,en)-en*4096
+# p1: the levels' terms sit behind one gate on "any level on", so at 100 percent a pull reads two inputs whatever the number
+# of levels. The sum can be negative, so it is gated with an offset ZOFF and the offset taken off again (values are f64).
+ZOFF=2**30; _zany_c={}
+def _zanyof(hs):
+    k_=tuple(id(h_) for h_ in hs)
+    if k_ not in _zany_c: _zany_c[k_]=net.or_(*hs)
+    return _zany_c[k_]
+def _zgate(inner,hs):
+    g_=_zanyof(hs); return net.gate(inner+ZOFF,g_)-g_*ZOFF
 def _zmap(e,hs,factor,a):
-    e=as_x(e); o=e
+    e=as_x(e); o=X()
     for h_,z_ in zip(hs,ZL): o=o+(factor(z_)-1)*(net.gate(e,h_)-h_*a)
-    return o
+    return e+_zgate(o,hs)
 def zfx0(e): return _zmap(e,ZLH,lambda z_:z_,ZCX)+zsl(zwd)
 def zfy0(e): return _zmap(e,ZLH,lambda z_:z_,DOCY)
 def zev(e): return _zmap(as_x(e)-zsl(zwd),ZLH,lambda z_:1/z_,ZCX)
 def zevy(e): return _zmap(e,ZLH,lambda z_:1/z_,DOCY)
 def _zw(e,hs):
-    e=as_x(e); o=e
+    e=as_x(e); o=X()
     for h_,z_ in zip(hs,ZL): o=o+(z_-1)*net.gate(e,h_)+h_*0.7
-    return o
+    return e+_zgate(o,hs)
 def _zwire(e): w_=net.wire(); net.connect(w_,e); return w_
 # the scrollbar rule fires on the tick that closes the document clip
 _ZRE2=fsm.S('RE2')
@@ -37,10 +46,11 @@ def zgy(e): return _zwire(_zmap(e,_zgl()['y'],lambda z_:z_,DOCY+YB))
 def zfyb(e): return _zmap(as_x(e)+YB,ZLH,lambda z_:z_,DOCY+YB)-YB
 def zoom_sizes(size_hot):
     "The size the glyph unit draws: the nearest whole point to the scaled size."
-    out=[X() for _ in size_hot]; _zgy_h=_zgl()['y']; anyz=net.or_(*_zgy_h)
+    out=[X() for _ in size_hot]; zo=[X() for _ in size_hot]; _zgy_h=_zgl()['y']; anyz=net.or_(*_zgy_h)
     for i_,h_ in enumerate(size_hot):
         n_,s_=tsplit(h_,anyz); out[i_]=out[i_]+n_
         for z_h,z_ in zip(_zgy_h,ZL):
-            t_=rom.SZ.index(max(4,min(72,round(rom.SZ[i_]*z_+0.01)))); out[t_]=out[t_]+net.and_(s_,z_h)
-    return out
+            t_=rom.SZ.index(max(4,min(72,round(rom.SZ[i_]*z_+0.01)))); zo[t_]=zo[t_]+net.and_(s_,z_h)
+    # p1: the zoomed terms of a size sit behind one gate, so at 100 percent a size reads two inputs whatever the number of levels
+    return [o_+(net.gate(z_,anyz) if z_.t else X()) for o_,z_ in zip(out,zo)]
 assert (len(rom.FACES)+1)*rom.NSZ*256<TAGB_SPAN,'tag table too small for the glyph keys'
