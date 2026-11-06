@@ -29,5 +29,5 @@ for i_,(lb_,st_) in enumerate((('Zoom In','IMP3_ZI'),('Zoom Out','IMP3_ZO'),('10
 for i_,(lb_,st_) in enumerate((('One Page','IMP3_ZP'),('Page Width','IMP3_ZW'),('Read Mode','IMP3_RE'))): add(5,13+i_,256,R0+22*i_,94,RH,lb_,st_)
 
 # Commands that already exist in the network and had no button
-add(1,6,840,R0,92,RH,'Page Break','PB0')
+add(1,6,1058,R0,92,RH,'Page Break','PB0')
 add(4,9,392,R0,84,RH,'Show Marks','IMP3_MK')
