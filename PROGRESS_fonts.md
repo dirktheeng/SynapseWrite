@@ -21,3 +21,17 @@ Cell = table index (bits 0 to 18) plus the five per character flags at the old p
 Record 0 is the default (size field 0 means 11 pt), which keeps every ins_st:0 and cs:0 as written.
 The interner is a second small FSM in domain 1 (memo of the last value, then a linear scan), returning through the call port. 4096 records. Overflow: returns the caller's fallback index, so formatting is not applied, and the status bar says so.
 A style port (kind 10) reads a cell and its record in the same tick, so paint and layout stay one tick per character.
+
+## Step 3: fonts
+Tried Arimo, Tinos, Cousine, Open Sans, Roboto, Oswald, Dancing Script, Pacifico, Lobster, Bebas Neue, Playfair Display for edge counts and licenses (all OFL). Chose Arimo, Tinos, Cousine, Open Sans (four faces each), Oswald and a script, regular and bold.
+Dancing Script and Lobster carry a Reserved Font Name; the generator flattens and regrids outlines, so a reserved name on the menu would be doubtful. Caveat has no reserved name and took its place. Page notice: copyright lines and the OFL text in an HTML comment. License files in fonts/*/package/LICENSE.
+Weight dictionary: 9,737 distinct weights (u16 limit 65,536), thanks to the 1/1024 em grid and 9 bit slopes.
+PDF: font bytes as token chains cost 130K neurons and 387K edges with two families. They now sit in a read only part of the bank, copied to the file in blocks only for faces the document used, and the Resources dictionary lists only those.
+Bug: bank cells are f32, so font addresses near 63M lost their low bits; the table now holds offsets from the region start.
+Bug: when a code has no outline, generator latches loaded and cleared in the same tick, doubling the next glyph's scale: latches now load only when a program runs.
+Bug: the block paste path still wrote the record where the index belongs (found by viewing: red underlines from flag bits).
+Look: every glyph used to be cleared by its neighbor's rectangle, cutting script overhangs. Lines are now cleared once, per character rectangles only set ids (port flag), and black on white draws keep the darker pixel, so overlapping letters stay whole.
+Viewed 11 pt side by side: x snap makes stems crisper, but with whole pixel pens letters space unevenly ("Hamburgef onstiv", shots/fonts_xsnap_compare.png). Y snap alone matches the old evenness, so that is the rule now: y snap up to 24 pt in all faces, none above.
+
+## Step 4: memory
+Bank made sparse instead of shrunk: 1024 pages of 64K cells, each taking wasm memory on first write, untouched pages read as zero. No capacity was reduced and no address moved. Wasm memory at start: 73 MB (master 244 MB bank plus arrays). The weight file's streams are freed after decoding.
