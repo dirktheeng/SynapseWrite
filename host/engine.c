@@ -27,8 +27,8 @@ __attribute__((export_name("finish"))) void finish(void){
   for(i32 k=s+1;k<e;k++)dst[k]+=dst[k-1];
   while(q<e&&dst[q]<end)q++; osplit[i]=q;}
  for(i32 pass=0;pass<2;pass++){i32*p=ports,*e=ports+NP;i32 c=0;
-  while(p<e){i32 k=p[0],len=k==1||k==2?6:k==3?12:k==4?9:k==6?8:4;
-   if((k==1||k==3||k==4||k==6)==(pass==0)){pen[(pass?nwp:0)+c]=p[1];pptr[(pass?nwp:0)+c]=(i32)(p-ports);c++;}
+  while(p<e){i32 k=p[0],len=k==1||k==2?6:k==3?12:k==4?9:k==6?8:k==7?8:4;
+   if((k==1||k==3||k==4||k==6||k==7)==(pass==0)){pen[(pass?nwp:0)+c]=p[1];pptr[(pass?nwp:0)+c]=(i32)(p-ports);c++;}
    p+=len;}
   if(pass)nrp=c;else nwp=c;}}
 __attribute__((export_name("inject"))) void inject(i32 i,f64 x){nacc[i]+=x;if(!nflag[i]){nflag[i]=1;nlist[nnext++]=i;}}
@@ -54,6 +54,10 @@ static void write_port(i32*p){switch(p[0]){
   case 6:{ // image row copy, packed RGB cells to pixels: {6,en,x,y,addr,n,y0,y1}
    i32 x=I(p[2]),y=I(p[3])-YB,a=I(p[4]),n=I(p[5]),y0=V(p[6]),y1=V(p[7]);if(y1==0){y0=0;y1=H;}
    if(y>=y0&&y<y1&&y>=0&&y<H){drow[y]=1;for(i32 j=0;j<n;j++){i32 xx=x+j;if(xx>=0&&xx<W){u8*o=fb+4*(y*W+xx);i32 c=(i32)bank[a+j];o[0]=c>>16;o[1]=(c>>8)&255;o[2]=c&255;o[3]=1;}}}break;}
+  case 7:{ // screen colors to or from the bank, alpha untouched: {7,en,x,y,addr,dir,w,h}
+   i32 x=I(p[2]),y=I(p[3]),dir=p[5],pw=p[6],ph=p[7];f32*b=bank+p[4];
+   for(i32 r=0;r<ph;r++){i32 yy=y+r;for(i32 c=0;c<pw;c++,b++){i32 xx=x+c;if(yy<0||yy>=H||xx<0||xx>=W)continue;u8*o=fb+4*(yy*W+xx);
+     if(dir==0)*b=(f32)((o[0]<<16)|(o[1]<<8)|o[2]);else{i32 k=(i32)*b;u8 r_=k>>16,g_=(k>>8)&255,b_=k&255;if(o[0]!=r_||o[1]!=g_||o[2]!=b_){o[0]=r_;o[1]=g_;o[2]=b_;drow[yy]=1;}}}}break;}
  }}
 static void read_port(i32*p){ if(p[0]==2){ // read: {2,en,addr,out,len,lenN}
    i32 a=I(p[2]),n=p[5]>=0?I(p[5]):p[4];if(n>p[4])n=p[4];i32 o=p[3];f32*b=bank+a;for(i32 j=0;j<n;j++){f32 x=b[j];if(x!=0)inject(o+j,x);}}

@@ -1,24 +1,22 @@
-"""Tier 3 ribbon commands. They share one raw object id per tab (TB(RAW,tab) in the BTN rules); the network tells them apart by tab, x and y.
-Raw ids 54, 55 and 35 are global for Tier 1, so RAW is one that only the Home tab uses for itself. These buttons have no hover highlight, as an id highlights as a whole."""
+"""Tier 3 ribbon commands. Each has its own raw object id within its tab, so each gets a hover highlight.
+Ids are looked up with the tab in the BTN rules. Raw ids below 9 on Layout and View are remapped, so they are not used here."""
 from app_pal import B as _B
-RAW=9
-# (tab,x,y,w,h,label,state,swatch color or None)
+# (tab,id,x,y,w,h,label,state,swatch color or None)
 BTNS=[]
-GROUPS=[]
-def add(tab,x,y,w,h,label,state,color=None): BTNS.append((tab,x,y,w,h,label,state,color))
-x0=770
-add(1,x0,64,64,24,'Row Above','T3_C_RA'); add(1,x0+66,64,64,24,'Row Below','T3_C_RB')
-add(1,x0+132,64,56,24,'Col Left','T3_C_CL'); add(1,x0+190,64,60,24,'Col Right','T3_C_CR')
-add(1,x0,90,64,24,'Del Row','T3_C_DR'); add(1,x0+66,90,64,24,'Del Col','T3_C_DC')
-# palette index of each shade
+def add(tab,id_,x,y,w,h,label,state,color=None): BTNS.append((tab,id_,x,y,w,h,label,state,color))
+R0,R1,R2=64,86,108; RH=21
+# Insert: table tools and header, footer
+X=84
+for i,(lb,st) in enumerate((('Row Above','T3_C_RA'),('Row Below','T3_C_RB'),('Delete Row','T3_C_DR'))): add(1,8+i,X,R0+22*i,76,RH,lb,st)
+X=162
+for i,(lb,st) in enumerate((('Col Left','T3_C_CL'),('Col Right','T3_C_CR'),('Delete Col','T3_C_DC'))): add(1,11+i,X,R0+22*i,70,RH,lb,st)
 SH=[(0,_B[0]),(2,_B[2]),(5,_B[5]),(13,_B[13]),(14,_B[14]),(15,_B[15])]
-for i,(k,c) in enumerate(SH): add(1,x0+132+i*20,90,18,24,'','T3_C_S%d'%k,c)
-GROUPS.append((1,x0,250,'Table Tools'))
-L0=964
-add(2,L0,64,70,24,'Portrait','T3_C_POR'); add(2,L0+72,64,70,24,'Landscape','T3_C_LAN'); add(2,L0+146,64,90,24,'Section Break','T3_C_SB')
-add(2,L0,90,56,24,'Normal','T3_C_MN'); add(2,L0+58,90,56,24,'Narrow','T3_C_MS'); add(2,L0+116,90,56,24,'Wide','T3_C_MW'); GROUPS.append((2,L0,236,'Orientation, Margins, Sections'))
-F0=1030
-add(1,F0,64,64,24,'Footer','T3_C_F0'); add(1,F0+66,64,84,24,'First Header','T3_C_H1'); add(1,F0+152,64,84,24,'First Footer','T3_C_F1')
-add(1,F0,90,64,24,'Page #','T3_C_PG'); add(1,F0+66,90,84,24,'No First Page','T3_C_NF'); GROUPS.append((1,F0,236,'Header and Footer'))
-add(3,8,90,122,24,'Update Table','T3_C_TU')
-add(4,8,90,100,24,'Delete Comment','T3_C_CD')
+for i,(k,c) in enumerate(SH): add(1,14+i,236+(i%2)*24,R0+(i//2)*22,22,RH,'','T3_C_S%d'%k,c)
+X=380
+add(1,20,X,R0+22,84,RH,'Footer','T3_C_F0'); add(1,21,X+86,R0,100,RH,'First Header','T3_C_H1'); add(1,22,X+86,R0+22,100,RH,'First Footer','T3_C_F1')
+add(1,23,X,R0+44,84,RH,'Page Number','T3_C_PG'); add(1,24,X+86,R0+44,100,RH,'No First Page','T3_C_NF')
+# Layout: orientation, margins, section break
+add(2,10,62,R0,78,RH,'Portrait','T3_C_POR'); add(2,11,62,R0+22,78,RH,'Landscape','T3_C_LAN')
+add(2,12,142,R0,60,RH,'Normal','T3_C_MN'); add(2,13,142,R0+22,60,RH,'Narrow','T3_C_MS'); add(2,14,142,R0+44,60,RH,'Wide','T3_C_MW')
+add(3,8,74,R0,92,RH,'Update Table','T3_C_TU')
+add(4,8,120,R0+22,104,RH,'Delete Comment','T3_C_CD')

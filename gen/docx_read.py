@@ -1,5 +1,5 @@
 
-openout=Bus(net); openout.add(S('HALT'),wopen); fsm.set(wopen,S('HALT'),0)
+openout=Bus(net); openout.add(S('HF'),wopen); fsm.set(wopen,S('HF'),0)
 iret=Ret('IR');bret=Ret('BR');gret=Ret('GR');hret=Ret('HR');cret=Ret('CR')
 ip=R();cur=R();nb=R();bitv=R();gbn=R();gbv=R();gbw=R();gbi=R();ob=R();oi=R();zp=R();pfirst=R();cs=R();ntxt=R()
 lln=R();bfinal=R();nlen=R();ndist=R();ncode=R();idx=R();prev=R();rept=R();rval=R();cval=R()
@@ -261,7 +261,7 @@ on('OPE2',(None,'SYNC',{autos:1,lc:1,dfrom:0,ty:0}))
 
 # ---- PNG reader: chunks, inflate, row filters, decimation to fit the page ----
 net.group('png reader')
-picout=Bus(net); picout.add(S('HALT'),wpic); fsm.set(wpic,S('HALT'),0)
+picout=Bus(net); picout.add(S('HF'),wpic); fsm.set(wpic,S('HF'),0)
 pbase=R();pgdoc=R();pgl=R();pw=R();ph=R();pdep=R();pct=R();pbp=R();pst=R();dst=R();cl2=R();ck=R();psz=R();pcy=R();pos=R();ix=R();rowf=R();ky=R();kx=R();dw=R();dh=R();dcnt=R();pst0=R();rstart=R()
 on('PG_0',(None,'PG_1',{rl:FA,pbase:FA,pgdoc:0,pgl:evc}))
 e=S('PG_1')

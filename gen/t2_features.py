@@ -110,27 +110,6 @@ e=S('T2_PD2'); t2dd=t2d-1000; t2nvv=G_(net.max_(pf_val(R2)+t2dd,as_x(0)-R1)+PFO,
 on('T2_PD2',(None,'T2_PD3',{t2val:t2nvv,t2o:R2}))
 e=S('T2_PD3'); log(e,6,pwalk,pfld,t2o,t2val)
 on('T2_PD3',(net.lt(pwalk,hi_p,e),'T2_PD0',{pwalk:pwalk+1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}),(None,'RD0',{lc:1,w1:(t2b+pfld,t2val),w2:(t2b+DIRTY,1)}))
-# ribbon cells found by position: one object id covers a whole grid of commands
-import ui as _ui
-e=S('T2_HIT')
-gx0=net.gate(as_x(_ui.HOME_X),net.eq(tab,0,e))+net.gate(as_x(_ui.LAY_X),net.eq(tab,2,e))
-col_=X()
-for i_ in range(1,15): col_=col_+net.ge(hx_-gx0,i_*_ui.CW,e)
-row_=X()
-for i_ in range(1,3): row_=row_+net.ge(hy_-64,i_*_ui.CH,e)
-hb2=net.decode(net.eq(tab,2,e)*45+row_*15+col_,90,e)
-rules2=[(hb2[0],'FMTS',{fm:12}),(hb2[1],'FMTS',{fm:13}),(hb2[2],'FMTS',{fm:14}),
- (hb2[3],'T2_PD',{pfld:PIND,t2d:1000-24,t2mn:0}),(hb2[4],'T2_PD',{pfld:PIND,t2d:1000+24,t2mn:0})]
-for i_ in range(8): rules2.append((hb2[5+i_],'FMTS',{fm:15,fhl:i_}))
-rules2+=[(hb2[13],'T2_SA0',{t2si:4}),(hb2[14],'T2_SA0',{t2si:5})]
-for i_ in range(15): rules2.append((hb2[15+i_],'FMTS',{fm:7,fcol:8+i_}))
-for i_ in range(9): rules2.append((hb2[30+i_],'FMTS',{fm:7,fcol:23+i_}))
-for i_ in range(3): rules2.append((hb2[39+i_],'T2_UM0',None))
-L0=45
-for i_,(fld,dv,mn) in enumerate(((PIND,-24,0),(PIND,24,0),(PFIRST,-24,1),(PFIRST,24,1),(PSPB,-8,0),(PSPB,8,0),(PSPA,-8,0),(PSPA,8,0))):
-    rules2.append((hb2[L0+i_],'T2_PD',{pfld:fld,t2d:1000+dv,t2mn:mn}))
-for i_ in range(6): rules2.append((hb2[L0+8+i_],'PA0',{pwalk:lo_p,pfld:PLSP,alv:i_,grp:grp+1}))
-on('T2_HIT',*rules2,(None,'HALT',None))
 # ---- .docx reader helpers ----
 net.group('docx reader tier 2')
 # open: restore the built in styles and clear the numbering tables

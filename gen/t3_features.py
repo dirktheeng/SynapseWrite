@@ -173,12 +173,6 @@ grow=net.min_(gr,G_(as_x(4000),lastcol)+G_(net.relu(MT[0]-20),e-lastcol))
 shrink=net.min_(sh_,net.relu(tcw-20))
 on('T3_CW5',(None,'T3_P2',{p2n:tn,a1:tdc,a1v:grow,a1m:shrink,a2:G_(tdc+1,e-lastcol)+G_(as_x(99),lastcol),a2v:shrink,cwk:grow,capt:cp}))
 
-# ---- ribbon commands behind button id 54: tab, x and y select the command ----
-e=S('T3_BTN'); b3=[]
-for tb_,x_,y_,w_,h_,lb_,st_,c_ in t3_btn.BTNS:
-    b3.append((net.and_(net.eq(tab,tb_,e),net.ge(hx_,x_,e),net.lt(hx_,x_+w_,e),net.ge(hy_,y_,e),net.lt(hy_,y_+h_,e)),st_,None))
-on('T3_BTN',*b3,(None,'HALT',None))
-
 # ---- sections: a paragraph with SECN>0 starts a new section on a new page, record SECN-1 ----
 e=S('T3_SB0')
 sbadv={**pfsave,ptop:ptop+s_ps,yy:ptop+s_ps+RL[6],pages:pages+1,fnp:0,xcol:0,**sload(RL)}
