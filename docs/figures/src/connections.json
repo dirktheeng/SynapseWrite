@@ -3,12 +3,12 @@
 [
 "glyph weights (outline edges)",
 "glyph weights (outline edges)",
-1261862
+514009
 ],
 [
 "glyph pixel records",
 "glyph weights (outline edges)",
-239011
+77704
 ],
 [
 "snapping layer",
@@ -16,14 +16,14 @@
 65743
 ],
 [
+"glyph metrics",
+"glyph metrics",
+42222
+],
+[
 "docx crc",
 "docx crc",
 41052
-],
-[
-"glyph metrics",
-"glyph metrics",
-40131
 ],
 [
 "glyph unit",
@@ -43,7 +43,7 @@
 [
 "glyph network",
 "glyph metrics",
-18333
+18527
 ],
 [
 "docx crc",
@@ -53,7 +53,7 @@
 [
 "docx reader",
 "docx reader",
-15521
+15693
 ],
 [
 "docx reader rv_a5",
@@ -103,7 +103,7 @@
 [
 "layout and paint",
 "layout and paint",
-3711
+3622
 ],
 [
 "zoom",
@@ -118,7 +118,7 @@
 [
 "pdf writer",
 "pdf writer",
-3354
+3385
 ],
 [
 "compiled control",
@@ -166,24 +166,19 @@
 2296
 ],
 [
-"pdf writer",
-"compiled control",
-2057
-],
-[
 "glyph unit",
 "glyph weights (outline edges)",
 2012
 ],
 [
+"pdf writer",
+"compiled control",
+1937
+],
+[
 "rv a3 interaction",
 "compiled control",
 1935
-],
-[
-"glyph network",
-"glyph network",
-1842
 ],
 [
 "docx writer",
@@ -203,7 +198,7 @@
 [
 "glyph metrics",
 "glyph network",
-1725
+1658
 ],
 [
 "range walker",
@@ -216,19 +211,24 @@
 1582
 ],
 [
-"docx reader",
-"compiled control",
-1425
+"glyph network",
+"glyph network",
+1572
 ],
 [
-"layout and paint",
+"docx reader",
 "compiled control",
-1402
+1444
 ],
 [
 "compiled control",
 "docx writer",
 1300
+],
+[
+"layout and paint",
+"compiled control",
+1282
 ],
 [
 "tier 4 features",
@@ -308,7 +308,7 @@
 [
 "bank and port wiring",
 "docx reader",
-889
+891
 ],
 [
 "extended characters",
@@ -323,7 +323,7 @@
 [
 "bank and port wiring",
 "compiled control",
-832
+829
 ],
 [
 "a4 ruler",
@@ -358,7 +358,7 @@
 [
 "line breaking",
 "line breaking",
-717
+718
 ],
 [
 "tier 4 features",
@@ -531,11 +531,6 @@
 387
 ],
 [
-"line breaking",
-"compiled control",
-387
-],
-[
 "notes and balloons",
 "notes and balloons",
 386
@@ -666,14 +661,14 @@
 294
 ],
 [
+"docx reader",
+"bank and port wiring",
+290
+],
+[
 "ribbon actions",
 "docx reader rv_a5",
 284
-],
-[
-"docx reader",
-"bank and port wiring",
-282
 ],
 [
 "pictures",
@@ -699,6 +694,11 @@
 "tier 4 features",
 "bank and port wiring",
 271
+],
+[
+"line breaking",
+"compiled control",
+267
 ],
 [
 "compiled control",
@@ -5063,6 +5063,11 @@
 [
 "event dispatch",
 "compiled control",
+1
+],
+[
+"feat1 run effects",
+"glyph metrics",
 1
 ],
 [
