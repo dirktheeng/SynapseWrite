@@ -470,7 +470,7 @@ class GlyphUnit:
                     # Blocks of columns. Left of the crossing nothing opens. Right of it every column gains the same whole unit, from one neuron. Only the block holding the crossing needs its ramps.
                     for a_ in range(0,LW,BLK):
                         b_=min(a_+BLK,LW); e_=et[tier_of(a_+1)]
-                        open_=net.step(e_*M-M+(b_+PAD+OFF)-xs); full=net.step(open_*M-M+(a_+PAD+OFF)-xs); pe=net.step(open_-full-0.5)
+                        full=net.step(e_*M-M+(a_+PAD+OFF)-xs); pe=net.and_(e_,net.step(e_*M-M+(b_+PAD+OFF)-xs),ONE-full)
                         R={q:net.relu(pe*M-M+(q+PAD+OFF)-xs) for q in range(a_+1,b_+1)}; nbank+=b_-a_
                         for p_ in range(a_,b_): w[p_]=w[p_]+(full+R[p_+1]-R.get(p_,X()))*sg
         g.nbank=nbank

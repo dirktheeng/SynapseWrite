@@ -2,11 +2,11 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-443014 neurons, 944832 edges, 166 layers, 3371 control states.
+442739 neurons, 944383 edges, 166 layers, 3371 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
-| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1287) | 1287 | 6655 |
+| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1287) | 1287 | 6659 |
 | glyph network | Selects and addresses a character cell for drawing. | gen/app.py (507) | 507 | 6867 |
 | glyph metrics | Character advance and kerning trees. | gen/app.py (17875) | 17875 | 50620 |
 | glyph unit | Draws a character from its edge network into the glyph store, in its own clock domain. | gen/glyphnet.py (19503) | 19503 | 59479 |
@@ -16,12 +16,12 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | stem units | Stem position units for the hinting of letters. |  | 0 | 0 |
 | row sequencer | Steps the glyph unit through the rows of a character. | gen/glyphnet.py (29) | 29 | 72 |
 | glyph weights (outline edges) | Font outlines as edges in weights, one group per glyph program. | gen/glyphnet.py (360008) | 360008 | 1302913 |
-| ramp bank | Coverage ramps for the edge network. | gen/glyphnet.py (5235) | 5235 | 10459 |
+| ramp bank | Coverage ramps for the edge network. | gen/glyphnet.py (4955) | 4955 | 10359 |
 | coverage | Adds edge coverage into pixel coverage. | gen/glyphnet.py (1816), gen/app.py (11) | 1827 | 13916 |
 | style interner | Finds or adds a style record in the interned table, in its own clock domain. | gen/app.py (53) | 53 | 122 |
 | glyph patch | Assembles glyph coverage into a color patch for the patch port. | gen/app.py (6) | 6 | 84 |
 | shared control registers | Editor state registers and the selection order comparators. | gen/app.py (228), gen/rv_a4_regs.py (81), gen/t1_features.py (45), gen/rv_a3_pre.py (38) | 392 | 3831 |
-| ribbon display list | Token chain whose weights hold each ribbon draw item. | gen/app.py (8720), gen/rv_a9_dl.py (150) | 8870 | 33284 |
+| ribbon display list | Token chain whose weights hold each ribbon draw item. | gen/app.py (8721), gen/rv_a9_dl.py (150) | 8871 | 33294 |
 | event dispatch | Routes each cooked event to its handler; timer, wheel and move handling. | gen/app.py (1) | 1 | 3 |
 | pointer | Draws the mouse pointer, saves and restores the colors under it, and chooses its shape from the screen. | gen/pointer.py (48), gen/pointer2.py (43), gen/app.py (15) | 106 | 726 |
 | raw event interpretation | Turns raw browser events (key name code units, button masks, pointer types, field text, touch positions) into cooked events and browser commands. | gen/rv_a11_input.py (215), gen/app.py (79) | 294 | 1200 |
@@ -42,13 +42,13 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | docx writer | Writes the document XML parts. | gen/t2_write.py (588), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1031 | 8810 |
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2771), gen/app.py (4) | 2775 | 74350 |
 | pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1236) | 1236 | 3883 |
-| docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (1839) | 1839 | 13584 |
+| docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (1843) | 1843 | 13613 |
 | png reader | Decodes PNG files to pixel words. | gen/docx_read.py (307), gen/a12_guard.py (58) | 365 | 3890 |
 | tier 4 features | Tracked changes, fields, equations, mail merge. | gen/t4_features.py (699) | 699 | 1908 |
 | docx deflate | LZ77 with fixed Huffman compression for the zip container. | gen/t4_features.py (242) | 242 | 868 |
 | docx reader tier 4 | Reads tracked marks and fields. | gen/t4_features.py (1368) | 1368 | 3428 |
 | tier 2 | Styles, paragraph commands, lists and typed sizes. | gen/t2_features.py (354) | 354 | 846 |
-| docx reader tier 2 | Reads styles, numbering, run and paragraph properties. | gen/t2_features.py (521) | 521 | 1626 |
+| docx reader tier 2 | Reads styles, numbering, run and paragraph properties. | gen/t2_features.py (521) | 521 | 1627 |
 | tier3 | Remaining tier 3 commands and undo op 8. | gen/t3_features.py (22) | 22 | 46 |
 | tables | Table scan, insert, row and column edits, shading, border hit zones and drag. | gen/t3_features.py (614) | 614 | 1658 |
 | sections | Section records, breaks and page setup. | gen/t3_features.py (106) | 106 | 284 |

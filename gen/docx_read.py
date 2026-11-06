@@ -165,7 +165,8 @@ e=S('PX')
 on('PX',(net.ge(oi,ob,e),'T2_ZN',None),(None,'PX1',{rl:OA+oi}))
 e=S('PX1')
 lt_=net.eq(W[0],60,e)
-on('PX1',(lt_,'PX2',{rl:OA+oi}),(None,'PX',{oi:oi+a5_adv(e)}))
+_adv=a5_adv(e)    # no bracket at the head of the window: the next window's read goes out now, so a run of text takes one tick per window
+on('PX1',(net.and_(ONE-lt_,net.ge(oi+_adv,ob,e)),'T2_ZN',{oi:oi+_adv}),(lt_,'PX2',{rl:OA+oi}),(None,'PX1',{oi:oi+_adv,rl:OA+oi+_adv}))
 e=S('PX2')
 on('PX2',(net.ge(nextb,SLOTMAX,e),'T2_ZN',None),(net.and_(t2skip,ONE-pat('</w:styl',e)),'PX',{oi:oi+1}),
  (pat('</w:styl',e),'T2_SW',{oi:oi+8,t2rr.r:t2rr.id('T2_SC')}),
