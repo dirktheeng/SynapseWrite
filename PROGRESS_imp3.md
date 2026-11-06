@@ -32,3 +32,8 @@ look causes, in order found:
 sz_near still leaves 4, 5, 6 pt out, so those sizes exist only for drawing at small zoom. Header zero cells now come from the resting record plane, as two plain zero wires could be merged by the optimizer.
 All Styles menu: rows written from the style table, ten at a time, More styles moves on.
 After: look 31/31, imp3 49/49, audit 67/67.
+
+## Full run 2 at 9aeea0a
+All exit 0: e2e 210/210, tier2 49/49, look 31/31, t3_table, t3_pic, t3_misc, t4_docx 18/18, t4_pdf, roundtrip, touch, a4 0 failed of 50, rv_a3 49/49, fonts 23/23, a5_docx (open 9,897,325 edges), a7_type, imp_far, imp_misc, imp2, rv_a1 38/38, imp3 49/49, t4, audit 67/67.
+t4 edges before and after: jump 1.94 M to 778 K, Enter 1.89 M to 782 K, undo 1.98 M to 815 K, wheel 1.94 M to 779 K. Ticks unchanged in the document walk (jump 2,380 to 2,392). Select all stays near 2.4 M: selected text takes the row plane.
+Not done in tier 2: fonts (other names, other Unicode), custom colors, style create and rename, character styles, list formats and continued numbering; hyphenation; vertical ruler.
