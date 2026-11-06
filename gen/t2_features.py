@@ -2,8 +2,8 @@
 net.group('tier 2')
 # ROM images. Written once at build time; the network reads them through its memory ports.
 T2_ROM=[]
-def _rec(i,run,al=0,ind=0,fi=0,lsp=0,spb=0,spa=DEFSPA,sid='',name=''):
-    vals=[rom.lit(run),al,ind,fi,lsp,spb,spa,0]
+def _rec(i,run,al=0,ind=0,fi=0,lsp=0,spb=0,spa=DEFSPA,sid='',name='',pt=None):
+    vals=[rom.lit(run)+(rom.sz_raw(rom.SZ.index(pt)) if pt else 0),al,ind,fi,lsp,spb,spa,0]
     for base in (STY0,STY):
         a=base+i*STYN
         for j,v in enumerate(vals):
@@ -14,7 +14,7 @@ BLUE3=3*256
 _rec(0,0,sid='Normal',name='Normal')
 _rec(1,7,spa=0,sid='Title',name='Title')
 _rec(2,3+BLUE3,spb=16,spa=0,sid='Heading1',name='heading 1')
-_rec(3,2+BLUE3,spb=3,spa=0,sid='Heading2',name='heading 2')
+_rec(3,BLUE3,spb=3,spa=0,sid='Heading2',name='heading 2',pt=13)
 _rec(4,1+BLUE3,spb=3,spa=0,sid='Heading3',name='heading 3')
 _rec(5,0+20*256+32,al=1,spb=13,spa=11,sid='Quote',name='Quote')
 def _roman(n):
@@ -170,7 +170,7 @@ on('T2_A2',(None,'T2_DV',{t2q:0,t2sr.r:t2sr.id('T2_A3')}))
 on('T2_A3',(None,'T2_AT',{w1:(cb+t2fld,as_x(PFO)-t2q)}))
 on('T2_A2b',(None,'T2_DV',{t2q:0,t2sr.r:t2sr.id('T2_A3b')}))
 on('T2_A3b',(None,'T2_AT',{w1:(cb+t2fld,as_x(PFO)+t2q)}))
-e=S('T2_A4'); lv_=net.gt(t2n_,250,e)+net.gt(t2n_,300,e)+net.gt(t2n_,420,e)+net.gt(t2n_,540,e)+net.gt(t2n_,660,e)
+e=S('T2_A4'); lv_=net.gt(t2n_,267,e)+net.gt(t2n_,300,e)+net.gt(t2n_,420,e)+net.gt(t2n_,540,e)+net.gt(t2n_,660,e)+(e-net.gt(t2n_,250,e))*6   # 240 true single, 259 the default
 on('T2_A4',(None,'T2_AT',{w1:(cb+PLSP,lv_)}))
 e=S('T2_A6'); notauto=net.or_(net.eq(W[0],101,e),net.and_(net.eq(W[0],97,e),net.eq(W[1],116,e)))
 on('T2_A6',(notauto,'T2_AT',{oi:oi+12,w1:(cb+PLSP,0)}),(None,'T2_AT',{oi:oi+12}))

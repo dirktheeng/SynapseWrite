@@ -45,8 +45,8 @@ lit('T2RC',b'</w:rPr>','T2PR')
 lit('T2PP0',b'<w:spacing w:before="','T2P1'); vnum('T2P1',pspb*15,'T2P2')
 lit('T2P2',b'" w:after="','T2P3'); vnum('T2P3',pspa*15,'T2P4')
 lit('T2P4',b'" w:line="','T2P5')
-e=S('T2P5'); h_=net.decode(plsp,6,e); lv=X()
-for i,v_ in enumerate((240,276,360,480,600,720)): lv=lv+h_[i]*v_
+e=S('T2P5'); h_=net.decode(plsp,7,e); lv=X()
+for i,v_ in enumerate((259,276,360,480,600,720,240)): lv=lv+h_[i]*v_
 vnum('T2P5',lv,'T2P6')
 lit('T2P6',b'" w:lineRule="auto"/>','T2P7')
 e=S('T2P7')

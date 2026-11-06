@@ -24,7 +24,7 @@ def rv_key_rules():
      (ND(135),'RD0',{scroll:scroll+(VH-40),rv_s0:scroll,rv_py:net.max_(net.min_(cy+DOCY-scroll,DOCB-30),DOCY+4),rv_pgq:1,rv_pgd:1,autos:0,t1_lastk:0}),
      (KD(60),'FMTS',{fm:5}),(KD(91),'FMTS',{fm:5}),(KD(62),'FMTS',{fm:4}),(KD(93),'FMTS',{fm:4}),(KD(61),'FMTS',{fm:14}),(KD(43),'FMTS',{fm:13}),
      (net.and_(KD(ord('m')),shf),'PA0',PI_(-48)),(KD(ord('m')),'PA0',PI_(48)),
-     (KD(ord('1')),'PA0',LS_(0)),(KD(ord('5')),'PA0',LS_(2)),(KD(ord('2')),'PA0',LS_(3)),
+     (KD(ord('1')),'PA0',LS_(6)),(KD(ord('5')),'PA0',LS_(2)),(KD(ord('2')),'PA0',LS_(3)),
      (net.and_(KD(ord('l')),shf),'T2_LI',{alv:1}),(net.and_(KD(ord('n')),shf),'T2_SA0',{t2si:0}),
     ]
 def rv_tabw(p,en_):

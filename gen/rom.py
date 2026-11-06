@@ -37,12 +37,14 @@ FACES=[(fi,bo,it) for fi in range(len(FAM)) for bo in range(1+FAM_FACES[fi][0]) 
 def x_snap_face(fi,bo,it): return False      # viewed side by side (shots/fonts_xsnap_compare.png): stems snapped in x are crisper, but letters space unevenly because pens are whole pixels
 def face_of(fi,bo,it): return (fi,bo if FAM_FACES[fi][0] else 0,it if FAM_FACES[fi][1] else 0)
 def st_of_font(f): return ((f&1)<<7)+((f>>1)<<25)
-_MS={}
+_MS={}; LDEF=1.08
 def metrics_sz(si,fi):
     "Ascent and line height in pixels at a size field value, for one family, from the family's own tables."
     k=(si,fi)
     if k not in _MS:
-        px=round(SZ[si]*96/72); f=font(fi,0,0,px); a,d=f.getmetrics(); _MS[k]=(a,round((a+d)*1.08))
+        # The font's own Windows metrics, which set single spacing, at the true size. The default paragraph is 1.08 lines, as the extra goes above the text.
+        px=SZ[si]*96/72; t=tt(fi,0,0); o=t['OS/2']; u=t['head'].unitsPerEm; a=o.usWinAscent*px/u; l=(o.usWinAscent+o.usWinDescent)*px/u
+        _MS[k]=(round(a+l*(LDEF-1)),round(l*LDEF*256)/256)
     return _MS[k]
 def metrics(si,fi=0):
     px=round(PTS[si]*96/72); f=font(fi,0,0,px); a,d=f.getmetrics()
