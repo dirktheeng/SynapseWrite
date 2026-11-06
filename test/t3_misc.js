@@ -51,5 +51,5 @@ const res=[];const ok=(n,c)=>{res.push([n,!!c]);console.log(c?'PASS':'FAIL',n);}
  // margins chosen from the Tier 1 menu live in the section, so they save
  await K('Control+a');await K('Delete');await go('home');await T('Menu margin text');await go('lay');await C(291,90);await p.waitForTimeout(40);await C(320,182);await p.waitForTimeout(40);await go('home');await C(600,300);await p.waitForTimeout(60);const q1=await sh('q1');
  await save('build/q.docx');const qx=execSync(`python3 -c "import zipfile;print(zipfile.ZipFile('build/q.docx').read('word/document.xml').decode())"`).toString();ok('margins menu saved in sectPr',/w:left="720"/.test(qx)&&/w:right="720"/.test(qx));
- await open('build/q.docx');await C(600,300);await p.waitForTimeout(60);const q2=await sh('q2');ok('margins menu reopens identical',q1===q2);
+ await open('build/q.docx');await K('Control+End');await C(600,300);await p.waitForTimeout(60);const q2=await sh('q2');ok('margins menu reopens identical',q1===q2);
  console.log(JSON.stringify(res));await b.close();})();
