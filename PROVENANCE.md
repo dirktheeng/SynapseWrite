@@ -26,7 +26,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | event dispatch | One neuron left from the first dispatcher; routing now lives in raw event interpretation and the state rules. | gen/app.py (1) | 1 | 3 |
 | pointer | Draws the mouse pointer, saves and restores the colors under it, and chooses its shape from the screen. | gen/pointer2.py (55), gen/pointer.py (48), gen/app.py (15) | 118 | 788 |
 | raw event interpretation | Turns raw browser events (key name code units, button masks, pointer types, field text, touch positions) into cooked events and browser commands. | gen/rv_a11_input.py (218), gen/app.py (91), gen/imp3_zoom_pre.py (12), gen/imp5_vr_md.py (5) | 326 | 1321 |
-| view: wheel and thumb drag | NO PURPOSE RECORDED | gen/imp5_wheel.py (22) | 22 | 62 |
+| view: wheel and thumb drag | Shift+wheel and sideways wheel deltas slide a wide page; the thumb of the bar at the foot drags at its drawn scale. | gen/imp5_wheel.py (22) | 22 | 62 |
 | character maps | Unicode to internal code tables and back (Windows-1252 block). | gen/app.py (94) | 94 | 220 |
 | key handling | Maps each key and modifier to its editing command. | gen/app.py (463), gen/rv_a3_pre.py (125), gen/imp3_zoom_pre.py (12), gen/t1_features.py (2) | 602 | 6501 |
 | screenshot hit test | Reads object ids from the screen image and maps a click to a document position; also the blink tick check of the screen against the line table. | gen/t1_features.py (150), gen/app.py (117), gen/rv_a7_regs.py (115) | 382 | 1118 |
@@ -71,8 +71,8 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | docx reader notes | Reads note, comment and header parts. | gen/t3_features.py (819) | 819 | 2442 |
 | style create and rename | New and renamed styles, and applying character styles. | gen/imp4_style.py (177) | 177 | 687 |
 | list formats | The list format menu and reading numFmt and lvlText. | gen/imp4_list2.py (151) | 151 | 543 |
-| column breaks | NO PURPOSE RECORDED | gen/imp5_breaks.py (22) | 22 | 44 |
-| vertical ruler drag | NO PURPOSE RECORDED | gen/imp5_vruler.py (9) | 9 | 92 |
+| column breaks | Column breaks: typed with Ctrl+Shift+Enter, read and written as w:br of type column, laid out as a move to the second column. | gen/imp5_breaks.py (22) | 22 | 44 |
+| vertical ruler drag | Top and bottom margin drags on the vertical ruler, released through the section edit with undo. | gen/imp5_vruler.py (9) | 9 | 92 |
 | canvas look | Page shadow and the canvas around the page. | gen/rv_a2_canvas.py (82) | 82 | 197 |
 | a4 commands | Word commands: repeat, format painter, keep rules and others. | gen/rv_a4_features.py (344) | 344 | 1272 |
 | a4 keep | Keep with next and keep lines in pagination. | gen/rv_a4_features.py (56) | 56 | 144 |
