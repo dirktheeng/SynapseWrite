@@ -42,13 +42,14 @@ e=S('T1_WR2'); on('T1_WR2',(net.eq(t1_cls(R1,e),t1_c,e),'T1_WR',{t1_e:t1_e+1}),(
 on('T1_WT',(net.step(t1_c),'T1_WS',{t1_e:t1_e+1}),(None,'T1_WD',{t1_e:t1_e+1}))
 e=S('T1_WS'); on('T1_WS',(net.ge(t1_e,clen,e),'T1_WD',None),(None,'T1_WS2',{r1:cb+t1_e}))
 e=S('T1_WS2'); on('T1_WS2',(net.eq(R1,32,e),'T1_WS',{t1_e:t1_e+1}),(None,'T1_WD',None))
-on('T1_WD',(None,'RD0',{ap:cp,ao:t1_s,co:t1_e,drag:0,blink:0}))
+e=S('T1_WD'); _wd={ap:cp,ao:t1_s,co:t1_e,drag:0,blink:0}
+on('T1_WD',(net.eq(a4cw,1,e),'A4_CC',{**_wd,a4cw:0}),(net.eq(a4cw,2,e),'A4_FA0',{**_wd,a4cw:0}),(None,'RD0',_wd))
 #@@ para
 # a paragraph property change is logged as op 6, so it undoes and joins the group
 e=S('T1_PA'); t1_newv=G_(alv,ONE-t1_pdm)+G_(net.min_(net.relu(R2+t1_pdd-1000),480),t1_pdm)
 log(e,6,pwalk,pfld,R2,t1_newv)
 on('T1_PA',(None,'PA2',{w1:(t1_pb+pfld,t1_newv),w2:(t1_pb+DIRTY,1)}))
-on('PA2',(net.lt(pwalk,hi_p,S('PA2')),'PA0',{pwalk:pwalk+1}),(None,'RD0',{lc:1,t1_pdm:0}))
+on('PA2',(net.lt(pwalk,hi_p,S('PA2')),'PA0',{pwalk:pwalk+1}),(a4cfk,'A4_CF1',{a4cfk:0}),(None,'RD0',{lc:1,t1_pdm:0}))
 mark_d(S('T1_UP'),cp);mark_d(S('T1_VP'),cp)
 on('T1_UP',(None,'UCK',{w1:(cb+uo,uch),w2:(cb+DIRTY,1)}))
 on('T1_VP',(None,'VCK',{w1:(cb+uo,ust),w2:(cb+DIRTY,1)}))
@@ -103,10 +104,10 @@ fsm.set(t1_rv,S('UI'),0)
 # ---- hover: reads the object id under the pointer from the last image ----
 on('T1_HV',(None,'T1_HV1',{pix:(hx_,hy_)}))
 e=S('T1_HV1'); isb=net.or_(net.and_(net.ge(A_,201,e),net.lt(A_,250,e)),net.and_(net.ge(A_,251,e),net.lt(A_,254,e)),net.eq(A_,255,e))
-newh=G_(A_,isb); hch=net.step(net.gt(newh,t1_hov,e)+net.lt(newh,t1_hov,e))
+newh=G_(A_,isb)+a4_hover(e); hch=net.step(net.gt(newh,t1_hov,e)+net.lt(newh,t1_hov,e))
 inrow=net.eq(A_,254,e); nr=X()
 for k_ in range(1,11): nr=nr+net.ge(hy_,t1_mtop+RH*k_,e)
-_gm=net.or_(net.eq(t1_mop,3,e),net.eq(t1_mop,7,e)); _gc=X()
+_gm=net.or_(net.eq(t1_mop,3,e),net.eq(t1_mop,7,e),net.eq(t1_mop,10,e)); _gc=X()
 for k_ in range(1,8): _gc=_gc+net.ge(hx_,t1_mx+GC*k_,e)
 newr=G_(nr,net.and_(inrow,ONE-_gm))+G_(nr*8+_gc,net.and_(inrow,_gm))+(e-inrow)*99; rch=net.step(net.gt(newr,t1_mrow,e)+net.lt(newr,t1_mrow,e))
 on('T1_HV1',(net.and_(t1_mopb,rch),'T1_M0',{t1_mrow:newr,t1_nh:1,clip0:0,clip1:0}),(t1_mopb,'T1_HH',None),
@@ -189,23 +190,23 @@ t1_menu(8,464,115,70,['1.0','1.15','1.5','2.0'])
 t1_menu(4,PX+362,DOCY+27,130,[0,0],_fop)
 t1_menu(5,6,127,190,['Normal: 1 in sides','Moderate: 0.75 in sides','Narrow: 0.5 in'])
 t1_menu(6,708,127,70,['1.0','1.15','1.5','2.0'])
-e=S('T1_M0'); mh=net.decode(t1_mop,9,e)
-on('T1_M0',*[(mh[k_],f'T1_MM{k_}',None) for k_ in range(1,9)],(None,'T1_END',None))
+e=S('T1_M0'); mh=net.decode(t1_mop,11,e)
+on('T1_M0',*[(mh[k_],f'T1_MM{k_}',None) for k_ in range(1,11)],(None,'T1_END',None))
 on('T1_END',(t1_nh,'T1_HH',{t1_nh:0,t1_hvo:0,rB:(1265,thumb,12,net.min_(t1_thh,net.relu(as_x(DOCB)-thumb)),tuple(as_x(205)-net.eq(t1_hov,255,S('T1_END'))*65 for _ in range(3)),255)}),(None,'HALT',{t1_hvo:0}))
 on('T1_MD',(None,'T1_MD1',{pix:(hx_,hy_)}))
 e=S('T1_MD1'); nr1=X()
 for k_ in range(1,11): nr1=nr1+net.ge(hy_,t1_mtop+RH*k_,e)
-_gm1=net.or_(net.eq(t1_mop,3,e),net.eq(t1_mop,7,e)); _gc1=X()
+_gm1=net.or_(net.eq(t1_mop,3,e),net.eq(t1_mop,7,e),net.eq(t1_mop,10,e)); _gc1=X()
 for k_ in range(1,8): _gc1=_gc1+net.ge(hx_,t1_mx+GC*k_,e)
 on('T1_MD1',(net.eq(A_,254,e),'T1_MR',{t1_mrow:G_(nr1,ONE-_gm1)+G_(nr1*8+_gc1,_gm1)}),(None,'T1_MX',None))
 on('T1_MX',(None,'RD0',{t1_mop:0,t1_uid:1,t1_mrow:99}))
 e=S('T1_MK'); nrw=mh_n=X()
-mk0=net.decode(t1_mop,9,e)
-for k_,c_ in ((1,2),(2,11),(3,32),(4,2),(5,3),(6,4),(7,8),(8,4)): nrw=nrw+mk0[k_]*c_
-on('T1_MK',(net.eq(eva,27,e),'T1_MX',None),(net.and_(net.eq(eva,13,e),net.lt(t1_mrow,32,e)),'T1_MR',None),(net.eq(eva,13,e),'T1_MX',None),
+mk0=net.decode(t1_mop,11,e)
+for k_,c_ in ((1,2),(2,11),(3,32),(4,2),(5,3),(6,4),(7,8),(8,4),(9,5),(10,64)): nrw=nrw+mk0[k_]*c_
+on('T1_MK',(net.eq(eva,27,e),'T1_MX',None),(net.and_(net.eq(eva,13,e),net.lt(t1_mrow,64,e)),'T1_MR',None),(net.eq(eva,13,e),'T1_MX',None),
  (net.and_(net.eq(eva,131,e),net.ge(t1_mrow+1,nrw,e)),'T1_M0',{t1_mrow:0}),(net.eq(eva,131,e),'T1_M0',{t1_mrow:t1_mrow+1}),
  (net.and_(net.eq(eva,129,e),net.or_(net.eq(t1_mrow,0,e),net.eq(t1_mrow,99,e))),'T1_M0',{t1_mrow:nrw-1}),(net.eq(eva,129,e),'T1_M0',{t1_mrow:t1_mrow-1}),(None,'HALT',None))
-e=S('T1_MR'); mr=net.decode(t1_mop,9,e); rr_=net.decode(t1_mrow,32,e); CM={t1_mop:0,t1_uid:1,t1_mrow:99}; mrules=[]
+e=S('T1_MR'); mr=net.decode(t1_mop,11,e); rr_=net.decode(t1_mrow,32,e); CM={t1_mop:0,t1_uid:1,t1_mrow:99}; mrules=[]
 def mc(k_,r_): return net.and_(net.step(mr[k_]),net.step(rr_[r_]))
 for r_ in range(2): mrules.append((mc(1,r_),'FMTS',{fm:10,fcol:r_,**CM}))
 for r_,si_ in enumerate(T1_SZ): mrules.append((mc(2,r_),'FMTS',{fm:9,fsi:si_,**CM}))
@@ -216,4 +217,5 @@ mrules.append((mc(4,1),'RD0',{t1_fw:ONE-t1_fw,**CSTART,**CM}))
 for r_,v_ in enumerate((3,8,4)): mrules.append((mc(5,r_),'T3_SP0',{tsop:v_,**CM}))
 for r_ in range(4):
     mrules.append((mc(6,r_),'PA0',{pwalk:lo_p,pfld:PLSP,alv:r_,grp:grp+1,t1_lastk:0,**CM}));mrules.append((mc(8,r_),'PA0',{pwalk:lo_p,pfld:PLSP,alv:r_,grp:grp+1,t1_lastk:0,**CM}))
+mrules+=a4_mrules(mc,CM,e)
 on('T1_MR',*mrules,(None,'T1_MX',None))

@@ -120,7 +120,7 @@ pg_open('PD_O2','PD_8')
 # one text line: positioned chunks of a word and its trailing space, in screen pixels
 qsty=R(); qyb=qph-(qyy-qtop+qa); qpc=R()
 e=S('PD_8')
-on('PD_8',(None,'T2_PM',None))
+on('PD_8',(None,'A4_QL',None))
 on('PD_R',(net.step(qiw),'T4P_IM',None),(None,'PD_9',{qsty:999999,qop:0,qxx:qx+qind+qxc,qpc:0}))
 e=S('PD_9'); on('PD_9',(net.ge(qo,qe,e),'PD_Z',None),(None,'PD_A',{r1:qb+qo,r2:qb+1024+qo}))
 e=S('PD_A'); measure(e,R1,R2); ke3=net.and_(e,net.step(qpc)); kp_en.lin(ke3); kp_in.add(ke3,qpc)

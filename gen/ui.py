@@ -43,6 +43,7 @@ ICON={
 'toc':["................",".BBBBB..........",".BBBBB....KKKK..","................","...KKKKKK.G.G.K.","................","...KKKKKK.G.G.K.","................",".BBBBB..........",".BBBBB....KKKK..","................","...KKKKKK.G.G.K.","................","...KKKKKK.G.G.K.","................","................"],
 'fn':["................","..KKKKKKKKKK.B..","............BB..","..KKKKKKKKKK.B..","................","..KKKKKKKKKK....","................","................","................",".GGGGGG.........","................",".B.KKKKKKKKKK...",".B..............",".B.KKKKKKKK.....","................","................"],
 'cmt':["................",".BBBBBBBBBBBBBB.",".BWWWWWWWWWWWWB.",".BWggggggggggWB.",".BWWWWWWWWWWWWB.",".BWggggggggggWB.",".BWWWWWWWWWWWWB.",".BWggggggWWWWWB.",".BWWWWWWWWWWWWB.",".BBBBBBWWBBBBBB.",".......WWB......",".......WB.......",".......B........","................","................","................"],
+'paint':['................','..BBBBBBBBBBB...','..BLLLLLLLLLBB..','..BBBBBBBBBBB...','......KK........','......KK........','......KKKKKK....','...........K....','...........K....','.....KKKKKKK....','.....KK.........','.....KK.........','.....GG.........','....GGGG........','....GGGG........','................'],
 'chev':["................","................","................","................","................","..KKKKKKK.......","...KKKKK........","....KKK.........",".....K..........","................","................","................","................","................","................","................"],
 }
 def _big():
@@ -316,6 +317,21 @@ def emit(net,fsm,rA,bus,YB,items,seq0_state,hv_reg,hb,bg,prs=None):
             else: bg[b].lin(t)
         net.rec(seq[i+1],t)
     return seq[len(items)]
+def a4_ribbon(u,k):
+    "Commands past the 8 bit id space, each with its own hover key."
+    import rv_a4_btn as q_
+    for i_,(t_,x_,y_,w_,h_,lb_,st_,ic_,c_) in enumerate(q_.BTNS):
+        if t_!=k: continue
+        key=q_.EXT+100*(i_+1)
+        u.r(x_,y_,w_,h_,LG,q_.EXT,HVG,key)
+        if c_ is not None: u.r(x_+2,y_+2,w_-4,h_-4,(170,170,170),q_.EXT); u.r(x_+3,y_+3,w_-6,h_-6,c_,q_.EXT)
+        elif ic_ and h_>40:
+            u.art(x_+(w_-32)//2,y_+4,'B'+ic_,q_.EXT); u.t(x_+(w_-twidth(lb_))//2,y_+h_-20,lb_,9,0,3,True)
+        elif ic_: u.art(x_+1,y_+(h_-16)//2,ic_,q_.EXT); u.t(x_+18,y_+(h_-rom.metrics(9)[1])//2+1,lb_,9,0,3,True)
+        else: u.t(x_+(w_-twidth(lb_))//2,y_+(h_-rom.metrics(9)[1])//2+1,lb_,9,0,3,True)
+        if st_=='A4_FP': u.k(q_.FP,x_+1,y_+h_-2,w_-2,2,BLUE,q_.EXT)
+    for t_,x_,w_,lb_ in q_.LABELS+q_.LABELS1:
+        if t_==k: group_label(u,x_,w_,lb_)
 def build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,hov,hb,hvo,bs,prs):
     bus=(g_en,g_ch,g_st,g_x,g_y,g_draw,fg)
     en=S('UI'); hot=net.decode(tab,6,en)
@@ -331,6 +347,7 @@ def build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,hov,hb,hvo,bs,
                 u.r(x_,y_,w_,h_,LG,200+id_,HVG)
                 if c_ is not None: u.r(x_+2,y_+2,w_-4,h_-4,(170,170,170),200+id_); u.r(x_+3,y_+3,w_-6,h_-6,c_,200+id_)
                 elif lb_: u.t(x_+(w_-twidth(lb_))//2,y_+(h_-rom.metrics(9)[1])//2+1,lb_,9,0,3,True)
+        a4_ribbon(u,k)
         last=emit(net,fsm,rA,bus,YB,u.i,f'UI_{k}',hov,hb,bg,prs)
         c=net.and_(last,hvo)   # a hover redraw skips the document walk
         net.rec(fsm.state('RD0'),last-c); net.rec(fsm.state('TB0'),c)

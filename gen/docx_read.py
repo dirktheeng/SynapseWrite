@@ -207,6 +207,7 @@ on('PX2',(net.and_(t2skip,ONE-pat('</w:styl',e)),'PX',{oi:oi+1}),
  (pat('<w:num ',e),'T2_NM',{oi:oi+7,t2n_:0,t2rr.r:t2rr.id('T2_NX')}),
  (pat('<w:lvl ',e),'T2_NM',{oi:oi+7,t2n_:0,t2rr.r:t2rr.id('T2_LV')}),
  (pat('<w:numFm',e),'T2_FM',{rl:OA+oi+17}),
+ *A4_PX(e),
  *T3_PX_RULES(e),
  (None,'PX',{oi:oi+1}))
 e=S('SZ0')
