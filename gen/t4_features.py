@@ -5,7 +5,7 @@ def fd_in(*names):
     for n_ in names: fin.add(S(n_),RSR); fcl.add(S(n_),RSC); fen.lin(S(n_))
 # wavy underline: repeated squiggle glyph over the word's extent
 e=S('T4_SQ')
-on('T4_SQ',(net.ge(sx,sp_xe,e),'T4_SQ1',None),(None,'T4_SQ',{gly:(SQUIG,9,sx,sy+lasc+1,4,0),sx:sx+adv}))
+on('T4_SQ',(net.ge(sx,sp_xe,e),'T4_SQ1',None),(None,'T4_SQ',{gly:(SQUIG,9,sx,sy+lasc,4,0),sx:sx+adv}))
 on('T4_SQ1',(sp_r,'CE',{sp_r:0}),(None,'C0',None))
 # status bar flag
 on('T4_ST',(trk,'T4_ST1',None),(None,'T4_ST2',None))
