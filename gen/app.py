@@ -394,8 +394,8 @@ on('MVJ',(None,'J0',None));on('MVCL',(None,'MVEND',{ap:cp,ao:co}))
 on('MOVR',(net.and_(has_sel,ONE-shiftk),'MVJ',{jp:hi_p,jo:hi_o,jret.r:jret.id('MVCL')}),(net.lt(co,clen,S('MOVR')),'MVEND',{co:co+1}),(net.lt(cp+1,npar,S('MOVR')),'MVJ',{jp:cp+1,jo:0,jret.r:jret.id('MVEND')}),(None,'MVEND',None))
 # vertical and line moves read the last screenshot through the hit network
 scr_cy=cy+DOCY-scroll
-on('MOVU',(None,'HT',{hx_:cx+1,hy_:net.relu(scr_cy-3),hdir:1,hact:1}))
-on('MOVD',(None,'HT',{hx_:cx+1,hy_:scr_cy+chh+3,hdir:0+2,hact:1}))
+on('MOVU',(None,'HT',{hx_:cx,hy_:net.relu(scr_cy-3),hdir:1,hact:1}))
+on('MOVD',(None,'HT',{hx_:cx,hy_:scr_cy+chh+3,hdir:0+2,hact:1}))
 on('MOVH',(None,'HT',{hx_:cxl+2,hy_:scr_cy+2,hdir:0,hact:1}))
 on('MOVE',(None,'HT',{hx_:cxr-6,hy_:scr_cy+2,hdir:0,hact:1}))
 # line start or end lands on the shared end state
@@ -404,7 +404,7 @@ on('TYSY',(net.step(co),'TYS2',{r2:cb+1024+co-1}),(net.step(clen),'TYS2',{r2:cb+
 on('ASC0',(None,'ASC1',{r1:as_x(PT)+cp}))
 on('ASC1',(None,'ASC2',{r2:R1+SAVE,rU:R1+ENDY}))
 e=S('ASC2')
-on('ASC2',(net.lt(rU.out[0],scroll+40,e),'RD0',{scroll:net.relu(R2-40),fastok:0}),(net.gt(R2+20,scroll+VH-40,e),'RD0',{scroll:net.relu(R2+60-VH),fastok:0}),(None,'RD0',None))
+on('ASC2',(net.lt(rU.out[0],scroll+40,e),'RD0',{scroll:G_(net.relu(R2-40),net.step(cp)),fastok:0}),(net.gt(R2+20,scroll+VH-40,e),'RD0',{scroll:net.relu(R2+60-VH),fastok:0}),(None,'RD0',None))
 on('SELALL',(None,'SA2',{ap:0,ao:0,jp:net.relu(npar-1),jo:2047,jret.r:jret.id('SA3')}));on('SA2',(None,'J0',None));on('SA3',(bsn,'BS_N',{bsn:0,bstg:0,t1_uid:1}),(None,'RD0',{autos:0}))
 on('BS_N',(has_sel,'DS0',{dret.r:dret.id('AFTER_ED'),grp:grp+1}),(None,'RD0',None))
 # ---- hit test on the screenshot ----

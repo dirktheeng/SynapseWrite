@@ -27,7 +27,7 @@ e=S('RVA3_PD'); on('RVA3_PD',(net.lt(cp+1,npar,e),'MVJ',{jp:cp+1,jo:0,jret.r:jre
 # page moves: scroll a screen, repaint, then find the line under the caret's screen position in the new image
 e=S('RVA3_PG1'); same_=net.eq(scroll,rv_s0,e)
 on('RVA3_PG1',(net.and_(same_,rv_pgd),'MVJ',{jp:net.relu(npar-1),jo:2047,jret.r:jret.id('MVEND')}),(same_,'MVJ',{jp:0,jo:0,jret.r:jret.id('MVEND')}),
- (rv_pgd,'HT',{hx_:cx+1,hy_:rv_py,hdir:2,hact:1}),(None,'HT',{hx_:cx+1,hy_:rv_py,hdir:1,hact:1}))
+ (rv_pgd,'HT',{hx_:cx,hy_:rv_py,hdir:1,hact:1}),(None,'HT',{hx_:cx,hy_:rv_py,hdir:2,hact:1}))
 # overtype: delete the character ahead, then insert as usual
 on('RVA3_OV',(None,'INS',{ins_ch:eva,ins_st:TST,oret.r:oret.id('AF_FAST')}))
 # find next
