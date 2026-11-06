@@ -42,14 +42,14 @@ function apply(w,a){switch(a[0]){
  case 'i':{const [k,f]=a[1].includes(':')?a[1].split(':'):[null,a[1]];const b=fixtures[f]||new Uint8Array(40);w.picBytes(k?mutate(b,k,a[2]):a[1]==='junk'?mutate(b,'junk',a[2]):b);break;}
  case 'h':w.hover(a[1],a[2]);break;
  case 'K':w.D(a[1]===1?12:13,a[2]);break;}}
-function runTrace(A,opt={}){const w=new World({cap:opt.cap||40000000});let i=0;for(;i<A.length&&!w.dead;i++){w.step=i;const f0=w.fails.length;apply(w,A[i]);if(w.fails.length>f0&&opt.stopFirst)break;}return w;}
+function runTrace(A,opt={}){const w=new World({cap:opt.cap||8000000});let i=0;for(;i<A.length&&!w.dead;i++){w.step=i;const f0=w.fails.length;apply(w,A[i]);if(w.fails.length>f0&&opt.stopFirst)break;}return w;}
 const sig=f=>f.cls+' '+f.id;
 function ddmin(A,target){const test=B=>{const w=runTrace(B,{stopFirst:false});return w.fails.some(f=>sig(f)===target);};let n=2;A=A.slice();
  // single hit prefix first
  for(let hi=1;hi<=A.length;hi=Math.min(A.length,hi*2)){if(test(A.slice(0,hi))){A=A.slice(0,hi);break;}if(hi===A.length)break;}
  while(A.length>=2&&n<=A.length){const sz=Math.ceil(A.length/n);let red=false;for(let i=0;i<n;i++){const B=[...A.slice(0,i*sz),...A.slice((i+1)*sz)];if(B.length&&test(B)){A=B;n=Math.max(n-1,2);red=true;break;}}if(!red){if(n===A.length)break;n=Math.min(A.length,n*2);}}return A;}
 const report=(w)=>{const m={};for(const f of w.fails){const k=sig(f);(m[k]=m[k]||{n:0,first:f}).n++;}return m;};
-(async()=>{const [cmd,...a]=process.argv.slice(2);
+if(require.main===module)(async()=>{const [cmd,...a]=process.argv.slice(2);
  if(cmd==='run'){const [from,to,steps,prof]=[+a[0],+a[1],+a[2]||200,a[3]||'mix'];const all={};let bad=0,tot=0,ticks=0;const t0=Date.now();
   for(let s=from;s<to;s++){const w=runTrace(gen(s,steps,prof));ticks+=w.ticks;tot++;const m=report(w);const ks=Object.keys(m);if(ks.length)bad++;for(const k of ks){const q=all[k]=all[k]||{seeds:[],n:0,ev:m[k].first.ev,st:m[k].first.info&&m[k].first.info.st,x:m[k].first.info&&m[k].first.info.x};q.n+=m[k].n;q.seeds.push(s);}
    const wn=[...w.warn.keys()];for(const k of wn){const q=all['~'+k]=all['~'+k]||{seeds:[],n:0,x:w.warn.get(k).x,st:w.warn.get(k).st,ev:w.warn.get(k).ev};q.n++;q.seeds.push(s);}
