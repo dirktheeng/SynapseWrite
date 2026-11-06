@@ -610,7 +610,7 @@ ov_=net.gt(wx_+adv,wdw,e); spw=net.eq(R1,32,e)
 fsm.set(wlb_,net.and_(spw,ONE-ov_),wi_+1)
 on('T3_W3',(net.and_(ov_,net.gt(wlb_,ws_,e)),'T3_WD',{wend:wlb_}),(ov_,'T3_WD',{wend:net.max_(wi_,ws_+1)}),(None,'T3_W2',{wx_:wx_+adv,wi_:wi_+1}))
 e=S('T3_WD')
-on('T3_WD',(net.eq(wdd,2,e),'T3_WPa',{wi_:ws_}),(wdd,'T3_WE',{wi_:ws_,sx:wdx}),(None,'T3_WF',None))
+on('T3_WD',(net.eq(wdd,2,e),'T3_WPa',{wi_:ws_}),(net.step(wdd),'T3_WE',{wi_:ws_,sx:wdx}),(None,'T3_WF',None))
 # the same wrapped line written into the PDF stream
 lit('T3_WPa',b'BT /F0 15 Tf 0 0 0 rg 1 0 0 1 ','T3_WPb'); number('T3_WPb',wdx,'T3_WPc'); lit('T3_WPc',b' ','T3_WPd'); number('T3_WPd',qph-wdy-A9,'T3_WPe'); lit('T3_WPe',b' Tm (','T3_WPf')
 e=S('T3_WPf'); on('T3_WPf',(net.ge(wi_,wend,e),'T3_WPz',None),(None,'T3_WPg',{r1:wb_+wi_}))

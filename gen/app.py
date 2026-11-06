@@ -1014,7 +1014,7 @@ for g_,ids_ in net.groups.items():
 json.dump(gn_,open('../build/ngroups.json','w'))
 print('neurons',c['n'],'layers',c['L'],file=sys.stderr)
 names={new[next(iter(v_.t))]:k_ for k_,v_ in list(globals().items()) if isinstance(v_,X) and len(v_.t)==1}
-print('regs in AND inputs',sorted(names.get(new[j],str(new[j])) for j in net.bool_regs_seen),file=sys.stderr)
+print('named regs in AND inputs',sorted(names[new[j]] for j in net.bool_regs_seen if new[j] in names),file=sys.stderr)
 json.dump(names,open('../build/names.json','w'))
 json.dump({str(new[next(iter(r_.t))]):k_ for k_,(r_,_) in fsm.states.items()},open('../build/states.json','w'))
 pr=[]
