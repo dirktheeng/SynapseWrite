@@ -2,7 +2,7 @@
 serve locality: a neuron goes as close as possible after the neuron made before it, so a subnetwork stays together in
 memory and targets are near their sources. No search: one pass over the graph with a heap keyed on creation order."""
 import heapq
-def order(s,mode='kahn'):
+def order(s):
     n=len(s.act); dom=getattr(s,'dom',[0]*n); super_={}; 
     for g,ids in enumerate(s.aligned):
         for i in ids: super_[i]=ids[0]

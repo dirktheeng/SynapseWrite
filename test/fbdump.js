@@ -1,6 +1,6 @@
 // Runs a fixed event script headless and writes the framebuffer at each checkpoint to build/fb_<n>.raw,
 // so two builds of the network can be compared pixel by pixel. Usage: node test/fbdump.js
-const fs=require('fs');const load=require(process.cwd()+'/test/load');
+const fs=require('fs');const load=require(process.env.LOADJS||process.cwd()+'/test/load');
 load().then(({e,h,bank})=>{
  const D=(k,a=0,b=0,c=0)=>{e.inject(h.ev[0],k);if(a)e.inject(h.ev[1],a);if(b)e.inject(h.ev[2],b);if(c)e.inject(h.ev[3],c);return e.run(h.halt,80000000);};
  const T=s=>{for(const c of s)D(2,c=='\n'?13:c.charCodeAt(0));};const K=(c,m=0)=>D(2,typeof c=='string'?c.charCodeAt(0):c,m);const C=(x,y)=>{D(3,x,y);D(4,x,y);};

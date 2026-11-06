@@ -1,7 +1,7 @@
 // Glue: runs ANN inference, encodes events and bytes as vectors, displays the output
 // tensor, and executes what the network commands. It never inspects document data.
 (async()=>{
-const b64=s=>{const t=atob(s),n=t.length,u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=t.charCodeAt(i);return u;};
+const b64=s=>{if(Uint8Array.fromBase64)return Uint8Array.fromBase64(s);const t=atob(s),n=t.length,u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=t.charCodeAt(i);return u;};
 const gunzip=async u=>new Uint8Array(await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
 const blob=await gunzip(b64(document.getElementById('net').dataset.b));
 const hl=new DataView(blob.buffer).getUint32(0,true);const h=JSON.parse(new TextDecoder().decode(blob.subarray(4,4+hl)));
@@ -14,7 +14,7 @@ e.finish();
 for(const [i,v] of h.init)e.inject(i,v);
 const bank=()=>new Float32Array(mem(),e.p_bank(),h.bank);
 {const b=bank();for(const [a,v] of h.bank_init)b[a]=v;}
-const cv=document.getElementById('screen'),ctx=cv.getContext('2d',{alpha:false,willReadFrequently:true});const img=ctx.createImageData(1280,800);
+const cv=document.getElementById('screen'),ctx=cv.getContext('2d',{alpha:false,willReadFrequently:true});const img=new ImageData(new Uint8ClampedArray(mem(),e.p_img(),1280*800*4),1280,800);
 let ptr='mouse';let timer=0,pendClip=null,keyCopy=false;
 // Clipboard write: the async API, then the copy event, then a code telling the network that only its own copy holds the text.
 const writeClip=t=>{const fail=()=>{let ok=false;try{ok=document.execCommand('copy');}catch(_){}if(!ok)dispatch(13,2);};try{navigator.clipboard.writeText(t).catch(fail);}catch(_){fail();}};
@@ -24,7 +24,7 @@ const dispatch=(k,a=0,b=0,c=0)=>{
  const t0=performance.now();const E0=e.edges();
  e.inject(h.ev[0],k);e.inject(h.ev[4],Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/864e5));if(a)e.inject(h.ev[1],a);if(b)e.inject(h.ev[2],b);if(c)e.inject(h.ev[3],c);
  const n=e.run(h.halt,window.annMax||50000000);
- {const dr=new Uint8Array(mem(),e.p_drow(),801),f=new Uint32Array(mem(),e.p_fb(),1024000),q=new Uint32Array(img.data.buffer);for(let y=0;y<800;y++)if(dr[y]){let z=y;while(dr[z])dr[z++]=0;for(let i=y*1280,j=z*1280;i<j;i++)q[i]=f[i]|0xff000000;ctx.putImageData(img,0,0,0,y,1280,z-y);y=z;}}
+ for(let y=e.show(0);y>=0;y=e.show(y)){const z=e.showz();ctx.putImageData(img,0,0,0,y,1280,z-y);y=z;}
  const clip=e.val(h.clipout);if(clip){const bb=bank();const cs=[];for(let i=0;i<clip-1;i++)cs.push(bb[h.cb+i]);const txt=String.fromCharCode(...cs);window.annClip=txt;pendClip=txt;if(!keyCopy)writeClip(txt);keyCopy=false;}
  const sv=e.val(h.saveout),pd=e.val(h.pdfout);if(sv||pd){const n=sv||pd,bb=bank(),a0=e.val(h.outbase);const u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=bb[a0+i];saveFile(u,sv?'Document1.docx':'Document1.pdf');}
  if(e.val(h.wpic)){const f=document.createElement('input');f.type='file';f.onchange=()=>f.files[0]&&openPic(f.files[0]);f.click();}
