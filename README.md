@@ -146,6 +146,28 @@ This animation visits ten sub-networks. On the left, amber marks where that unit
 
 Look for weights of `2^40` paired with a bias near `-2^40`: that is the gate described in the next section. The font neurons also carry fractional weights, which fit the line coefficients of an outline edge. The examples were chosen to be easy to read, with 2 to 6 inputs each, so they are not a random sample. A sub-network's label can also look unexpected on an input, partly because merged neurons are credited to just one sub-network.
 
+### What the weights and biases look like
+
+Trained networks usually have weights that look like continuous noise. These do not, because each value was chosen for a logical reason. This shows every real weight and every nonzero bias, by family of sub-networks.
+
+<p align="center"><img src="docs/figures/weight_hist.png" width="900" alt="Histograms of weights and biases per family on a signed power of two scale"></p>
+
+The 1,702,201 weights use only 10,020 distinct values. They fall into a few groups:
+
+| Kind of weight | Share | What it does |
+|---|---:|---|
+| ±1 | 39% | Passes or subtracts a signal, such as in AND and OR logic and in sums |
+| Near ±2^40 | 35% | Works as infinity: a gate input that overrides anything else the neuron receives |
+| Other powers of two | 2% | Reads or builds binary numbers, one bit per neuron |
+| Other integers | 3% | Includes values such as `-100000`, which fit the digit thresholds used to write decimal numbers |
+| Fractions | 21% | Almost all in text drawing, where they hold font geometry |
+
+**The ±2^40 values are a practical stand-in for infinity.** Real values in the app stay far smaller, so an enable of 2^40 cancelling a bias near -2^40 is effectively a switch. It is not true infinity, and it has to be a finite number so that the arithmetic stays exact. Of the 588,767 weights near that size, all but 71 are exactly ±2^40.
+
+**Biases are nearly always negative.** About 95% of nonzero biases are near -2^40, because they belong to gates. Only about 2% of those are exactly -2^40. Most carry a small offset, as in `-(2^40 + 256)`, which combines the gate with a small constant or threshold. The common fractional biases such as `-0.5` are thresholds for step neurons.
+
+**The families have different shapes.** "Changing the document" has an even spread of powers of two from 2^1 to about 2^30, a sign of binary packing and unpacking. "Drawing text" is the only family with a wide smooth spread, and it comes from font coordinates and slopes. "Writing files" is about 90% ±1.
+
 ### A logic gate from one row
 
 This shows how arithmetic becomes decisions. Say neuron `y` should pass a value `v` only when a control neuron `en` is 1. Give it these entries:
