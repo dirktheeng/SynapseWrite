@@ -73,3 +73,8 @@ a01_format open 7,705,825 to 7,122,087 edges, 454,498 to 393,442 ticks.
 GBL's bit by bit loop now takes three or two bits a tick while the byte and the field both have them.
 a01_format open 7,122,087 to 6,983,911 edges (browser 6,983,913), 371,325 ticks.
 Open screenshots (a01, a02, a16, a27) against the base build: max difference 4 levels.
+
+## 10. Fewer ticks per symbol
+Callers enter X_D3 directly (DEC gone: 6,983,911 to 6,954,511) and D4, where the symbol arrives, is also the return: it
+dispatches on hret itself, so the HR tick is gone (6,954,511 to 6,796,354 edges, 341,895 ticks).
+Open screenshots a01, a02, a05 (pictures, PNG inflate: 121.3 M to 95.7 M edges), a16, a27: max difference 4 levels.

@@ -78,7 +78,7 @@ on('GBR',(net.gt(ip,ilim,S('GBR')),'A12_IE',None),(None,'GBL',{cur:reversed_(S('
 HLIM=320; HBASE=65536; fq=R()
 # Up to three bits a tick: the read window holds the limit and offset of four lengths, so the code so far and its next
 # one, two and three bits are each compared with their own length's limit in the same tick. Limits past 15 are 0.
-on('DEC',(None,'X_D3',{code:0,hlen:0,rl:hb+HLIM}))
+# a caller enters X_D3 with its table, code 0, length 0 and the read of its length 0 limit
 e=S('X_D3'); b1_=nextbit(e); b2_=net.step(cur-b1_*128-63.5+e*M-M); b3_=net.step(cur-b1_*128-b2_*64-31.5+e*M-M)
 c1_=code*2+b1_; c2_=code*4+b1_*2+b2_; c3_=code*8+b1_*4+b2_*2+b3_
 n1_=net.ge(nb,1,e); n2_=net.ge(nb,2,e); n3_=net.ge(nb,3,e)
@@ -91,7 +91,9 @@ on('X_D3',(net.lt(code,W[0],e),'D4',{r2:hb+W[1]-HBASE+code}),(net.ge(hlen,15,e),
  (n1_,'X_D3',{code:c1_,cur:s1_,nb:Dec(nb,1),hlen:hlen+1,rl:hb+HLIM+2+hlen*2}),
  (None,'CMP2_XR',{r1:ibase+ip,ip:ip+1}))
 on('CMP2_XR',(net.gt(ip,ilim,S('CMP2_XR')),'A12_IE',None),(None,'X_D3',{cur:reversed_(S('CMP2_XR')),nb:8,rl:hb+HLIM+hlen*2}))
-on('D4',(None,'HR',{sym:R2}))
+# the symbol arrives and goes straight to its caller: D4 is the return as well (HR stays for the table)
+e=S('D4'); _hr=net.decode(hret.r-1,3,e); _hrt=['DYs','CS','CD_']
+on('D4',*[(_hr[hret.id(t_)-1],t_,{sym:R2}) for t_ in _hrt[:2]],(None,_hrt[2],{sym:R2}))
 # build table from lengths LN[lb..lb+ln)
 bi=R();bo=R()
 on('BLD',(None,'BC',{bi:0}))
@@ -147,7 +149,7 @@ on('DY6',(None,'DY5',{w1:(as_x(LN)+od,gbv),idx:idx+1}))
 on('DY7',(None,'BLD',{hb:CLH,lb:0,ln:19,cret.r:cret.id('DY8')}))
 on('DY8',(None,'DY9',{idx:0,prev:0}))
 e=S('DY9')
-on('DY9',(net.ge(idx,nlen+ndist,e),'DYA',None),(None,'DEC',{hb:CLH,hret.r:hret.id('DYs')}))
+on('DY9',(net.ge(idx,nlen+ndist,e),'DYA',None),(None,'X_D3',{hb:CLH,hret.r:hret.id('DYs'),code:0,hlen:0,rl:as_x(CLH+HLIM)}))
 e=S('DYs')
 on('DYs',(net.lt(sym,16,e),'DY9',{w1:(as_x(LN)+idx,sym),prev:sym,idx:idx+1}),(net.eq(sym,16,e),'DYr2',{rval:prev}),(net.eq(sym,17,e),'DYr3',{rval:0}),(None,'DYr7',{rval:0}))
 getn('DYr2',2,'DYa2');getn('DYr3',3,'DYa3');getn('DYr7',7,'DYa7')
@@ -157,7 +159,7 @@ on('DYl',(net.step(rept),'DYl',{w1:(as_x(LN)+idx,rval),idx:idx+1,rept:rept-1,pre
 on('DYA',(None,'BLD',{hb:LH,lb:0,ln:nlen,cret.r:cret.id('DYB')}))
 on('DYB',(None,'BLD',{hb:DH,lb:nlen,ln:ndist,cret.r:cret.id('CODES')}))
 # literal and length codes
-on('CODES',(net.ge(ob,oblim,S('CODES')),'A12_IE',None),(None,'DEC',{hb:LH,hret.r:hret.id('CS')}))
+on('CODES',(net.ge(ob,oblim,S('CODES')),'A12_IE',None),(None,'X_D3',{hb:LH,hret.r:hret.id('CS'),code:0,hlen:0,rl:as_x(LH+HLIM)}))
 LB=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258]
 LE=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0]
 DB=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577]
@@ -169,7 +171,7 @@ _ltab=rom_table(sum(([LB[min(i_,28)],LE[min(i_,28)]] for i_ in range(32)),[]))
 on('CL0',(None,'A10_CL',{rl:as_x(_ltab)+(sym-257)*2}))
 on('A10_CL',(None,'CL1',{lc_:W[0],gbn:W[1],gbv:0,gbw:1,gbi:0,gret.r:gret.id('CL2')}))
 on('CL1',(None,'GBL',None))
-on('CL2',(None,'DEC',{copyn:lc_+gbv,hb:DH,hret.r:hret.id('CD_')}))
+on('CL2',(None,'X_D3',{copyn:lc_+gbv,hb:DH,hret.r:hret.id('CD_'),code:0,hlen:0,rl:as_x(DH+HLIM)}))
 _dtab=rom_table(sum(([DB[min(i_,29)],DE[min(i_,29)]] for i_ in range(32)),[]))
 on('CD_',(None,'A10_CD',{rl:as_x(_dtab)+sym*2}))
 on('A10_CD',(None,'CD1',{lb:W[0],gbn:W[1],gbv:0,gbw:1,gbi:0,gret.r:gret.id('CD2')}))
