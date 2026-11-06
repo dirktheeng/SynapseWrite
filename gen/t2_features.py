@@ -12,11 +12,11 @@ def _rec(i,run,al=0,ind=0,fi=0,lsp=0,spb=0,spa=DEFSPA,sid='',name=''):
         for j,c in enumerate(name): T2_ROM.append([a+28+j,ord(c)])
 BLUE3=3*256
 _rec(0,0,sid='Normal',name='Normal')
-_rec(1,7,spa=4,sid='Title',name='Title')
-_rec(2,3+BLUE3,spb=16,spa=5,sid='Heading1',name='heading 1')
-_rec(3,1+BLUE3+16,spb=12,spa=4,sid='Heading2',name='heading 2')
-_rec(4,0+BLUE3+16,spb=8,spa=4,sid='Heading3',name='heading 3')
-_rec(5,0+1*256+32,ind=48,spb=8,spa=8,sid='Quote',name='Quote')
+_rec(1,7,spa=0,sid='Title',name='Title')
+_rec(2,3+BLUE3,spb=16,spa=0,sid='Heading1',name='heading 1')
+_rec(3,2+BLUE3,spb=3,spa=0,sid='Heading2',name='heading 2')
+_rec(4,1+BLUE3,spb=3,spa=0,sid='Heading3',name='heading 3')
+_rec(5,0+20*256+32,al=1,spb=13,spa=11,sid='Quote',name='Quote')
 def _roman(n):
     r=''
     for v,t in ((100,'c'),(90,'xc'),(50,'l'),(40,'xl'),(10,'x'),(9,'ix'),(5,'v'),(4,'iv'),(1,'i')):

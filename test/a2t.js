@@ -1,0 +1,16 @@
+const d=require('./drive');const fs=require('fs');const dir=process.env.OUT||'shots_a2';
+(async()=>{const {b,p,check}=await d();const K=k=>p.keyboard.press(k),T=t=>p.keyboard.type(t),C=(x,y)=>p.mouse.click(x,y);
+ const shot=async n=>{await p.mouse.move(1270,5);await p.waitForTimeout(60);await p.screenshot({path:dir+'/'+n+'.png'});};
+ const tabs={home:[80,47],ins:[135,47],lay:[192,47],ref:[262,47],rev:[333,47]};const go=t=>C(...tabs[t]);
+ const pic=async f=>{await p.evaluate(u=>annPic(new Blob([new Uint8Array(u)])),[...fs.readFileSync(f)]);await p.waitForTimeout(800);};
+ await T('One paragraph of text that is long enough to wrap around the right margin so that the selection covers two lines of the first paragraph ok.');await K('Enter');await T('Second');await K('Enter');await K('Enter');await T('Fourth after empty');
+ await K('Control+a');await shot('h_selall');await K('Control+End');await K('Enter');
+ await go('ins');await C(275,76);await shot('i_hbar');await T('Header text');await K('Enter');await C(1062,76);await T('Footer text');await K('Enter');await go('home');
+ await T('Text and note');await go('ref');await C(190,76);await shot('j_fnbar');await T('First footnote text');await K('Enter');await go('home');await T(' after');await K('Enter');
+ await go('rev');await C(250,76);await T('Inserted with tracking');await K('Enter');await T('Second tracked line kept and ');await K('Backspace');await K('Backspace');await C(250,76);await go('home');await K('Enter');
+ await shot('k_track');
+ await go('rev');await C(58,76);await shot('l_cbar');await T('Short comment');await K('Enter');await go('home');await K('Enter');await T('next');await shot('l_cmt');
+ await K('Enter');await pic('build/p_a.png');await T('after pic');await p.mouse.move(600,400);await p.mouse.wheel(0,300);await p.waitForTimeout(100);await shot('m_foot');
+ await p.mouse.click(400,340);await shot('n_pic');await p.mouse.wheel(0,300);await p.waitForTimeout(100);await shot('n_pic2');
+ await K('Control+Home');await C(28,90);await shot('o_paste');
+ await b.close();})();
