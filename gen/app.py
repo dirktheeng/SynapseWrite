@@ -20,9 +20,9 @@ net=Net(); fsm=FSM(net); on=fsm.on; ONE=net.ONE; G_=net.gate
 # STYT 1100000 is the interned style table; PUS 999000 and PFT 999100 hold PDF face use and offsets. Glyph tag table TAGB 61000000, glyph store GSTORE 61500000, PDF font bytes FROMB 63000000.
 # The bank is paged by the engine: a page takes wasm memory only when first written, so far apart regions cost nothing until used.
 # High cells: undo 14500000, OUTB 20000000, IMG0 24000000, SAVEB 32000000 and everything from OUTP up only matters while reading, so a large save may run over it.
-PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; SAVEB=32000000; OUTP=40000000; PNGB=46000000; AUXB=50000000; RELB=51000000; CMB=51200000; FILE=53000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000; EXTTAG=67200000; TAGB=61000000; GSTORE=61600000; GSTORE_END=63000000; FROMB=63000000; BANK=67108864
+STYW=7; PT=0; VL=20000; Q=21000; RPL=21200; HD=21400; UB=14500000; UEND_=19999000; CB=1400000; SLOT0=2000000; STRIDE=4096; SAVEB=32000000; OUTP=40000000; PNGB=46000000; AUXB=50000000; RELB=51000000; CMB=51200000; FILE=53000000; IMG0=24000000; OUTB=20000000; TBL=30000; SLOTMAX=14400000; EXTTAG=67200000; TAGB=61000000; GSTORE=61600000; GSTORE_END=63000000; FROMB=63000000; BANK=67108864
 # Regions fail the build if they overlap: see region() in nn.py. Bounds are exclusive at the end.
-for r_ in (('undo',14500000,20000000),('STYT interned styles',1100000,1100000+4*4096),('extended glyph tags',67200000,68000000),('TAGB glyph tags',61000000,61600000),('GSTORE glyph store',61600000,63000000),('FROMB PDF fonts',63000000,64000000),
+for r_ in (('undo',14500000,20000000),('STYT interned styles',1100000,1100000+STYW*2856),('extended glyph tags',67200000,68000000),('TAGB glyph tags',61000000,61600000),('GSTORE glyph store',61600000,63000000),('FROMB PDF fonts',63000000,64000000),
  ('a4 PDF numbering table',23800,25000),('a6 PDBM bookmarks',1200000,1264016),('a6 SGB suggestions',1302000,1310000),('a6 DICTB user words',1310000,1320000),('a6 AUTHB authors',1320000,1330000),('a6 EQT math records',1330000,1375000),
  ('a7 free slots and zero cells',1384000,1389100),('PTRB pointer',1390000,1391000),('a11 reserved',1391000,1393200),('CB clipboard',1400000,1600000),('CB2',1600000,2000000),('slots',2000000,14400000),
  ('MGB mail merge',100000,500000),('FNB',500000,900000),('XR',900000,999000),('PUS and PFT',999000,1000000),('ZT and PDFN',1000000,1020000)): region(*r_)
@@ -39,7 +39,7 @@ STY=40000; STY0=26000; STYN=48; NUMT=25000; MKT=32000; SCR=SLOTMAX; DEFREC=198; 
 DOCY,DOCB=174,776; VH=DOCB-DOCY; PX=223; TX=319; TW=624; PH=1056; PST=1072; YB=4096
 from app_pal import F as PAL_F,B as PAL_B,HL_NAMES
 # ---- ports ----
-STYT_=1100000; IDXM_=(1<<18)-1
+STYT_=1100000; IDXM_=(1<<18)-1; STYW=7   # an interned entry: record, exact color, font name, character style, then feat1's extended flags, link and bookmark ids, run shade
 class RPort:
     def __init__(s,cells,varlen=False):
         s.en=Bus(net);s.addr=Bus(net);s.cells=cells;s.out=net.input(cells) if cells>1 else [net.input()]
@@ -50,9 +50,9 @@ class RPort:
         if s.len: s.len.add(c,n)
     def rec(s,nm): return [2,s.en.w,s.addr.w,s.out[0],s.cells,s.len.w if s.len else None]
 class StylePort(RPort):
-    "Reads a style cell and, in the same tick, the entry its index selects: out[0] the cell, then the record, the exact color plus one, the font name id and the character style id plus one."
-    def __init__(s): RPort.__init__(s,5)
-    def rec(s,nm): return [10,s.en.w,s.addr.w,s.out[0],STYT_,IDXM_,4,4]
+    "Reads a style cell and, in the same tick, the entry its index selects: out[0] the cell, then the record, the exact color plus one, the font name id, the character style id plus one, the extended flags, the link and bookmark ids and the run shade plus one."
+    def __init__(s): RPort.__init__(s,1+STYW)
+    def rec(s,nm): return [10,s.en.w,s.addr.w,s.out[0],STYT_,IDXM_,STYW,STYW]
 class WPort:
     def __init__(s,cells,data=None,varlen=False):
         s.en=Bus(net);s.addr=Bus(net);s.cells=cells;s.len=Bus(net) if varlen else None;s.ext=data
@@ -110,7 +110,7 @@ rc=RPort(2); rf=RPort(3); r1=RPort(1); r2=RPort(1); rl=RPort(8); rlog=RPort(6); 
 w1=WPort(1);w2=WPort(1);w3=WPort(1);w4=WPort(1);wlog=WPort(6);wvl=WPort(6);wln=WPort(6)
 rmeta=RPort(8);MT=rmeta.out;wht=WPort(6);imr=CopyPort(clip0,clip1);rim=RPort(3);rU=RPort(1);rV=RPort(1);rA=RectPort();rB=RectPort();rC=RectPort();rD=RectPort();rZ=RectPort();pix=PixPort()
 R1=r1.out[0];R2=r2.out[0]
-rs=StylePort(); RSC=rs.out[0]; RSR=rs.out[1]; RSK,RSN,RSY=rs.out[2:5]
+rs=StylePort(); RSC=rs.out[0]; RSR=rs.out[1]; RSK,RSN,RSY=rs.out[2:5]; RSX,RSH,RSZ=rs.out[5:8]
 ev_kind,ev_a,ev_b,ev_c=net.input(4); ev_t=net.input(); evt=net.reg(); ev_m=net.input()
 kv=net.input(6); kvl=net.input()
 KBV=1391000; KBL=1392000; KBQ=1393000; NAMEB=1393100; KBMAX=1000; KBSEN=8; NAME_DOCX='Document1.docx'; NAME_PDF='Document1.pdf'   # field text from the glue, last field text, field sentinel, file names
@@ -126,7 +126,7 @@ exec(open('imp3_zoom_pre.py').read())
 #   record: size 0-3 and 19-21, bold 4, ital 5, und 6, font 7 and 22-23, color low 8-10, strike 11, sup 12, sub 13, highlight 14-16, color high 17-18.
 # Record 0 is the default: Carlito 11 pt. A record is never changed once written, so undo, clipboard and files only move indices.
 ST_STRIKE,ST_VERT,ST_SUP,ST_SUB,ST_HL,ST_INS,ST_DEL,ST_F0,ST_NOP,ST_MATH=1<<11,1<<12,1<<12,1<<13,1<<14,1<<19,1<<20,1<<21,1<<23,1<<18
-STYT=1100000; STYCAP=4096; IDXM=(1<<18)-1
+STYT=1100000; STYCAP=2856; IDXM=(1<<18)-1
 def style_decode(val,en):
     b=net.bits(val,24,en)
     return dict(size=b[0]+b[1]*2+b[2]*4+b[3]*8+b[19]*(1<<19)+b[20]*(1<<20)+b[21]*(1<<21),si=b[0]+b[1]*2+b[2]*4+b[3]*8+b[19]*16+b[20]*32+b[21]*64,sb=b[:4]+b[19:22],bold=b[4],ital=b[5],und=b[6],font=b[7]+b[22]*2+b[23]*4,fontraw=b[7]*128+b[22]*(1<<22)+b[23]*(1<<23),fb=[b[7],b[22],b[23]],color=b[8]+b[9]*2+b[10]*4+b[17]*8+b[18]*16,
@@ -274,35 +274,38 @@ net.connect(_base,zgy(g_y.w+asc_e))
 GCALL=CallPort(net.step(g_draw.w),glyph_unit.fin,[(net.step(g_draw.w),_A['go']),(_gch,_A['ch']),(_facef,_A['face']),(_sz,_A['sz']),(_ppem,_A['ppem']),(_pt,_A['pt']),(zgx(g_x.w),_A['x']),(_base,_A['y']),(_fg,_A['fg']),(_bg,_A['bg']),(g_nc.w,_A['nc']),(g_fc.w,_A['fc'])])
 # the style table's interner: its own domain too, called with a record value, returns the record's index
 net.domain(1); net.group('style interner')
-I_go=net.input(); I_val=net.input(); I_fb=net.input(); I_k=net.input(); I_n=net.input(); I_y=net.input()
+I_go=net.input(); I_val=net.input(); I_fb=net.input(); I_k=net.input(); I_n=net.input(); I_y=net.input(); I_e=[net.input() for _ in range(3)]
 IF=FSM(net)
 iv=net.reg(); ifb=net.reg(); iout=net.reg(); ifull=net.reg(); icnt=net.reg(1.0); im_v=net.reg(); im_o=net.reg(); ii=net.reg()
-ik=net.reg(); in_=net.reg(); iy=net.reg(); im_k=net.reg(); im_n=net.reg(); im_y=net.reg()
+ik=net.reg(); in_=net.reg(); iy=net.reg(); im_k=net.reg(); im_n=net.reg(); im_y=net.reg(); ie_=[net.reg() for _ in range(3)]; im_e=[net.reg() for _ in range(3)]
 IF.set(iv,I_go,I_val); IF.set(ifb,I_go,I_fb); IF.set(ifull,I_go,0); IF.set(ik,I_go,I_k); IF.set(in_,I_go,I_n); IF.set(iy,I_go,I_y)
-irR=RPort(4); iW=WPort(4); irR.dom=1; iW.dom=1; IRD=irR.out[0]
+for a_,b_ in zip(ie_,I_e): IF.set(a_,I_go,b_)
+irR=RPort(STYW); iW=WPort(STYW); irR.dom=1; iW.dom=1; IRD=irR.out[0]
 net.rec(IF.S('I0'),I_go)
-e=IF.S('I0'); _im0=net.eq(iv,im_v,e); imemo=net.and_(_im0,net.eq(ik,im_k,_im0),net.eq(in_,im_n,_im0),net.eq(iy,im_y,_im0))   # the rest is read only when the record matches
+e=IF.S('I0'); _im0=net.eq(iv,im_v,e); imemo=net.and_(_im0,net.eq(ik,im_k,_im0),net.eq(in_,im_n,_im0),net.eq(iy,im_y,_im0),*[net.eq(a_,b_,_im0) for a_,b_ in zip(ie_,im_e)])   # the rest is read only when the record matches
 IF.on('I0',(imemo,'IE',{iout:im_o}),(None,'IS',{ii:0}))   # record 0 is searched too: the default style must not get a second index
 e=IF.S('IS')
-IF.on('IS',(net.ge(ii,icnt,e),'IA',None),(None,'IC',{irR:as_x(STYT)+ii*4}))
+IF.on('IS',(net.ge(ii,icnt,e),'IA',None),(None,'IC',{irR:as_x(STYT)+ii*STYW}))
 e=IF.S('IC')
-_ic0=net.eq(IRD,iv,e); IF.on('IC',(net.and_(_ic0,net.eq(irR.out[1],ik,_ic0),net.eq(irR.out[2],in_,_ic0),net.eq(irR.out[3],iy,_ic0)),'IM',{iout:ii}),(None,'IS',{ii:ii+1}))
+_ic0=net.eq(IRD,iv,e); IF.on('IC',(net.and_(_ic0,net.eq(irR.out[1],ik,_ic0),net.eq(irR.out[2],in_,_ic0),net.eq(irR.out[3],iy,_ic0),*[net.eq(irR.out[4+j_],a_,_ic0) for j_,a_ in enumerate(ie_)]),'IM',{iout:ii}),(None,'IS',{ii:ii+1}))
 e=IF.S('IA')
-IF.on('IA',(net.ge(icnt,STYCAP,e),'IE',{iout:ifb,ifull:1}),(None,'IM',{iout:icnt,icnt:icnt+1,iW:(as_x(STYT)+icnt*4,iv,ik,in_,iy)}))
-IF.on('IM',(None,'IE',{im_v:iv,im_o:iout,im_k:ik,im_n:in_,im_y:iy}))
+IF.on('IA',(net.ge(icnt,STYCAP,e),'IE',{iout:ifb,ifull:1}),(None,'IM',{iout:icnt,icnt:icnt+1,iW:(as_x(STYT)+icnt*STYW,iv,ik,in_,iy,*ie_)}))
+IF.on('IM',(None,'IE',{im_v:iv,im_o:iout,im_k:ik,im_n:in_,im_y:iy,**dict(zip(im_e,ie_))}))
 IF.on('IE',(None,None,None))
 IF.finish()
 net.domain(0); net.group('glyph patch')
-ic_en=Bus(net); ic_val=Bus(net); ic_fb=Bus(net); ic_k=Bus(net); ic_n=Bus(net); ic_y=Bus(net); ROUT=net.input(); RFULL=net.input()
+ic_en=Bus(net); ic_val=Bus(net); ic_fb=Bus(net); ic_k=Bus(net); ic_n=Bus(net); ic_y=Bus(net); ic_e=[Bus(net) for _ in range(3)]; ROUT=net.input(); RFULL=net.input()
 _ic_go=net.step(ic_en.w)
-CallPort(_ic_go,IF.S('IE'),[(_ic_go,I_go),(ic_val.w,I_val),(ic_fb.w,I_fb),(ic_k.w,I_k),(ic_n.w,I_n),(ic_y.w,I_y)],[(iout,ROUT),(ifull,RFULL)])
+CallPort(_ic_go,IF.S('IE'),[(_ic_go,I_go),(ic_val.w,I_val),(ic_fb.w,I_fb),(ic_k.w,I_k),(ic_n.w,I_n),(ic_y.w,I_y),*[(b_.w,a_) for a_,b_ in zip(I_e,ic_e)]],[(iout,ROUT),(ifull,RFULL)])
 class Interned:
     "A style held both as a record and as its table index. Assigning the record interns it; the index is ready two ticks later."
-    def __init__(s,rec,idx): s.rec=rec; s.idx=idx; s.k=net.reg(); s.n=net.reg(); s.y=net.reg()
+    def __init__(s,rec,idx): s.rec=rec; s.idx=idx; s.k=net.reg(); s.n=net.reg(); s.y=net.reg(); s.e=[net.reg() for _ in range(3)]
     def drive(s,c,val):
-        val,k_,n_,y_=val if isinstance(val,tuple) else (val,X(),X(),X())   # a bare record has no exact color, font name or character style
+        val,k_,n_,y_,*e_=val if isinstance(val,tuple) else (val,X(),X(),X())   # a bare record has no exact color, font name or character style
+        e_=list(e_)+[X()]*(3-len(e_))   # nor, unless given, extended flags, link, bookmark or shade
         fsm.set(s.rec,c,val); ic_en.lin(c); ic_val.add(c,val); ic_fb.add(c,s.idx); d_=net.reg(); net.rec(d_,c); fsm.set(s.idx,d_,ROUT)
         ic_k.add(c,k_); ic_n.add(c,n_); ic_y.add(c,y_); fsm.set(s.k,c,k_); fsm.set(s.n,c,n_); fsm.set(s.y,c,y_)
+        for b_,r_,v_ in zip(ic_e,s.e,e_): b_.add(c,v_); fsm.set(r_,c,v_)
 class GlyPort:
     def drive(s,c,v):
         ch,st,x,y,f,b=v; g_en.lin(c); g_ch.add(c,ch); g_st.add(c,rom.lit(st) if isinstance(st,int) else st); g_x.add(c,x); g_y.add(c,as_x(y)+YB); g_draw.lin(c)
@@ -588,7 +591,7 @@ on('WNL2',(None,'W0',None))
 # style arithmetic for formatting commands
 fin=Bus(net); fen=Bus(net); fcl=Bus(net); FD=style_decode(fin.w,fen.w); FD.update(flag_decode(fcl.w,fen.w)); fsz=FD['size']
 fin.add(S('TYS2'),RSR); fen.lin(S('TYS2'))
-on('TYS2',(None,'ASC0',{ity:(RSR-FD['vert']*ST_VERT,RSK,RSN,RSY)}))
+on('TYS2',(None,'ASC0',{ity:(RSR-FD['vert']*ST_VERT,RSK,RSN,RSY,RSX,RSH,RSZ)}))
 szh=net.decode(FD['si'],NS,fen.w)
 _STEPS=[7,8,9,10,11,12,14,16,18,20,22,24,26,28,36,48,72]     # grow and shrink walk these points, as Word does
 up_=X();dn_=X()
@@ -620,13 +623,13 @@ newst=field_new((t_bold,t_it,t_un,t_f,t_s,t_v))
 tgt_now=G_(t_bold,fmh[1])+G_(t_it,fmh[2])+G_(t_un,fmh[3])+G_(t_f,fmh[6])+G_(t_s,fmh[12])+G_(t_v,fmh[13]+fmh[14])
 on('FMTS',(has_sel,'W0',{wp:lo_p,wo:lo_o,wm:2,wfirst:1,grp:grp+1,wret.r:wret.id('FEND')}),(None,'FTY',{wfirst:1}))
 fen.lin(S('W4')*1); fin.add(S('W4'),RSR); fcl.add(S('W4'),RSC); fen.lin(S('FTY')); fin.add(S('FTY'),ty)
-_tyx=(net.relu(newst),)+ext_new(ity.k,ity.n,ity.y)
+_tyx=(net.relu(newst),)+ext_new(ity.k,ity.n,ity.y)+tuple(ity.e)
 on('FTY',(net.eq(fm,8,S('FTY')),'T2_SP0',{ity:_tyx,wfirst:0}),(None,'RD0',{ity:_tyx,wfirst:0}))
 e=S('W4')
 cc=net.and_(e,net.eq(wm,1,e)); w1.drive(cc,(as_x(CB)+wn,i2u(R1,cc)-net.eq(R1,11,cc))); 
 fm_c=net.and_(e,net.eq(wm,2,e))
 # the new record is interned in this tick; the next state writes its index with the cell's flags kept
-ic_en.lin(fm_c); ic_val.add(fm_c,net.relu(newst)); ic_fb.add(fm_c,RSC-FD['flags']); _xn=ext_new(RSK,RSN,RSY); ic_k.add(fm_c,_xn[0]); ic_n.add(fm_c,_xn[1]); ic_y.add(fm_c,_xn[2])
+ic_en.lin(fm_c); ic_val.add(fm_c,net.relu(newst)); ic_fb.add(fm_c,RSC-FD['flags']); _xn=ext_new(RSK,RSN,RSY); ic_k.add(fm_c,_xn[0]); ic_n.add(fm_c,_xn[1]); ic_y.add(fm_c,_xn[2]); [b_.add(fm_c,v_) for b_,v_ in zip(ic_e,(RSX,RSH,RSZ))]
 wcold=R(); wflg=R(); fsm.set(wcold,fm_c,RSC); fsm.set(wflg,fm_c,FD['flags']+net.and_(fm_c,fmh[11],ONE-FD['dele'])*ST_DEL)
 fsm.set(ftgt,fm_c,tgt_now); fsm.set(wfirst,fm_c,0)
 A4_W4(e)
