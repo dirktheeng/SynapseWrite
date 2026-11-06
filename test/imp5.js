@@ -38,5 +38,22 @@ const thumb=A=>{const f=A.fb();let a=-1,b=-1;for(let x=0;x<1262;x++){const i=(77
   A=await lib();A.type('red bold');A.settle();A.key(97,1);A.key(98,1);A.settle();A.click(1186,96);A.settle();name(A,'Alert');A.key(122,1);A.settle();s=part(A,'word/styles.xml');x=part(A,'word/document.xml');
   ok('undo of a character style creation',!/Alert/.test(s)&&!/rStyle/.test(x)&&/<w:b\/>/.test(x));
  }
+
+ if(!only||only=='keys'){
+  const txt=x=>[...x.matchAll(/<w:t[^>]*>([^<]*)/g)].map(m=>m[1]).join('');
+  let A=await lib();A.type('a');A.key(32,3);A.type('b');A.key('_',3);A.type('c');A.settle();A.shot('build/imp5_k1.png');let x=part(A,'word/document.xml');
+  ok('Ctrl+Shift+Space types a no-break space',txt(x).includes('a b'),JSON.stringify(txt(x)));
+  ok('Ctrl+Shift+- types a no-break hyphen',txt(x).includes('b‑c'),JSON.stringify(txt(x)));
+  const ink=count(A,223,1039,174,400,(r)=>r<120);let B=await lib();B.type('a');B.key(32,3);B.type('b-c');B.settle();const ink2=count(B,223,1039,174,400,(r)=>r<120);ok('the no-break hyphen draws as a hyphen',ink==ink2&&ink>40,[ink,ink2]);
+  A=await lib();A.key('e',3);A.settle();A.type('tracked');A.settle();x=part(A,'word/document.xml');ok('Ctrl+Shift+E turns tracking on',/<w:ins [^>]*>.*tracked/.test(x));
+  A.key('e',3);A.settle();A.type(' plain');A.settle();x=part(A,'word/document.xml');ok('and off again',/plain/.test(x)&&!(x.match(/<w:ins [^>]*>(?:(?!<\/w:ins>).)*<\/w:ins>/g)||[]).some(q=>/plain/.test(q)),x.slice(x.indexOf('<w:body'),x.indexOf('<w:body')+400));
+  A=await lib();A.type('m');A.settle();let h=A.hash(174,776);A.key('*',3);A.settle();A.shot('build/imp5_k2.png');const hm=A.hash(174,776);B=await lib();B.type('m');B.settle();B.ctl('0:233');B.ctl('4:209');B.settle();B.click(600,700);B.settle();A.click(600,700);A.settle();
+  ok('Ctrl+Shift+8 shows marks, like the button',hm!==h&&A.hash(174,776)===B.hash(174,776));
+  A=await lib();A.file(9,doc('<w:p><w:r><w:t xml:space="preserve">one two three </w:t></w:r><w:fldSimple w:instr=" NUMWORDS "><w:r><w:t>99</w:t></w:r></w:fldSimple></w:p>'));
+  x=part(A,'word/document.xml');const w0=(x.match(/NUMWORDS[^>]*>.*?<w:t[^>]*>(\d+)/)||[])[1];A.key(138);x=part(A,'word/document.xml');const w1=(x.match(/NUMWORDS[^>]*>.*?<w:t[^>]*>(\d+)/)||[])[1];
+  ok('F9 updates fields',w1!==undefined&&w1!=='99'&&w1!==w0||(w0!=='99'&&w1===w0),[w0,w1]);
+  A=await lib();A.key('f',3);A.settle();A.shot('build/imp5_k3.png');B=await lib();B.click(231,75);B.settle();ok('Ctrl+Shift+F opens the font menu',A.hash(95,600)===B.hash(95,600)&&A.hash(95,600)!==(await lib()).hash(95,600));
+  A=await lib();A.key('p',3);A.settle();B=await lib();B.click(282,75);B.settle();B.shot('build/imp5_k4.png');ok('Ctrl+Shift+P opens the size menu',A.hash(95,600)===B.hash(95,600));
+ }
  const f=R.filter(x=>!x).length;console.log(`imp5: ${R.length-f} passed, ${f} failed`);process.exit(f?1:0);
 })();

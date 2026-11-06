@@ -130,6 +130,8 @@ def ext_cmap(v):
         m={}
         for sub in EXT_SUBS:
             for u,g in tt(*v,sub).getBestCmap().items(): m.setdefault(u,(sub,g))
+        # a no-break hyphen the face lacks draws as its hyphen, as Word draws it
+        if 0x2011 not in m: m[0x2011]=m.get(0x2010,m.get(0x2d))
         _XC[v]=m
     return _XC[v]
 def ext_page(v,p):
