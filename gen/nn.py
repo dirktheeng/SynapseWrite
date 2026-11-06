@@ -54,6 +54,9 @@ class Net:
             s.line=getattr(s,'line',{}); s.line[len(s.act)-1]=' '.join(q)
         return len(s.act)-1
     def group(s,name): s.cur[0]=name
+    def pushed(s,e):
+        "A wire holding e that its inputs push, read by its consumers once per tick."
+        w=s.wire(); s.connect(w,e); s.pushw=getattr(s,'pushw',[]); s.pushw.append(next(iter(w.t))); return w
     def domain(s,d):
         """Selects the clock domain of the neurons made next. Domain 1 runs only inside a call port, while domain 0
         is stopped. No synapse crosses domains: values cross only through the call port."""
@@ -192,6 +195,9 @@ class Net:
         # pull: a neuron all of whose consumers read it lazily computes only when read.
         # sticky: a register whose only activity is holding itself keeps its value in place.
         keep=set(getattr(s,'keep',()));
+        # pushed sums: a wire that sums gated lines, one of which at most is open, is better pushed by that line than
+        # pulled through every closed one by each reader (net.pushw, mapped through the duplicate merger)
+        rep_=getattr(s,'rep',None); keep.update(rep_[i] if rep_ else i for i in getattr(s,'pushw',()))
         for ids in s.aligned: keep.update(ids)
         boolreg=getattr(s,'boolreg',set())
         INF=float('inf')

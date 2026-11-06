@@ -305,7 +305,7 @@ class GlyphUnit:
         # A small glyph drawn black on white before: its pixels were recorded off the row plane, so one read and one patch draw it, with no row loop and no plane.
         recg=net.reg()
         fast_=net.wire(); fnc_=net.wire()
-        fs_=net.wire(); blk=net.and_(hit,rowsz,net.step(fast_+fs_),ONE-fnc_,net.step(H[5]-0.5),net.ge(H[6],recg,hit),net.ge(recg,H[6],hit))
+        fs_=net.wire(); blk=net.and_(hit,rowsz,net.step(hit*M-M+fast_+fs_-0.5),ONE-fnc_,net.step(H[5]-0.5),net.ge(H[6],recg,hit),net.ge(recg,H[6],hit))
         start=net.and_(hit,rowsz,ONE-blk); empty=hit-net.and_(hit,rowsz)
         brun=net.reg(); brows=net.reg(); bcells=L(H[2],start)
         baddr=net.reg(); bpy=net.reg(); bwr=net.reg(); blast=net.reg()
@@ -326,7 +326,7 @@ class GlyphUnit:
         fcu=net.step(Lfc); fgb=net.and_(net.eq(Lfg,1,sg),ONE-fcu)
         fast=L(net.and_(fgb,net.eq(Lbg,1,sg)),sg); fsel=L(net.and_(fgb,net.eq(Lbg,2,sg)),sg)
         bgw=L(net.eq(Lbg,1,sg),sg); net.connect(fast_,fast); net.connect(fs_,fsel); net.connect(fnc_,Lnc)   # selected text takes the same record: on the selection color the darker pixel wins, as it does for overlapping letters
-        slow0=net.and_(s1g,ONE-fast,ONE-empty)
+        slow0=net.step(s1g*M-M+0.5-fast-empty)     # read behind s1g: the latches it reads hold through the whole draw
         def lines(pal,val,en_=None):
             h=net.decode(val-1,len(pal),slow0 if en_ is None else en_); out=[]
             for k in range(3):
@@ -367,7 +367,7 @@ class GlyphUnit:
         net.aligned.append([next(iter(w.t)) for w in data])
         px=net.wire(); py=net.wire()
         net.connect(px,net.gate(bpx,bwr)-bwr*(OFF+XO)); net.connect(py,net.gate(bpy,bwr))
-        p1=g.patch_cls(net.step(bwr-Lnc*2-fast*2-0.5),px,py,data,LW,1); p2=g.sprite_cls(net.step(bwr+Lnc*2-2.5),px,py,data,LW,1); p3=g.patch_cls(net.step(bwr+fast-Lnc*2-1.5),px,py,data,LW,1); p3.kind=11
+        p1=g.patch_cls(net.step(bwr*M-M+0.5-Lnc*2-fast*2),px,py,data,LW,1); p2=g.sprite_cls(net.step(bwr*M-M+Lnc*2-1.5),px,py,data,LW,1); p3=g.patch_cls(net.step(bwr*M-M+fast-Lnc*2-0.5),px,py,data,LW,1); p3.kind=11
         p1.dom=1;p2.dom=1;p3.dom=1
         # ---- pixel records ----
         net.group('glyph pixel records')
@@ -436,7 +436,7 @@ class GlyphUnit:
             for fi,f in list(enumerate(g.faces))+list(PFM.items()):
                 z=face_metrics(*f)[name]
                 e=e+net.gate(I_s*z,fh[fi])
-            return e
+            return net.pushed(e)      # only the drawn face's line is open: it pushes, the rest are never read
         def floor_(v,en,nb=9):
             rem=net.gate(v,en); o=X()
             for k in reversed(range(nb)):
@@ -448,6 +448,7 @@ class GlyphUnit:
         kn=g.kn={}
         v_des=X()
         for fi,f in list(enumerate(g.faces))+list(PFM.items()): v_des=v_des+net.gate(I_s*(-face_metrics(*f)['des']),fh[fi])
+        v_des=net.pushed(v_des)
         kn['D']=latch(floor_(v_des+0.5,sy)+net.gate(v_des,ny))
         kxh,vxh=knot('xh'); kcap,vcap=knot('cap'); kasc,vasc=knot('asc')
         kn['XH']=latch(kxh); kn['CAP']=latch(kcap); kn['ASC']=latch(kasc)
@@ -469,7 +470,7 @@ class GlyphUnit:
         def fx(j):
             e=X()
             for fi in range(NF): e=e+net.gate(I_s*ext[fi][j]+OFF,fh[fi])
-            return e
+            return net.pushed(e)
         T=floor_(fx(3),st)+2; B=floor_(fx(2),st)-1; Lf=floor_(fx(0),st)-2; Rt=floor_(fx(1),st)
         OX=as_x(2*OFF)-Lf
         cells=net.wire(); _c=Rt-Lf+3; net.connect(cells,_c-net.relu(_c-LW))
@@ -580,32 +581,49 @@ class GlyphUnit:
             for c_ in ctier: o_.append(net.and_(o_[-1],c_))
             return o_
         ox=latch(OX)
-        w=[X() for _ in range(LW)]; nbank=0; blockfull={a_:net.wire() for a_ in range(0,LW,BLK)}
+        w=[X() for _ in range(LW)]; nbank=0
+        dB={a_:X() for a_ in range(BLK,LW,BLK)}     # whole blocks: one delta per crossing at the block after its own
         for gp in (slots,aslots):
             for sg,L_ in gp.items():
                 for xk in L_:
-                    en=net.step(xk); et=tiers(en)
-                    xs=net.wire(); net.connect(xs,net.relu(xk+ox+en*M-M))
-                    # Blocks of columns. Left of the crossing nothing opens. Right of it every column gains the same whole unit, from one neuron. Only the block holding the crossing needs its ramps.
-                    for a_ in range(0,LW,BLK):
-                        b_=min(a_+BLK,LW); e_=et[tier_of(a_+1)]
-                        full=net.step(e_*M-M+(a_+PAD+OFF)-xs); pe=net.and_(e_,net.step(e_*M-M+(b_+PAD+OFF)-xs),ONE-full)
-                        R={q:net.relu(pe*M-M+(q+PAD+OFF)-xs) for q in range(a_+1,b_+1)}; nbank+=b_-a_
-                        net.connect(blockfull[a_],full*sg)     # whole columns meet in one sum per block: edges that cancel there wake no column
-                        for p_ in range(a_,b_): w[p_]=w[p_]+(R[p_+1]-R.get(p_,X()))*sg
-        for a_,f_ in blockfull.items():
-            for p_ in range(a_,min(a_+BLK,LW)): w[p_]=w[p_]+f_
+                    en=net.step(xk)
+                    xs=net.relu(xk+ox+en*M-M)
+                    # Blocks of columns, found left to right: a block is tested only once the crossing is known to lie at
+                    # or right of its start, so the tests stop at the crossing's block, which alone needs its ramps.
+                    A_=list(range(0,LW,BLK)); gl={0:en}
+                    for a_ in A_[1:]: gl[a_]=net.step(gl[a_-BLK]*M-M+xs-(a_+PAD+OFF))
+                    for a_ in A_:
+                        b_=min(a_+BLK,LW)
+                        pe=net.step(gl[a_]*M-M-gl[b_]*M+0.5) if b_ in gl else gl[a_]
+                        # the crossing's half of the block takes the ramps; right of it, the other half is whole
+                        m_=a_+(b_-a_)//2; hi=net.step(pe*M-M+xs-(m_+PAD+OFF)); lo=net.step(pe*M-M-hi*M+0.5)
+                        for e_,c0,c1 in ((lo,a_,m_),(hi,m_,b_)):
+                            R={q:net.relu(e_*M-M+(q+PAD+OFF)-xs) for q in range(c0+1,c1+1)}; nbank+=c1-c0
+                            for p_ in range(c0,c1): w[p_]=w[p_]+(R[p_+1]-R.get(p_,X()))*sg
+                        for p_ in range(m_,b_): w[p_]=w[p_]+lo*sg
+                        # every block right of it is whole: one unit into the next block's delta, summed across once per row
+                        if b_<LW: dB[b_]=dB[b_]+pe*sg
         g.nbank=nbank
         net.group('coverage')
         ac=[net.reg() for _ in range(LW)]
         out=[net.wire() for _ in range(LW)]
-        clrt=tiers(clr); wrt=tiers(wr)
+        clrt=tiers(clr)
+        # Whole blocks: per row, a running sum over the block deltas gives each block's whole coverage, and its terms
+        # take the deltas back out. Within one outline the sum is the winding left of the block, never negative.
+        dR={a_:net.reg() for a_ in dB}; F={0:X()}
+        for a_ in dB:
+            F[a_]=net.relu(F[a_-BLK]+dR[a_]+clrt[tier_of(a_+1)]*M-M)
+        for a_ in dB:
+            net.rec(dR[a_],dR[a_]-F[a_]+F[a_-BLK]+dB[a_]*(1.0/K))
         for p_ in range(LW):
-            wp=net.wire(); net.connect(wp,w[p_])
-            cov=net.relu(wp)-net.relu(wp-1)
-            net.rec(ac[p_],ac[p_]-net.relu(ac[p_]+clrt[tier_of(p_+1)]*M-M)+cov*(1.0/K))
+            # The winding of a sample line is 0 or 1 inside one outline, so the K lines sum straight into the pixel and
+            # only the row's sum is clamped (where two contours overlap the winding reaches 2). The neuron that reads the
+            # row's sum also takes it out of the accumulator; the row is written on wr, and clr is wr or the tick after done.
+            # A pixel's partial share may be negative (a right edge in a block that is whole from the left), so the
+            # block's whole share is added before the one relu, and the clear gives it back.
+            Fb=F[p_-p_%BLK]; a1_=net.relu(ac[p_]+Fb+clrt[tier_of(p_+1)]*M-M); a_=a1_-net.relu(a1_-1)
+            net.rec(ac[p_],ac[p_]-a1_+Fb+w[p_]*(1.0/K))
             # darkening curve, the same one the old rasterizer used, written as a piecewise linear map of final coverage
-            a_=net.relu(ac[p_]+wrt[tier_of(p_+1)]*M-M)
             net.connect(out[p_],a_*GAMMA_K[0]-net.relu(a_-0.25)*GAMMA_K[1]-net.relu(a_-0.5)*GAMMA_K[2]-net.relu(a_-0.75)*GAMMA_K[3])
         net.aligned.append([next(iter(w_.t)) for w_ in out])
         p=_Write(wr,addr,out[0],LW,cl); net.ports.append(p); p.dom=1

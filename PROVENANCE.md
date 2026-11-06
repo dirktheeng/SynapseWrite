@@ -2,24 +2,24 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-238513 neurons, 463197 edges, 188 layers, 4549 control states.
+238555 neurons, 465782 edges, 187 layers, 4547 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
-| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1302) | 1302 | 8542 |
+| bank and port wiring | The memory, image and event ports and their shared wires. | gen/app.py (1302) | 1302 | 8570 |
 | glyph network | Selects and addresses a character cell for drawing. | gen/app.py (253), gen/feat1_glyph.py (208), gen/imp3_zoom_pre.py (155) | 616 | 9947 |
 | feat1 run effects | Decodes the extended field of a style entry for the glyph network: caps and small caps draw and measure the capital, small capitals take a smaller size, hidden text takes no width or ink, character spacing joins the advance. | gen/feat1_glyph.py (39) | 39 | 174 |
 | glyph metrics | Character advance and kerning trees. | gen/app.py (20677) | 20677 | 60764 |
-| glyph unit | Draws a character from its edge network into the glyph store, in its own clock domain. | gen/glyphnet.py (10800) | 10800 | 40090 |
+| glyph unit | Draws a character from its edge network into the glyph store, in its own clock domain. | gen/glyphnet.py (10799) | 10799 | 40089 |
 | glyph pixel records | A small glyph drawn black on white is recorded off the row plane, so later draws are one read and one patch. | gen/glyphnet.py (19104) | 19104 | 38324 |
-| snapping layer | Fits outline heights to the pixel grid for a given size. | gen/glyphnet.py (331) | 331 | 1314 |
-| glyph geometry | Scales outline coordinates by the drawn size. | gen/glyphnet.py (231) | 231 | 809 |
+| snapping layer | Fits outline heights to the pixel grid for a given size. | gen/glyphnet.py (338) | 338 | 1137 |
+| glyph geometry | Scales outline coordinates by the drawn size. | gen/glyphnet.py (235) | 235 | 813 |
 | glyph store | Keeps drawn glyphs in memory and copies them to the screen. | gen/glyphnet.py (17) | 17 | 54 |
 | stem units | Stem position units for the hinting of letters. |  | 0 | 0 |
 | row sequencer | Steps the glyph unit through the rows of a character. | gen/glyphnet.py (29) | 29 | 72 |
-| glyph weights (outline edges) | Font outlines as edges in weights, one group per glyph program. | gen/glyphnet.py (130598) | 130598 | 659470 |
-| ramp bank | Coverage ramps for the edge network. | gen/glyphnet.py (4978) | 4978 | 10819 |
-| coverage | Adds edge coverage into pixel coverage. | gen/glyphnet.py (1816), gen/imp3_zoom_pre.py (583), gen/app.py (36) | 2435 | 12959 |
+| glyph weights (outline edges) | Font outlines as edges in weights, one group per glyph program. | gen/glyphnet.py (130598) | 130598 | 609146 |
+| ramp bank | Coverage ramps for the edge network. | gen/glyphnet.py (5475) | 5475 | 10959 |
+| coverage | Adds edge coverage into pixel coverage. | gen/glyphnet.py (1312), gen/imp3_zoom_pre.py (583), gen/app.py (36) | 1931 | 14837 |
 | style interner | Finds or adds a style record in the interned table, in its own clock domain. | gen/app.py (151) | 151 | 340 |
 | glyph patch | Assembles glyph coverage into a color patch for the patch port. | gen/app.py (12) | 12 | 188 |
 | shared control registers | Editor state registers and the selection order comparators. | gen/app.py (245), gen/rv_a4_regs.py (81), gen/imp4_regs.py (55), gen/t1_features.py (45), gen/imp3_regs.py (40), gen/rv_a3_pre.py (38), gen/feat1_regs.py (26), gen/imp3_zoom_pre.py (13), gen/imp5_regs.py (12), gen/imp4_list.py (3) | 558 | 5174 |
@@ -50,7 +50,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2707), gen/app.py (4) | 2711 | 41587 |
 | pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1435) | 1435 | 4658 |
 | feat2 pdf run effects | Prints character spacing, run shading, double strike and external links as link annotations. | gen/pdf_write.py (290) | 290 | 1106 |
-| docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (2883) | 2883 | 16906 |
+| docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (2911) | 2911 | 17051 |
 | png reader | Decodes PNG files to pixel words. | gen/docx_read.py (311), gen/a12_guard.py (61) | 372 | 4750 |
 | zip crc check | Zip CRC check on open: the inflated main part runs through the save CRC network and must match the central directory. | gen/a12_guard.py (18) | 18 | 104 |
 | prompt bar | One bar that takes a short text for a color, a style name or a font name. | gen/imp4_prompt.py (524) | 524 | 2033 |
@@ -94,4 +94,4 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | rv a3 interaction | Editing keys, word and page motion, right click, autoscroll, context menu, and the late tier 1 features. | gen/t1_features.py (2039), gen/rv_a3_keys.py (655), gen/pointer3.py (86), gen/rv_a4_features.py (79), gen/ui.py (42) | 2901 | 25112 |
 | file output command | Selects the length, data base and file name the glue saves. | gen/rv_a11_out.py (5) | 5 | 8 |
 | screen check | Compares one line of the screen id plane against the line table on each blink tick and repairs by repainting. | gen/rv_a11_out.py (23) | 23 | 56 |
-| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (11270) | 11270 | 59938 |
+| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (11281) | 11281 | 59984 |
