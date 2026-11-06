@@ -2,6 +2,17 @@
 import json,struct,gzip,sys,time
 from nn import *
 import rom,docx_tpl,glyphnet
+# Sections of generator files run through exec; this names each one after its file so provenance can trace every neuron.
+_open,_exec=open,exec; _srcs={}
+def open(p,*a,**k):
+    f=_open(p,*a,**k)
+    if str(p).endswith('.py') and not a: _srcs[p]=f.read(); f.seek(0)
+    return f
+def exec(src,g=None,l=None):
+    fr=sys._getframe(1)
+    if g is None: g,l=fr.f_globals,fr.f_locals
+    elif l is None: l=g
+    _exec(compile(src,next((p for p,t in _srcs.items() if src in t),'app.py'),'exec'),g,l)
 net=Net(); fsm=FSM(net); on=fsm.on; ONE=net.ONE; G_=net.gate
 # ---- memory map (one passive tensor store) ----
 # Bank map. Low cells: PT 0, VL 20000, Q 21000, RPL 21200, HD 21400, HIT 22000, TGW 23300, SECB 23400, NUMT 25000, STY0 26000, TBL 30000, MKT 32000,
@@ -69,18 +80,19 @@ class RectPort:
         for b,e in zip(s.b[1:],(x,y+YB,w,h,col[0],col[1],col[2],a)):
             if e: b.lin(tok*e)
     def rec(s,nm): return [3]+[b.w for b in s.b]+[clip0,clip1]
-class ImgPort:
-    def __init__(s):
-        s.b=[Bus(net) for _ in range(5)]; net.ports.append(s)
+class CopyPort:
+    "Copies a block of pixel words between bank and screen, leaving the id plane alone: {6,en,x,y,addr,w,h,dir,y0,y1}. dir 1 writes the screen. A cell is R+G*256+B*65536, the screen's own word."
+    def __init__(s,y0,y1):
+        s.b=[Bus(net) for _ in range(7)];s.c=(y0,y1); net.ports.append(s)
     def drive(s,c,v):
-        s.b[0].lin(c)
-        for b,e in zip(s.b[1:],(v[0],as_x(v[1])+YB,v[2],v[3])): b.add(c,e)
-    def rec(s,nm): return [6]+[b.w for b in s.b]+[clip0,clip1]
+        s.b[0].lin(c); s.b[1].lin(net.gate(as_x(v[0])+64,c)-c*64)   # x may be just off the left edge
+        for b,e in zip(s.b[2:],(as_x(v[1])+YB,v[2],v[3],v[4],v[5])): b.add(c,e)
+    def rec(s,nm): return [6]+[b.w for b in s.b]+list(s.c)
 class PixPort:
     def __init__(s):
-        s.en=Bus(net);s.xy=Bus(net);s.out=net.input(4); net.ports.append(s)
-    def drive(s,c,v): s.en.lin(c); s.xy.add(c,as_x(v[0])+as_x(v[1])*65536)
-    def rec(s,nm): return [5,s.en.w,s.xy.w,s.out[0]]
+        s.en=Bus(net);s.x=Bus(net);s.y=Bus(net);s.out=net.input(4); net.ports.append(s)
+    def drive(s,c,v): s.en.lin(c); s.x.add(c,v[0]); s.y.add(c,v[1])
+    def rec(s,nm): return [5,s.en.w,s.x.w,s.y.w,s.out[0]]
 class PatchPort:
     def __init__(s,en,x,y,data,w,h): s.a=(en,x,y,data,w,h); net.ports.append(s)
     kind=4
@@ -92,21 +104,16 @@ class CallPort:
     "Runs the other clock domain until its done neuron fires. This domain is stopped meanwhile."
     def __init__(s,en,done,args,rets=()): s.en=en;s.done=done;s.args=args;s.rets=rets;net.ports.append(s)
     def rec(s,nm): return [8,s.en,s.done,s.args,s.rets]
-class BlitPort:
-    "Copies a block of screen colors to the bank or back, leaving the id plane alone: {7,en,x,y,addr,dir,w,h}."
-    def __init__(s,addr,dir_,w,h):
-        s.b=[Bus(net) for _ in range(3)];s.k=(addr,dir_,w,h); net.ports.append(s)
-    def drive(s,c,v):
-        s.b[0].lin(c); s.b[1].lin(net.gate(as_x(v[0])+64,c)-c*64); s.b[2].lin(net.gate(as_x(v[1])+64,c)-c*64)
-    def rec(s,nm): return [7]+[b.w for b in s.b]+list(s.k)
 clip0=net.reg(); clip1=net.reg(); ZERO_R=net.reg()
 rb=RPort(1100,True); wb=WPort(1100,rb.out[0],True)   # block copy through 1100 neurons
 rc=RPort(2); rf=RPort(3); r1=RPort(1); r2=RPort(1); rl=RPort(8); rlog=RPort(6); rp6=RPort(6)
 w1=WPort(1);w2=WPort(1);w3=WPort(1);w4=WPort(1);wlog=WPort(6);wvl=WPort(6);wln=WPort(6)
-rmeta=RPort(8);MT=rmeta.out;wht=WPort(6);imr=ImgPort();rim=RPort(3);rU=RPort(1);rV=RPort(1);rA=RectPort();rB=RectPort();rC=RectPort();rD=RectPort();pix=PixPort()
+rmeta=RPort(8);MT=rmeta.out;wht=WPort(6);imr=CopyPort(clip0,clip1);rim=RPort(3);rU=RPort(1);rV=RPort(1);rA=RectPort();rB=RectPort();rC=RectPort();rD=RectPort();pix=PixPort()
 R1=r1.out[0];R2=r2.out[0]
 rs=StylePort(); RSC=rs.out[0]; RSR=rs.out[1]
 ev_kind,ev_a,ev_b,ev_c=net.input(4); ev_t=net.input(); evt=net.reg(); ev_m=net.input()
+kv=net.input(6); kvl=net.input()
+KBV=1391000; KBL=1392000; KBQ=1393000; NAMEB=1393100; KBMAX=1000; KBSEN=8; NAME_DOCX='Document1.docx'; NAME_PDF='Document1.pdf'   # field text from the glue, last field text, field sentinel, file names
 halt=Bus(net); timer=Bus(net); clipout=Bus(net)
 # ---- glyph network ----
 net.group('glyph network')
@@ -271,7 +278,7 @@ class GlyPort:
         ch,st,x,y,f,b=v; g_en.lin(c); g_ch.add(c,ch); g_st.add(c,rom.lit(st) if isinstance(st,int) else st); g_x.add(c,x); g_y.add(c,as_x(y)+YB); g_draw.lin(c)
         fg[f].lin(c) if isinstance(f,int) else None; bg[b].lin(c) if isinstance(b,int) else None
 gly=GlyPort()
-net.group('core')
+net.group('shared control registers')
 # ---- control registers ----
 R=net.reg
 s_px=R(PX);s_pw=R(816);s_ph=R(PH);s_tx=R(TX);s_tw=R(TW);s_mt=R(96);s_th=R(864);s_ps=R(PST);hitn=R();pbg=R();bc0=R(255);bc1=R(255);bc2=R(255);fnh=R();bfnh=R();pfc=R();pff=R();pfh=R();pfy=R();pfx=R();pfw=R();dnum=R();lnfh=R();lfn=R();lfb=R();lfh=R();lfnb=R();lfhb=R();ptoc=R();ptsrc=R();ptpg=R();hfk=R();hfb=R(HFB);hftp=R();rdp=R();hfl=[R() for _ in range(4)];tdk=R();cursec=R();bsec=R();nsec=R(1);cxl=R(PX);cxr=R(PX+816)
@@ -314,20 +321,20 @@ at_a=ONE-has_sel
 # ---- event dispatch ----
 exec(open('rv_a3_pre.py').read())
 net.group('event dispatch')
-on('IDLE',(net.step(ev_kind),'DISP',{evk:ev_kind,eva:ev_a,evb:ev_b,evc:ev_c,evt:ev_t,evm:ev_m}))
-fsm.states['IDLE'][0]; net.init[next(iter(S('IDLE').t))]=1.0
+a11busy=R()
 exec(open('pointer.py').read())
 kh=net.decode(evk,14,S('DISP'))
 exec(open('pointer2.py').read())
-_rv_m=net.bits(evm,4,S('DISP')); fsm.set(rv_eol,net.or_(kh[2],kh[3],kh[8],kh[9],kh[10]),0); fsm.set(rv_try,kh[2],0)
-on('DISP',*PTR_DISP,(net.and_(kh[3],t1_mopb),'T1_MD',{hx_:eva,hy_:evb}),(net.and_(kh[3],_rv_m[3]),'RVA3_RC0',{hx_:eva,hy_:evb}),(net.and_(kh[2],t1_mopb),'T1_MK',None),(net.and_(kh[4],t1_tdrag),'RD0',{drag:0,t1_tdrag:0}),(kh[11],'T1_HV',{hx_:eva,hy_:evb}),(kh[1],'UI',{clip0:0,clip1:0}),(kh[2],'T2_KM',{shiftk:net.bits(evb,2,S('DISP'))[1]}),(kh[3],'MD',{hx_:eva,hy_:evb}),
+exec(open('rv_a11_input.py').read())
+_rv_m=net.bits(evm,5,S('DISP')); fsm.set(rv_eol,net.or_(kh[2],kh[3],kh[8],kh[9],kh[10]),0); fsm.set(rv_try,kh[2],0)
+on('DISP',*PTR_DISP,(net.and_(kh[3],t1_mopb),'T1_MD',{hx_:eva,hy_:evb}),(net.and_(kh[3],_rv_m[4]),'RVA3_RC0',{hx_:eva,hy_:evb}),(net.and_(kh[2],t1_mopb),'T1_MK',None),(net.and_(kh[4],t1_tdrag),'RD0',{drag:0,t1_tdrag:0}),(kh[11],'T1_HV',{hx_:eva,hy_:evb}),(kh[1],'UI',{clip0:0,clip1:0}),(kh[2],'T2_KM',{shiftk:net.bits(evb,2,S('DISP'))[1]}),(kh[3],'MD',{hx_:eva,hy_:evb}),
    (kh[4],'T3_MU',{drag:0}),(kh[5],'MV',None),(kh[6],'WH',None),(kh[7],'TM',{blink:ONE-blink,autos:0}),(kh[8],'PASTE',{}),(kh[9],'A12_OV0',{}),(kh[10],'PG_0',{}),(None,'HALT',None))
 on('IDL2',(None,'HALT',None))
 on('MV',(t1_tdrag,'T1_TM0',None),(net.and_(S('MV'),net.step(tdk)),'T3_MV',None),(net.and_(S('MV'),drag),'MD2',{hx_:net.max_(net.min_(eva,s_px+s_pw-2),s_px+1),hy_:net.max_(net.min_(evb,DOCB-6),DOCY+6),shiftk:1}),(None,'HALT',None))
 on('WH',(None,'RD0',{scroll:net.relu(scroll+evc-1000),autos:0,a7_jmp:0}))   # ev_c carries delta+1000
 e=S('TM'); _a6stale=net.and_(a6hf,ONE-has_sel,ONE-drag,net.eq(mode,0,e),net.step(net.gt(wtot,a6w,e)+net.lt(wtot,a6w,e)+net.gt(pagesT,a6pg,e)+net.lt(pagesT,a6pg,e)))
-_rv_tm=S('TM'); on('TM',(net.and_(_rv_tm,drag,net.or_(net.lt(mp_pty,DOCY+8,_rv_tm),net.ge(mp_pty,DOCB-8,_rv_tm))),'RVA3_AS0',None),(t1_cntp,'T1_C0',{blink:blink}),(bgp,'BG',{blink:blink}),(_a6stale,'T4_FU',{blink:blink,a6fg:1,nolog:1,a6w:wtot,a6pg:pagesT}),(None,'RD0',{fastok:1}))
-on('BG',(None,'T3_RS0',{fnh:bfnh,cursec:bsec,fnn:bfn,fnp:bfp,xcol:bxc,pi:bpi,yy:byy,ptop:bptop,pages:bpg,wsum:bws,listn:bln,full:1,vm:0,bgm:1,bcnt:0,clip0:DOCY,clip1:DOCB}))
+_rv_tm=S('TM'); on('TM',(net.and_(_rv_tm,drag,net.or_(net.lt(mp_pty,DOCY+8,_rv_tm),net.ge(mp_pty,DOCB-8,_rv_tm))),'RVA3_AS0',None),(t1_cntp,'T1_C0',{blink:blink}),(bgp,'BG',{blink:blink}),(_a6stale,'T4_FU',{blink:blink,a6fg:1,nolog:1,a6w:wtot,a6pg:pagesT}),(None,'A11_C0',None))
+on('BG',(None,'T3_RS0',{fnh:bfnh,cursec:bsec,fnn:bfn,fnp:bfp,xcol:bxc,pi:bpi,yy:byy,ptop:bptop,pages:bpg,wsum:bws,listn:bln,full:1,vm:0,bgm:1,bcnt:0,clip0:DOCY,clip1:800-DOCB}))
 _rv_hf=S('HF'); _rv_bg=net.or_(bgp,t1_cntp); timer.lin(_rv_hf*530-net.and_(_rv_hf,_rv_bg)*529-net.and_(_rv_hf,drag,ONE-_rv_bg,net.or_(net.lt(mp_pty,DOCY+8,_rv_hf),net.ge(mp_pty,DOCB-8,_rv_hf)))*495)
 # ---- character code tables: internal cells use Windows-1252 style codes ----
 net.group('character maps')
@@ -660,7 +667,7 @@ lleft=rleft+G_(s_tx-s_px+xcol,xc_)
 lright=rright+xcol
 GRAY=(230,230,230);WHITE=(255,255,255);SEL=PAL_B[1]
 _rv_r0=S('RD0'); fsm.set(rv_hl,_rv_r0,net.and_(net.ge(mode,1,_rv_r0),net.lt(mode,3,_rv_r0),net.step(qlen))); fsm.set(rv_mhe,S('R4'),0)
-on('RD0',(None,'RD1',{clip0:DOCY,clip1:DOCB,full:ONE-net.and_(S('RD0'),fastok,ONE-wassel,ONE-has_sel,ONE-a7_far),fastok:0}))
+on('RD0',(None,'RD1',{clip0:DOCY,clip1:800-DOCB,full:ONE-net.and_(S('RD0'),fastok,ONE-wassel,ONE-has_sel,ONE-a7_far),fastok:0}))
 fsm.set(a7_wb,S('RD1'),0); fsm.set(a7_vw,net.and_(S('RD1'),a7_far,bgp,ONE-lc),1); fsm.set(a7_vw,S('RE1'),0)   # a walk of the viewport alone: it leaves the background's saved position alone
 minc=net.min_(cp,oldcp);maxc=net.max_(cp,oldcp)
 e=S('RD1')
@@ -822,10 +829,11 @@ e=S('CE'); chere2=net.and_(net.eq(pi,cp,e),net.eq(off,co,e))
 fsm.set(cx,chere2,x);fsm.set(cacol,chere2,col)
 mk2=net.and_(e,t1_marks,net.eq(le_,plen_,e)); rB.drive(mk2,(x+5,sy+lasc-12,1,14,(120,120,160),col)); rC.drive(mk2,(x+1,sy+lasc-12,4,6,(120,120,160),col))
 mk3=net.and_(e,ONE-t1_marks,net.eq(le_,plen_,e),net.step(a6pm),ONE-net.step(tcols)); rB.drive(mk3,(x+5,sy+lasc-12,1,14,(187,0,0),col)); rC.drive(mk3,(x+1,sy+lasc-12,4,6,(187,0,0),col))   # rv_a6: a tracked paragraph mark
-on('IM0',(net.ge(irow,pih,S('IM0')),'T3_IH0',None),(None,'IM0',{imr:(x,sy+irow,as_x(IMG0)+pio+iaddr,pim),irow:irow+1,iaddr:iaddr+pim}))
+on('IM0',(net.ge(irow,pih,S('IM0')),'T3_IH0',None),(None,'IM0',{imr:(x,sy+irow,as_x(IMG0)+pio+iaddr,pim,1,1),irow:irow+1,iaddr:iaddr+pim}))
 _ce_fill=(x,sy,lright-x,lhh,(-1,0,0),net.min_(col,199)-net.eq(kprev,11,e))
 a2_pm=net.and_(e,net.eq(le_,plen_,e),net.ge(pi*2048+le_,Lo,e),net.lt(pi*2048+le_,Hi,e)); rD.drive(a2_pm,(x,sy,net.min_(5,net.relu(lright-x)),lhh,SEL,net.min_(col,199)))
-on('CE',(sp_bad2,'A6D_0',{sx:sp_x0,sp_xe:x,sp_r:1,sp_in:0,a6oe:off}),(net.and_(net.step(ptoc),net.eq(le_,plen_,e)),'T3_TD0',{rA:_ce_fill}),(net.step(pim),'IM0',{irow:0,iaddr:0,rA:_ce_fill}),(net.and_(net.eq(ls_,0,e),ONE-net.step(tcols)),'CB0',{rA:_ce_fill}),(None,'R9',{rA:_ce_fill}))
+on('CE',(sp_bad2,'A6D_0',{sx:sp_x0,sp_xe:x,sp_r:1,sp_in:0,a6oe:off}),(net.and_(net.step(ptoc),net.eq(le_,plen_,e)),'T3_TD0',{rA:_ce_fill}),(net.step(pim),'A11_IM',{irow:0,iaddr:0,rA:_ce_fill}),(net.and_(net.eq(ls_,0,e),ONE-net.step(tcols)),'CB0',{rA:_ce_fill}),(None,'R9',{rA:_ce_fill}))
+on('A11_IM',(None,'IM0',{rA:(x,sy,pim,pih,(255,255,255),1)}))   # the picture's ids; the rows then bring only color
 on('CB0',(None,'CB1',{r1:pbs+CMTL}))
 on('CB1',(net.step(R1),'T3_CB2',{wl_:R1,wb_:pbs+CMT,wdx:1052,wdy:sy+5,wdw:198,wdd:0,wbgf:0,wret_.r:wret_.id('T3_CB3')}),(None,'R9',None))
 on('R9',(A4_R9(),'A4_D0',None),(None,'R5',{yy:yy+lhh,lj:lj+1}))
@@ -1048,6 +1056,7 @@ exec(open('a12_guard.py').read())
 exec(open('t4_features.py').read())
 exec(open('t2_features.py').read())
 exec(open('t3_features.py').read())
+net.group('late commands')
 exec(open('rv_a2_canvas.py').read())
 exec(open('rv_a4_features.py').read())
 exec(open('rv_a5_docx.py').read())
@@ -1082,6 +1091,7 @@ a4_late()
 rv_a4_btn.FP=a4fp
 ui.build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,t1_hov,t1_hb,t1_hvo,bstg,t1_prs)
 exec(open('pointer3.py').read())
+exec(open('rv_a11_out.py').read())
 # ---- finish ----
 pat_finish()
 for r in (a7r,a7sr,a7cr,jret,oret,dret,wret,bret,gret,hret,cret,iret,nrr,frr,t4r,fvr,t4cr,zret,zdr,pfr,pfcr,t2pr,t2rr,t2pp,t2sr,t2ur,pgret,wret_,lret,lbret)+tuple(T3_RETS): r.gen()
@@ -1096,6 +1106,7 @@ def nid(x):
 wvl_data=[wlog,wln,wvl,w1,w2,w3,w4,fw,fw2,wo,imw,wl_i,xw,wht]+T3_WPORTS
 for p in wvl_data: net.aligned.append([nid(b.w) for b in p.d])
 net.keep=[nid(q) for q in (dsave.w,halt.w,timer.w,clipout.w,saveout.w,outbase.w,pdfout.w,picout.w,openout.w,wantp.w,ev_kind,ev_a,ev_b,ev_c,ev_t,ev_m)]
+net.keep+=[nid(q) for q in (a11bad,*kv,kvl,c_pass.w,c_ff.w,c_fb.w,c_hold.w,c_chold.w,c_kbo.w,c_file.w,c_namea.w,c_namen.w)]
 for p in net.ports:
     for q in p.rec(None)[1:]:
         if isinstance(q,X): net.keep.append(nid(q))
@@ -1128,9 +1139,7 @@ for p in _ports:
         pr+=[r[0],new[nid(r[1])],new[nid(r[2])],new[nid(d)],r[4],new[nid(r[5])] if r[5] is not None else -1]
     elif r[0]==3: pr+=[3]+[new[nid(q)] for q in r[1:]]
     elif r[0] in (4,11): pr+=[r[0],new[nid(r[1])],new[nid(r[2])],new[nid(r[3])],new[nid(r[4][0])],r[5],r[6],new[nid(r[7])],new[nid(r[8])]]
-    elif r[0]==6: pr+=[6]+[new[nid(q)] for q in r[1:]]
-    elif r[0]==7: pr+=[7,new[nid(r[1])],new[nid(r[2])],new[nid(r[3])]]+list(r[4:])
-    elif r[0]==5: pr+=[5,new[nid(r[1])],new[nid(r[2])],new[nid(r[3])]]
+    elif r[0] in (5,6): pr+=[r[0]]+[new[nid(q)] for q in r[1:]]
 import numpy as np
 n=c['n']
 def _var(vals):
@@ -1161,6 +1170,8 @@ _zb=struct.pack('<12I',*[len(z_) for z_ in _streams])+b''.join(_streams)
 hdr=dict(dsave=new[nid(dsave.w)],dict=DICTB,fmax=TAGB-FILE,outbase=new[nid(outbase.w)],zn=len(_zb),nb=len(btab),pdfout=new[nid(pdfout.w)],ni=len(iww),nt=len(wtab),wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,e=len(ww_),L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
  ev=[new[nid(q)] for q in (ev_kind,ev_a,ev_b,ev_c,ev_t,ev_m)],cb=CB,cb2=CB2,n1=c['n1'],init=[[new[i],v] for i,v in net.init.items() if not net.dom[i]],init1=[[new[i],v] for i,v in net.init.items() if net.dom[i]],
  bank_init=[*[[SECB+i_,v_] for i_,v_ in enumerate((1,816,PH,PX,TX,TW,96,864))],[LEN+SLOT0,0],[DIRTY+SLOT0,1],[PT,SLOT0],[SLOT0+SAVE,112],[SLOT0+SAVE+1,16],[SLOT0+SAVE+2,1],[SLOT0+PSPA,DEFSPA]]+T2_ROM+PF_INIT)
+hdr.update(keyv=[new[nid(q)] for q in kv],keyl=new[nid(kvl)],pass_=new[nid(c_pass.w)],ffield=new[nid(c_ff.w)],fback=new[nid(c_fb.w)],hold=new[nid(c_hold.w)],chold=new[nid(c_chold.w)],kbo=new[nid(c_kbo.w)],fileout=new[nid(c_file.w)],namea=new[nid(c_namea.w)],namen=new[nid(c_namen.w)],kbv=KBV,kbq=KBQ,screenbad=new[nid(a11bad)],kbmax=KBMAX,cb2max=390000)
+hdr['bank_init']+=[[KBL+i_,126] for i_ in range(KBSEN)]+[[KBQ+i_,126] for i_ in range(KBSEN)]+[[NAMEB+i_,ord(c_)] for i_,c_ in enumerate(NAME_DOCX+NAME_PDF)]
 import os
 raw=b''.join([_zb,np.array(c['lstart'],dtype=np.int32).tobytes(),np.array(pr,dtype=np.int32).tobytes(),np.array(wtab,dtype=np.float64).tobytes(),np.array(btab,dtype=np.float64).tobytes()])
 raw+=rom_finish(hdr)
@@ -1172,8 +1183,7 @@ if os.environ.get('NETSTAT'):
     print({k_:(len(v_),len(gzip.compress(v_,6))) for k_,v_ in zip('ist ost act bias i0 i1 i2 i3 iw d1 d2 wz'.split(),_streams)},'wtab',len(wtab),'btab',len(btab),'hdr',len(h),file=sys.stderr)
 exec(open('a12_dbg.py').read())
 open('../build/net.bin.gz','wb').write(gz)
-prov={k:len(v) for k,v in net.groups.items()}
-json.dump(dict(neurons=n,edges=len(ww_),layers=c['L'],groups=prov,states=len(fsm.states)),open('../build/provenance.json','w'),indent=1)
+exec(open('rv_a11_prov.py').read())
 print('lazy',len(iww),'edges',len(ww_),'raw',len(blob),'gz',len(gz),file=sys.stderr)
 _mx=max((v_[1]-v_[0])*96+5 for v_ in glyph_unit.ext.values()); _my=max((v_[3]-v_[2])*96+3 for v_ in glyph_unit.ext.values())
 print('glyph unit',glyph_unit.stats,'slots',glyph_unit.nup,glyph_unit.ndn,glyph_unit.nua,glyph_unit.nda,'bank',glyph_unit.nbank,'widest px',round(_mx),'tallest px',round(_my),'of',GLW,file=sys.stderr)

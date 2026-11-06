@@ -29,7 +29,7 @@ PTR("p_zb",zb)PTR("p_wtab",wtab)PTR("p_btab",btab)PTR("p_lstart",lstart)PTR("p_p
 static inline unsigned rv(u8**p){unsigned x=0;i32 s=0;u8 b;do{b=*(*p)++;x|=(unsigned)(b&127)<<s;s+=7;}while(b&128);return x;}
 static inline i32 uz(unsigned x){return (i32)(x>>1)^-(i32)(x&1);}
 __attribute__((export_name("finish"))) void finish(void){
- u8*p_=zb;unsigned ln[12];__builtin_memcpy(ln,p_,48);u8*S[12];u8*q0=p_+48;for(i32 k=0;k<12;k++){S[k]=q0;q0+=ln[k];}
+ u8*p_=zb;unsigned ln[12];__builtin_memcpy(ln,p_,12*4);u8*S[12];u8*q0=p_+12*4;for(i32 k=0;k<12;k++){S[k]=q0;q0+=ln[k];}
  {i32 is_=0,os_=0;for(i32 i=0;i<N;i++){nr[i].is=is_;nr[i].os=os_;is_+=rv(&S[0]);os_+=rv(&S[1]);nr[i].act=*S[2]++;nr[i].bias=btab[rv(&S[3])];nr[i].acc=0;}nr[N].is=is_;nr[N].os=os_;}
  {i32 pv[4]={0,0,0,0};for(i32 i=0;i<N;i++)for(i32 q=nr[i].is,e=nr[i+1].is;q<e;q++){i32 c=q-nr[i].is;if(c>3)c=3;unsigned x=rv(&S[4+c]);pv[c]+=uz(x>>1);lz[q].n=x&1?~pv[c]:pv[c];lz[q].w=rv(&S[8]);}}
  {i32 pf=0;for(i32 i=0;i<N;i++){i32 s=nr[i].os,e=nr[i+1].os;if(s<e){pf+=uz(rv(&S[9]));eg[s].n=pf;eg[s].w=rv(&S[11]);for(i32 k=s+1;k<e;k++){eg[k].n=eg[k-1].n+(i32)rv(&S[10]);eg[k].w=rv(&S[11]);}}}}
@@ -38,8 +38,8 @@ __attribute__((export_name("finish"))) void finish(void){
  __builtin_memset(zb,0,zn_);hp=zb;
  // Ports are grouped by clock domain, writes first. A port of kind 9 marks the start of domain 1.
  i32 c=0;for(i32 d=0;d<2;d++)for(i32 pass=0;pass<2;pass++){i32*p=ports,*e=ports+NP;i32 cd=0;pb[d][pass]=c;
-  while(p<e){i32 k=p[0],len=k==1||k==2?6:k==3?12:k==4||k==11?9:k==6?8:k==7?8:k==8?5+2*p[3]+2*p[4]:k==9?1:k==10?8:4;
-   if(k==9)cd=1;else if(cd==d&&(k==1||k==3||k==4||k==11||k==6||k==7||k==8)==(pass==0)){pen[c]=p[1];pptr[c]=(i32)(p-ports);c++;}
+  while(p<e){i32 k=p[0],len=k==1||k==2?6:k==3?12:k==4||k==11?9:k==6?10:k==8?5+2*p[3]+2*p[4]:k==9?1:k==10?8:k==5?5:4;
+   if(k==9)cd=1;else if(cd==d&&(k==1||k==3||k==4||k==11||k==6||k==8)==(pass==0)){pen[c]=p[1];pptr[c]=(i32)(p-ports);c++;}
    p+=len;}
   if(pass)pb[d][2]=c;}}
 // Initial values of one clock domain go on that domain's list.
@@ -63,31 +63,28 @@ static void write_port(i32*p){switch(p[0]){
    i32 a=I(p[2]),n=p[5]>=0?I(p[5]):p[4];if(n>p[4])n=p[4];f64*d=v+p[3];
    while(n>0){i32 o=a&(PG-1),m=PG-o;if(m>n)m=n;f32*b=pg_w(a);if(b){b+=o;for(i32 j=0;j<m;j++)b[j]=(f32)d[j];}a+=m;d+=m;n-=m;}break;}
   case 3:{ // rectangle write: {3,en,x,y,w,h,r,g,b,a,y0,y1}
-   i32 x=I(p[2]),y=I(p[3])-YB,w_=I(p[4]),h=I(p[5]);i32 y0=V(p[10]),y1=V(p[11]);if(y1==0){y0=0;y1=H;}
+   i32 x=I(p[2]),y=I(p[3])-YB,w_=I(p[4]),h=I(p[5]);i32 y0=V(p[10]),y1=H-V(p[11]);
    i32 x1=x+w_,yy1=y+h;if(x<0)x=0;if(x1>W)x1=W;if(y<y0)y=y0;if(yy1>y1)yy1=y1;
    u8 c[4]={C(v[p[6]]),C(v[p[7]]),C(v[p[8]]),C(v[p[9]])};
    if(v[p[6]]<0){u8 al=c[3];if(y<yy1&&x<x1)for(i32 yy=y;yy<yy1;yy++){u8*q=fb+4*(yy*W+x)+3;for(i32 xx=x;xx<x1;xx++,q+=4)*q=al;}break;} // id plane only, colors stay
    if(y<yy1&&x<x1){i32 cc;__builtin_memcpy(&cc,c,4);for(i32 yy=y;yy<yy1;yy++){i32*q=(i32*)(fb+4*(yy*W+x));i32 diff=0;for(i32 xx=x;xx<x1;xx++){diff|=(*q^cc)&0xffffff;*q++=cc;}if(diff)drow[yy]=1;}}break;}
   case 11:case 4:{ // patch write, each pixel masked by its nonzero 4th channel: {4,en,x,y,data,pw,ph,y0,y1}. Kind 11 keeps the darker of old and new, so overlapping dark letters on a light page stay whole
    // Only neurons that fired this tick can have a nonzero mask, so the live list gives the pixels.
-   i32 x=I(p[2]),y=I(p[3])-YB,pw=p[5],ph=p[6],y0=V(p[7]),y1=V(p[8]);if(y1==0){y0=0;y1=H;}i32 d=p[4];i32 cells=4*pw*ph;
+   i32 x=I(p[2]),y=I(p[3])-YB,pw=p[5],ph=p[6],y0=V(p[7]),y1=H-V(p[8]);i32 d=p[4];i32 cells=4*pw*ph;
    for(i32 t=0;t<nlive;t++){i32 q=live[t]-d;if((unsigned)q<(unsigned)cells&&(q&3)==3){i32 ix=q>>2,yy=y+ix/pw,xx=x+ix%pw;
      if(yy>=y0&&yy<y1&&yy>=0&&yy<H&&xx>=0&&xx<W){u8*o=fb+4*(yy*W+xx);f64*c=v+d+q-3;if(p[0]==11){u8 r=C(c[0]),g=C(c[1]),b=C(c[2]);if(r<o[0])o[0]=r;if(g<o[1])o[1]=g;if(b<o[2])o[2]=b;}else{o[0]=C(c[0]);o[1]=C(c[1]);o[2]=C(c[2]);}drow[yy]=1;}}}break;}
-  case 6:{ // image row copy, packed RGB cells to pixels: {6,en,x,y,addr,n,y0,y1}
-   i32 x=I(p[2]),y=I(p[3])-YB,a=I(p[4]),n=I(p[5]),y0=V(p[6]),y1=V(p[7]);if(y1==0){y0=0;y1=H;}
-   if(y>=y0&&y<y1&&y>=0&&y<H){drow[y]=1;for(i32 j=0;j<n;j++){i32 xx=x+j;if(xx>=0&&xx<W){u8*o=fb+4*(y*W+xx);i32 c=(i32)bget(a+j);o[0]=c>>16;o[1]=(c>>8)&255;o[2]=c&255;o[3]=1;}}}break;}
-  case 7:{ // screen colors to or from the bank, alpha untouched: {7,en,x,y,addr,dir,w,h}
-   i32 x=I(p[2]),y=I(p[3]),dir=p[5],pw=p[6],ph=p[7];f32*b=pg_w(p[4]);if(!b)break;b+=p[4]&(PG-1);
-   for(i32 r=0;r<ph;r++){i32 yy=y+r;for(i32 c=0;c<pw;c++,b++){i32 xx=x+c;if(yy<0||yy>=H||xx<0||xx>=W)continue;u8*o=fb+4*(yy*W+xx);
-     if(dir==0)*b=(f32)((o[0]<<16)|(o[1]<<8)|o[2]);else{i32 k=(i32)*b;u8 r_=k>>16,g_=(k>>8)&255,b_=k&255;if(o[0]!=r_||o[1]!=g_||o[2]!=b_){o[0]=r_;o[1]=g_;o[2]=b_;drow[yy]=1;}}}}break;}
- }}
-static void bread(i32 a,i32 n,i32 o){while(n>0){unsigned k=(unsigned)a>>16;i32 q=a&(PG-1),m=PG-q;if(m>n)m=n;if(k<NPG&&pages[k]){f32*b=pages[k]+q;for(i32 j=0;j<m;j++){f32 x=b[j];if(x!=0)inject(o+j,x);}}a+=m;o+=m;n-=m;}}
+  case 6:{ // pixel words between bank and screen, id plane untouched: {6,en,x,y,addr,w,h,dir,y0,y1}
+   i32 x=I(p[2]),y=I(p[3])-YB,a=I(p[4]),pw=I(p[5]),ph=I(p[6]),dir=I(p[7]),y0=V(p[8]),y1=H-V(p[9]);
+   for(i32 r=0;r<ph;r++){i32 yy=y+r;if(yy<y0||yy>=y1||yy<0||yy>=H)continue;for(i32 c=0;c<pw;c++){i32 xx=x+c;if(xx<0||xx>=W)continue;i32*o=(i32*)fb+yy*W+xx;
+     if(dir==0)bset(a+r*pw+c,(f64)(*o&0xffffff));else{i32 k=((i32)bget(a+r*pw+c)^*o)&0xffffff;if(k){*o^=k;drow[yy]=1;}}}}break;}
+  }}
+static void bread(i32 a,i32 n,i32 o){while(n>0){unsigned k=(unsigned)a/PG;i32 q=a&(PG-1),m=PG-q;if(m>n)m=n;if(k<NPG&&pages[k]){f32*b=pages[k]+q;for(i32 j=0;j<m;j++){f32 x=b[j];if(x!=0)inject(o+j,x);}}a+=m;o+=m;n-=m;}}
 static void read_port(i32*p){ if(p[0]==10){ // read through an index cell: {10,en,addr,out,base,mask,stride,len}
    f32 x=(f32)bget(I(p[2]));i32 o=p[3];if(x!=0)inject(o,x);bread(p[4]+(((i32)x)&p[5])*p[6],p[7],o+1);}
   else if(p[0]==2){ // read: {2,en,addr,out,len,lenN}
    i32 a=I(p[2]),n=p[5]>=0?I(p[5]):p[4];if(n>p[4])n=p[4];bread(a,n,p[3]);}
-  else { // screenshot pixel read: {5,en,xy,out} with xy neuron packed as x+y*65536
-   i32 xy=I(p[2]),x=xy&65535,y=xy>>16;if(x>=0&&x<W&&y>=0&&y<H){u8*o=fb+4*(y*W+x);for(i32 j=0;j<4;j++)if(o[j])inject(p[3]+j,o[j]);}}}
+  else { // screenshot pixel read: {5,en,x,y,out}
+   i32 x=I(p[2]),y=I(p[3]);if(x>=0&&x<W&&y>=0&&y<H){u8*o=fb+4*(y*W+x);for(i32 j=0;j<4;j++)if(o[j])inject(p[4]+j,o[j]);}}}
 #ifdef CHECK
 #include "engine_check.h"
 #else

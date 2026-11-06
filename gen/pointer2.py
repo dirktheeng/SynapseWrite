@@ -5,7 +5,7 @@ _pnz=net.step(eva+evb)
 fsm.set(mp_ptx,net.and_(_pmove,_pnz),eva); fsm.set(mp_pty,net.and_(_pmove,_pnz),evb)
 fsm.set(mp_ptr_on,net.and_(_pmove,_pnz,ONE-mp_ptr_lock),1)
 fsm.set(mp_ptr_on,net.or_(net.and_(kh[11],ONE-_pnz),kh[12]),0)
-ptrest.drive(net.and_(e,mp_ptr_dr),(mp_pts_x-PTHX,mp_pts_y-PTHY)); fsm.set(mp_ptr_dr,e,0)
+ptrest.drive(net.and_(e,mp_ptr_dr),(mp_pts_x-PTHX,mp_pts_y-PTHY,PTRB,PTW,PTH,1)); fsm.set(mp_ptr_dr,e,0)
 fsm.set(mp_ptr_lock,net.and_(kh[12],net.eq(eva,1,e)),1); fsm.set(mp_ptr_lock,net.and_(kh[12],net.eq(eva,2,e)),0)
 # clipboard notices: 1 read denied, 2 write failed. The message counts down on blink ticks and ends on a key or a click.
 PMSG=9

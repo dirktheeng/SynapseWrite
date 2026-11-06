@@ -162,7 +162,7 @@ e=S('T4P_P0')
 on('T4P_P0',(net.or_(net.ge(qrc,qih,e),net.ge(fp,3980000,e)),'T4P_PE',None),(net.ge(qri,qiw,e),'T4P_P0',{qri:0,qrc:qrc+1}),(None,'T4P_P1',{r1:qpa}))
 on('T4P_P1',(None,'T4P_H0',{qpv:R1,qpa:qpa+1,qri:qri+1}))
 for i_ in range(6):
-    st=f'T4P_H{i_}'; e=S(st); bt=net.bits(qpv,24,e); sh=20-4*i_
+    st=f'T4P_H{i_}'; e=S(st); bt=net.bits(qpv,24,e); sh=(4,0,12,8,20,16)[i_]   # R, G, B, high digit first
     nib=bt[sh]+bt[sh+1]*2+bt[sh+2]*4+bt[sh+3]*8
     em_en.lin(e); em_b.add(e,48+nib+net.ge(nib,10,e)*7)
     on(st,(None,f'T4P_H{i_+1}' if i_<5 else 'T4P_P0',None))

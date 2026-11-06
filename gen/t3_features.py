@@ -18,6 +18,7 @@ def set_chain(start,items,nxt):
         on(n_,(None,cur2,{w1:(cb+of_,v_),w2:(cb+DIRTY,1)}))
         cur=cur2
     on(cur,(None,nxt,None))
+net.group('tables')
 # ---- table scan: finds the first cell, row count, and caret row ----
 tn=R();tc=R();ts=R();trows=R();tkr3=R();tq=R();ti=R();fa0=R();fa1=R();fa2=R();tnw=R();run=R();ipos=R()
 a1=R();a1v=R();a2=R();a2v=R();a1m=R();tscmd=t3ret('T3_SR');kret=t3ret('T3_KR')
@@ -175,6 +176,7 @@ grow=net.min_(gr,G_(as_x(4000),lastcol)+G_(net.relu(MT[0]-20),e-lastcol))
 shrink=net.min_(sh_,net.relu(tcw-20))
 on('T3_CW5',(None,'T3_P2',{p2n:tn,a1:tdc,a1v:grow,a1m:shrink,a2:G_(tdc+1,e-lastcol)+G_(as_x(99),lastcol),a2v:shrink,cwk:grow,capt:cp}))
 
+net.group('sections')
 # ---- sections: a paragraph with SECN>0 starts a new section on a new page, record SECN-1 ----
 e=S('T3_SB0')
 sbadv={w2:(as_x(A4PT_)+(MT[3]-1)*4+2,pages+1),**pfsave,ptop:ptop+s_ps,yy:ptop+s_ps+RL[6],pages:pages+1,fnp:0,xcol:0,**sload(RL)}
@@ -211,6 +213,7 @@ on('T3_SB8',(None,'T3_SB9',{nsec:nsec+1}))
 set_chain('T3_SB9',[(SECN,nsec)],'AFTER_ED')
 
 sxr=t3ret('T3_SXR')
+net.group('zip container')
 # ---- zip container: every member carries its name, CRC, sizes and method in a table. Static members are deflated at build
 # time. XML members are written to the work buffer, then deflated after their header by the deflate network. Pictures are stored.
 rhf=R();qsec=R();znum=R();zhdr=R();znl=R();zds=R();cdoff=R();zk2=R();zL=R();zH=R();zs=R();zu=R();zmt=R()
@@ -304,6 +307,7 @@ lit('T3_EO1',struct.pack('<IHH',0x06054b50,0,0),'T3_EOc0')
 lefield('T3_EOc0',znum+znum*65536,4,'T3_EOd0'); lefield('T3_EOd0',zs,4,'T3_EOd1'); lefield('T3_EOd1',cdoff,4,'T3_EOd2')
 lit('T3_EOd2',b'\0\0','T3_EOe')
 on('T3_EOe',(None,'HALT',{savel:fp}))
+net.group('docx reader tier 3')
 # ---- .docx reader additions ----
 aval=R();nmret=t3ret('T3_NMR')
 on('T3_NA',(None,'T3_NA1',{rl:OA+oi}))
@@ -337,6 +341,7 @@ on('T3_SHD2',(net.or_(isa,isw),'PX',None),(anyp,'PX',{w1:(cb+CSH,sv_)}),(None,'P
 # member walk: 1 relationships, 2 footnotes, 3 comments, 4 document
 on('T3_Z0',(None,'X_C0',{zp:zp0,ztarget:0,obase:AUXB,ob:0,a5maj:0,a5min:0,a5cx:0,a5ts:0,a5nest:0,a5aft:0,a5tp:0,a5tcp:0,a5span:0,a5pad:0,a5tre:0,a5end:0}))
 
+net.group('pdf tables')
 # ---- PDF: page size from the section, table rules and shading ----
 qcw=R();qsh=R();qrb=R();qrt=R()
 qload=lambda W_:{qnc:W_[0],qpw:W_[1],qph:W_[2],qml:W_[4]-W_[3],qmt:W_[6],qth:W_[7],qtw:W_[5],qps:W_[2]+16}
@@ -355,6 +360,7 @@ def rect_nums(st,nx):
 rect_nums('T3_PT1','T3_PT2'); lit('T3_PT2',b' re f\n','T3_PT5')
 lit('T3_PT5',b'.47 .47 .47 RG 1 w ','T3_PT6'); rect_nums('T3_PT6','T3_PT7'); lit('T3_PT7',b' re S 0 0 0 rg\n','T3_PT9')
 
+net.group('pictures')
 # ---- pictures: handles, resize by nearest neighbour resampling in the network ----
 IMN=3684
 imret=t3ret('T3_RSR')
@@ -490,7 +496,7 @@ on(cur_,(None,'T3_GPg',{mx_:0}))
 e=S('T3_GPg')
 on('T3_GPg',(net.ge(mx_,pim,e),'T3_GPc',{mr_:mr_+1}),(None,'T3_GPh',{r1:as_x(IMG0)+rs_p}))
 e=S('T3_GPh'); pb_i=net.bits(R1,24,e)
-pR=sum((pb_i[16+k_]*(1<<k_) for k_ in range(8)),X());pG=sum((pb_i[8+k_]*(1<<k_) for k_ in range(8)),X());pB=sum((pb_i[k_]*(1<<k_) for k_ in range(8)),X())
+pR=sum((pb_i[k_]*(1<<k_) for k_ in range(8)),X());pG=sum((pb_i[8+k_]*(1<<k_) for k_ in range(8)),X());pB=sum((pb_i[16+k_]*(1<<k_) for k_ in range(8)),X())
 on('T3_GPh',(None,'T3_GPi',{fa0:pR,fa1:pG,fa2:pB,rs_p:rs_p+1,mx_:mx_+1}))
 for st_,nx_,v_ in (('T3_GPi','T3_GPj',fa0),('T3_GPj','T3_GPk',fa1),('T3_GPk','T3_GPg',fa2)):
     e=S(st_); em_en.lin(e); em_b.add(e,v_); adl(e,v_); on(st_,(None,nx_,None))
@@ -558,6 +564,7 @@ on('T3_PQd',(None,'PX',{wl_i:(cb+IMF,rs_w,rs_h,rs_a),ext_w:0,ext_h:0,a5aft:1}))
 on('T3_Z2n',(None,'X_C0',{zp:zp0,ztarget:2,obase:AUXB,ob:0}))
 on('T3_Z3n',(None,'X_C0',{zp:zp0,ztarget:3,obase:AUXB,ob:0}))
 on('T3_Z4n',(None,'X_C0',{zp:zp0,ztarget:6,obase:OUTB,ob:0}))
+net.group('notes and balloons')
 # ---- wrapped text, count only or drawn, for footnotes and balloons ----
 ws_=R();wi_=R();wx_=R();wlb_=R();wend=R();wcnt=R()
 on('T3_W',(None,'T3_W1',{ws_:0,wcnt:0}))
@@ -639,6 +646,7 @@ on('T3_FT2',(net.ge(pff+fk+1,10,e),'T3_FT3',{wl_:R2,gly:(48+t_,11,pfx,wdy,0,0)})
 e=S('T3_FT3'); t_,u_=two(pff+fk+1,e)
 on('T3_FT3',(None,'T3_W',{gly:(48+u_,11,pfx+6,wdy,0,0),wb_:fbase,wdx:pfx+20,wdw:pfw-22,wdd:1,wbgf:0,fk:fk+1,wret_.r:wret_.id('T3_FT0')}))
 on('T3_FTE',(ftail,'T3_HD0',None),(None,'RE0',None))
+net.group('headers and footers')
 # ---- headers and footers: four strings, char 1 is the page number field ----
 hk_=R();hi_=R();hdy=R();hdb=R();hdl=R();hstep=R()
 e=S('T3_HD0'); first_=net.and_(hftp,net.eq(pages,1,e))
@@ -673,6 +681,7 @@ on('T3_C_PG',(net.eq(mode,3,S('T3_C_PG')),'RD0',{w1:(hfb+hlen_,1),hlen_:hlen_+1}
 e=S('T3_HE'); hh_=net.decode(hfk,4,e)
 for i_ in range(4): fsm.set(hfl[i_],hh_[i_],hlen_)
 on('T3_HE',(None,'RD0',None))
+net.group('table of contents')
 # ---- table of contents ----
 on('T3_TC0x',(None,'T3_TC1x',None))
 set_chain('T3_TC1x',[(TOCF,tlev),(TSRC,tbase)],'TCG')
@@ -724,6 +733,7 @@ on('T3_TUa',(None,'T3_TUb',{ap:cp,ao:0,jp:net.min_(tq,npar-1),jo:0,jret.r:jret.i
 on('T3_TUb',(None,'J0',None))
 on('T3_TUc',(None,'DS0',{dret.r:dret.id('T3_TUd')}))
 on('T3_TUd',(None,'TC0',{ti_:0,ap:cp,ao:co}))
+net.group('docx writer tier 3')
 # ---- .docx writer: section properties, tabs, markers, comments, notes, header and footer parts ----
 sx1=R();sx2=R();sx3=R();sx4=R();sx5=R();sx6=R();sx7=R();sx8=R();snext=R();ctl=R()
 on('T3_SX',(None,'T3_SXa',{rl:as_x(SECB)+qsec*8}))
@@ -832,6 +842,7 @@ for i_,(nm_,tg_) in enumerate(((b'header1',b'hdr'),(b'header2',b'hdr'),(b'footer
     on(st_+'b',(None,'T3_XT',{xb:as_x(HFB)+i_*256,xl:hfl[i_],xret.r:xret.id(st_+'c')}))
     lit(st_+'c',b'</w:p></w:%s>'%tg_,st_+'e'); zdend(st_+'e',nx_); cur_=nx_
 on(cur_,(None,'T3_Z5',None))
+net.group('docx reader notes')
 # ---- .docx reader: parts that feed the note and comment stores, header strings ----
 ai=R();ad=R();alen=R();aend=R();akind=R();askip=R();aret=t3ret('T3_AR'); AU=as_x(AUXB)
 on('T3_FN0',(None,'T3_A0',{ai:0,akind:1,ad:as_x(FNB),alen:0,askip:0,aret.r:aret.id('A5_Z8')}))

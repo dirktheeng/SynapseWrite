@@ -25,13 +25,11 @@ static i32 dport(i32*p){i32 port=(i32)(p-ports);switch(p[0]){
     for(i32 r=0;r+1<dnr;r++)if(a<dreg[r+1]&&a+n>dreg[r+1]){dnote(DK_XREG,port,r+1,(f64)a);break;}}
    return 1;}
   case 3:{f64 vals[4]={v[p[2]],v[p[3]],v[p[4]],v[p[5]]};for(i32 j=0;j<4;j++)if(!dfin(vals[j])){dnote(DK_ADDR,port,j,vals[j]);return 0;}
-   i32 y0=V(p[10]),y1=V(p[11]);if(y1==0){y0=0;y1=H;}i32 y=I(p[3])-YB,h=I(p[5]);
+   i32 y0=V(p[10]),y1=H-V(p[11]);i32 y=I(p[3])-YB,h=I(p[5]);
    i32 ya=y<y0?y0:y,yb=y+h>y1?y1:y+h;if(ya<yb&&(ya<0||yb>H)){dnote(DK_RECT,port,0,(f64)y);return 0;}return 1;}
-  case 6:{f64 ax=v[p[4]],nx=v[p[5]];if(!dfin(ax)||!dfin(nx)||!dfin(v[p[2]])||!dfin(v[p[3]])){dnote(DK_ADDR,port,0,ax);return 0;}
-   i32 a=I(p[4]),n=I(p[5]);if(n>0&&(a<0||a+n>dbank||n>100000)){dnote(DK_ROW,port,0,(f64)a);return 0;}return 1;}
+  case 6:{for(i32 j=2;j<8;j++)if(!dfin(v[p[j]])){dnote(DK_ADDR,port,0,v[p[j]]);return 0;}i32 a=I(p[4]),w_=I(p[5]),h=I(p[6]);if(w_>0&&h>0&&(a<0||a+w_*h>dbank||w_*h>100000)){dnote(DK_ROW,port,0,(f64)a);return 0;}return 1;}
   case 4:{if(!dfin(v[p[2]])||!dfin(v[p[3]])){dnote(DK_ADDR,port,0,v[p[2]]);return 0;}return 1;}
-  case 7:{if(!dfin(v[p[2]])||!dfin(v[p[3]])||p[4]<0||p[4]+p[6]*p[7]>dbank){dnote(DK_ADDR,port,0,v[p[2]]);return 0;}return 1;}
-  case 5:{if(!dfin(v[p[2]])){dnote(DK_ADDR,port,0,v[p[2]]);return 0;}return 1;}
+  case 5:{if(!dfin(v[p[2]])||!dfin(v[p[3]])){dnote(DK_ADDR,port,0,v[p[2]]);return 0;}return 1;}
  }return 1;}
 static f64 pull(i32 i);
 static inline void dsticky(i32 i){if(!stk_f[i]){stk_f[i]=1;stk_[nstk++]=i;}}

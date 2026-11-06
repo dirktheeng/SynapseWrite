@@ -1,5 +1,6 @@
 """Weight generator primitives. Every weight is written directly from reasoning about
 what the neuron must compute. There is no loss, gradient, data set, or search here."""
+import sys
 ID,STEP,RELU=0,1,2
 M=float(2**40)
 class X:
@@ -33,11 +34,18 @@ def region(name,start,end,space='bank'):
 
 class Net:
     def __init__(s):
-        s.act=[];s.bias=[];s.inp=[];s.kind=[];s.init={};s.names={};s.ports=[];s.groups={};s.cur=['core'];s.aligned=[];s.dom=[];s.dm=0
+        s.act=[];s.bias=[];s.inp=[];s.kind=[];s.init={};s.names={};s.ports=[];s.groups={};s.cur=['bank and port wiring'];s.aligned=[];s.dom=[];s.dm=0;s.src={}
         s.ONE_id=s._new(ID,0,'reg'); s.init[s.ONE_id]=1.0; s.inp[s.ONE_id].append((s.ONE_id,1.0)); s.ONE=X({s.ONE_id:1.0})
     def _new(s,a,b,kind='comb'):
         s.act.append(a);s.bias.append(b);s.inp.append([]);s.kind.append(kind);s.dom.append(s.dm)
-        s.groups.setdefault(s.cur[0],[]).append(len(s.act)-1); return len(s.act)-1
+        s.groups.setdefault(s.cur[0],[]).append(len(s.act)-1)
+        f=sys._getframe(1); w='app.py'     # provenance: the outermost generator file below app.py on the call stack
+        while f:
+            n=f.f_code.co_filename
+            if not n.endswith(('nn.py','app.py')) and n[0]!='<': w=n
+            f=f.f_back
+        s.src[len(s.act)-1]=w.rsplit('/',1)[-1]
+        return len(s.act)-1
     def group(s,name): s.cur[0]=name
     def domain(s,d):
         """Selects the clock domain of the neurons made next. Domain 1 runs only inside a call port, while domain 0

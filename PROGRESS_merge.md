@@ -75,3 +75,11 @@ Pruning is not free: first paint work 8.6 M to 17.2 M, since a shared neuron los
 After: page 3185129 bytes, weights gz 2,360,456, x1 273 ms, x4 1039 ms, x6 1600 ms, 449,671 neurons, 73.3 MB after the regress script.
 Runs: regress hashes equal to the pre a10 baseline except PDF font streams; e2e 210/210, t4_pdf 7/7, fonts 23/23, fuzz regress 5/5, fuzz_selftest 4/4.
 Test tool edit: nprof, prof, prof2 read e.ostart(i), since p_ostart is gone.
+## Step 5: a11 (4476f88)
+Taken: raw event layer gen/rv_a11_input.py (key names, modifiers, pointer type, touch diff, field text in the network), commands back from neurons at _HS, one copy port (kind 6) replacing row copy and block copy, clip1 meaning rows cut at the bottom, pixel read with two neurons, packed word R+G*256+B*65536, screen check on blink ticks, file names in the bank, PROVENANCE.md from a per neuron source record.
+Adapted: KEYNAMES gained HEAD's Insert 136, F3 137, F12 140, ContextMenu 141. Alt without Ctrl now passes in the network (glue sends bit 16), it was a glue test on HEAD. Mouse down sends 8*ev.button, so right click is bit 4 of evm in the network, with no glue test on the button. Glue keeps HEAD's paged e.bget and e.bset, slices, dictionary persistence. All HEAD clip1 values moved to 800-DOCB; the check engine and the page agree. PDF word order and PNG reader and writer follow the new packing.
+Glue event queue no longer drops kind 11, that was a literal test.
+Audit edits, for review (the allow lists encode a11's earlier glue, and each new entry was argued in the file): strings eng, net, contextmenu, utf-16le, synapse_dict, []; conditions for the image remade after memory growth, native base64, slices, dictionary; loops over dictionary, file bytes, ROM cells; port kinds 8 and 11 and read 10; size limits 150 and 85 lines; ternary at most 1. Engine: header 12*4 rather than 48, bread divides by PG.
+Test edits, for review: rv_a11_input F12 removed from keys that do nothing (a3 gives it Save As). fuzz_selftest port table follows the merged ports.
+a11's failing redo tests: t3_pic resize redo PASS, undo and redo PASS; t3_misc run, see next line. touch.js 'no pointer on touch' printed false once under load, true twice alone, a caret blink between two screenshots.
+Runs: rv_a11_input all passed, rv_a11_screen all passed, t3_pic all PASS, audit 67 of 67, e2e 210/210, rv_a3 49/49.
