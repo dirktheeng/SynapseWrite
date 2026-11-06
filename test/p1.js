@@ -34,5 +34,18 @@ const yel=(r,g,b)=>r>200&&g>180&&b<170; // match tint
   ok('Ctrl+Alt+F inserts a footnote',/w:footnoteReference/.test(x),(x.match(/<w:body>.*<\/w:body>/)||[''])[0].slice(0,300));
   A=await lib();A.type('Talk');A.key('m',17);A.settle();A.type('a remark');A.key(13);A.settle();A.shot('build/p1_alt2.png');x=xml(A);ok('Ctrl+Alt+M adds a comment',/w:commentReference|w:commentRangeStart/.test(x));
  }
+
+ if(!only||only=='ribbon'){
+  // Layout > Text Wrapping and Column Break
+  let A=await lib();A.type('left');A.click(182,47);A.settle();A.click(1100,96);A.settle();A.type('right');A.click(1100,74);A.settle();A.type('next');A.settle();A.shot('build/p1_rib1.png');
+  let x=xml(A);ok('Text Wrapping writes a line break',/left<\/w:t><w:br\/><w:t[^>]*>right/.test(x),(x.match(/<w:body>.*<\/w:body>/)||[''])[0].slice(0,500));
+  ok('Column Break writes a column break',/<w:br w:type="column"\/><\/w:r>(?:(?!<\/w:p>).)*next/.test(x));
+  A=await lib();A.type('a');A.click(182,47);A.settle();A.click(1100,74);A.settle();A.key('z',1);A.settle();x=xml(A);ok('the column break undoes',!/w:type="column"/.test(x)&&/>a</.test(x));
+  // Insert > Comment and Footnote
+  A=await lib();A.type('Talk');A.click(127,47);A.settle();A.click(1100,96);A.settle();A.type('remark');A.key(13);A.settle();x=xml(A);ok('Insert > Comment adds a comment',/w:commentReference|w:commentRangeStart/.test(x));
+  A.click(1100,118);A.settle();A.type('fn');A.settle();x=xml(A);ok('Insert > Footnote adds a footnote',/w:footnoteReference/.test(x));
+  // View > Read Mode, then View > Print Layout from the read view is not reachable (bars covered), so Esc; the button acts in print layout without harm
+  A=await lib();A.type('stay');A.click(372,47);A.settle();const h0=A.hash(0,800);A.click(398,74);A.settle();A.shot('build/p1_rib2.png');A.type('!');A.settle();ok('Print Layout in print layout keeps editing',/stay!/.test(xml(A)));
+ }
  const f=R.filter(x=>!x).length;console.log(R.length-f,'passed',f,'failed');process.exit(f?1:0);
 })();
