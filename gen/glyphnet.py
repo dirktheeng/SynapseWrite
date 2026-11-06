@@ -447,6 +447,8 @@ def cache_blit_net(W,H,path):
         for k in range(3): net.connect(d[4*i+k],(m-c)*255)
         net.connect(d[4*i+3],m)
     pen=net.wire(); net.connect(pen,hit2); done=net.step(hit2)
+    # neurons read only by ports or the host must not become pull neurons
+    net.keep=[next(iter(x.t)) for x in d+[pen,done,hit]]
     c=net.compile(); new=c['new']; nid=lambda x:next(iter(x.t))
     n=c['n']; pr=[2,new[nid(go)],new[nid(key)],new[nid(tagv)],1,-1, 2,new[nid(hit)],new[nid(tagv)],new[nid(cov[0])],W*H,-1, 4,new[nid(pen)],new[nid(x2)],new[nid(y2)],new[nid(d[0])],W,H,-1,-1]
     ost=np.zeros(n+1,dtype=np.int32);dst=[];ww=[];ist=np.zeros(n+1,dtype=np.int32);isr=[];iww=[]
