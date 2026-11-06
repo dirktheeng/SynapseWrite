@@ -72,6 +72,6 @@ e=S('P2_FS1'); on('P2_FS1',(net.ge(p2p,npar,e),'IDL2',None),(None,'P2_FS2',{r1:a
 on('P2_FS2',(None,'P2_FS3',{p2b:R1,rl:R1+LEN}))
 on('P2_FS3',(None,'P2_FS4',{p2l:rl.out[0]}))
 e=S('P2_FS4'); on('P2_FS4',(net.ge(p2o,p2l,e),'P2_FS1',{p2p:p2p+1,p2o:0}),(None,'P2_FS5',{rs:p2b+1024+p2o}))
-e=S('P2_FS5'); _hb=net.bits(RSH,20,e); _bk=sum((_hb[12+k_]*(1<<k_) for k_ in range(8)),X())
-on('P2_FS5',(net.eq(_bk,p2nid,e),'MVJ',{jp:p2p,jo:p2o,jret.r:jret.id('MVCL')}),(None,'P2_FS4',{p2o:p2o+1}))
+e=S('P2_FS5'); _hb=net.bits(RSH,20,e); _p2bk=sum((_hb[12+k_]*(1<<k_) for k_ in range(8)),X())
+on('P2_FS5',(net.eq(_p2bk,p2nid,e),'MVJ',{jp:p2p,jo:p2o,jret.r:jret.id('MVCL')}),(None,'P2_FS4',{p2o:p2o+1}))
 net.group(_p2f)

@@ -195,8 +195,9 @@ t1_menu(4,PX+362,DOCY+27,130,[0,0],_fop)
 t1_menu(5,6,127,190,['Normal: 1 in sides','Moderate: 0.75 in sides','Narrow: 0.5 in'])
 t1_menu(6,708,127,70,['1.0','1.15','1.5','2.0'])
 t1_menu(14,LFX,LFY,130,LF_LABELS+['Restart at 1','Continue Numbering'])   # p2: the last two rows set or clear the caret item's restart flag
+exec(open('p1_menus.py').read())
 e=S('T1_M0'); mh=net.decode(t1_mop,21,e)
-on('T1_M0',(mh[12],'RVA3_MM0',None),*[(mh[k_],f'T1_MM{k_}',None) for k_ in (*range(1,12),13,14,15,20)],(None,'T1_END',None))
+on('T1_M0',(mh[12],'RVA3_MM0',None),*[(mh[k_],f'T1_MM{k_}',None) for k_ in (*range(1,12),13,14,15,16,20)],(None,'T1_END',None))
 on('T1_END',(t1_nh,'T1_HH',{t1_nh:0,t1_hvo:0,rB:(1265,thumb,12,net.min_(t1_thh,net.relu(as_x(DOCB)-thumb)),tuple(as_x(205)-net.eq(t1_hov,255,S('T1_END'))*65 for _ in range(3)),255)}),(None,'HALT',{t1_hvo:0}))
 on('T1_MD',(None,'T1_MD1',{pix:(hx_,hy_)}))
 e=S('T1_MD1'); nr1=X()
@@ -207,7 +208,7 @@ on('T1_MD1',(net.eq(A_,254,e),'T1_MR',{t1_mrow:G_(nr1,ONE-_gm1)+G_(nr1*8+_gc1,_g
 on('T1_MX',(None,'RD0',{t1_mop:0,t1_uid:1,t1_mrow:99}))
 e=S('T1_MK'); nrw=mh_n=X()
 mk0=net.decode(t1_mop,21,e); nrw=nrw+G_(a6nr,mk0[20])
-for k_,c_ in ((1,9),(2,11),(3,33),(4,2),(5,3),(6,4),(7,8),(8,4),(9,5),(10,64),(15,64),(11,7),(12,8),(13,11),(14,19)): nrw=nrw+mk0[k_]*c_
+for k_,c_ in ((1,9),(2,11),(3,33),(4,2),(5,3),(6,4),(7,8),(8,4),(9,5),(10,64),(15,64),(11,7),(12,8),(13,11),(14,19),(16,len(P1_SYM))): nrw=nrw+mk0[k_]*c_
 on('T1_MK',(net.eq(eva,27,e),'T1_MX',None),(net.and_(net.eq(eva,13,e),net.lt(t1_mrow,64,e)),'T1_MR',None),(net.eq(eva,13,e),'T1_MX',None),
  (net.and_(net.eq(eva,131,e),net.ge(t1_mrow+1,nrw,e)),'T1_M0',{t1_mrow:0}),(net.eq(eva,131,e),'T1_M0',{t1_mrow:t1_mrow+1}),
  (net.and_(net.eq(eva,129,e),net.or_(net.eq(t1_mrow,0,e),net.eq(t1_mrow,99,e))),'T1_M0',{t1_mrow:nrw-1}),(net.eq(eva,129,e),'T1_M0',{t1_mrow:t1_mrow-1}),(None,'HALT',None))
@@ -232,4 +233,5 @@ for r_ in range(10): mrules.append((mc(13,r_),'V5_MP',{t2si:zso+r_,**CM}))
 mrules.append((mc(13,10),'T1_M0',{zso:zso+10,t1_mrow:99}))
 for r_ in range(19): mrules.append((mc(14,r_),'V6_LF',{alv:r_+1,**CM}))
 for r_ in range(2): mrules.append((mc(14,19+r_),'P2_RS0',{alv:1-r_,grp:grp+1,**CM}))
+mrules+=p1_sym_rules(mc,CM)
 on('T1_MR',*mrules,(None,'T1_MX',None))

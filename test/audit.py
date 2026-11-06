@@ -19,14 +19,16 @@ for api in ['toLowerCase','toUpperCase','localeCompare','.slice(','.split(','.ma
     ok(f'glue does not use {api}',api not in code)
 ok('glue branches on no bank cell',not re.search(r"(bb|bank\(\))\[[^\]]*\]\s*(==|!=|<|>)",code))
 # every string in the glue is an event name, a host API name, or a page element id
-STRS={'gzip','screen','2d','copy','text/plain','cut','input','file','downloads','a','dragover','drop','keydown','paste','mousedown','mouseup','mouseleave','mouseenter','mousemove','wheel','kb','compositionstart','compositionend','pointerdown','pointermove','click','touchstart','touchmove','text','k','t','e','','eng','net','contextmenu','utf-16le','synapse_dict','[]'}
+STRS={'gzip','screen','2d','copy','text/plain','cut','input','file','downloads','a','dragover','drop','keydown','paste','mousedown','mouseup','mouseleave','mouseenter','mousemove','wheel','kb','compositionstart','compositionend','pointerdown','pointermove','click','touchstart','touchmove','text','k','t','e','','eng','net','contextmenu','utf-16le','synapse_dict','[]',
+      'text/html'}   # p1: the clipboard's HTML type, set from the network's HTML twin and read on paste as code units
 found=set(re.findall(r"'([^'\n]*)'",code))
 ok('every string literal is on the allow list (no key names, file names, sentinels, newlines)',found<=STRS,sorted(found-STRS))
 # every condition in the glue, exactly. New ones must be added here and justified.
 CONDS={'!ok':'clipboard fallback chain','dl':'host download service','dr[y]':'dirty row flag from the engine','dr[z]':'dirty row flag from the engine','pendClip!==null':'command state',
  'held':'network command','clip':'network command','!held':'network command','fl':'network command','e.val(h.wpic)':'network command','e.val(h.wopen)':'network command','kb':'network command',
  'e.val(h.ffield)':'network command','e.val(h.fback)':'network command','ms':'network command','wp':'network command','a':'skip zero inject','b':'skip zero inject','c':'skip zero inject',
- 'ev.dataTransfer.files[0]':'host: a file was dropped','!e.val(h.pass_)':'network command','waiting':'host frame scheduling','e.val(h.hold)':'network command','!img||!img.data.length':'display image remade when memory growth detaches it','Uint8Array.fromBase64':'host: native base64','busy':'host: a slice is running','ds':'network command: save the dictionary','evm':'skip zero inject','m>=lim&&!window.annMax':'host: the slice ran out','nx':'host: queued event'}
+ 'ev.dataTransfer.files[0]':'host: a file was dropped','!e.val(h.pass_)':'network command','waiting':'host frame scheduling','e.val(h.hold)':'network command','!img||!img.data.length':'display image remade when memory growth detaches it','Uint8Array.fromBase64':'host: native base64','busy':'host: a slice is running','ds':'network command: save the dictionary','evm':'skip zero inject','m>=lim&&!window.annMax':'host: the slice ran out','nx':'host: queued event',
+ 'hm':'network command: the network wrote an HTML twin of the copy (its length plus one)','ph':'network command: there is an HTML twin to hand over (empty when the network wrote none)'}
 ifs=[]
 for m in re.finditer(r'\b(if|while)\(',code):
     i=m.end();dep=1

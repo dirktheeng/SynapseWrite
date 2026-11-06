@@ -946,7 +946,8 @@ on('T3_RH3',(net.ge(rid_n,900,e),'PX',None),(net.and_(net.eq(R1,34,e),net.step(h
 
 on('T3_RB0',(None,'T3_RB1',{rl:OA+oi}))
 e=S('T3_RB1')
-on('T3_RB1',(pat('"page"',e),'A5_PB',None),(pat('"column',e),'IMP5_CR',None),(net.eq(W[0],62,e),'A5_BR',None),(None,'T3_RB0',{oi:oi+1}))
+on('T3_RB1',(pat('"page"',e),'A5_PB',None),(pat('"column',e),'IMP5_CR',None),(net.eq(W[0],62,e),'RVA3_RBR',None),   # p1: any other w:br (textWrapping, clear) is a line break, as in Word
+(None,'T3_RB0',{oi:oi+1}))
 on('T3_RB2',(None,'PX',{w1:(cb+PBRK,1)}))
 
 # ---- paragraph merge by the user: metadata goes through the log first, so undo brings it back ----
