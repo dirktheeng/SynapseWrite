@@ -6,15 +6,15 @@ Test evidence: `test/e2e.js` (see `build/e2e.json`; `build/e2e.json`), `test/t4.
 ## Tier 1
 | Feature | Status | Evidence or gap |
 |---|---|---|
-| Ribbon and tabs | Partial | Tab switching passes. Only Home has working commands; the other five tabs are labels only. No hover states or dropdowns. |
+| Ribbon and tabs | Partial | Hover highlights on buttons, tabs, and menu rows. Dropdown menus for font, size, color, find options, margins, and line spacing, drawn by the network, with keyboard use. Home, Insert, Layout, References, Review, and View have working commands, but many Word commands are absent from them. Pixel art icons are original. |
 | Status bar | Passed | Page and word counts render from the network. |
-| Rulers | Partial | Drawn only. No draggable margins or indents. |
+| Rulers | Partial | Indent and margin markers and the active band follow the caret paragraph, table cell, column, and margin setting. Can be hidden. Markers are not draggable. |
 | Typing, caret, blink | Passed | e2e typing tests; caret blinks through ANN timer requests. |
-| Selection | Passed | Shift+arrows, drag, select all. No double-click word selection. |
-| Scrolling | Passed | Wheel and scrollbar click. No thumb dragging. |
-| Undo and redo | Passed | Includes paragraph merges and formatting. |
+| Selection | Passed | Shift+arrows, drag, select all, double click word, triple click paragraph. Dragging after a double click does not extend by word. |
+| Scrolling | Passed | Wheel, scrollbar click, and thumb dragging. |
+| Undo and redo | Passed | Includes paragraph merges, formatting, and paragraph properties. Groups by word, with new groups on caret moves, commands, a change of edit kind, and a 2 s pause. Margin and column settings are not undoable. |
 | Clipboard | Partial | Plain text only; formatting is lost. The Paste button needs browser clipboard permission. |
-| Find and replace | Partial | Works within a paragraph; case-insensitive only. No match highlighting list or match count. |
+| Find and replace | Partial | Match count with current index, match case, whole words. Matches must lie within one paragraph. Other matches are not highlighted. |
 
 ## Tier 2
 | Feature | Status | Evidence or gap |

@@ -29,7 +29,7 @@ def _sp_build():
 _nodes,_root=_sp_build()
 _LI={chr(97+i):i for i in range(26)}; _LI["'"]=26
 sp_in=R();sp_dig=R();sp_pa=R();sp_ap=R();sp_x0=R();sp_xe=R();sp_r=R()
-_lo=low(R1,e)
+_lo=low0(R1,e)
 sp_alpha=net.and_(net.ge(_lo,97,e),net.lt(_lo,123,e))
 sp_hot=net.decode(_lo-97,26,sp_alpha,hot=True)
 sp_nop=net.and_(e,SD['nop'])

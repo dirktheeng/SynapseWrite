@@ -94,7 +94,7 @@ tb7=net.step(rc.out[0]); hc7=net.decode(rc.out[0],9,e7); hi7=net.decode(rc.out[1
 for cc_ in range(1,9):
     for ii_ in range(cc_): gx7=gx7+net.and_(net.step(hc7[cc_]),net.step(hi7[ii_]))*(ii_*(TW//cc_)+6)
 ovf=net.and_(net.gt(qyy+Wl[3],qtop+960,e),net.gt(qyy,qtop+96,e))
-lmv={qs:Wl[0],qe:Wl[1],qx:Wl[2]+gx7+96,qh:Wl[3],qa:Wl[4],qo:Wl[0],qex:Wl[5]}
+lmv={qs:Wl[0],qe:Wl[1],qx:Wl[2]-48+gx7+96,qh:Wl[3],qa:Wl[4],qo:Wl[0],qex:Wl[5]}
 col2=net.and_(ovf,net.eq(ncol,2,e),ONE-net.step(qxc))
 on('PD_7',(col2,'PD_8',{**lmv,qyy:qtop+96,qxc:324}),(ovf,'PD_C2',{**lmv,qyy:qtop+PST+96,qtop:qtop+PST,qxc:0}),(None,'PD_8',lmv))
 pg_close('PD_C2','PD_QH')
