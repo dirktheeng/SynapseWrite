@@ -9,6 +9,8 @@ a4wk=R();a4wl=R();a4wb=R();a4wr=R();a4wt=[R() for _ in range(4)];a4inb=R();a4inr
 def A4_META(e):
     return {a4kf:net.and_(e,net.or_(net.step(A4O[2]),net.step(A4O[3]),net.and_(net.ge(rp6.out[5],2,e),net.lt(rp6.out[5],5,e)))),a4k:net.and_(e,net.or_(net.step(A4O[2]),net.and_(net.ge(rp6.out[5],2,e),net.lt(rp6.out[5],5,e)))),a4b:A4O[4],a4hf:A4O[5],a4rr:A4O[6]}
 def A4_R9():
+    global a4_x,a4_lb
+    a4_x,a4_lb=x,lb
     e=S('R9'); return net.and_(e,ONE-net.step(tcols),net.or_(net.step(pbg),net.step(a4b)),net.or_(full,net.eq(pi,cp,e),net.eq(pi,oldcp,e)))
 def A4_W4(e):
     global a4wp_,a4wo_

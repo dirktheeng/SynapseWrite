@@ -53,7 +53,7 @@ e=S('T2_TB'); lb1=net.bits(R1,4,e); k1_=lb1[0]+lb1[1]*2; l1_=lb1[2]+lb1[3]*2
 inlist1=net.and_(e,net.step(k1_),net.or_(net.eq(co,0,e),has_sel))
 on('T2_TB',(net.and_(inlist1,shiftk),'PA0',{pwalk:lo_p,pfld:LIST,alv:k1_+net.relu(l1_-1)*4,grp:grp+1}),
  (inlist1,'PA0',{pwalk:lo_p,pfld:LIST,alv:k1_+net.min_(l1_+1,2)*4,grp:grp+1}),
- (None,'TAB2',{ins_ch:32,ins_st:TST,oret.r:oret.id('TAB3')}))
+ (None,'TAB2',{ins_ch:9,ins_st:TST,oret.r:oret.id('AFTER_ED')}))
 t2es=R()
 e=S('T2_EN0'); lb2=net.bits(R1,4,e); k2_=lb2[0]+lb2[1]*2; l2_=lb2[2]+lb2[3]*2
 emp=net.and_(e,net.step(k2_),net.eq(clen,0,e))

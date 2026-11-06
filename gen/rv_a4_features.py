@@ -44,7 +44,10 @@ fsm.set(a4sha,S('T3_END'),0)
 on('A4_GO',(None,'T1_M0',{t1_mop:10,t1_mrow:99,t1_mtop:127,t1_mx:826,clip0:0,clip1:0}))
 a4gr=R();a4gc=R();a4gv=R()
 e=S('T1_MM10'); _b=net.bits(t1_mrow,7,e)
-on('T1_MM10',(None,'A4_GM',{a4gc:_b[0]+_b[1]*2+_b[2]*4,a4gr:_b[3]+_b[4]*2+_b[5]*4,a4gv:net.lt(t1_mrow,64,e)}))
+a4gh=[[R() for _ in range(8)] for _ in range(8)]; _gcv=_b[0]+_b[1]*2+_b[2]*4; _grv=_b[3]+_b[4]*2+_b[5]*4; _gok=net.lt(t1_mrow,64,e); _d10={}
+for r_ in range(8):
+    for c_ in range(8): _d10[a4gh[r_][c_]]=net.and_(_gok,net.ge(_grv,r_,e),net.ge(_gcv,c_,e))
+on('T1_MM10',(None,'A4_GM',{**_d10,a4gc:_gcv,a4gr:_grv,a4gv:_gok}))
 e=S('A4_GI'); _gh=net.decode(a4gr,8,e); _prod=X()
 for r_ in range(8): _prod=_prod+G_((a4gc+1)*(r_+1),_gh[r_])
 on('A4_GI',(None,'TI0',{tin:a4gc+1,tic:0,tir:_prod-1,grp:grp+1}))
@@ -55,12 +58,11 @@ def a4_late():
     t1_menu(9,112,131,170,['Sentence case','lowercase','UPPERCASE','Capitalize Each Word','tOGGLE cASE'])
     x_,y_=826,127; u=ui.L()
     u.r(x_+2,y_+2,GC*8+1,GC*8+23,(200,198,196),0); u.r(x_-1,y_-1,GC*8+2,GC*8+22,(150,148,146),0); u.r(x_,y_,GC*8,GC*8+20,WHITE,0)
-    rg=[net.step(a4gr-r_+0.5) for r_ in range(8)]; cg=[net.step(a4gc-c_+0.5) for c_ in range(8)]
     for r_ in range(8):
         for c_ in range(8):
             cx_=x_+c_*GC; cy_=y_+r_*GC
             u.r(cx_,cy_,GC,GC,WHITE,254); u.r(cx_+2,cy_+2,GC-4,GC-4,(150,150,150),254); u.r(cx_+3,cy_+3,GC-6,GC-6,WHITE,254)
-            u.k(net.and_(rg[r_],cg[c_],a4gv),cx_+3,cy_+3,GC-6,GC-6,PAL_B[5],254)
+            u.k(a4gh[r_][c_],cx_+3,cy_+3,GC-6,GC-6,PAL_B[5],254)
     t1_chain('A4_GM',u,'A4_GL')
     on('A4_GL',(a4gv,'A4_GL1',{gly:(49+a4gc,9,x_+8,y_+GC*8+1,0,0)}),(None,'T1_END',None))
     on('A4_GL1',(None,'A4_GL2',{gly:(120,9,x_+19,y_+GC*8+1,0,0)}))
@@ -126,8 +128,8 @@ def _qrect(st,xf,y,wf,h,nx):
     e=S(st); number(st,xf(e),st+'a'); lit(st+'a',b' ',st+'b'); e=S(st+'b'); number(st+'b',y,st+'c'); lit(st+'c',b' ',st+'d')
     e=S(st+'d'); number(st+'d',wf(e),st+'e'); lit(st+'e',b' ',st+'f'); number(st+'f',h,st+'g'); lit(st+'g',b' re f\n',nx)
 _qy=qph-(qyy-qtop+qh)
-_qrect('A4_QF',_qx,_qy,_qw,qh,'A4_QFg')
-e=S('A4_QFg'); on('A4_QFg',(net.and_(net.eq(qlj,0,e),ONE-a4dt,net.step(a4gap),net.lt(a4gap,100,e)),'A4_QH',None),(None,'A4_QG',None))
+_qrect('A4_QF',_qx,_qy,_qw,qh,'A4_QFx')
+e=S('A4_QFx'); on('A4_QFx',(net.and_(net.eq(qlj,0,e),ONE-a4dt,net.step(a4gap),net.lt(a4gap,100,e)),'A4_QH',None),(None,'A4_QG',None))
 _qrect('A4_QH',_qx,_qy+qh,_qw,a4gap,'A4_QG')
 lit('A4_QG',b'0 0 0 rg\n','A4_QB0')
 e=S('A4_QB0'); _qb=net.bits(qa4b,4,e)
@@ -200,26 +202,26 @@ for i_ in range(1,27): _k=_k+net.step(_rv-48*i_+0.001)
 _hc=net.lt(_mn,60000,e)
 _kk=X()
 for i_ in range(4): _kk=_kk+G_(_kd[i_],net.eq(_c[i_],_mn,e))
-on('A4_LT0',(None,'A4_LT1',{a4ts:G_(_mn,_hc)+G_((_k+1)*48,e-_hc),a4tk_:G_(_kk,_hc),a4trel:a4trel_,a4tc:0,a4tq:off+1}))
+on('A4_LT0',(None,'A4_LT1',{a4ts:G_(_mn,_hc)+G_((_k+1)*48,e-_hc),a4tk_:G_(_kk,_hc),a4trel:a4trel_,a4tc:0,a4tq:off_+1}))
 e=S('A4_LT1'); on('A4_LT1',(net.step(a4tk_),'A4_LM0',None),(None,'A4_LT2',{a4tw:net.relu(a4ts-a4trel)}))
 e=S('A4_LM0'); on('A4_LM0',(net.ge(a4tq,plen_,e),'A4_LMz',None),(None,'A4_LM1',{r1:pbs+a4tq,r2:pbs+1024+a4tq}))
 e=S('A4_LM1'); _tab=net.eq(R1,9,e); _c1=e-_tab; measure(_c1,R1,R2)
 on('A4_LM1',(_tab,'A4_LMz',None),(None,'A4_LM0',{a4tc:a4tc+adv,a4tq:a4tq+1}))
 e=S('A4_LMz'); on('A4_LMz',(net.eq(a4tk_,2,e),'A4_LT2',{a4tw:net.relu(a4ts-a4trel-a4tc)}),(None,'A4_LT2',{a4tw:net.relu(a4ts-a4trel-a4tc*0.5)}))
 e=S('A4_LT2'); _w=net.min_(a4tw,net.relu(ww-lx)); _ok=net.lt(a4tn,A4TN,e)
-w1.drive(_ok,(pbs+A4TW+a4tn*2,off)); w2.drive(_ok,(pbs+A4TW+a4tn*2+1,_w))
-_adv={a4tn:a4tn+_ok,a4lt:1,kprev:0,lx:lx+_w,off:off+1,prevsp:1,lb:off+1,lbx:lx+_w,lspb:lsn,lfnb:lfn,lfhb:lfh}
-on('A4_LT2',(net.ge(off+1,plen_,e),'EM',{**_adv,lend:off+1,lwid:lx+_w,lspc:lsn,llast:1}),(None,'L1',_adv))
+w1.drive(_ok,(pbs+A4TW+a4tn*2,off_)); w2.drive(_ok,(pbs+A4TW+a4tn*2+1,_w))
+_adv={a4tn:a4tn+_ok,a4lt:1,kprev:0,lx:lx+_w,off_:off_+1,prevsp:1,a4_lb:off_+1,lbx:lx+_w,lspb:lsn,lfnb:lfn,lfhb:lfh}
+on('A4_LT2',(net.ge(off_+1,plen_,e),'EM',{**_adv,lend:off_+1,lwid:lx+_w,lspc:lsn,llast:1}),(None,'L1',_adv))
 fsm.set(a4tn,S('LAY0'),0); fsm.set(a4lt,S('LAY0'),0); fsm.set(a4lt,S('EM'),0)
 # lookup used by paint and PDF
 a4lr=t3ret('A4_LUR');a4lk=R();a4lb=R()
 e=S('A4_LU0'); on('A4_LU0',(net.ge(a4ti,A4TN,e),'A4_LUR',{a4tw:48}),(None,'A4_LU1',{r1:a4lb+A4TW+a4ti*2,r2:a4lb+A4TW+a4ti*2+1}))
 e=S('A4_LU1'); on('A4_LU1',(net.eq(R1,a4lk,e),'A4_LUR',{a4tw:R2}),(None,'A4_LU0',{a4ti:a4ti+1}))
-on('A4_PT0',(None,'A4_LU0',{a4ti:0,a4lk:off,a4lb:pbs,a4lr.r:a4lr.id('A4_PT3')}))
-e=S('A4_PT3'); _kp=pi*2048+off; _is=net.and_(net.ge(_kp,Lo,e),net.lt(_kp,Hi,e)); _ns=e-_is
+on('A4_PT0',(None,'A4_LU0',{a4ti:0,a4lk:off_,a4lb:pbs,a4lr.r:a4lr.id('A4_PT3')}))
+e=S('A4_PT3'); _kp=pi*2048+off_; _is=net.and_(net.ge(_kp,Lo,e),net.lt(_kp,Hi,e)); _ns=e-_is
 _col=tuple(_is*SEL[i_]+G_((bc0,bc1,bc2)[i_],_ns) for i_ in range(3))
-_mk=net.and_(e,t1_marks); rC.drive(_mk,(x+1,sy+lasc-6,net.relu(a4tw-2),1,(120,120,160),col))
-on('A4_PT3',(None,'C0',{rA:(x,sy,a4tw*0.5+1,lhh,_col,col),rB:(x+a4tw*0.5,sy,a4tw*0.5+1,lhh,_col,col+1),x:x+a4tw,col:col+1,off:off+1,kprev:0}))
+_mk=net.and_(e,t1_marks); rC.drive(_mk,(a4_x+1,sy+lasc-6,net.relu(a4tw-2),1,(120,120,160),col))
+on('A4_PT3',(None,'C0',{rA:(a4_x,sy,a4tw*0.5+1,lhh,_col,col),rB:(a4_x+a4tw*0.5,sy,a4tw*0.5+1,lhh,_col,col+1),a4_x:a4_x+a4tw,col:col+1,off_:off_+1,kprev:0}))
 on('A4_QX0',(None,'A4_LU0',{a4ti:0,a4lk:qo,a4lb:qb,a4lr.r:a4lr.id('A4_QX1')}))
 on('A4_QX1',(None,'PD_9',{qxx:qxx+a4tw,qo:qo+1,qpc:0}))
 e=S('A4_SF0'); on('A4_SF0',(net.eq(t2psv,99999,e),'A4_SF2',None),(None,'T4_SC',{t4cr.r:t4cr.id('A4_SF2')}))
@@ -252,20 +254,20 @@ on('A4_RU',(_kh[0],'T2_PD',{**_u,pfld:PFIRST,t2d:_d,t2mn:1}),(_kh[1],'T2_PD',{**
 e=S('A4_RUt'); on('A4_RUt',(None,'PA0',{pwalk:lo_p,alv:G_(net.relu(a4so+a4dl-1000)+a4sk*4096,a4tb),t1_pdm:0,grp:grp+1,t1_lastk:0}))
 e=S('RE1'); rD.drive(net.and_(e,net.ge(tdk,30,e)),(tmx,DOCY,1,VH,(43,87,154),0))
 # ruler marks for tab stops and the stop kind selector
-e=S('A4_RS'); rkc=(60,60,60)
+rkc=(60,60,60)
 for i_ in range(4):
     pass
 def _sm(i_,e):
     v_=a4m[i_]; k1=net.and_(net.ge(v_,4096,e),net.lt(v_,8192,e)); k2=net.ge(v_,8192,e); return v_-k1*4096-k2*8192,k1,k2
 for s_,(ia,ib) in enumerate(((0,1),(2,3))):
-    st_=f'A4_RS{s_}'; e=S(st_); pa_,ka,kb=_sm(ia,e); pb_2,kc_,kd_=_sm(ib,e)
+    st_=f'A4_RZ{s_}'; e=S(st_); pa_,ka,kb=_sm(ia,e); pb_2,kc_,kd_=_sm(ib,e)
     ca=net.and_(e,net.step(a4m[ia])); cb_=net.and_(e,net.step(a4m[ib]))
     rA.drive(ca,(t1_rL+pa_,160,2,8,rkc,0)); rB.drive(ca,(t1_rL+pa_-kb*5-ka*3,166,6,2,rkc,0)); rC.drive(cb_,(t1_rL+pb_2,160,2,8,rkc,0)); rD.drive(cb_,(t1_rL+pb_2-kd_*5-kc_*3,166,6,2,rkc,0))
-    on(st_,(None,f'A4_RS{s_+1}',None))
-e=S('A4_RS2'); hk_=net.decode(a4tkind,3,e)
-on('A4_RS2',(None,'A4_RS3',{rA:(200,153,20,18,(255,255,255),0),rB:(200,153,20,1,(150,150,150),0),rC:(200,170,20,1,(150,150,150),0)}))
-e=S('A4_RS3'); hk_=net.decode(a4tkind,3,e)
-on('A4_RS3',(None,'T1_V0',{gly:(hk_[0]*76+hk_[1]*67+hk_[2]*82,9,206,154,0,0)}))
+    on(st_,(None,f'A4_RZ{s_+1}',None))
+e=S('A4_RZ2'); hk_=net.decode(a4tkind,3,e)
+on('A4_RZ2',(None,'A4_RZ3',{rA:(200,153,20,18,(255,255,255),0),rB:(200,153,20,1,(150,150,150),0),rC:(200,170,20,1,(150,150,150),0)}))
+e=S('A4_RZ3'); hk_=net.decode(a4tkind,3,e)
+on('A4_RZ3',(None,'T1_V0',{gly:(hk_[0]*76+hk_[1]*67+hk_[2]*82,9,206,154,0,0)}))
 # section records are logged, so margin, size and column changes undo
 cur_='A4_SL'
 for i_,v_ in enumerate(SWV):

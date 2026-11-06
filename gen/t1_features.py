@@ -150,7 +150,7 @@ on('T1_RDa',(None,'T1_RT',{rA:(0,150,1280,24,(230,230,230),0),rB:(s_px,154,s_pw,
 t1_chain('T1_RT',ui.ruler(),'T1_RM0')
 MC=(96,94,92)
 for i_ in range(5):
-    on(f'T1_RM{i_}',(None,f'T1_RM{i_+1}' if i_<4 else 'A4_RS0',{
+    on(f'T1_RM{i_}',(None,f'T1_RM{i_+1}' if i_<4 else 'A4_RZ0',{
       rA:(t1_rL+t1_rI+pf_val(a4rF)-4+i_,150+i_,9-2*i_,1,MC,0),
       rB:(t1_rL+t1_rI-i_,169+i_,1+2*i_,1,MC,0),
       rC:(t1_rL+t1_rW-a4rR-i_,169+i_,1+2*i_,1,MC,0)}))

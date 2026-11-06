@@ -42,7 +42,8 @@ def jump(st,p,o,ret):
 # ---- insert table ----
 tin_w=R()
 for i_,n_ in enumerate((2,3,4)): pass
-on('TI0',(None,'SPLIT',{oret.r:oret.id('T3_TI0'),tip:cp+1}))
+on('TI0',(None,'A4_TI',{r1:cb+2062}))
+on('A4_TI',(net.step(R1),'RD0',None),(None,'SPLIT',{oret.r:oret.id('T3_TI0'),tip:cp+1}))   # no nested tables
 e=S('T3_TI0'); hti=net.decode(tin,9,e)
 on('T3_TI0',(None,'TI1',{tin_w:floorv(G_(s_tw*0.5,hti[2])+G_(s_tw*(1.0/3),hti[3])+G_(s_tw*0.25,hti[4])+G_(s_tw*0.2,hti[5])+G_(s_tw*(1.0/6),hti[6])+G_(s_tw*(1.0/7),hti[7])+G_(s_tw*0.125,hti[8]),e),run:0}))
 e=S('TI1'); wr=net.ge(tic+1,tin,e)
