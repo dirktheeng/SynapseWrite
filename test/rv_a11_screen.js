@@ -17,8 +17,8 @@ load().then(({e,h,bank})=>{
  let same=true;{const f=fb();for(let i=0;i<f.length;i++)if(f[i]!==ref[i]){same=false;break;}}
  ok('blink pairs leave the image alone',same);
  ok('no false alarm on an undamaged document',tot()===0,tot());
- // damage: wipe colors and ids over the right part of every text line
- {const f=fb();for(let y=190;y<320;y++)for(let x=300;x<1040;x++){const o=4*(y*1280+x);f[o]=f[o+1]=f[o+2]=128;f[o+3]=0;}}
+ // damage: wipe colors and ids over several text lines
+ {const f=fb();for(let y=190;y<320;y++)for(let x=223;x<1040;x++){const o=4*(y*1280+x);f[o]=f[o+1]=f[o+2]=128;f[o+3]=0;}}
  for(let i=0;i<40;i++)D(7);D(7);D(7);
  let diff=0;{const f=fb();for(let i=0;i<f.length;i++)if(f[i]!==ref[i])diff++;}
  ok('damage repaired by the blink tick check',diff===0,diff);
