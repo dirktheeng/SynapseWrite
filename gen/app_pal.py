@@ -8,3 +8,7 @@ F=[(0,0,0),(85,85,85),(255,255,255),(51,85,153),(187,0,0),(0,136,68),(238,119,0)
 B=[(255,255,255),(204,221,238),(255,238,170),(243,243,243),(17,85,187),(221,221,221),
    (255,255,0),(0,255,0),(0,255,255),(255,0,255),(255,0,0),(0,102,255),(204,204,204),(204,221,187),(187,221,238),(255,204,170),(51,119,204),(68,136,221)]
 HL_NAMES=['yellow','green','cyan','magenta','red','blue','lightGray']
+# p2: Word's further highlight values, by name, in its own colors; they are stored in the extended field and drawn as an exact color
+HL_X=[('darkBlue',(0,0,128)),('darkCyan',(0,128,128)),('darkGreen',(0,128,0)),('darkMagenta',(128,0,128)),('darkRed',(128,0,0)),('darkYellow',(128,128,0)),('darkGray',(128,128,128)),('black',(0,0,0))]
+# p2: a further highlight is kept as a run shade of its color with the blue channel one up, which marks it as a highlight for the writer
+HL_XZ=[((c_[0]<<16)+(c_[1]<<8)+c_[2]+1)+1 for n_,c_ in HL_X]   # shade cell values: color+1

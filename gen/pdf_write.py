@@ -69,7 +69,7 @@ first_p=net.eq(qtop,0,e)
 qyy0=rl.out[0]+G_(rp6.out[3],net.gt(rl.out[0],rl.out[1]+qmt,e))
 qlb=net.bits(R2,9,e); qkind=qlb[0]+qlb[1]*2; qlvl=qlb[2]+qlb[3]*2
 qk=R();ql=R();qmk=R()
-qln_new,qmk_new=list_step(rl.out[4],qkind,qlvl,e)
+qln_new,qmk_new=list_step(rl.out[4],qkind,qlvl,e,net.bits(rV.out[0]*2048,13,net.gate(e,net.step(qkind)))[0])   # p2: the restart flag, read beside the list cell
 pl_={v6qf:sum((qlb[4+k_]*(1<<k_) for k_ in range(5)),X()),qyy:qyy0,qcols:rc.out[0],qci:rc.out[1],qln:rl.out[4],qxc:rl.out[5],qk:qkind,ql:qlvl,qmk:qmk_new,qind:G_(qlvl*48+48,net.step(qkind))+net.eq(qtoc,2,e)*24,qiw:rim.out[0],qih:rim.out[1],qpo:rim.out[2]}
 on('PD_3',(first_p,'PD_4',{**pl_,qtop:rl.out[1]}),
  (net.gt(rl.out[1],qtop,e),'PD_C',{**pl_,qtop:rl.out[1]}),
@@ -106,9 +106,9 @@ pdiff=net.step(pdiff+net.step(F1_SMCL-f2smc-0.5+e*M-M)+net.step(f2smc-F1_SMCL-0.
 ladv={f2smc:F1_SMCL,f2x:RSX,f2h:RSH,f2z:RSZ,qxp:_qxw,v4qk:RSK,ins_ch:F1_CH,ins_st:RSC,ins_rec:RSR,qadv:adv+kern+G_(qex,psp)+rv_tabw(qxx-rv_qm-qxc,net.eq(R1,9,e)),qpc:R1}
 on('PD_A',(F1_HID,'PD_9',{qo:qo+1}),(net.and_(net.eq(R1,173,e),net.lt(qo+1,qe,e)),'PD_9',{qo:qo+1}),(net.and_(net.eq(R1,9,e),qop),'T4P_CL',{pfcr.r:pfcr.id('A4_QX0')}),(net.eq(R1,9,e),'A4_QX0',None),(net.and_(net.ge(R1,300,e),net.lt(R1,1000,e)),'A6Q_P0',{qo:qo+1,a6qk:R1-300}),(net.and_(net.ge(R1,1000,e),net.lt(R1,UO,e)),'T4P_MK',{qo:qo+1,qfid:R1-1000}),(net.and_(pdiff,qop),'T4P_CL',{**ladv,pfcr.r:pfcr.id('PD_F')}),(pdiff,'PD_F',ladv),(qop,'PD_Tc',ladv),(None,'T4P_O',ladv))
 sv_en.lin(S('PD_F')); sv_in.add(S('PD_F'),ins_rec); sv_fl.add(S('PD_F'),ins_st)
-e=S('PD_F'); zh=net.decode(SV['si'],rom.NSZ,e); pts=X(); ptv=X()
-for i_,h_ in enumerate(zh): pts=pts+h_*round(rom.SZ[i_]*96/72); ptv=ptv+h_*round(rom.SZ[script_size(i_)]*96/72)
-ptk=net.or_(SV['ins'],SV['dele']); vf_=net.step(SV['sup']+SV['sub']+f2smc)   # feat2: a small capital takes the script size, as on the screen
+e=S('PD_F'); zh=net.decode(SV['si'],rom.NSZ,e); pts=X(); ptv=X(); ptc=X()
+for i_,h_ in enumerate(zh): pts=pts+h_*round(rom.SZ[i_]*96/72); ptv=ptv+h_*round(rom.SZ[script_size(i_)]*96/72); ptc=ptc+h_*round(rom.SZ[smc_size(i_)]*96/72)   # p2: small capitals at their own size
+ptk=net.or_(SV['ins'],SV['dele']); vf_=net.step(SV['sup']+SV['sub']+f2smc); vc_=net.and_(f2smc,ONE-net.step(SV['sup']+SV['sub'])); vf_=vf_-vc_   # p2: a small capital takes its own size, as on the screen
 _pfh=net.decode(SV['font'],len(rom.FAM),e); _pfv=X()
 for ff_,h_ in enumerate(_pfh):
     for bo_,bb_ in enumerate((ONE-SV['bold'],SV['bold'])):
@@ -117,7 +117,7 @@ for ff_,h_ in enumerate(_pfh):
             if k_: _pfv=_pfv+net.and_(h_,bb_,ii_)*k_
 fsm.set(ptk_q,e,ptk)
 _qxh=net.step(qxp); _qxv=net.gate(as_x(NFB_)+(qxp-1)*3+SV['bold']+net.and_(e,ONE-SV['bold'],SV['ital'])*2,_qxh)
-on('PD_F',(None,'PD_Fa',{f2cx:f2x,f2ch:f2h,f2cz:f2z,qsty:ins_st,qfn:net.relu(_pfv-_qxh*M)+_qxv,qsz:G_(pts,ONE-vf_)+G_(ptv,vf_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3,qhl:SV['hl']}))
+on('PD_F',(None,'PD_Fa',{f2cx:f2x,f2ch:f2h,f2cz:f2z,qsty:ins_st,qfn:net.relu(_pfv-_qxh*M)+_qxv,qsz:G_(pts,ONE-vf_-vc_)+G_(ptv,vf_)+G_(ptc,vc_),qbase:G_(SV['color'],ONE-ptk)+ptk*4,qund:net.or_(SV['und'],SV['ins']),qdel:net.or_(SV['dele'],SV['strike']),qrise:SV['sup']*5+net.and_(e,ONE-SV['sub'])*3,qhl:SV['hl']}))
 lit('PD_Fa',b'/F','PD_Fb')
 e=S('PD_Fb'); on('PD_Fb',(None,'PD_Fc',{xw:(as_x(PUS)+qfn,1)}))
 em_en.lin(e); em_b.add(e,48+qfn+net.ge(qfn,10,e)*7+net.ge(qfn,36,e)*6)     # font names /F0 to /F9, /FA and on

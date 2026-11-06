@@ -48,11 +48,11 @@ on('F1_BN0',(None,'F1_BN1',{r1:OA+oi}))
 e=S('F1_BN1'); on('F1_BN1',(net.or_(net.eq(R1,34,e),net.ge(f1i,F1BS-2,e)),'PX',{w1:(_bb+f1i,0)}),(None,'F1_BN0',{w1:(_bb+f1i,R1),f1i:f1i+1,oi:oi+1}))
 # widow control: on unless the value is 0, false or off
 on('F1_WC',(None,'F1_WC1',{rl:OA+oi}))
-e=S('F1_WC1'); on('F1_WC1',(net.eq(W[0],47,e),'PX',{f1pw:0,w1:(cb+F1PX,f1pc+p3ol*(1/32))}),(None,'F1_WC2',{rl:OA+oi+8}))
+e=S('F1_WC1'); on('F1_WC1',(net.eq(W[0],47,e),'PX',{f1pw:0,w1:(cb+F1PX,f1pc+p3ol*(1/32)+p2rsr*(1/2048))}),(None,'F1_WC2',{rl:OA+oi+8}))
 e=S('F1_WC2'); _off=net.or_(net.eq(W[0],48,e),net.eq(W[0],102,e),net.and_(net.eq(W[0],111,e),net.eq(W[1],102,e)))
-on('F1_WC2',(_off,'PX',{f1pw:1,w1:(cb+F1PX,f1pc+2+p3ol*(1/32))}),(None,'PX',{f1pw:0,w1:(cb+F1PX,f1pc+p3ol*(1/32))}))
-for _s in ('T2_PR',): fsm.set(f1pc,S(_s),0); fsm.set(f1pw,S(_s),0)
-for _q in (f1ll,f1lbk,f1nl,f1nb): fsm.set(_q,S('OP0'),0)
+on('F1_WC2',(_off,'PX',{f1pw:1,w1:(cb+F1PX,f1pc+2+p3ol*(1/32)+p2rsr*(1/2048))}),(None,'PX',{f1pw:0,w1:(cb+F1PX,f1pc+p3ol*(1/32)+p2rsr*(1/2048))}))
+for _s in ('T2_PR',): fsm.set(f1pc,S(_s),0); fsm.set(f1pw,S(_s),0); fsm.set(p2rsr,S(_s),0)
+for _q in (f1ll,f1lbk,f1nl,f1nb,p2ln): fsm.set(_q,S('OP0'),0)
 net.group('feat1 docx writer')
 # ---- writer ----
 fsm.set(ins_x,S('SVr'),RSX); fsm.set(ins_h,S('SVr'),RSH); fsm.set(ins_z,S('SVr'),RSZ)
@@ -64,7 +64,7 @@ on('F1_R1',(f1wx[1],'F1_Rm',None),(None,'F1_R4',None)); lit('F1_Rm',b'<w:smallCa
 on('F1_R5',(f1wx[2],'F1_Rd',None),(None,'P3_R0',None)); lit('F1_Rd',b'<w:dstrike/>','P3_R0')
 on('F1_R6',(f1wx[3],'F1_Rv',None),(None,'T2R5',None)); lit('F1_Rv',b'<w:vanish/>','T2R5')
 on('F1_R7',(net.step(f1wx[4]),'F1_Rs',None),(None,'P3_SW0',None)); lit('F1_Rs',b'<w:spacing w:val="','F1_Rs1'); e=S('F1_Rs1'); on('F1_Rs1',(net.lt(f1wx[4],512,e),'F1_Rsm',None),(None,'F1_Rsp',None)); lit('F1_Rsm',b'-','F1_Rsn'); vnum('F1_Rsn',as_x(512)-f1wx[4],'F1_Rs2'); vnum('F1_Rsp',f1wx[4]-512,'F1_Rs2'); lit('F1_Rs2',b'"/>','P3_SW0')
-on('F1_R8',(net.step(ins_z),'F1_Rh',None),(None,'F1_RB',None)); lit('F1_Rh',b'<w:shd w:val="clear" w:color="auto" w:fill="','F1_Rh0')
+on('F1_R8',(net.and_(net.step(ins_z),ONE-net.step(p2xh)),'F1_Rh',None),(None,'F1_RB',None)); lit('F1_Rh',b'<w:shd w:val="clear" w:color="auto" w:fill="','F1_Rh0')
 f1nbz=[R() for _ in range(6)]; e=S('F1_Rh0'); _zb=net.bits(ins_z-1,24,e)
 on('F1_Rh0',(None,'F1_Rhx0',{f1nbz[j_]:_zb[20-4*j_]+_zb[21-4*j_]*2+_zb[22-4*j_]*4+_zb[23-4*j_]*8 for j_ in range(6)}))
 for j_ in range(6):
@@ -96,7 +96,7 @@ e=S('F1_RL2'); on('F1_RL2',(net.eq(R1,1,e),'F1_RL3',None),(None,'F1_RL1',{f1i:f1
 lit('F1_RL3',b'<Relationship Id="rIdL','F1_RL4'); vnum('F1_RL4',f1i,'F1_RL5'); lit('F1_RL5',b'" Type="'+RTYPE+b'hyperlink" Target="','F1_RL6')
 on('F1_RL6',(None,'T2SS',{t2w:as_x(F1LT)+f1i*F1LS+1,t2sr.r:t2sr.id('F1_RL7')})); lit('F1_RL7',b'" TargetMode="External"/>','F1_RL8'); on('F1_RL8',(None,'F1_RL1',{f1i:f1i+1}))
 # paragraph extras: contextual spacing beside the list rule, widow control off after the page break flag
-e=S('SVm'); fsm.set(f1sc,e,net.bits(A4O[7],2,e)[0]); fsm.set(f1sw,e,net.ge(A4O[7],2,e)); fsm.set(f1sc,S('T2Ya'),0)
+e=S('SVm'); fsm.set(p2wrs,e,net.bits(A4O[7]*2048,13,e)[0]); fsm.set(f1sc,e,net.bits(A4O[7],2,e)[0]); fsm.set(f1sw,e,net.ge(A4O[7],2,e)); fsm.set(f1sc,S('T2Ya'),0)
 on('F1_WW',(f1sw,'F1_WW1',None),(None,'T2W4',None)); lit('F1_WW1',b'<w:widowControl w:val="0"/>','T2W4')
 e=S('A4_Q0'); fsm.set(f1qnwc,e,net.ge(A4O[7],2,e))
 net.group(_f1g)

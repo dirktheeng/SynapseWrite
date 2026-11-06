@@ -12,7 +12,7 @@ on('P3_XB',(None,'PX',{ics:_f1ics(h_=_hn)}))
 # w:outline in a run, or w:outlineLvl in a paragraph of the document part
 e=S('P3_OU'); on('P3_OU',(net.eq(W[0],76,e),'P3_OL',{rl:OA+oi+11}),(None,'P3_TV',{p3bit:0}))
 e=S('P3_OL'); _d=W[0]-48; _dg=net.and_(net.ge(W[0],48,e),net.lt(W[0],58,e),net.eq(ztarget,4,e))
-on('P3_OL',(_dg,'PX',{p3ol:_d+1,w1:(cb+F1PX,f1pc+f1pw*2+(_d+1)*(1/32)),oi:oi+12}),(None,'PX',{oi:oi+3}))
+on('P3_OL',(_dg,'PX',{p3ol:_d+1,w1:(cb+F1PX,f1pc+f1pw*2+(_d+1)*(1/32)+p2rsr*(1/2048)),oi:oi+12}),(None,'PX',{oi:oi+3}))
 fsm.set(p3ol,S('T2_PR'),0)
 # character scale: w:val in percent, kept up to 1023 in bits 14-23 of the extended field
 on('P3_SC',(None,'P3_SC1',{rl:OA+oi}))
@@ -48,7 +48,7 @@ on('P3_SW0',(net.step(p3ws),'P3_SW1',None),(None,'F1_R7z',None)); lit('P3_SW1',b
 on('P3_LW0',(net.step(p3wl),'P3_LW1',None),(None,'T2RC',None)); lit('P3_LW1',b'<w:lang ','P3_LW2')
 on('P3_LW2',(None,'T2SS',{t2w:_lb(p3wl),t2sr.r:t2sr.id('P3_LW3')})); lit('P3_LW3',b'/>','T2RC')
 # paragraph outline level, after the alignment
-e=S('SVm'); fsm.set(p3wol,e,A4O[7]*32-floorv(A4O[7],e,3)*32); fsm.set(p3wol,S('T2Ya'),0)
+e=S('SVm'); fsm.set(p3wol,e,floorv(A4O[7]*32,e,7)-floorv(A4O[7],e,3)*32)   # floored: p2's list restart flag sits below a 1/32 step; fsm.set(p3wol,S('T2Ya'),0)
 e=S('P3_OL0'); on('P3_OL0',(net.step(p3wol),'P3_OL1',None),(None,'T2PP',None)); lit('P3_OL1',b'<w:outlineLvl w:val="','P3_OL2')
 e=S('P3_OL2'); em_en.lin(e); em_b.add(e,47+p3wol); on('P3_OL2',(None,'P3_OL3',None)); lit('P3_OL3',b'"/>','T2PP')
 net.group(_p3g)

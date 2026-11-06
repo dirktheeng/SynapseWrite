@@ -165,7 +165,7 @@ e=S('RE1'); dgd=net.and_(e,net.step(tdk),net.lt(tdk,17,e))
 rC.drive(dgd,(tmx,DOCY,1,VH,(43,87,154),0))
 # column border release: resize through the field pass
 e=S('T3_MU'); ck_=net.and_(e,net.step(tdk),net.lt(tdk,17,e))
-on('T3_MU',(net.ge(tdk,30,e),'A4_RU',None),(ck_,'T3_CW0',{tmx:zev(eva),tdc:tdk-1,tdk:0,jp:tdr,jo:0,jret.r:jret.id('T3_CW1')}),(net.and_(e,net.step(tdk)),'T3_IMU',None),(a4fp,'A4_FA0',None),(None,'IDL2',None))
+on('T3_MU',(net.ge(tdk,30,e),'A4_RU',None),(ck_,'T3_CW0',{tmx:zev(eva),tdc:tdk-1,tdk:0,jp:tdr,jo:0,jret.r:jret.id('T3_CW1')}),(net.and_(e,net.step(tdk)),'T3_IMU',None),(a4fp,'A4_FA0',None),(net.and_(e,net.bits(evm,5,e)[0],net.step(clen)),'P2_FL0',None),(None,'IDL2',None))   # p2: Ctrl+click follows an internal link
 on('T3_CW0',(None,'J0',None))
 scan('T3_CW1','T3_CW2')
 on('T3_CW2',(None,'T3_CW3',{r1:as_x(PT)+ts+tdc,r2:as_x(PT)+ts+net.min_(tdc+1,tn-1)}))
@@ -350,7 +350,7 @@ qload=lambda W_:{qnc:W_[0],qpw:W_[1],qph:W_[2],qml:W_[4]-W_[3],qmt:W_[6],qth:W_[
 on('T3_PQ0',(None,'T3_PQ1',{rl:as_x(SECB)}))
 on('T3_PQ1',(None,'PD_0',qload(RL)))
 on('T3_PQ2',(None,'T3_PQ3',{qtoc:MT[4],qsrc:MT[5],qtpg:MT[6],qcw:MT[0],qcx:MT[1],qsh:MT[2],rl:as_x(SECB)+MT[7]*8,r1:qb+RBOT,r2:qb+RBOT+1}))
-on('T3_PQ3',(None,'PD_3',{**qload(RL),qrb:R1,qrt:R2,rl:qb+SAVE,rc:qb+2062,rim:qb+IMF,r2:qb+LIST,rp6:qb+PIND}))
+on('T3_PQ3',(None,'PD_3',{**qload(RL),qrb:R1,qrt:R2,rl:qb+SAVE,rc:qb+2062,rim:qb+IMF,r2:qb+LIST,rp6:qb+PIND,rV:qb+F1PX}))
 e=S('PD_4')
 on('PD_4',(net.step(qcols),'T3_PT0',None),(None,'T3_PT9',None))
 on('T3_PT9',(None,'A4_Q0',{ra4:qb+A4C,rmeta:qb+META}))

@@ -37,7 +37,7 @@ def pf_val(v): return v-net.step(v)*PFO
 STY=40000; STY0=26000; STYN=48; NUMT=25000; MKT=32000; SCR=SLOTMAX; DEFREC=198; STYMAX=196   # style table, its ROM copy, numbering kinds, list marker ROM, scratch record
 # ---- screen geometry ----
 DOCY,DOCB=174,776; VH=DOCB-DOCY; PX=223; TX=319; TW=624; PH=1056; PST=1072; YB=4096
-from app_pal import F as PAL_F,B as PAL_B,HL_NAMES
+from app_pal import F as PAL_F,B as PAL_B,HL_NAMES,HL_X,HL_XZ
 # ---- ports ----
 STYT_=1100000; IDXM_=(1<<18)-1; STYW=7   # an interned entry: record, exact color, font name, character style, then feat1's extended flags, link and bookmark ids, run shade
 class RPort:
@@ -180,19 +180,23 @@ adv=net.wire();asc=net.wire();asc_e=net.wire();lh=net.wire();rise=net.wire();str
 # superscript and subscript draw a smaller compiled size; the line keeps the nominal metrics
 def script_size(i):
     return rom.sz_near(round(rom.SZ[i]*0.72))
+def smc_size(i):
+    "p2: the size a small capital draws at, 0.8 of the run's, the factor LibreOffice documents; Word's own is unpublished and close to it."
+    return rom.sz_near(round(rom.SZ[i]*0.8))
 vflag=net.step(SD['sup']+SD['sub'])
 size_hot=[X() for _ in range(NS)]
 for i_ in range(NS):
-    n_,s_=F1_SPLIT(raw_hot[i_],vflag); size_hot[i_]=size_hot[i_]+n_; size_hot[script_size(i_)]=size_hot[script_size(i_)]+s_
+    n_,s_,c_=F1_SPLIT(raw_hot[i_],vflag); size_hot[i_]=size_hot[i_]+n_; size_hot[script_size(i_)]=size_hot[script_size(i_)]+s_; size_hot[smc_size(i_)]=size_hot[smc_size(i_)]+c_
 def sel_sum(val):
     """A value of the drawn size, val(i) at least zero for size i, read through the size tree's groups of 8:
     a closed group gate ends its reads at once. A raised or lowered run takes its script size, behind vflag."""
     o=X(); _scf=net.step(vflag+F1_SMCL+F1_HID)    # the same split as F1_SPLIT: script or small capital size, hidden text none
+    _smo=net.step(F1_SMCL-vflag-F1_HID-0.5)   # p2: a small capital, read lazily inside the smaller branch so plain text pushes nothing new
     for sc,en_ in ((False,ONE-_scf),(True,net.and_(_scf,ONE-F1_HID))):
         part=X()
         for g_,gn_ in enumerate(SZG):
             vw_=net.wire()
-            for i_ in range(8*g_,min(8*g_+8,NS)): net.connect(vw_,net.gate(val(script_size(i_) if sc else i_),raw_hot[i_]))
+            for i_ in range(8*g_,min(8*g_+8,NS)): net.connect(vw_,net.gate((val(script_size(i_))+net.gate(val(smc_size(i_))-val(script_size(i_)),_smo)) if sc else val(i_),raw_hot[i_]))
             part=part+net.gate(vw_,gn_)
         o=o+net.gate(part,en_)
     return o
@@ -352,7 +356,7 @@ def T1(n): exec(T1S[n],globals())
 T1('regs')
 exec(open('rv_a4_regs.py').read())
 exec(open('imp3_regs.py').read()); exec(open('imp4_regs.py').read()); exec(open('imp5_regs.py').read()); exec(open('imp4_list.py').read())
-exec(open('feat1_regs.py').read()); exec(open('p3_regs.py').read())
+exec(open('feat1_regs.py').read()); exec(open('p2_regs.py').read()); exec(open('p3_regs.py').read())
 exec(open('p1_regs.py').read())
 cbb=R();qrep=R();a7_vw=R();a7_far=R();a7_jmp=R();a7_wb=R();impf=R();impk=R();impc=R();impsc=R();impyt=R();stp=R();stg=R();stw=R();stm=R();tbm=R();A7BUD=15000   # characters of layout one event may do before the rest goes to the background
 # dispatch tables for subroutine returns
@@ -594,7 +598,7 @@ on('VCK',(net.lt(usp,urp,S('VCK')),'VCK2',{rlog:usp}),(None,'UEND',None))
 on('VCK2',(net.eq(U[5],ug,S('VCK2')),'V1',{rlog:usp}),(None,'UEND',None))
 # ---- range walker for copy and formatting ----
 net.group('range walker')
-wp=R();wbase=R();wo=R();wlen=R();wn=R();wm=R();wfirst=R();ftgt=R()
+wp=R();wbase=R();wo=R();wlen=R();wn=R();wm=R();wfirst=R();ftgt=R(); p2_wo=wo   # p2: wo is rebound to a write port later
 on('DS0',(trk,'T4_DS0',{wp:lo_p,wo:lo_o,wm:2,wfirst:1,fm:11,wret.r:wret.id('T4_DS1')}),(None,'DS1',{ap:lo_p,ao:lo_o,jp:hi_p,jo:hi_o,jret.r:jret.id('DSL')}));on('DS1',(None,'J0',None))
 Kw=wp*2048+wo; wsel=Bus(net)
 on('COPY',(has_sel,'W0',{wp:lo_p,wo:lo_o,wn:0,wm:1,wret.r:wret.id('COPYE')}),(None,'HALT',None))
@@ -815,14 +819,24 @@ pnew={**pfsave,fnp:0,ptop:ptop+s_ps,yy:ptop+s_ps+s_mt,pages:pages+1,xcol:0}
 on('R3B',(net.and_(net.eq(pbk,2,e),net.eq(ncol,2,e),ONE-net.step(xcol),ONE-net.step(tcols),net.gt(yy,ptop+s_mt,e)),'R4',{yy:ptop+s_mt,xcol:col2+24}),(net.and_(net.step(tcols),net.eq(tci,0,e),ONE-a4hw,net.gt(yy,ptop+s_mt,e),net.step(net.step(pi+1-a4kd-0.5)+net.step(a4kd-pi-1-0.5))),'A4_KR0',None),(net.and_(a4kf,ONE-net.step(tcols),net.gt(yy,ptop+s_mt,e),net.step(net.step(pi+1-a4kd-0.5)+net.step(a4kd-pi-1-0.5))),'A4_K0',None),(net.and_(pb_,full),'PSH_B',{**pnew,rB:(s_px-2,ptop+s_ps+DOCY-scroll-1,s_pw+5,G_(s_ph+4,ONE-p1vf)+p1vf,p1c3(216,190),0),rC:(s_px-1,ptop+s_ps+DOCY-scroll,s_pw+3,s_ph+2,p1c3(198),0)}),(pb_,'A4_H0',pnew),(None,'R4',None))
 e=S('R4'); e_=net.and_(e,ONE-a4hw)
 w4.drive(e_,(pbs+FNHT,fnh))
-def list_step(ln_,kind,lvl,e):
-    "Multi level list counters, 8 bits per level packed in one cell. Returns the new pack and this item's number."
-    lbits=net.bits(ln_,24,e); lc0=sum((lbits[i]*(1<<i) for i in range(8)),X()); lc1=sum((lbits[8+i]*(1<<i) for i in range(8)),X()); lc2=sum((lbits[16+i]*(1<<i) for i in range(8)),X())
-    lvh=net.decode(lvl,4,e); isnum=net.eq(kind,2,e); inlist=net.step(kind)
+def list_step(ln_,kind,lvl,e,rs=None):
+    """Multi level list counters, 8 bits per level packed in one cell (7 for the third), and in bit 23 whether the paragraph before was a list item.
+    Returns the new pack and this item's number. p2: as in Word, numbering goes on across paragraphs that are not list items; a list item restarts
+    its level only when it carries the restart flag rs (a new numId in a file) and the paragraph before it was not a list item. The work sits behind
+    a gate opened by a list item, so a paragraph of plain text reads the old pack and, if it is set, one compare."""
+    inl=net.step(kind); en=net.gate(e,inl)
+    lbits=net.bits(ln_,24,en); lc0=sum((lbits[i]*(1<<i) for i in range(8)),X()); lc1=sum((lbits[8+i]*(1<<i) for i in range(8)),X()); lc2=sum((lbits[16+i]*(1<<i) for i in range(7)),X()); prev=lbits[23]
+    lvh=net.decode(lvl,4,en); isnum=net.eq(kind,2,en)
     deep=lvh[2]+lvh[3]
-    n0=G_(lc0+net.and_(isnum,lvh[0]),net.and_(e,inlist,ONE-net.and_(lvh[0],net.eq(kind,1,e)))); n1=G_(lc1+net.and_(isnum,lvh[1]),net.and_(e,inlist,ONE-lvh[0])); n2=G_(lc2+net.and_(isnum,deep),net.and_(e,inlist,deep))
-    return n0+n1*256+n2*65536, G_(n0,lvh[0])+G_(n1,lvh[1])+G_(n2,deep)
-nlist,mk_now=list_step(listn,lsf,plvl,e)
+    rsn=net.and_(en,rs,ONE-prev) if rs is not None else X()
+    r0=net.and_(rsn,lvh[0]) if rs is not None else X(); r1=net.and_(rsn,lvh[1]) if rs is not None else X(); r2=net.and_(rsn,deep) if rs is not None else X()
+    n0=G_(lc0+net.and_(isnum,lvh[0]),en-r0)+G_(net.and_(isnum,lvh[0]),r0)
+    n1=G_(lc1+net.and_(isnum,lvh[1]),net.and_(en,ONE-lvh[0])-r1)+G_(net.and_(isnum,lvh[1]),r1)
+    n2=G_(net.min_(lc2+net.and_(isnum,deep),127),net.and_(en,deep)-r2)+G_(net.and_(isnum,deep),r2)
+    nen=net.gate(e,ONE-inl); pnl=net.ge(ln_,1<<23,nen)   # a paragraph that is not a list item keeps the counters and clears the flag
+    return G_(as_x(ln_)-pnl*(1<<23),nen)+G_(n0+n1*256+n2*65536+(1<<23),en), G_(n0,lvh[0])+G_(n1,lvh[1])+G_(n2,deep)
+_p2i3=net.gate(e3,net.step(lb3[0]+lb3[1]*2)); fsm.set(p2rs,_p2i3,net.bits(A4O[7]*2048,13,_p2i3)[0])   # p2: the restart flag is 1/2048 in feat1's paragraph cell, read only for a list item
+nlist,mk_now=list_step(listn,lsf,plvl,e,p2rs)
 fsm.set(mkn,e,mk_now)
 w3.drive(e_,(pbs+SSI,cursec));wln.drive(e_,(pbs+SAVE,yy,ptop,pages,wsum,listn,xcol));w1.drive(e_,(pbs+FNS,fnn));w2.drive(e_,(pbs+FNS+1,fnp))
 intab=net.step(tcols); c0=net.eq(tci,0,e)
@@ -887,14 +901,20 @@ g_en.lin(e);g_ch.add(e,R1);g_st.add(e,RSR);g_fl.add(e,RSC);g_x.add(e,x+kern+0.5)
 ke2=net.and_(e,net.step(kprev));kp_en.lin(ke2);kp_in.add(ke2,kprev)
 _sh0=net.eq(R1,173,_hi8); _shh=net.and_(_sh0,net.or_(net.lt(off+1,le_,_sh0),net.ge(le_,plen_,_sh0))); g_draw.lin(e-isp-isfnc-_shh)
 und_w=net.and_(e,net.or_(SD['und'],SD['ins'])); ske_w=net.and_(e,net.or_(SD['strike'],SD['dele'])); trk_=net.and_(e,net.or_(SD['ins'],SD['dele'])); a2_chg=R(); fsm.set(a2_chg,trk_,1)   # tracked text is drawn in the review color
+_p2zn=net.step(RSZ); _p2xd=[None]+[net.eq(RSZ,z_,_p2zn) for z_ in HL_XZ]   # p2: a further highlight is a marked shade value; tested only for a shaded run
+_p2z=RSZ
 colh=net.decode_z(G_(SD['color'],ONE-trk_)+trk_*4,32,e)
 for j in range(32): fg[j].lin(colh[j])
 g_fc.add(e,G_(RSK,ONE-trk_))   # an exact color goes to the glyph unit beside the palette entry nearest it
 _ckb=net.bits(RSK-1,24,net.and_(net.or_(und_w,ske_w),net.step(RSK),ONE-trk_)); _ck=[sum((_ckb[16-8*k_+b_]*(1<<b_) for b_ in range(8)),X()) for k_ in range(3)]; _cke=net.step(sum(_ckb,X()))
 hlh=net.decode_z(SD['hl'],8,e); nohl=net.and_(nosel,hlh[0])
 fld_=net.and_(nohl,net.or_(SD['f0'],SD['f1']))    # fields get a light shade
-f1sh_=net.gate(nohl-fld_,net.step(RSZ)); _f1zb=net.bits(RSZ-1,24,f1sh_)   # feat1: a run shade, under the darker wins rule as selection is
-bg[1].lin(insel+f1sh_);bg[3].lin(fld_)
+f1sh_=net.gate(nohl-fld_,net.step(_p2z)); _f1zb=net.bits(_p2z-1,24,f1sh_)   # feat1: a run shade, under the darker wins rule as selection is
+# p2: the shade neuron on the selection bus carries, in its value, the background entry nearest a further highlight (bus j adds (j+1) times it),
+# so glyph edges blend into a dark entry, not the light selection; it is opened only for a shaded run, so plain text reads nothing new
+_p2nb=[min(range(len(PAL_B)),key=lambda i_:sum((a_-b_)**2 for a_,b_ in zip(PAL_B[i_],c_))) for n_,c_ in HL_X]
+f1sb_=net.gate(nohl-fld_+sum((_p2xd[j_+1]*((_p2nb[j_]+1)/2-1) for j_ in range(len(HL_X))),X()),net.step(_p2z))
+bg[1].lin(insel+f1sb_);bg[3].lin(fld_)
 nsh_=nohl-fld_-f1sh_; bgh_=net.decode_z(pbg,len(PAL_B),nsh_)   # the plain background is the cell shade
 for j in range(len(PAL_B)): bg[j].lin(bgh_[j])
 hlcol=[insel*SEL[i]+fld_*PAL_B[3][i]+sum((_f1zb[16-8*i+b_]*(1<<b_) for b_ in range(8)),X()) for i in range(3)]
@@ -1184,19 +1204,19 @@ exec(open('imp4_prompt.py').read())
 exec(open('t4_features.py').read())
 exec(open('t2_features.py').read())
 exec(open('t3_features.py').read())
-exec(open('imp4_style.py').read()); exec(open('imp4_list2.py').read()); exec(open('imp5_breaks.py').read()); exec(open('imp5_vruler.py').read()); exec(open('imp6_feat.py').read()); exec(open('p1_ribbon.py').read()); exec(open('p1_html.py').read())
+exec(open('imp4_style.py').read()); exec(open('imp4_list2.py').read()); exec(open('imp5_breaks.py').read()); exec(open('imp5_vruler.py').read()); exec(open('imp6_feat.py').read()); exec(open('p2_style.py').read()); exec(open('p1_ribbon.py').read()); exec(open('p1_html.py').read())
 net.group('late commands')
 exec(open('rv_a2_canvas.py').read())
 exec(open('rv_a4_features.py').read())
 exec(open('rv_a5_docx.py').read())
-exec(open('feat1_docx.py').read()); exec(open('p3_docx.py').read())
+exec(open('feat1_docx.py').read()); exec(open('p2_color.py').read()); exec(open('p3_docx.py').read())
 exec(open('rv_a6_spell.py').read())
 # ---- ribbon commands: id plus tab select the command, first rule wins ----
 _L0=[(PIND,-24,0),(PIND,24,0),(PFIRST,-24,1),(PFIRST,24,1),(PSPB,-8,0),(PSPB,8,0),(PSPA,-8,0),(PSPA,8,0)]
 fr_=[(TB(8,0),'RD0',{mode:1,field:0,qrep:1}),(TB(9,0),'RD0',{mode:2,field:0,qrep:1}),(TB(10,0),'FMTS',{fm:12}),(TB(11,0),'FMTS',{fm:13}),(TB(12,0),'FMTS',{fm:14}),
  (TB(13,0),'T2_PD',{pfld:PIND,t2d:1000-24,t2mn:0}),(TB(14,0),'T2_PD',{pfld:PIND,t2d:1000+24,t2mn:0}),(TB(7,0),'FMTS',{fm:7,fcol:4}),(TB(44,0),'FMTS',{fm:15,fhl:1}),
  (TB(45,0),'T1_M0',{t1_mop:7,t1_mrow:99,t1_mtop:115,t1_mx:306,clip0:0,clip1:0}),(TB(46,0),'T1_M0',{t1_mop:8,t1_mrow:99,t1_mtop:115,clip0:0,clip1:0}),
- (TB(49,0),'T2_SA0',{t2si:4}),(TB(51,0),'T2_SA0',{t2si:5}),(TB(52,0),'T2_UM0',None)]
+ (TB(49,0),'T2_SA0',{t2si:4}),(TB(51,0),'T2_SA0',{t2si:5}),(TB(52,0),'P2_UA',None)]
 for i_,(fld,dv,mn) in enumerate(_L0): fr_.append((TB(16+i_,2),'T2_PD',{pfld:fld,t2d:1000+dv,t2mn:mn}))
 for i_,id_ in enumerate((24,36,37,38,39,40)): fr_.append((TB(id_,2),'PA0',{pwalk:lo_p,pfld:PLSP,alv:i_ or 6,grp:grp+1}))
 fr_.append((TB(15,2),'T3_C_SB',None))

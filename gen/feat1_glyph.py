@@ -15,8 +15,10 @@ F1_CH=g_ch.w-_f1low*32                     # caps and small caps draw and measur
 F1_SMCL=net.gate(_f1low+F1G['smc']-1,F1G['nz'])        # a small capital takes a smaller compiled size
 F1_HID=F1G['hid']
 def F1_SPLIT(h,vflag):
-    "Normal and smaller leaves of one size. A small capital shares the script size, so no size gains inputs; only a flagged character goes past the first split. Hidden text, as Word shows it with marks off, gets no size: no width, no ink."
-    n_,s_=tsplit(h,net.step(vflag+F1_SMCL+F1_HID)); return n_,tnode(s_,F1_HID,True)
+    "Normal, script and small capital leaves of one size; only a flagged character goes past the first split. Hidden text, as Word shows it with marks off, gets no size: no width, no ink."
+    n_,s_=tsplit(h,net.step(vflag+F1_SMCL+F1_HID)); s_=tnode(s_,F1_HID,True)
+    # p2: a small capital (not raised or lowered) takes its own size, 0.8 of the run's, not the script size
+    v_,c_=tsplit(s_,net.step(F1_SMCL-vflag-0.5)); return n_,v_,c_
 # character spacing in pixels, added to the advance; hidden text keeps none
 _f1sen=net.gate(F1G['spn']-F1_HID,F1G['nz']); F1_SPX=net.gate(F1G['sp']*(1/15),_f1sen)-_f1sen*(512/15)
 net.group(_f1g)
