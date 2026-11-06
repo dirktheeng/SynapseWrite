@@ -15,7 +15,7 @@
 | **Deployment** | one static HTML file, about 3.2 MB |
 | **Training code** | none: no data, loss, gradient, search or fitting |
 
-SynapseWrite was inspired by [Weight-Space Programming](https://rikiyat.github.io/blog/weight-space-programming/): reason about what each layer must compute, then write the weights that compute it. Here, a deterministic Python generator writes those weights, so it is best described as a [compiled neural program](#how-do-we-classify-what-this-is). After that, Python is gone. The browser runs inference, plus the small glue described below.
+SynapseWrite is an example of [Weight-Space Programming](https://rikiyat.github.io/blog/weight-space-programming/): reason about what each layer must compute, then write the weights that compute it. The author here is a language model, using a deterministic Python generator it wrote as its tool for setting the values. See [How do we classify what this is?](#how-do-we-classify-what-this-is) After that, Python is gone. The browser runs inference, plus the small glue described below.
 
 It is an independent project with its own name and icons, modeled on the features and look of Microsoft Word. It is not affiliated with or endorsed by Microsoft and contains no Microsoft assets.
 
@@ -507,25 +507,31 @@ Actual values show the same mix. In a short session of typing, clicking, formatt
 
 ## How do we classify what this is?
 
-The short answer is a **compiled neural program**: a fixed-function, deterministically compiled recurrent threshold-linear network that implements a complete interactive application.
+The short answer is a **neural program written by Weight-Space Programming**: a fixed-function recurrent threshold-linear network whose weights implement a complete interactive application.
 
 | Term | Does it fit? | Why |
 |---|---|---|
 | **Neural network** | Yes, by definition | It has weighted sums, activations, layers and recurrence. But it has no learning and no generalization, and one wrong weight breaks it like a bug in a program. |
-| **Neural program** | Yes, in the compiled sense | The weights are the program. In much of the research, though, the phrase means a program a network learned, so "compiled" matters. |
+| **Neural program** | Yes | The weights are the program. In much of the research, though, the phrase means a program a network learned, so it helps to say this one was written. |
 | **Circuit** | Yes in structure | See [Is it a circuit?](#is-it-a-circuit). Most of it is mixed-signal in style, and only a small part is pure logic. |
 | **Neural computer** | Partly | It has a program counter, registers, addressed memory and input and output. But the program is the wiring. It has no instruction set and cannot load other software, so it is a fixed-function machine, closer to a chip that only does one job than to a CPU. |
-| **Weight-Space Programming** | Partly | As [the post that inspired this project](https://rikiyat.github.io/blog/weight-space-programming/) defines it, a language model reads and writes weights directly, and it lists compiling from formal programs as a different approach. Here, a language model wrote a generator, and the generator wrote the weights. |
+| **Weight-Space Programming** | Yes, with a generator as the tool | [The original post](https://rikiyat.github.io/blog/weight-space-programming/) describes a language model reading and writing weights directly. Here, the same model decided what each layer computes and which values to use, and it wrote those values through a generator program rather than one by one. |
 | **Machine learning** | No | There is no data, loss, gradient or search. |
+
+### Why this counts as Weight-Space Programming
+
+The original post separates this method from compiling formal programs, so the generator raises a fair question. The view taken here is that the generator is a tool, and that the author of the weights is what matters. No separate compiler or person decided the weights: one language model designed the layers, wrote the generator, and then debugged by inspecting behavior and values. Writing values through a program is a difference of scale, not of kind, in the same way that a macro is still the programmer's own code. A network of 450,000 neurons could not practically be typed one value at a time.
+
+The difference is still real in one respect. Most of the work happened at the level of the generator's source code and of test results, and direct reading of individual weights came later, through decoding scripts. So this sits at the far end of the method from a model editing a small network by hand, and others may draw the line differently.
 
 ### Earlier work it relates to
 
 | Line of work | Example | How weights are made | Relationship |
 |---|---|---|---|
 | Threshold logic | McCulloch and Pitts, 1943 | Designed logic | Its foundation |
-| Neural compilers | [Siegelmann, 1994](https://mlanthology.org/aaai/1994/siegelmann1994aaai-neural): the NEL language to a recurrent network | Compiled | Closest in spirit |
-| | [Gruau, Ratajszczak and Wiber, 1995](https://gpbib.cs.ucl.ac.uk/gp-html/DBLP_journals_tcs_GruauRW95.html): Pascal to a network | Compiled | Closest in spirit |
-| | [Carreira et al., 1998](https://core.ac.uk/download/32330732.pdf): "Building a Neural Computer", recursive functions to a recurrent network | Compiled, no training described | Closest in spirit |
+| Neural compilers | [Siegelmann, 1994](https://mlanthology.org/aaai/1994/siegelmann1994aaai-neural): the NEL language to a recurrent network | Compiled | Closest earlier form of the result |
+| | [Gruau, Ratajszczak and Wiber, 1995](https://gpbib.cs.ucl.ac.uk/gp-html/DBLP_journals_tcs_GruauRW95.html): Pascal to a network | Compiled | Closest earlier form of the result |
+| | [Carreira et al., 1998](https://core.ac.uk/download/32330732.pdf): "Building a Neural Computer", recursive functions to a recurrent network | Compiled, no training described | Closest earlier form of the result |
 | Compiled modern networks | [Tracr, Lindner et al., 2023](https://arxiv.org/abs/2301.05062v3): programs to transformers | Compiled, to give interpretability research a known ground truth | Similar method, different goal |
 | Trained programs | Neural Turing Machines; [Neural Programmer-Interpreters](https://arxiv.org/abs/1511.06279v4) | Trained | Similar structure in places, opposite method |
 
