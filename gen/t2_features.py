@@ -46,15 +46,16 @@ on('T2_TS',(net.eq(szv,0,e),'RD0',None),(None,'FMTS',{fm:9,fsi:near}))
 # list toggles and keys
 e=S('T2_LI0')
 on('T2_LI',(None,'T2_LI0',{r1:cb+LIST}))
-lb0=net.bits(R1,4,e); kind0=lb0[0]+lb0[1]*2; lvl0=lb0[2]*4+lb0[3]*8
+lb0=net.bits(R1,9,e); kind0=lb0[0]+lb0[1]*2; lvl0=lb0[2]*4+lb0[3]*8
 on('T2_LI0',(net.eq(kind0,alv,e),'SETLI',{alv:0}),(None,'SETLI',{alv:alv+lvl0}))
-e=S('T2_TB'); lb1=net.bits(R1,4,e); k1_=lb1[0]+lb1[1]*2; l1_=lb1[2]+lb1[3]*2
+e=S('T2_TB'); lb1=net.bits(R1,9,e); k1_=lb1[0]+lb1[1]*2; l1_=lb1[2]+lb1[3]*2
 inlist1=net.and_(e,net.step(k1_),net.or_(net.eq(co,0,e),has_sel))
-on('T2_TB',(net.and_(inlist1,shiftk),'PA0',{pwalk:lo_p,pfld:LIST,alv:k1_+net.relu(l1_-1)*4,grp:grp+1}),
- (inlist1,'PA0',{pwalk:lo_p,pfld:LIST,alv:k1_+net.min_(l1_+1,2)*4,grp:grp+1}),
+_f1=sum((lb1[4+k_]*(16<<k_) for k_ in range(5)),X())
+on('T2_TB',(net.and_(inlist1,shiftk),'PA0',{pwalk:lo_p,pfld:LIST,alv:k1_+net.relu(l1_-1)*4+_f1,grp:grp+1}),
+ (inlist1,'PA0',{pwalk:lo_p,pfld:LIST,alv:k1_+net.min_(l1_+1,2)*4+_f1,grp:grp+1}),
  (None,'TYPE',{eva:9}))
 t2es=R()
-e=S('T2_EN0'); lb2=net.bits(R1,4,e); k2_=lb2[0]+lb2[1]*2; l2_=lb2[2]+lb2[3]*2
+e=S('T2_EN0'); lb2=net.bits(R1,9,e); k2_=lb2[0]+lb2[1]*2; l2_=lb2[2]+lb2[3]*2
 emp=net.and_(e,net.step(k2_),net.eq(clen,0,e))
 on('T2_EN0',(net.and_(emp,net.step(l2_)),'PA0',{pwalk:cp,pfld:LIST,alv:k2_+(l2_-1)*4}),(emp,'PA0',{pwalk:cp,pfld:LIST,alv:0}),(None,'SPLIT',{t2es:R2,oret.r:oret.id('T2_EN1')}))
 # after a styled paragraph ends at its last character, the next paragraph is Normal
@@ -187,12 +188,12 @@ on('T2_AB3',(None,'T2_AB4',{r1:as_x(NUMT)+256+net.min_(t2n_,255)}))
 on('T2_AB4',(None,'PX',{w1:(as_x(NUMT)+t2nx,R1)}))
 on('T2_NX',(None,'PX',{t2nx:net.min_(t2n_,255)}))
 on('T2_LV',(None,'PX',{t2lv:t2n_}))
-e=S('T2_FM'); isbul=net.and_(net.eq(W[0],98,e),net.eq(W[1],117,e))
-lz=net.and_(e,net.eq(t2lv,0,e)); w1.drive(lz,(as_x(NUMT)+256+t2an,2-isbul))
-on('T2_FM',(None,'PX',{oi:oi+18}))
+e=S('T2_FM'); on('T2_FM',(None,'PX',{oi:oi+18,v6nf:pat('lowerLet',e)+pat('upperLet',e)*2+pat('lowerRom',e)*3+pat('upperRom',e)*4+pat('bullet',e)*5}))
 on('T2_IL',(None,'PX',{t2il:net.min_(t2n_,2)}))
 on('T2_NI',(None,'T2_NI1',{r1:as_x(NUMT)+net.min_(t2n_,255)}))
-e=S('T2_NI1'); kd=R1+net.and_(e,ONE-net.step(R1))
+e=S('T2_NI1'); _ib=net.bits(R1,18,e); _il=net.decode(t2il,3,e); _F=sum((_il[j_]*0 for j_ in range(0)),X())
+for j_ in range(3): _F=_F+G_(sum((_ib[6*j_+b_]*(1<<b_) for b_ in range(6)),X()),_il[j_])
+_fnum=net.step(net.and_(net.ge(_F,1,e),net.lt(_F,13,e))+net.eq(_F,62,e)); kd=e+_fnum+G_(_F,net.lt(_F,20,e))*16
 on('T2_NI1',(net.step(t2n_),'PX',{w1:(cb+LIST,kd+t2il*4),w2:(cb+PIND,0),w3:(cb+PFIRST,0),t2il:0}),(None,'PX',{w1:(cb+LIST,0),t2il:0}))
 # style part
 t2ido=R();t2oi=R();t2i=R();t2jj=R();t2fnd=R()
@@ -242,10 +243,13 @@ e=S('T2_PM'); on('T2_PM',(net.and_(net.eq(qs,0,e),net.step(qk)),'T2_PMa',None),(
 lit('T2_PMa',b'BT /F0 15 Tf 0 0 0 rg 1 0 0 1 ','T2_PMb')
 e=S('T2_PMb'); number('T2_PMb',qx+qind+qxc-20-net.eq(qk,2,e)*6,'T2_PMc'); lit('T2_PMc',b' ','T2_PMd')
 number('T2_PMd',qyb,'T2_PMe'); lit('T2_PMe',b' Tm (','T2_PMf')
-e=S('T2_PMf'); on('T2_PMf',(net.eq(qk,1,e),'T2_PMg',None),(None,'T2_PMh',{qi:0}))
-e=S('T2_PMg'); bq=net.decode(ql,4,e); em_en.lin(e); em_b.add(e,bq[0]*149+bq[1]*111+bq[2]*150+bq[3]*150)
+e=S('T2_PMf'); _lm=list_mark(v6qf,e); on('T2_PMf',(net.eq(qk,1,e),'T2_PMg',None),(net.step(_lm[2]),'V6_PE',{qi:0}),(None,'T2_PMh',{qi:0}))
+lit('V6_PE',b'\\(','T2_PMh')
+e=S('T2_PMg'); bq=net.decode(ql,4,net.and_(e,ONE-net.step(v6qf))); _lm=list_mark(v6qf,e); em_en.lin(e); em_b.add(e,bq[0]*149+bq[1]*111+bq[2]*150+bq[3]*150+_lm[4]+net.eq(_lm[4],127,e)*22)
 on('T2_PMg',(None,'T2_PMz',None))
-on('T2_PMh',(None,'T2_PMi',{r1:as_x(MKT)+net.min_(ql,2)*2048+qmk*8+qi}))
-e=S('T2_PMi'); go=net.and_(e,net.step(R1)); em_en.lin(go); em_b.add(go,R1)
-on('T2_PMi',(net.step(R1),'T2_PMh',{qi:qi+1}),(None,'T2_PMz',None))
+e=S('T2_PMh'); _lm=list_mark(v6qf,e); on('T2_PMh',(None,'T2_PMi',{r1:as_x(MKT)+(_lm[0]+G_(net.min_(ql,2),ONE-net.step(v6qf)))*2048+qmk*8+qi}))
+e=S('T2_PMi'); _lm=list_mark(v6qf,e); _dot=net.eq(R1,46,e); _sf=_lm[3]+G_(as_x(46),ONE-net.step(v6qf)); _go0=net.and_(e,net.step(R1),ONE-net.and_(_dot,ONE-net.step(_sf))); _par=net.and_(_dot,net.eq(_sf,41,e)); _go=_go0-net.and_(_go0,_par)
+em_en.lin(_go); em_b.add(_go,R1-net.and_(_lm[1],net.ge(R1,97,e))*32+G_(_sf,_dot)-_dot*46)
+on('T2_PMi',(_par,'V6_PF',None),(_go0,'T2_PMh',{qi:qi+1}),(None,'T2_PMz',None))
+lit('V6_PF',b'\\)','T2_PMz')
 lit('T2_PMz',b')Tj ET\n','PD_R')

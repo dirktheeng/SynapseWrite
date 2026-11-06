@@ -206,7 +206,7 @@ on('PX2',(net.ge(nextb,SLOTMAX,e),'T2_ZN',None),(net.and_(t2skip,ONE-pat('</w:st
  (pat('<w:abstr',e),'T2_AB',{rl:OA+oi+8}),
  (pat('<w:num ',e),'T2_NM',{oi:oi+7,t2n_:0,t2rr.r:t2rr.id('T2_NX')}),
  (pat('<w:lvl ',e),'T2_NM',{oi:oi+7,t2n_:0,t2rr.r:t2rr.id('T2_LV')}),
- (pat('<w:numFm',e),'T2_FM',{rl:OA+oi+17}),
+ (pat('<w:numFm',e),'T2_FM',{rl:OA+oi+17}),(pat('<w:lvlTe',e),'V6_LT',{rl:OA+oi+18}),
  *A4_PX(e),
  *A6_PX_RULES(e),*T3_PX_RULES(e),
  (None,'PX',{oi:oi+1}))

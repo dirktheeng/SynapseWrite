@@ -52,5 +52,29 @@ const near=(A,r,g,b,t=6)=>count(A,223,1039,174,776,(x,y,z)=>Math.abs(x-r)<=t&&Ma
   A.key(132,1);A.settle();A.key(133,3);A.settle();A.click(1106,120);A.settle();A.shot('build/imp4_s4.png');A.click(950,127+22*6+10);A.settle();A.click(600,700);A.settle();A.shot('build/imp4_s5.png');x=part(A,'word/document.xml');const f=x.slice(x.indexOf('<w:r>'),x.indexOf('</w:r>'));ok('menu pick overlays: keeps italic and size, adds bold and color',/rStyle w:val="Em9"/.test(f)&&/<w:b\/>/.test(f)&&/<w:i\/>/.test(f)&&/w:sz w:val="40"/.test(f)&&/00A0A0/.test(f),f.slice(0,200));
   A.key(122,1);A.settle();x=part(A,'word/document.xml');ok('undo takes it off',!/rStyle/.test(x.slice(x.indexOf('<w:r>'),x.indexOf('</w:r>'))));
  }
+ if(!only||only=='list'){
+  const rows=(A,y0=174,y1=776)=>{const f=A.fb();const r=[];for(let y=y0;y<y1;y++){let d=0;for(let x=270;x<900;x++){if(f[(y*1280+x)*4]<120)d++;}r.push(d>0);}const t=[];for(let i=1;i<r.length;i++)if(r[i]&&!r[i-1])t.push(i+y0);return t;};
+  const pick=(A,r)=>{A.click(1246,74);A.settle();A.click(1120,127+22*r+10);A.settle();};
+  // every format, chosen from the menu, draws, saves and reopens the same
+  let A=await lib();A.paste('one\ntwo\nthree\n');A.settle();A.key(97,1);A.settle();A.click(394,75);A.settle();A.click(1246,74);A.settle();A.shot('build/imp4_l0.png');A.key(27);A.settle();
+  const hs=new Set();for(const [r,num,txt] of [[1,'decimal','%1)'],[2,'decimal','(%1)'],[3,'lowerLetter','%1.'],[5,'upperLetter','%1.'],[6,'upperLetter','%1)'],[7,'lowerRoman','%1.'],[9,'upperRoman','%1.'],[11,'decimal','%1'],[13,'bullet','o'],[14,'bullet','&#8211;'],[15,'bullet','&gt;'],[17,'bullet','&#183;'],[18,'bullet','&#167;']]){
+   let B=await lib();B.paste('one\ntwo\nthree\n');B.settle();B.key(97,1);B.settle();B.click(394,75);B.settle();pick(B,r);B.click(700,600);B.settle();B.shot('build/imp4_lf'+r+'.png');const h=B.hash(190,776);hs.add(h);
+   const nm=part(B,'word/numbering.xml'),x=part(B,'word/document.xml');const id=(x.match(/<w:numId w:val="(\d+)"/)||[])[1];const nm2=nm.match(new RegExp('<w:num w:numId="'+id+'"><w:abstractNumId w:val="(\\d+)"'));const ab=nm2&&nm.match(new RegExp('<w:abstractNum w:abstractNumId="'+nm2[1]+'".*?</w:abstractNum>'));
+   ok('format '+r+' saved as '+num+' '+txt,ab&&ab[0].includes('w:numFmt w:val="'+num+'"')&&ab[0].includes('w:lvlText w:val="'+txt+'"'),id);
+   let C=await lib();C.file(9,B.savedBytes());C.settle();C.click(700,600);C.settle();ok('format '+r+' reopens the same',C.hash(190,776)===h);C.key(112,1);}
+  ok('thirteen formats give thirteen pictures',hs.size==13,hs.size);
+  // a file's own formats by level
+  const num=`<w:numbering ${W}><w:abstractNum w:abstractNumId="4"><w:lvl w:ilvl="0"><w:numFmt w:val="upperRoman"/><w:lvlText w:val="%1)"/></w:lvl><w:lvl w:ilvl="1"><w:numFmt w:val="decimal"/><w:lvlText w:val="(%2)"/></w:lvl><w:lvl w:ilvl="2"><w:numFmt w:val="bullet"/><w:lvlText w:val="*"/></w:lvl></w:abstractNum><w:num w:numId="7"><w:abstractNumId w:val="4"/></w:num></w:numbering>`;
+  const li=(t,l)=>`<w:p><w:pPr><w:numPr><w:ilvl w:val="${l}"/><w:numId w:val="7"/></w:numPr></w:pPr><w:r><w:t>${t}</w:t></w:r></w:p>`;
+  A=await lib();A.file(9,doc(li('Top',0)+li('Next',1)+li('Deep',2),{'word/numbering.xml':num}));A.settle();A.shot('build/imp4_l2.png');let x=part(A,'word/document.xml');const n2=part(A,'word/numbering.xml');
+  const ids=[...x.matchAll(/<w:numId w:val="(\d+)"/g)].map(m=>m[1]);const look=id=>{const m=n2.match(new RegExp('<w:num w:numId="'+id+'"><w:abstractNumId w:val="(\\d+)"'));return n2.match(new RegExp('<w:abstractNum w:abstractNumId="'+m[1]+'".*?</w:abstractNum>'))[0];};
+  ok('file level 0 keeps upper roman',/upperRoman/.test(look(ids[0]))&&/%1\)/.test(look(ids[0])),ids.join());ok('file level 1 keeps (n)',/\(%2\)/.test(look(ids[1])));ok('file level 2 keeps its bullet',/lvlText w:val="\*"/.test(look(ids[2])));
+  // Tab keeps the format
+  A=await lib();A.paste('aa\nbb\n');A.settle();A.key(97,1);A.settle();A.click(394,75);A.settle();pick(A,6);A.click(700,600);A.settle();A.key(132,1);A.key(9);A.settle();x=part(A,'word/document.xml');const i2=x.match(/<w:ilvl w:val="1"\/><w:numId w:val="(\d+)"/);ok('Tab keeps the format',i2&&/upperLetter/.test((()=>{const n3=part(A,'word/numbering.xml');const m=n3.match(new RegExp('<w:num w:numId="'+i2[1]+'"><w:abstractNumId w:val="(\\d+)"'));return n3.match(new RegExp('<w:abstractNum w:abstractNumId="'+m[1]+'".*?</w:abstractNum>'))[0];})()),i2&&i2[1]);
+  // Enter continues; undo restores
+  A=await lib();A.paste('aa\n');A.settle();A.key(133,1);A.key(8);A.key(97,1);A.settle();A.click(394,75);A.settle();pick(A,6);A.click(700,600);A.settle();A.key(133,1);A.key(13);A.type('bb');A.settle();A.shot('build/imp4_l3.png');x=part(A,'word/document.xml');ok('Enter keeps the format',(x.match(/<w:numId w:val="(\d+)"/g)||[]).length==2&&(new Set(x.match(/<w:numId w:val="(\d+)"/g))).size==1);
+  // PDF marker with a parenthesis stays valid
+  A=await lib();A.paste('pp\nqq\n');A.settle();A.key(97,1);A.settle();A.click(394,75);A.settle();pick(A,2);A.key(112,1);const pn=A.e.val(A.h.fileout),pa=A.e.val(A.h.outbase);const pb=Buffer.alloc(pn);for(let i=0;i<pn;i++)pb[i]=A.e.bget(pa+i);const pdf=pb.toString('latin1');require('fs').writeFileSync('build/imp4_l.pdf',pb);ok('PDF marker escapes parentheses',/\\\(1\\\)/.test(pdf),(pdf.match(/\([^)]{0,8}\)Tj/g)||[]).slice(0,3).join(' '));
+ }
  console.log(R.filter(x=>x).length+'/'+R.length);process.exit(R.every(x=>x)?0:1);
 })();

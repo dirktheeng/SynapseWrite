@@ -299,7 +299,7 @@ T1S={x.split('\n',1)[0].strip():x.split('\n',1)[1] for x in open('t1_features.py
 def T1(n): exec(T1S[n],globals())
 T1('regs')
 exec(open('rv_a4_regs.py').read())
-exec(open('imp3_regs.py').read()); exec(open('imp4_regs.py').read())
+exec(open('imp3_regs.py').read()); exec(open('imp4_regs.py').read()); exec(open('imp4_list.py').read())
 cbb=R();qrep=R();a7_vw=R();a7_far=R();a7_jmp=R();a7_wb=R();impf=R();impk=R();impc=R();impsc=R();impyt=R();stp=R();stg=R();stw=R();stm=R();tbm=R();A7BUD=15000   # characters of layout one event may do before the rest goes to the background
 # dispatch tables for subroutine returns
 class Ret:
@@ -740,8 +740,8 @@ shh=net.decode_z(MT[2],len(PAL_B),e3)
 def bcv(k): return sum((shh[i_]*PAL_B[i_][k] for i_ in range(len(PAL_B))),X())
 meta0={ptoc:MT[4],ptsrc:MT[5],ptpg:MT[6],bc0:bcv(0),bc1:bcv(1),bc2:bcv(2),pbg:MT[2],pim:rim.out[0],pih:rim.out[1],pio:rim.out[2],pfn:rf.out[2],tcols:rc.out[0],tci:rc.out[1],rw:geom_w,rx0:geom_x,rleft:G_(s_px,nt3)+G_(s_tx+1+MT[1],tb3),rright:G_(s_px+s_pw,one3)+G_(s_tx+col2,two)+G_(s_tx+MT[1]+MT[0],tb3)}
 newsec=net.and_(e3,net.step(MT[3]),net.step(net.step(MT[3]-1-cursec-0.5)+net.step(cursec-MT[3]+1-0.5)))
-lb3=net.bits(RL[3],4,e3)
-meta={**A4_META(e3),**meta0,plen_:RL[0],al:RL[2],lsf:lb3[0]+lb3[1]*2,plvl:lb3[2]+lb3[3]*2,pind:rp6.out[0],pfirst_:rp6.out[1],plsp:rp6.out[2],pspb:rp6.out[3],pspa:rp6.out[4],psty:rp6.out[5],lfi:rp6.out[1],nl:RL[4],wdp:RL[5],oend:RL[6],pbk:RL[7],a6pm:R2}
+lb3=net.bits(RL[3],9,e3)
+meta={lfm:sum((lb3[4+k_]*(1<<k_) for k_ in range(5)),X()),**A4_META(e3),**meta0,plen_:RL[0],al:RL[2],lsf:lb3[0]+lb3[1]*2,plvl:lb3[2]+lb3[3]*2,pind:rp6.out[0],pfirst_:rp6.out[1],plsp:rp6.out[2],pspb:rp6.out[3],pspa:rp6.out[4],psty:rp6.out[5],lfi:rp6.out[1],nl:RL[4],wdp:RL[5],oend:RL[6],pbk:RL[7],a6pm:R2}
 on('R3',(newsec,'T3_SB0',{cursec:MT[3]-1,rl:as_x(SECB)+(MT[3]-1)*8}),(net.step(RL[1]),'LAY0',{**meta,lfn:0,lfb:0,lfh:0,lfnb:0,lfhb:0,lj:0,ls_:0,off:0,lx:0,lb:0,lbx:0,lsn:0,lspb:0,lasc:0,lhh:0,wc:0,prevsp:1,llast:0}),(None,'R3B',meta))
 e=S('R3B')
 pb_=net.and_(ONE-net.eq(a4hlast,pi+1,e),net.or_(a4kbr,net.and_(pbk,net.gt(yy,ptop+s_mt,e)),net.and_(net.step(tcols),net.eq(tci,0,e),net.gt(yy+60,ptop+s_mt+s_th,e))))
@@ -800,13 +800,16 @@ tx0=s_tx+rx0+xcol+tpad-48; r8a={rA:(lleft,sy,lright-lleft,lhh,(bc0,bc1,bc2),1),r
 on('R8',(net.and_(net.eq(ls_,0,e),net.eq(lsf,1,e)),'BUL',r8a),(net.and_(net.eq(ls_,0,e),net.eq(lsf,2,e)),'NUM',r8a),(None,'C0',r8a))
 gly_y=sy+lasc-asc_e-rise
 BULS=[127,ord('o'),150,150]
-e=S('BUL'); bh=net.decode(plvl,4,e); bch=X()
+e=S('BUL'); bh=net.decode(plvl,4,net.and_(e,ONE-net.step(lfm))); bch=X()
 for i_,b_ in enumerate(BULS): bch=bch+bh[i_]*b_
+_lm=list_mark(lfm,e); bch=bch+_lm[4]
 on('BUL',(None,'C0',{gly:(bch,0,x-24,gly_y,0,0)}))
 mk_i=R()
-on('NUM',(None,'NUM2',{mk_i:0,sx:x-24}))
-on('NUM2',(None,'NUM3',{r1:as_x(MKT)+net.min_(plvl,2)*2048+mkn*8+mk_i}))
-on('NUM3',(net.step(R1),'NUM2',{gly:(R1,0,sx,gly_y,0,0),sx:sx+adv,mk_i:mk_i+1}),(None,'C0',None))
+e=S('NUM'); _lm=list_mark(lfm,e); on('NUM',(net.step(_lm[2]),'V6_NP',{mk_i:0,sx:x-24,gly:(_lm[2],0,x-24,gly_y,0,0)}),(None,'NUM2',{mk_i:0,sx:x-24}))
+on('V6_NP',(None,'NUM2',{sx:sx+adv}))
+e=S('NUM2'); _lm=list_mark(lfm,e); on('NUM2',(None,'NUM3',{r1:as_x(MKT)+(_lm[0]+G_(net.min_(plvl,2),ONE-net.step(lfm)))*2048+mkn*8+mk_i}))
+e=S('NUM3'); _lm=list_mark(lfm,e); _dot=net.eq(R1,46,e); _sf=_lm[3]+G_(as_x(46),ONE-net.step(lfm)); _ch=R1-net.and_(_lm[1],net.ge(R1,97,e))*32+G_(_sf,_dot)-_dot*46
+on('NUM3',(net.and_(net.step(R1),_dot,ONE-net.step(_sf)),'C0',None),(net.step(R1),'NUM2',{gly:(_ch,0,sx,gly_y,0,0),sx:sx+adv,mk_i:mk_i+1}),(None,'C0',None))
 e=S('C0')
 exec(open('rv_a3_paint.py').read()); exec(open('imp3_find_paint.py').read()); e=S('C0')
 on('C0',(net.ge(off,le_,e),'CE',None),(net.and_(rv_hl,net.ge(off,rv_mhe,e)),'RVA3_H0',{rv_hk:0}),(None,'C1',{r1:pbs+off,rs:pbs+1024+off}))
@@ -1112,7 +1115,7 @@ exec(open('imp4_prompt.py').read())
 exec(open('t4_features.py').read())
 exec(open('t2_features.py').read())
 exec(open('t3_features.py').read())
-exec(open('imp4_style.py').read())
+exec(open('imp4_style.py').read()); exec(open('imp4_list2.py').read())
 net.group('late commands')
 exec(open('rv_a2_canvas.py').read())
 exec(open('rv_a4_features.py').read())

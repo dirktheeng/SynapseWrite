@@ -62,10 +62,10 @@ on('PD_2',(None,'T3_PQ2',{qb:R1,rmeta:R1+META}))
 e=S('PD_3')
 first_p=net.eq(qtop,0,e)
 qyy0=rl.out[0]+G_(rp6.out[3],net.gt(rl.out[0],rl.out[1]+qmt,e))
-qlb=net.bits(R2,4,e); qkind=qlb[0]+qlb[1]*2; qlvl=qlb[2]+qlb[3]*2
+qlb=net.bits(R2,9,e); qkind=qlb[0]+qlb[1]*2; qlvl=qlb[2]+qlb[3]*2
 qk=R();ql=R();qmk=R()
 qln_new,qmk_new=list_step(rl.out[4],qkind,qlvl,e)
-pl_={qyy:qyy0,qcols:rc.out[0],qci:rc.out[1],qln:rl.out[4],qxc:rl.out[5],qk:qkind,ql:qlvl,qmk:qmk_new,qind:G_(qlvl*48+48,net.step(qkind))+net.eq(qtoc,2,e)*24,qiw:rim.out[0],qih:rim.out[1],qpo:rim.out[2]}
+pl_={v6qf:sum((qlb[4+k_]*(1<<k_) for k_ in range(5)),X()),qyy:qyy0,qcols:rc.out[0],qci:rc.out[1],qln:rl.out[4],qxc:rl.out[5],qk:qkind,ql:qlvl,qmk:qmk_new,qind:G_(qlvl*48+48,net.step(qkind))+net.eq(qtoc,2,e)*24,qiw:rim.out[0],qih:rim.out[1],qpo:rim.out[2]}
 on('PD_3',(first_p,'PD_4',{**pl_,qtop:rl.out[1]}),
  (net.gt(rl.out[1],qtop,e),'PD_C',{**pl_,qtop:rl.out[1]}),
  (None,'PD_4',pl_))
