@@ -11,6 +11,6 @@ for i_,it_ in enumerate(_a1i):
     t_=_a1s[i_]; sh_=net.gt(t1_rW,it_[1],t_)
     if it_[0]=='r': rA.drive(sh_,(t1_rL+it_[1],it_[2],1,it_[3],_a1c,0))
     else:
-        g_en.lin(sh_); g_draw.lin(sh_); g_ch.lin(sh_*it_[2]); g_st.lin(sh_*11); g_x.add(sh_,t1_rL+it_[1]); g_y.lin(sh_*(155+YB)); fg[1].lin(sh_); bg[0].lin(sh_)
+        g_en.lin(sh_); g_draw.lin(sh_); g_ch.lin(sh_*it_[2]); g_st.lin(sh_*rom.lit(11)); g_x.add(sh_,t1_rL+it_[1]); g_y.lin(sh_*(155+YB)); fg[1].lin(sh_); bg[0].lin(sh_)
     net.rec(_a1s[i_+1],t_)
 net.rec(S('T1_RM0'),_a1s[-1])
