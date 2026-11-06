@@ -6,14 +6,15 @@ Test evidence: `test/e2e.js` (see `build/e2e.json`; `build/e2e.json`), `test/t4.
 ## Tier 1
 | Feature | Status | Evidence or gap |
 |---|---|---|
-| Ribbon and tabs | Partial | Hover highlights on buttons, tabs, and menu rows. Dropdown menus for font, size, color, find options, margins, and line spacing, drawn by the network, with keyboard use. Home, Insert, Layout, References, Review, and View have working commands, but many Word commands are absent from them. Pixel art icons are original. Tier 3 commands (table tools, page setup, header and footer) have no hover highlight, as they share one object id. |
-| Status bar | Passed | Page and word counts render from the network. |
+| Ribbon and tabs | Partial | Hover highlights on buttons, tabs, and menu rows. Dropdown menus for font, size, color, find options, margins, and line spacing, drawn by the network, with keyboard use. Home, Insert, Layout, References, Review, and View have working commands, but many Word commands are absent from them. Original icons, 16 and 32 px. Word style arrangement with a File tab, combo boxes, a styles gallery with previews, color and highlight dropdown grids, pressed states; every command has its own hover highlight. File screen has New, Open, Save, Print. |
+| Status bar | Passed | Page and word counts render from the network. Language, view buttons and zoom slider are drawn but do not act. |
+| Pointer | Passed | Drawn by the network: arrow, I-beam, left-right, up-down, diagonal, margin arrow, chosen from the id and color under it and the table and picture zones. Colors under it are saved and restored through a block port; it never writes alpha. Hidden on touch. `test/look.js`. |
 | Rulers | Partial | Indent and margin markers and the active band follow the caret paragraph, table cell, column, and margin setting. Can be hidden. Markers are not draggable. |
 | Typing, caret, blink | Passed | e2e typing tests; caret blinks through ANN timer requests. |
 | Selection | Passed | Shift+arrows, drag, select all, double click word, triple click paragraph. Dragging after a double click does not extend by word. |
 | Scrolling | Passed | Wheel, scrollbar click, and thumb dragging. |
 | Undo and redo | Passed | Includes paragraph merges, formatting, paragraph properties, style updates, and table, footnote, comment and section break edits. Groups by word, with new groups on caret moves, commands, a change of edit kind, and a 2 s pause. Margin, orientation and column settings are not undoable. |
-| Clipboard | Partial | Plain text only; formatting is lost. The Paste button needs browser clipboard permission. |
+| Clipboard | Partial | Plain text only; formatting is lost. Real Ctrl+C, Ctrl+X and Ctrl+V tested (`test/look.js`). A denied Paste button draws a status message and pastes the network's own copy if it has one. If clipboard write is impossible, Ctrl+V uses the network's copy until the next successful copy, so text copied elsewhere meanwhile is not seen. Not exercised in Firefox or Safari. |
 | Find and replace | Partial | Match count with current index, match case, whole words. Matches must lie within one paragraph. Other matches are not highlighted. |
 
 ## Tier 2
@@ -21,7 +22,7 @@ Test evidence: `test/e2e.js` (see `build/e2e.json`; `build/e2e.json`), `test/t4.
 |---|---|---|
 | Bold, italic, underline, strikethrough, superscript, subscript | Passed | Shortcuts and buttons; ribbon cells for the new ones, saved and reopened (`test/tier2.js`). Scripts draw a smaller compiled size. |
 | Font size | Partial | Typed entry in the size box and grow and shrink buttons, snapped to 13 compiled sizes from 7 to 36 pt. Sizes above 36 pt and in-between sizes such as 13 or 22 pt do not exist. |
-| Fonts | Partial | Two faces (Carlito, Caladea). ASCII, Latin-1 and the Windows-1252 punctuation block (curly quotes, dashes, euro), on screen, input, clipboard, .docx and PDF. Other Unicode shows as a question mark on open and is dropped on paste. Kerning with 701 GPOS pairs (ASCII pairs only) and unrounded advances. Keyboard dead keys and IME composition do not reach the network, because the glue only forwards keydown. |
+| Fonts | Partial | Two faces (Carlito, Caladea). ASCII, Latin-1 and the Windows-1252 punctuation block (curly quotes, dashes, euro), on screen, input, clipboard, .docx and PDF. Other Unicode shows as a question mark on open and is dropped on paste. Kerning with 701 GPOS pairs (ASCII pairs only) and unrounded advances. Ink comes from the unhinted outline, 8x oversampled with the x-height snapped to a pixel row; glyphs sit on whole pixels. Keyboard dead keys and IME composition do not reach the network, because the glue only forwards keydown. |
 | Text and highlight color | Partial | 32 palette colors for text, 7 highlight colors, all on the ribbon. Any other color in a .docx snaps to the nearest palette entry. Highlight is not drawn in PDF. |
 | Paragraph alignment | Passed | Left, center, right, justify. |
 | Styles | Partial | True style table: paragraphs hold a style index, each style defines run format, alignment, indent, spacing. Update Style from the caret paragraph changes every paragraph of the style, with undo. styles.xml is saved and read, including basedOn and docDefaults, up to 196 paragraph styles. Six can be applied from the ribbon. No create, rename, or character styles; theme fonts and theme colors are not resolved. |
@@ -76,7 +77,7 @@ About 3,000 paragraphs, 1,000 characters per paragraph, 200 characters per line,
 - **Real Word:** no copy is available here, so pixel comparisons and .docx verification against Word were not run. Those verification items are open.
 - **Screenshot use:** the network reads the last output image for hit testing, using the hidden alpha channel as an object ID. It does not compare the whole screen against document state.
 - **Compiled logic:** this is a circuit-style network (2,323 control states) written by a generator. It is not a CPU emulator, but it is much closer to compiled hardware than to a conventional learned model.
-- **Ribbon cell hit test:** alpha ids stop at 255, so the Tier 2 ribbon cells share one object id per tab and the Tier 3 commands share another, and the network finds the command from the click position.
+- **Ribbon ids:** alpha ids stop at 255, so raw ids are reused per tab; the network uses the tab and id together. Color menus find the cell from the pointer position.
 - **Ports:** memory block copy and rectangle fill run inside the engine as ports the network commands. The network supplies every address, length, color, and enable signal. A stricter reading could count the copy loops as non-ANN work.
 
 - **Audit exception:** the glue creates one anchor element and one file input, only to pass .docx bytes out of and into the browser. The audit's blanket ban on `createElement` was removed for this reason.
