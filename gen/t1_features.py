@@ -146,7 +146,7 @@ on('T1_R1',(net.and_(e,ONE-t1_ruler),'T1_V0',None),
  (net.and_(t1_rv,net.eq(rL9,t1_rL,e),net.eq(rW9,t1_rW,e),net.eq(rI9,t1_rI,e)),'T1_V0',None),
  (None,'T1_RDa',{t1_rL:rL9,t1_rW:rW9,t1_rI:rI9,t1_rv:1}))
 on('T1_RDa',(None,'T1_RT',{rA:(0,150,1280,24,(230,230,230),0),rB:(s_px,154,s_pw,16,(198,198,198),0),rC:(t1_rL,154,t1_rW,16,WHITE,0)}))
-t1_chain('T1_RT',ui.ruler(),'T1_RM0')
+exec(open('rv_a1_ruler.py').read())
 MC=(96,94,92)
 for i_ in range(5):
     on(f'T1_RM{i_}',(None,f'T1_RM{i_+1}' if i_<4 else 'T1_V0',{

@@ -97,7 +97,9 @@ def _big():
         L(7,5,7,26,'b'); d.polygon([(7,3),(3,9),(11,9)],fill=P.index('b')); d.polygon([(7,28),(3,22),(11,22)],fill=P.index('b')); lines(R,14,27,(7,13,19,25),'D')
     def col2(R,L,d,P):
         page(R,5,3,26,28); lines(R,8,14,(7,10,13,16,19,22),'h'); lines(R,17,23,(7,10,13,16,19,22),'h')
-    for n,f in dict(paste=paste,table=table,pic=pic,head=head_,marg=marg,brk=brk,toc=toc,fn=fn,cmt=cmt,spell=spell,track=track,eqn=eqn,merge=merge,sty=sty,lsp=lsp,col2=col2).items(): mk('B'+n,f)
+    def sec(R,L,d,P):
+        R(7,2,24,10,'w','h'); lines(R,10,21,(5,8)); R(3,14,28,14,'b'); R(3,17,28,17,'b'); R(7,21,24,29,'w','h'); lines(R,10,21,(24,27))
+    for n,f in dict(sec=sec,paste=paste,table=table,pic=pic,head=head_,marg=marg,brk=brk,toc=toc,fn=fn,cmt=cmt,spell=spell,track=track,eqn=eqn,merge=merge,sty=sty,lsp=lsp,col2=col2).items(): mk('B'+n,f)
     return out
 ICON.update(_big())
 # a small style preview chevron and small icons for the Home rows
@@ -110,6 +112,8 @@ ICON['vprint']=["................","....DDDDDDDD....","....DWWWWWWD....","....DW
 ICON['vweb']=["................","................","..DDDDDDDDDDDD..","..DbbbbbbbbbbD..","..DWWWWWWWWWWD..","..DWggggggggWD..","..DWWWWWWWWWWD..","..DWggggggggWD..","..DWWWWWWWWWWD..","..DDDDDDDDDDDD..","................","................","................","................","................","................"]
 ICON['tick']=["................","................","............t...","...........tt...","..........tt....",".........tt.....","..t.....tt......","..tt...tt.......","...tt.tt........","....ttt.........",".....t..........","................","................","................","................","................"]
 ICON['cross']=["................","................","...r.......r....","..rrr.....rrr...","...rrr...rrr....","....rrr.rrr.....",".....rrrrr......","......rrr.......",".....rrrrr......","....rrr.rrr.....","...rrr...rrr....","..rrr.....rrr...","...r.......r....","................","................","................"]
+import rv_a1_art
+ICON.update(rv_a1_art.icons())
 class L:
     def __init__(s): s.i=[];s.tab=None
     def r(s,x,y,w,h,c,a=0,hc=None,key=None):
@@ -154,8 +158,17 @@ class L:
     def big(s,x,y,w,h,label,id_,icon,chev=False):
         "Large icon on top, label below."
         s.r(x,y,w,h,LG,200+id_,HVG); s.art(x+(w-32)//2,y+4,'B'+icon,200+id_)
-        tw=twidth(label); lx=x+(w-tw)//2-(5 if chev else 0); e=s.t(lx,y+h-20,label,9,0,3,True)
-        if chev: s.art(e-3,y+h-19,'chev',200+id_)
+        tw=twidth(label); lx=x+(w-tw)//2-(4 if chev else 0); e=s.t(lx,y+h-20,label,9,0,3,True)
+        if chev: s.art(e,y+h-19,'chev',200+id_)
+    def chv(s,x,y,w,h,a):
+        "Drop arrow centered in its button; the art's ink spans columns 2 to 8, rows 5 to 8."
+        s.art(x+(w-7)//2-2,y+(h-4)//2-5,'chev',a)
+    def stp(s,x,y,w,h,id_,icon):
+        "Framed step button with a dark icon."
+        s.r(x,y,w,h,BD,200+id_); s.r(x+1,y+1,w-2,h-2,WHT,200+id_,HVG); s.art(x+(w-16)//2,y+(h-16)//2,icon,200+id_)
+    def chip(s,x,y,w,h,label,id_):
+        "Framed value button."
+        s.r(x,y,w,h,BD,200+id_); s.btn(x+1,y+1,w-2,h-2,label,id_,b=0,bgc=WHT)
     def qbtn(s,x,y,w,h,icon,id_):
         s.r(x,y,w,h,BLUE,200+id_,HVB); s.art(x+(w-16)//2,y+(h-16)//2,icon,200+id_)
 ROW=(64,86,108)
@@ -163,10 +176,10 @@ TABN=['File','Home','Insert','Layout','References','Review','View']
 def common():
     u=L(); u.tab='c'; u.r(0,0,1280,32,BLUE); u.r(0,32,1280,28,LG)
     u.art(8,8,'app')
-    u.qbtn(32,6,26,20,'save',47); u.qbtn(60,6,26,20,'undo',27); u.qbtn(88,6,26,20,'redo',28); u.qbtn(116,6,26,20,'open',48); u.qbtn(144,6,26,20,'pdf',53)
-    u.t(250,9,'Document1 - SynapseWrite',9,2,4)
+    u.qbtn(32,6,26,20,'save',47); u.qbtn(60,6,26,20,'undo',27); u.qbtn(88,6,26,20,'redo',28); u.qbtn(116,6,26,20,'open',48); u.qbtn(144,6,26,20,'pdfw',53)
+    u.t(444-twidth('Document1 - SynapseWrite'),9,'Document1 - SynapseWrite',9,2,4)
     # search box opens the find bar
-    u.r(480,5,360,22,(68,119,187),225,(85,136,204)); u.art(486,8,'srch',225); u.t(508,9,'Search',9,2,16)
+    u.r(460,5,360,22,_PB[16],225,_PB[17]); u.art(466,8,'srch',225); u.t(488,9,'Search',9,2,16,17)
     # status bar: the left part is live, the right part is static
     u.r(0,776,1280,1,BD); u.r(640,777,640,23,LG)
     x=1000
@@ -175,7 +188,7 @@ def common():
         u.art(x+i*26+4,780,ic_)
     u.r(1110,788,110,1,(150,150,150)); u.r(1164,782,3,13,(90,90,90))
     u.r(1092,788,10,1,(90,90,90)); u.r(1228,788,9,1,(90,90,90)); u.r(1232,784,1,9,(90,90,90))
-    u.t(1244,781,'100%',9,1,3)
+    u.t(1244,782,'100%',9,1,3)
     return u,['Home','Insert','Layout','References','Review','View']
 def tabbar(u,names,sel):
     x=8; w=twidth('File')+24
@@ -190,16 +203,6 @@ def tabbar(u,names,sel):
     u.r(0,60,1280,90,LG); u.r(0,149,1280,1,BD)
     u.r(0,150,1280,24,GRAYW)
 GRAYW=(230,230,230)
-def ruler():
-    "Inch ticks and numbers; the network redraws them when the markers move."
-    u=L()
-    for k in range(0,9):
-        xx=319+k*96
-        if xx<=943:
-            if k==0 or k==7: pass
-            else: u.r(xx-16,161,1,3,(138,136,134)); u.r(xx-48,159,1,7,(138,136,134)); u.r(xx-80,161,1,3,(138,136,134))
-            if 0<k<7: u.i.append(('g',48+k,11,xx-3,155,1,0,False))
-    return u
 def group_label(u,x,w,t):
     u.t(x+(w-twidth(t))//2,131,t,9,1,3); u.r(x+w+4,64,1,80,BD)
 def effect(u,x,id_,ch,sc=None,bar=None):
@@ -210,14 +213,14 @@ HOME={'font':(112,64,112),'size':(242,64,34),'biu':(112,138,164),'fill':0}
 def home(u):
     u.big(6,64,46,62,'Paste',36,'paste'); u.ibtn(54,64,52,21,'Cut',38,'cut'); u.ibtn(54,86,52,21,'Copy',37,'copy'); group_label(u,6,100,'Clipboard')
     x=112
-    u.r(x,64,112,22,(170,170,170),206); u.btn(x+112,64,16,22,'',42); u.art(x+112,67,'chev',242)
-    u.r(242,64,34,22,(170,170,170),243); u.btn(276,64,14,22,'',40); u.art(275,67,'chev',240)
+    u.r(x,64,112,22,(170,170,170),206); u.btn(x+112,64,16,22,'',42); u.chv(x+112,64,16,22,242)
+    u.r(242,64,34,22,(170,170,170),243); u.btn(276,64,14,22,'',40); u.chv(276,64,14,22,240)
     u.btn(292,64,24,22,'A+',4); u.btn(316,64,24,22,'A-',5)
     effect(u,190,10,'S',bar=True); effect(u,216,12,'x','_'); effect(u,242,11,'x','^')
     u.r(270,90,24,24,LG,207,HVG); u.t(277,92,'A',9,0,3,True); u.r(274,107,16,3,(187,0,0),207)
-    u.btn(294,90,12,24,'',41); u.art(292,94,'chev',241)
+    u.btn(294,90,12,24,'',41); u.chv(294,90,12,24,241)
     u.r(306,90,24,24,LG,244,HVG); u.t(311,92,'ab',9,0,3,True); u.r(310,107,16,3,(255,255,0),244)
-    u.btn(330,90,12,24,'',45); u.art(328,94,'chev',245)
+    u.btn(330,90,12,24,'',45); u.chv(330,90,12,24,245)
     group_label(u,112,230,'Font')
     x=350
     u.ic(x,64,28,24,19,'bul'); u.ic(x+30,64,28,24,20,'num'); u.ic(x+62,64,28,24,13,'ind-'); u.ic(x+92,64,28,24,14,'ind+')
@@ -245,33 +248,36 @@ def _tw(s,st):
     return round(sum(rom.adv_em(0,bo,it,ord(c))*px for c in s))
 GRIDC=22
 def insert(u):
-    for i,(lb,id_) in enumerate((('2 x 2',40),('3 x 3',41),('4 x 4',42))): u.ibtn(6,ROW[i],70,21,lb,id_,'table')
-    group_label(u,6,276,'Tables'); u.big(314,64,54,62,'Picture',52,'pic'); group_label(u,314,54,'Pictures')
-    u.ibtn(380,64,84,21,'Header',46,'head'); group_label(u,380,186,'Header and Footer')
+    for i,(lb,id_,ic_) in enumerate((('2 x 2',40,'tb2'),('3 x 3',41,'tb3'),('4 x 4',42,'tb4'))): u.ibtn(6,ROW[i],62,21,lb,id_,ic_)
+    group_label(u,6,226,'Tables'); group_label(u,242,48,'Shading')
+    u.big(300,64,54,62,'Picture',52,'pic'); group_label(u,300,54,'Pictures')
+    u.ibtn(364,64,94,21,'Header',46,'head'); group_label(u,364,202,'Header and Footer')
     x=576
-    u.btn(x,64,84,21,'Page Field',3); u.btn(x,86,84,21,'Date',4); u.btn(x+86,64,84,21,'Word Count',5); u.btn(x+86,86,84,21,'Update All',1); group_label(u,x,170,'Fields')
-    u.big(756,64,60,62,'Equation',2,'eqn'); group_label(u,756,60,'Math')
+    u.ibtn(x,64,88,21,'Page Field',3,'fpage'); u.ibtn(x,86,88,21,'Date',4,'fdate'); u.ibtn(x+90,64,92,21,'Word Count',5,'fcount'); u.ibtn(x+90,86,92,21,'Update All',1,'refresh'); group_label(u,x,182,'Fields')
+    u.big(768,64,60,62,'Equation',2,'eqn'); group_label(u,768,60,'Math')
+def _steps(u,x,lw,rows):
+    "Rows of a label and two framed step buttons, in one column."
+    for r,(nm,a,b,ia,ib) in enumerate(rows):
+        u.t(x,ROW[r]+2,nm,9,0,3); u.stp(x+lw,ROW[r],24,21,a,ia); u.stp(x+lw+26,ROW[r],24,21,b,ib)
 def layout(u):
-    u.big(6,64,52,62,'Margins',6,'marg',True); group_label(u,6,196,'Page Setup')
-    u.ibtn(212,64,70,21,'One',43,'col1'); u.ibtn(212,86,70,21,'Two',44,'col2'); group_label(u,212,70,'Columns')
-    u.big(290,64,56,62,'Page Break',1,'brk'); u.big(348,64,62,62,'Section',15,'brk'); group_label(u,290,120,'Breaks')
-    x=420
-    for r,(nm,a,b) in enumerate((('Left',16,17),('First',18,19))):
-        u.t(x+2,ROW[r]+3,nm,9,0,3); u.btn(x+44,ROW[r],22,21,'-',a); u.btn(x+68,ROW[r],22,21,'+',b)
-    for r,(nm,a,b) in enumerate((('Before',20,21),('After',22,23))):
-        u.t(x+100,ROW[r]+3,nm,9,0,3); u.btn(x+146,ROW[r],22,21,'-',a); u.btn(x+170,ROW[r],22,21,'+',b)
-    u.ibtn(x,ROW[2],90,21,'Indent -',2,'ind-'); u.ibtn(x+100,ROW[2],90,21,'Indent +',3,'ind+')
-    u.ibtn(x+200,ROW[0],84,21,'Space -',4,'sp-'); u.ibtn(x+200,ROW[1],84,21,'Space +',5,'sp+')
-    u.big(x+288,64,46,62,'Line',7,'lsp',True)
-    for i,l in enumerate(('1.0','1.15','1.5','2.0','2.5','3.0')): u.btn(x+336+(i%2)*38,ROW[i//2],36,21,l,(24,36,37,38,39,40)[i])
-    group_label(u,x,410,'Paragraph')
+    u.big(6,64,52,62,'Margins',6,'marg',True); group_label(u,6,210,'Page Setup')
+    u.ibtn(226,64,70,21,'One',43,'col1'); u.ibtn(226,86,70,21,'Two',44,'col2'); group_label(u,226,70,'Columns')
+    u.big(306,64,70,62,'Page Break',1,'brk'); u.big(378,64,58,62,'Section',15,'sec'); group_label(u,306,130,'Breaks')
+    _steps(u,450,66,(('Left',16,17,'minus','plus'),('First',18,19,'minus','plus'),('Step',2,3,'ind-','ind+')))
+    group_label(u,450,116,'Indent')
+    _steps(u,580,66,(('Before',20,21,'minus','plus'),('After',22,23,'minus','plus'),('Step',4,5,'sp-','sp+')))
+    group_label(u,580,116,'Spacing')
+    x=648
+    u.big(x+60,64,46,62,'Line',7,'lsp',True)
+    for i,l in enumerate(('1.0','1.15','1.5','2.0','2.5','3.0')): u.chip(x+60+50+(i%2)*38,ROW[i//2],36,21,l,(24,36,37,38,39,40)[i])
+    group_label(u,x+60,124,'Line Spacing')
 def refs(u):
-    u.big(6,64,66,62,'Contents',45,'toc'); group_label(u,6,162,'Table of Contents')
-    u.big(176,64,62,62,'Footnote',51,'fn'); group_label(u,176,62,'Footnotes'); u.big(246,64,66,62,'Mail Merge',1,'merge'); group_label(u,246,66,'Mailings')
+    u.big(6,64,66,62,'Contents',45,'toc'); group_label(u,6,170,'Table of Contents')
+    u.big(186,64,62,62,'Footnote',51,'fn'); group_label(u,186,62,'Footnotes'); u.big(258,64,66,62,'Mail Merge',1,'merge'); group_label(u,258,66,'Mailings')
 def review(u):
     u.big(6,64,54,62,'Spelling',2,'spell'); group_label(u,6,54,'Proofing')
-    u.big(68,64,50,62,'Comment',49,'cmt'); group_label(u,68,156,'Comments')
-    u.big(232,64,56,62,'Track',3,'track'); u.ibtn(290,64,76,21,'Accept',4,'tick'); u.ibtn(290,86,76,21,'Reject',1,'cross'); group_label(u,232,134,'Tracking')
+    u.big(68,64,54,62,'Comment',49,'cmt'); group_label(u,68,174,'Comments')
+    u.big(252,64,56,62,'Track',3,'track'); u.ibtn(310,64,76,21,'Accept',4,'tick'); u.ibtn(310,86,76,21,'Reject',1,'cross'); group_label(u,252,134,'Tracking')
 def view(u):
     for i,(nm,ic) in enumerate((('Ruler','ruler'),('Formatting Marks','marks'))):
         u.r(8,64+i*26,150,24,LG,200+1+i,HVG); u.r(12,69+i*26,14,14,(120,120,120),200+1+i); u.r(13,70+i*26,12,12,WHT,200+1+i)
@@ -281,12 +287,13 @@ def backstage():
     u=L(); u.tab='bs'
     u.r(0,0,1280,800,WHT); u.r(0,0,180,800,BLUE)
     u.qbtn(10,12,40,32,'back',1)
-    for i,(nm,id_) in enumerate((('New',2),('Open',3),('Save',4),('Print',5))):
-        y=70+i*44; u.r(0,y,180,44,BLUE,200+id_,HVB); u.t(24,y+14,nm,9+16,2,4)
+    for i,(nm,id_,ic_) in enumerate((('New',2,'newp'),('Open',3,'open'),('Save',4,'save'),('Print',5,'prn'))):
+        y=70+i*44; u.r(0,y,180,44,BLUE,200+id_,HVB); u.art(20,y+14,ic_,200+id_); u.t(46,y+11,nm,1,2,4,16)
+    u.r(0,70,4,44,WHT,202)
     u.t(230,44,'New',5,0,0)
-    u.r(230,100,132,172,(200,198,196),206,(24,90,189)); u.r(232,102,128,168,WHT,206)
-    u.t(236,282,'Blank document',9,0,0)
-    u.t(230,330,'File commands save and open .docx files. Print writes a PDF.',9,1,0)
+    u.r(230,100,132,172,(218,218,218),206,(24,90,189)); u.r(232,102,128,168,WHT,206)
+    u.t(230+(132-twidth('Blank document'))//2,282,'Blank document',9,0,0)
+    u.t(230,330,'Open and Save use .docx files. Print writes a PDF.',9,1,0)
     return u
 def emit(net,fsm,rA,bus,YB,items,seq0_state,hv_reg,hb,bg,prs=None):
     """Writes a token chain for the items and returns the last token."""
@@ -312,7 +319,7 @@ def emit(net,fsm,rA,bus,YB,items,seq0_state,hv_reg,hb,bg,prs=None):
             _,ch,st,x,y,f,b,hv=it
             g_en.lin(t);g_draw.lin(t);g_ch.lin(t*ch);g_st.lin(t*rom.lit(st));g_x.lin(t*x);g_y.lin(t*(y+YB));fg[f].lin(t)
             if hv:
-                c=net.and_(t,hb); bg[b].lin(t-c); bg[5].lin(c)
+                c=net.and_(t,hb); bg[b].lin(t-c); bg[5 if hv is True else hv].lin(c)
             else: bg[b].lin(t)
         net.rec(seq[i+1],t)
     return seq[len(items)]
@@ -330,6 +337,7 @@ def build(net,fsm,rA,g_en,g_ch,g_st,g_x,g_y,g_draw,fg,bg,YB,tab,S,hov,hb,hvo,bs,
                 tb_,id_,x_,y_,w_,h_,lb_,st_,c_=bt
                 u.r(x_,y_,w_,h_,LG,200+id_,HVG)
                 if c_ is not None: u.r(x_+2,y_+2,w_-4,h_-4,(170,170,170),200+id_); u.r(x_+3,y_+3,w_-6,h_-6,c_,200+id_)
+                elif (k,id_) in t3_btn.ICONS: u.art(x_+3,y_+(h_-16)//2,t3_btn.ICONS[(k,id_)],200+id_); u.t(x_+22,y_+(h_-rom.metrics(9)[1])//2+1,lb_,9,0,3,True)
                 elif lb_: u.t(x_+(w_-twidth(lb_))//2,y_+(h_-rom.metrics(9)[1])//2+1,lb_,9,0,3,True)
         last=emit(net,fsm,rA,bus,YB,u.i,f'UI_{k}',hov,hb,bg,prs)
         c=net.and_(last,hvo)   # a hover redraw skips the document walk
