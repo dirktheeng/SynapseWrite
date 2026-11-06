@@ -17,3 +17,5 @@ Tried: PLAYWRIGHT_BROWSERS_PATH=build/pwx playwright install firefox webkit. Blo
 - Invariant false alarms traced to the test: start text was undoable (fixed by opening a saved file first), Ctrl+Home leaves a small residual scroll (normalized by wheel), early stop on no-op undo (fixed count).
 - Real invariant bug: Ctrl+Enter wrote PBRK without a log entry. Redo lost the page break. Now logged as op 6.
 - Undo of a user merge restored the second paragraph with the first paragraph's properties (shrunk trace: style, Delete at the end of the paragraph, undo). The second paragraph's properties now go through the existing op 8 metadata chain before the merge.
+- Own regression caught by t3_pic: the output limit table lacked RELB, so relationships read as empty and pictures vanished on reopen. Table completed. resize redo already fails on the pre-fix build under this load.
+- Paste and reader now stop at the slot limit rather than filling the last paragraph.

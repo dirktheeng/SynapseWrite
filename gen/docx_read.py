@@ -44,7 +44,7 @@ on('C6',(net.or_(net.and_(ztg[4],pat('ment.xml',e),net.eq(nm,17,e)),net.and_(ztg
 on('C7',(None,'Z7',{ip:loff+30+W[0]+W[1]*256+W[2]+W[3]*256,ob:0,nb:0,cur:0}))
 e=S('Z7')
 _olim=X()
-for b_,t_ in ((OUTB,IMG0),(AUXB,RELB),(PNGB,AUXB),(OUTP,PNGB)): _olim=_olim+net.eq(obase,b_,e)*(t_-b_-1000)
+for b_,t_ in ((OUTB,IMG0),(AUXB,RELB),(RELB,CMB),(PNGB,AUXB),(OUTP,PNGB)): _olim=_olim+net.eq(obase,b_,e)*(t_-b_-1000)
 on('Z7',(net.eq(mth,8,e),'BH',{ibase:FA,iret.r:iret.id('A12_S0'),ilim:evc,oblim:_olim}),(None,'ZS',{oi:0,ibase:FA,oblim:_olim}))
 # stored member
 OA=obase
