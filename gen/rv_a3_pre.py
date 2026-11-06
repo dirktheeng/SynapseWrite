@@ -6,7 +6,8 @@ rv_cc=R();rv_ctp=R();rv_chi=R();rv_clo=R();rv_cap=R();rv_cao=R();rv_nc=R();rv_st
 evm=R(); rv_qm=R(); cx=R();cy=R();chh=R(19);pwalk=R();pfld=R()
 def rv_key_rules():
     nf=ONE-findon
-    def KD(c): return net.and_(K(c),nf)
+    _kdc=net.and_(ctrl,nf,ONE-p1_alt)   # p1: Ctrl without Alt and no find bar once, so each Ctrl rule is one AND, not two
+    def KD(c): return net.and_(k[ord(c) if isinstance(c,str) else c],_kdc)
     def ND(c): return net.and_(N(c),nf)
     off_=net.or_(net.lt(cy,scroll+4,en),net.gt(cy+chh,scroll+VHZ-4,en))
     vert=net.or_(N(129),N(131),N(132),N(133))
@@ -26,11 +27,12 @@ def rv_key_rules():
      (net.and_(vert,off_,ONE-rv_try),'RD0',{scroll:net.relu(cy-VHZ*0.5),rv_rekey:1,rv_try:1,autos:0}),
      (ND(134),'RD0',{scroll:net.relu(scroll-(VHZ-40)),rv_s0:scroll,rv_py:net.max_(net.min_(zfy0(cy+DOCY-scroll),DOCB-30),DOCY+4),rv_pgq:1,rv_pgd:0,autos:0,t1_lastk:0}),
      (ND(135),'RD0',{scroll:scroll+(VHZ-40),rv_s0:scroll,rv_py:net.max_(net.min_(zfy0(cy+DOCY-scroll),DOCB-30),DOCY+4),rv_pgq:1,rv_pgd:1,autos:0,t1_lastk:0}),
-     (KD(60),'FMTS',{fm:5}),(KD(91),'FMTS',{fm:5}),(KD(62),'FMTS',{fm:4}),(KD(93),'FMTS',{fm:4}),(KD(61),'FMTS',{fm:14}),(KD(43),'FMTS',{fm:13}),
+     (net.and_(net.or_(k[60],k[91]),_kdc),'FMTS',{fm:5}),(KD(62),'FMTS',{fm:4}),(KD(93),'FMTS',{fm:4}),(KD(61),'FMTS',{fm:14}),(KD(43),'FMTS',{fm:13}),
      (net.and_(KD(ord('m')),shf),'PA0',PI_(-48)),(KD(ord('m')),'PA0',PI_(48)),
      (KD(ord('1')),'PA0',LS_(6)),(KD(ord('5')),'PA0',LS_(2)),(KD(ord('2')),'PA0',LS_(3)),
      *imp5_key_rules(KD,ND),*imp6_key_rules(KD,ND),
      (net.and_(KD(ord('l')),shf),'T2_LI',{alv:1}),(net.and_(KD(ord('n')),shf),'T2_SA0',{t2si:0}),
+     *p1_key_rules(KD,ND),
     ]
 def rv_tabw(p,en_):
     "Width from pen position p to the next default stop, every half inch (48 px). All in weights."

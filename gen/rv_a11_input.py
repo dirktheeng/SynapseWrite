@@ -31,8 +31,8 @@ on('A11_R',(_rk[1],'A11_K',None),(_rk[2],'A11_P',None),
 e=S('A11_K'); _mb=net.bits(evb,5,e); _cm=net.or_(_mb[0],_mb[2]); _one=net.eq(a11kl,1,e)
 _kc=G_(eva,_one)+net.and_(_cm,_one,net.ge(eva,65,e),net.lt(eva,91,e))*32
 for s_,c_ in KEYNAMES.items(): _kc=_kc+net.eq(a11kh,_khash(s_),e)*c_
-_kcm=_cm+_mb[1]*2
-_isv=net.and_(_cm,net.eq(_kc,118,e)); _isc=net.and_(_cm,net.or_(net.eq(_kc,99,e),net.eq(_kc,120,e)))
+_kcm=_cm+_mb[1]*2+net.and_(_cm,_mb[4])*4   # p1: Alt with Ctrl or Cmd is bit 2 of the cooked word (Ctrl+Alt shortcuts, AltGr)
+_isv=net.and_(_cm,net.eq(_kc,118,e)); _isc=net.and_(_cm,ONE-_mb[4],net.or_(net.eq(_kc,99,e),net.eq(_kc,120,e)))
 on('A11_K',(net.and_(_mb[4],ONE-_mb[0]),'A11_HF',{a11pass:1}),(ONE-net.step(_kc),'A11_HF',{a11pass:1}),
  # Ctrl+V and Ctrl+C or X leave the browser to fire paste, copy or cut; Ctrl+V first moves focus to the field, where some browsers require it
  (_isv,'A11_HF',{a11pass:1,a11ff:net.and_(e,ONE-_mb[3],ONE-mp_ptr_lock),a11fb:net.and_(e,ONE-_mb[3],ONE-mp_ptr_lock)}),
