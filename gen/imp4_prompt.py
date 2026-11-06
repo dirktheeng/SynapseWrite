@@ -79,3 +79,4 @@ _emit('V7_B5',_cb_(2),'V7_B1'); _emit('V7_B1',_cb_(1),'V7_B0'); _emit('V7_B0',_c
 e=S('V7_R4'); _rb=net.bits(t2cp,20,e)
 on('V7_R4',(None,'INS',{ins_ch:as_x(UO)+0xD800+sum((_rb[10+j_]*(1<<j_) for j_ in range(10)),X()),ins_st:csi+rhi,v7l:sum((_rb[j_]*(1<<j_) for j_ in range(10)),X()),oret.r:oret.id('V7_R5')}))
 on('V7_R5',(None,'INS',{ins_ch:as_x(UO)+0xDC00+v7l,ins_st:csi+rhi,oret.r:oret.id('TX2')}))
+lit('V9_SH',b'</w:t><w:softHyphen/><w:t xml:space="preserve">','SVC')

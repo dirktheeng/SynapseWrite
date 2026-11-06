@@ -847,7 +847,7 @@ _xue=net.ge(R1,UO,e); isfnc=net.and_(net.ge(R1,1000,e),ONE-_xue); isp=net.eq(R1,
 fsm.set(cx,chere,x);fsm.set(cacol,chere,col)
 g_en.lin(e);g_ch.add(e,R1);g_st.add(e,RSR);g_fl.add(e,RSC);g_x.add(e,x+kern+0.5);g_y.add(e,gly_y+YB)
 ke2=net.and_(e,net.step(kprev));kp_en.lin(ke2);kp_in.add(ke2,kprev)
-g_draw.lin(e-isp-isfnc)
+_shh=net.and_(net.eq(R1,173,e),net.or_(net.lt(off+1,le_,e),net.ge(le_,plen_,e))); g_draw.lin(e-isp-isfnc-_shh)
 und_w=net.and_(e,net.or_(SD['und'],SD['ins'])); ske_w=net.and_(e,net.or_(SD['strike'],SD['dele'])); trk_=net.and_(e,net.or_(SD['ins'],SD['dele'])); a2_chg=R(); fsm.set(a2_chg,trk_,1)   # tracked text is drawn in the review color
 colh=net.decode_z(G_(SD['color'],ONE-trk_)+trk_*4,32,e)
 for j in range(32): fg[j].lin(colh[j])
@@ -881,7 +881,7 @@ for rr,en_,yv in ((rC,und,sy+lasc+2-rise),(rD,ske,sy+lasc-strk-rise)):
     rr.b[8].add(en_,col)
 mk_=net.and_(e,isp,t1_marks,ONE-und); rC.drive(mk_,(x+net.gate(adv*0.5,mk_),sy+lasc-6,2,2,(120,120,160),col))
 exec(open('t4_spell.py').read())
-adv_c={x:x+adv+kern+xtra,col:col+1,off:off+1,kprev:R1}
+adv_c={x:x+net.relu(adv+kern-_shh*M)+xtra,col:col+1,off:off+1,kprev:R1}
 on('C1',(net.eq(R1,9,e),'A4_PT0',None),(net.and_(net.ge(R1,300,e),ONE-isfnc,ONE-_xue),'A6Q_C0',{a6qk:R1-300,a6qs:insel}),(isfnc,'T3_CF0',None),(sp_bad,'A6D_0',{**adv_c,sx:sp_x0,sp_xe:x,sp_r:0,a6oe:off}),(net.ge(off+1,le_,e),'CE',adv_c),(rv_hl,'C0',adv_c),(None,'C1',{**adv_c,r1:pbs+off+1,rs:pbs+1024+off+1}))
 e=S('CE'); chere2=net.and_(net.eq(pi,cp,e),net.eq(off,co,e))
 fsm.set(cx,chere2,x);fsm.set(cacol,chere2,col)
@@ -926,15 +926,16 @@ on('LE0',(None,'EM',{lasc:asc,lhh:lh,lend:0,lwid:0,lspc:0,llast:1}))
 fsm.set(kprev,S('LAY0'),0)
 _rv_e=S('L1'); on('L1',(net.and_(net.step(off),net.ge(off,plen_,_rv_e)),'RVA3_LE0',None),(None,'L2',{r1:pbs+off,rs:pbs+1024+off}))
 e=S('L2'); measure(e,R1,RSR,RSC); ke2=net.and_(e,net.step(kprev)); kp_en.lin(ke2); kp_in.add(ke2,kprev)
-sp=net.eq(R1,32,e); _rv_tb=net.eq(R1,9,e); _rv_lt=rv_tabw(lx+indb+pind+pf_val(lfi),_rv_tb); _rv_vt=net.eq(R1,11,e); _rv_sb=net.or_(sp,_rv_tb); _ov=net.gt(lx+adv+kern+_rv_lt,ww,e); over=net.and_(_ov,ONE-sp,net.gt(off,ls_,_ov));   # a line always takes its first character, or a very narrow cell never ends
+sp=net.eq(R1,32,e); _rv_tb=net.eq(R1,9,e); _rv_lt=rv_tabw(lx+indb+pind+pf_val(lfi),_rv_tb); _rv_vt=net.eq(R1,11,e); _rv_sb=net.or_(sp,_rv_tb); _shy=net.eq(R1,173,e); _ov=net.gt(lx+adv+kern+_rv_lt,ww,e); over=net.and_(_ov,ONE-sp,net.gt(off,ls_,_ov));   # a line always takes its first character, or a very narrow cell never ends
 hasb=net.gt(lb,ls_,e); nsp=e-sp
 lastc=net.ge(off+1,plen_,e); newword=net.and_(nsp,prevsp)
-advance={kprev:R1,lx:lx+adv+kern+_rv_lt,lasc:net.max_(asc,lasc),lhh:net.max_(lh,lhh),off:off+1,prevsp:_rv_sb,wc:wc+newword,lsn:lsn+sp}
-fsm.set(lb,net.and_(_rv_sb,ONE-over),off+1);fsm.set(lbx,net.and_(_rv_sb,ONE-over),lx+kern+_rv_lt);fsm.set(lspb,net.and_(_rv_sb,ONE-over),lsn)
+advance={kprev:R1,lx:lx+net.relu(adv+kern-_shy*M)+_rv_lt,lasc:net.max_(asc,lasc),lhh:net.max_(lh,lhh),off:off+1,prevsp:_rv_sb,wc:wc+newword,lsn:lsn+sp}
+_shb=net.and_(_shy,ONE-over); fsm.set(lb,net.and_(_rv_sb,ONE-over),off+1);fsm.set(lbx,net.and_(_rv_sb,ONE-over),lx+kern+_rv_lt);fsm.set(lspb,net.and_(_rv_sb,ONE-over),lsn)
+fsm.set(lb,_shb,off+1);fsm.set(lbx,_shb,lx+adv+kern);fsm.set(lspb,_shb,lsn)   # an optional hyphen has no width unless the line ends at it
 _xuf=net.ge(R1,UO,e); isfl=net.and_(net.ge(R1,1000,e),ONE-_xuf); fsm.set(lfnb,net.and_(_rv_sb,ONE-over),lfn);fsm.set(lfhb,net.and_(_rv_sb,ONE-over),lfh)
 on('L2',(net.eq(R1,9,e),'A4_LT0',{ra4t:pbs+A4T,lasc:net.max_(asc,lasc),lhh:net.max_(lh,lhh)}),(net.and_(net.ge(R1,300,e),ONE-isfl,ONE-_xuf),'A6Q_L0',{a6qk:R1-300,r1:as_x(1330000)+(R1-300)*64+1,r2:as_x(1330000)+(R1-300)*64}),(isfl,'T3_LF0',{r1:as_x(FNB)+(R1-1000)*256+254}),(_rv_vt,'EM',{**advance,prevsp:ONE,lend:off+1,lwid:lx,lspc:lsn,llast:0}),(net.and_(over,hasb),'EM',{lend:lb,lwid:lbx,lspc:lspb,off:lb,llast:0,lfn:lfnb,lfh:lfhb}),
  (over,'EM',{lend:off,lwid:lx,lspc:lsn,llast:0}),
- (lastc,'EM',{**advance,lend:off+1,lwid:lx+adv+kern+_rv_lt,lspc:lsn,llast:1}),
+ (lastc,'EM',{**advance,lend:off+1,lwid:lx+net.relu(adv+kern-_shy*M)+_rv_lt,lspc:lsn,llast:1}),
  (None,'L2',{**advance,r1:pbs+off+1,rs:pbs+1024+off+1}))
 e=S('EM'); delta=net.relu(ww-lwid); alh=net.decode(al,4,e)
 just=net.and_(alh[3],ONE-llast,ONE-a4lt); sph=net.decode(lspc,64,just); ex=X()

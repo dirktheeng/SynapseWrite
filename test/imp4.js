@@ -141,5 +141,13 @@ const near=(A,r,g,b,t=6)=>count(A,223,1039,174,776,(x,y,z)=>Math.abs(x-r)<=t&&Ma
   // landscape at 150 now shows its left edge after the slide
   let D=await lib();D.paste('landscape left edge text\n');D.settle();D.click(182,47);D.settle();D.click(100,97);D.settle();for(let i=0;i<2;i++){D.click(1232,788);D.settle();}D.shot('build/imp4_z4.png');const lf=count(D,0,60,300,700,(r,g,b)=>r==255&&g==255&&b==255);ok('landscape at 150: page starts inside the window',lf>1000,lf);
  }
+ if(!only||only=='hy'){
+  // optional hyphen: Ctrl+- in a long word near the line end
+  const W1='xxxxxxxx '.repeat(10)+'extra';let A=await lib();A.type(W1);A.settle();const h0=A.hash(190,776);A.key(45,1);A.settle();const hb=A.hash(190,776);ok('no mark while it is inside a line',hb===h0);A.type('ordinarily');A.settle();A.shot('build/imp4_h1.png');
+  let f=A.fb();const rows=()=>{let n=0,pr=false;for(let y=190;y<700;y++){let d=false;for(let x=319;x<944;x++)if(f[(y*1280+x)*4]<120){d=true;break;}if(d&&!pr)n++;pr=d;}return n;};ok('the word breaks at it',rows()==2,rows());
+  let x=part(A,'word/document.xml');ok('saved as softHyphen',/extra<\/w:t><w:softHyphen\/><w:t[^>]*>ordinarily/.test(x),x.slice(x.indexOf('extra')-5,x.indexOf('extra')+70));
+  let B=await lib();B.file(9,A.savedBytes());B.settle();B.key(133,1);A.key(133,1);B.settle();A.settle();let dm=0;{const a=A.fb(),b=B.fb();for(let i=190*5120;i<776*5120;i++)if((i&3)!=3)dm=Math.max(dm,Math.abs(a[i]-b[i]));}ok('reopens the same',dm<=1,dm);
+  A.key(112,1);const pn=A.e.val(A.h.fileout),pa=A.e.val(A.h.outbase);const pb=Buffer.alloc(pn);for(let i=0;i<pn;i++)pb[i]=A.e.bget(pa+i);require('fs').writeFileSync('build/imp4_h.pdf',pb);const t=require('child_process').execSync('pdftotext build/imp4_h.pdf -').toString();ok('PDF has both parts',/extra/.test(t)&&/ordinarily/.test(t),t.slice(-30));
+ }
  console.log(R.filter(x=>x).length+'/'+R.length);process.exit(R.every(x=>x)?0:1);
 })();

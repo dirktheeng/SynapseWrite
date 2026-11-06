@@ -239,7 +239,7 @@ class GlyphUnit:
         # A small glyph drawn black on white before: its pixels were recorded off the row plane, so one read and one patch draw it, with no row loop and no plane.
         recg=net.reg()
         fast_=net.wire(); fnc_=net.wire()
-        blk=net.and_(hit,rowsz,fast_,ONE-fnc_,net.step(H[5]-0.5),net.ge(H[6],recg,hit),net.ge(recg,H[6],hit))
+        fs_=net.wire(); blk=net.and_(hit,rowsz,net.step(fast_+fs_),ONE-fnc_,net.step(H[5]-0.5),net.ge(H[6],recg,hit),net.ge(recg,H[6],hit))
         start=net.and_(hit,rowsz,ONE-blk); empty=hit-net.and_(hit,rowsz)
         brun=net.reg(); brows=net.reg(); bcells=L(H[2],start)
         baddr=net.reg(); bpy=net.reg(); bwr=net.reg(); blast=net.reg()
@@ -259,7 +259,7 @@ class GlyphUnit:
         sg=net.reg(); s1g=net.reg(); net.rec(sg,go); net.rec(s1g,sg)      # first pass only; a retry after a miss loads nothing twice
         fcu=net.step(Lfc); fgb=net.and_(net.eq(Lfg,1,sg),ONE-fcu)
         fast=L(net.and_(fgb,net.eq(Lbg,1,sg)),sg); fsel=L(net.and_(fgb,net.eq(Lbg,2,sg)),sg)
-        net.connect(fast_,fast); net.connect(fnc_,Lnc)
+        net.connect(fast_,fast); net.connect(fs_,fsel); net.connect(fnc_,Lnc)   # selected text takes the same record: on the selection color the darker pixel wins, as it does for overlapping letters
         slow0=net.and_(s1g,ONE-fast,ONE-empty)
         def lines(pal,val,en_=None):
             h=net.decode(val-1,len(pal),slow0 if en_ is None else en_); out=[]
