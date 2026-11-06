@@ -174,7 +174,7 @@ const cell=(r,c)=>click(880+c*26+8,64+r*22+8);const lay=(r,c)=>click(590+c*26+8,
  const mv=(x,y)=>async p=>{await p.mouse.move(x,y);};
  const clk=(x,y,n)=>async p=>{await p.mouse.click(x,y,{clickCount:n});};
  const wait=ms=>async p=>{await p.waitForTimeout(ms);};
- const stay=async(name,want,a,b,clip)=>{if(only&&!name.includes(only))return;const sh=async st=>{const X=await fresh();await seq(X.p,st);await X.p.waitForTimeout(150);const i=await X.p.screenshot({clip:clip||{x:0,y:0,width:1280,height:800}});await X.b.close();return i;};const ok=(hash(await sh(a))===hash(await sh(b)))===want;results.push([name,ok]);console.log(ok?'PASS':'FAIL',name);};
+ const stay=async(name,want,a,b,clip)=>{if(only&&!name.includes(only))return;const sh=async st=>{const X=await fresh();await seq(X.p,st);await X.p.waitForTimeout(150);await X.p.evaluate(()=>annDispatch(12));const i=await X.p.screenshot({clip:clip||{x:0,y:0,width:1280,height:800}});await X.b.close();return i;};const ok=(hash(await sh(a))===hash(await sh(b)))===want;results.push([name,ok]);console.log(ok?'PASS':'FAIL',name);};
  const RIB={x:0,y:0,width:1280,height:150},BAR={x:223,y:174,width:816,height:28},RUL={x:0,y:150,width:1280,height:24};
  await stay('hover highlights a ribbon button',false,[mv(131,102)],[mv(600,600)],RIB);
  await stay('hover highlights a tab',false,[mv(135,47)],[mv(600,600)],RIB);

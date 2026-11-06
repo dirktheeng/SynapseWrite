@@ -191,7 +191,7 @@ t1_menu(5,6,127,190,['Normal: 1 in sides','Moderate: 0.75 in sides','Narrow: 0.5
 t1_menu(6,708,127,70,['1.0','1.15','1.5','2.0'])
 e=S('T1_M0'); mh=net.decode(t1_mop,9,e)
 on('T1_M0',*[(mh[k_],f'T1_MM{k_}',None) for k_ in range(1,9)],(None,'T1_END',None))
-on('T1_END',(t1_nh,'T1_HH',{t1_nh:0,t1_hvo:0,rB:(1265,thumb,12,t1_thh,tuple(as_x(190)-net.eq(t1_hov,255,S('T1_END'))*50 for _ in range(3)),255)}),(None,'HALT',{t1_hvo:0}))
+on('T1_END',(t1_nh,'T1_HH',{t1_nh:0,t1_hvo:0,rB:(1265,thumb,12,t1_thh,tuple(as_x(205)-net.eq(t1_hov,255,S('T1_END'))*65 for _ in range(3)),255)}),(None,'HALT',{t1_hvo:0}))
 on('T1_MD',(None,'T1_MD1',{pix:(hx_,hy_)}))
 e=S('T1_MD1'); nr1=X()
 for k_ in range(1,11): nr1=nr1+net.ge(hy_,t1_mtop+RH*k_,e)

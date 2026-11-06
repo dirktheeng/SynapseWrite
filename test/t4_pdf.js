@@ -16,7 +16,7 @@ sh(`python3 -c "from PIL import Image;im=Image.new('RGB',(80,40),(30,144,255));[
  await T('After picture');await K('Enter');
  await p.evaluate(()=>{let s='';for(let i=0;i<45;i++)s+='Filler line number '+i+' (with parens).\n';annPaste(s)});await p.waitForTimeout(400);
  await C(334,47);await C(155,76);await C(80,47);await p.mouse.move(600,400);for(let i=0;i<8;i++){await p.mouse.wheel(0,-1000);await p.waitForTimeout(40);}await p.waitForTimeout(200);
- const scr=await p.screenshot({clip:{x:223,y:190,width:816,height:586}});fs.writeFileSync('build/pdf_screen.png',scr);
+ await p.evaluate(()=>annDispatch(12));const scr=await p.screenshot({clip:{x:223,y:190,width:816,height:586}});fs.writeFileSync('build/pdf_screen.png',scr);
  const [dl]=await Promise.all([p.waitForEvent('download'),K('Control+p')]);await dl.saveAs('build/t4.pdf');await b.close();
  const info=sh('pdfinfo build/t4.pdf');ok('pdfinfo reads it, Letter size',/Page size:\s+612 x 792/.test(info),(info.match(/Pages:\s+\d+/)||[''])[0]);
  ok('multiple pages',+(info.match(/Pages:\s+(\d+)/)||[0,0])[1]>=2);
