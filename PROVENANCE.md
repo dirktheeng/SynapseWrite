@@ -2,7 +2,7 @@
 
 Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight comes from the listed generator files; none is trained, fitted or searched.
 
-235041 neurons, 457986 edges, 187 layers, 4039 control states.
+235061 neurons, 458012 edges, 187 layers, 4039 control states.
 
 | Sub-network | Purpose | Generator files (neurons) | Neurons | Inputs |
 |---|---|---|---|---|
@@ -49,8 +49,8 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | docx writer | Writes the document XML parts. | gen/t2_write.py (652), gen/app.py (341), gen/rv_a10_num.py (79), gen/rv_a10_rom.py (23) | 1095 | 9451 |
 | docx crc | CRC of the bytes written to the zip container. | gen/rv_a7_save.py (2707), gen/app.py (4) | 2711 | 41587 |
 | pdf writer | Writes PDF objects, text and pictures. | gen/pdf_write.py (1397) | 1397 | 4459 |
-| docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (2943) | 2943 | 18252 |
-| png reader | Decodes PNG files to pixel words. | gen/docx_read.py (311), gen/a12_guard.py (61) | 372 | 4289 |
+| docx reader | Unzips, inflates and parses document XML. | gen/docx_read.py (2955) | 2955 | 18306 |
+| png reader | Decodes PNG files to pixel words. | gen/docx_read.py (311), gen/a12_guard.py (61) | 372 | 4291 |
 | zip crc check | Zip CRC check on open: the inflated main part runs through the save CRC network and must match the central directory. | gen/a12_guard.py (18) | 18 | 104 |
 | prompt bar | One bar that takes a short text for a color, a style name or a font name. | gen/imp4_prompt.py (524) | 524 | 2033 |
 | extended characters | UTF-8 and code units for characters past Latin-1. | gen/imp4_prompt.py (131) | 131 | 881 |
@@ -92,4 +92,4 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | rv a3 interaction | Editing keys, word and page motion, right click, autoscroll, context menu, and the late tier 1 features. | gen/t1_features.py (2039), gen/rv_a3_keys.py (655), gen/pointer3.py (86), gen/rv_a4_features.py (79), gen/ui.py (42) | 2901 | 25112 |
 | file output command | Selects the length, data base and file name the glue saves. | gen/rv_a11_out.py (5) | 5 | 8 |
 | screen check | Compares one line of the screen id plane against the line table on each blink tick and repairs by repainting. | gen/rv_a11_out.py (23) | 23 | 56 |
-| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (10204) | 10204 | 55411 |
+| compiled control | Every state rule compiled together: the gated sums that give each register its next value, and the return dispatchers. | gen/app.py (10212) | 10212 | 55443 |

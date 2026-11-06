@@ -61,3 +61,15 @@ gives each block's whole share F, which is added before the pixel's one relu and
 deltas by the same pushes. First try added F after the relu: a right edge's partial share is negative inside a block that
 is whole from the left, so the relu cut it and bars ran to the right (screenshot showed it); fixed by adding F inside.
 Repeat key 55,193 to 53,992. a01_format open 7,915,329 to 7,705,825 edges. Page 2,928,785. Screenshot: same 16 pixels.
+
+## 8. Inflate: Huffman codes up to three bits a tick
+The read window already returns 8 cells: the limit and offset of four code lengths. X_D3 now compares the code so far
+and its next one, two and three bits with their lengths' limits in one tick, and consumes three bits when none matches.
+DEC enters X_D3 directly (limit of length 0 written as 0, limits of 16 and 17 as 0 so a jump past 15 ends in the error
+rule as before); a byte refill returns to X_D3 (CMP2_XR) instead of the one bit X_Dl/XDR pair.
+a01_format open 7,705,825 to 7,122,087 edges, 454,498 to 393,442 ticks.
+
+## 9. getn: up to three bits a tick across a byte boundary
+GBL's bit by bit loop now takes three or two bits a tick while the byte and the field both have them.
+a01_format open 7,122,087 to 6,983,911 edges (browser 6,983,913), 371,325 ticks.
+Open screenshots (a01, a02, a16, a27) against the base build: max difference 4 levels.

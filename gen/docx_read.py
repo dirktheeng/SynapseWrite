@@ -65,7 +65,12 @@ _gv=X(); _gc=X()
 for n_ in range(1,9):
     _gv=_gv+net.gate(sum((_gb[7-k_]*(2**k_) for k_ in range(n_)),X()),_gh[n_])
     _gc=_gc+net.gate(sum((_gb[7-k_]*(2**(7-k_+n_)) for k_ in range(n_,8)),X()),_gh[n_])
-on('GBL',(net.ge(gbi,gbn,e),'GR',None),(net.and_(_gq,net.step(gbn)),'GR',{gbv:_gv,gbi:gbn,cur:_gc,nb:nb-gbn}),(net.eq(nb,0,e),'GBR',{r1:ibase+ip,ip:ip+1}),(None,'GBL',{gbv:gbv+G_(gbw,hbit),gbw:gbw*2,gbi:gbi+1,cur:Shift((cur-hbit*128)*2,512),nb:Dec(nb,1)}))
+# a field across a byte boundary: up to three bits a tick while the byte and the field both have them
+_hb2=net.step(cur-hbit*128-63.5+e*M-M); _hb3=net.step(cur-hbit*128-_hb2*64-31.5+e*M-M)
+on('GBL',(net.ge(gbi,gbn,e),'GR',None),(net.and_(_gq,net.step(gbn)),'GR',{gbv:_gv,gbi:gbn,cur:_gc,nb:nb-gbn}),(net.eq(nb,0,e),'GBR',{r1:ibase+ip,ip:ip+1}),
+ (net.and_(net.ge(nb,3,e),net.ge(gbn,gbi+3,e)),'GBL',{gbv:gbv+G_(gbw,hbit)+G_(gbw*2,_hb2)+G_(gbw*4,_hb3),gbw:gbw*8,gbi:gbi+3,cur:Shift((cur-hbit*128-_hb2*64-_hb3*32)*8,2048),nb:Dec(nb,3)}),
+ (net.and_(net.ge(nb,2,e),net.ge(gbn,gbi+2,e)),'GBL',{gbv:gbv+G_(gbw,hbit)+G_(gbw*2,_hb2),gbw:gbw*4,gbi:gbi+2,cur:Shift((cur-hbit*128-_hb2*64)*4,1024),nb:Dec(nb,2)}),
+ (None,'GBL',{gbv:gbv+G_(gbw,hbit),gbw:gbw*2,gbi:gbi+1,cur:Shift((cur-hbit*128)*2,512),nb:Dec(nb,1)}))
 on('GBR',(net.gt(ip,ilim,S('GBR')),'A12_IE',None),(None,'GBL',{cur:reversed_(S('GBR')),nb:8}))
 # Huffman decode, after puff: count[] at hb, symbols at hb+16. Each length's limit (first code plus count) and the
 # symbol offset less its first code (lifted by HBASE, as memory writes cannot carry a negative) sit at hb+HLIM+2*len,
