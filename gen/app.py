@@ -599,7 +599,7 @@ PSN=32
 rpw=RPort(PSN); wpch=WPort(PSN,rpw.out[0],True); wpst=WPort(PSN,None,True); wplg=WPort(6*PSN)
 pn_=R(); PSW_=rpw.out
 e=S('PS2')
-on('PS2',(net.ge(pi_,evc,e),'AFTER_ED',None),(None,'PSW',{rpw:as_x(CB2)+pi_}))
+on('PS2',(net.or_(net.ge(pi_,evc,e),net.ge(nextb,SLOTMAX,e)),'AFTER_ED',None),(None,'PSW',{rpw:as_x(CB2)+pi_}))
 e=S('PSW')
 _bad=[net.step(as_x(32)-PSW_[i_]-0.5+e*M-M)+net.step(PSW_[i_]-126.5+e*M-M) for i_ in range(PSN)]
 _score=sum((_bad[i_]*float(2**(PSN-1-i_)) for i_ in range(PSN)),X())
