@@ -71,14 +71,21 @@ on('GBR',(net.gt(ip,ilim,S('GBR')),'A12_IE',None),(None,'GBL',{cur:reversed_(S('
 # symbol offset less its first code (lifted by HBASE, as memory writes cannot carry a negative) sit at hb+HLIM+2*len,
 # so one read per bit decides and no first or index register has to be carried along.
 HLIM=320; HBASE=65536; fq=R()
-on('DEC',(None,'X_Dl',{code:0,hlen:1}))
-e=S('X_Dl'); hbit=nextbit(e)
-on('X_Dl',(net.eq(nb,0,e),'XDR',{r1:ibase+ip,ip:ip+1}),(None,'X_D3',{code:code+hbit,cur:Shift((cur-hbit*128)*2,512),nb:Dec(nb,1),rl:hb+HLIM+hlen*2}))
-on('XDR',(net.gt(ip,ilim,S('XDR')),'A12_IE',None),(None,'X_Dl',{cur:reversed_(S('XDR')),nb:8}))
-e=S('X_D3'); hbit=nextbit(e)
+# Up to three bits a tick: the read window holds the limit and offset of four lengths, so the code so far and its next
+# one, two and three bits are each compared with their own length's limit in the same tick. Limits past 15 are 0.
+on('DEC',(None,'X_D3',{code:0,hlen:0,rl:hb+HLIM}))
+e=S('X_D3'); b1_=nextbit(e); b2_=net.step(cur-b1_*128-63.5+e*M-M); b3_=net.step(cur-b1_*128-b2_*64-31.5+e*M-M)
+c1_=code*2+b1_; c2_=code*4+b1_*2+b2_; c3_=code*8+b1_*4+b2_*2+b3_
+n1_=net.ge(nb,1,e); n2_=net.ge(nb,2,e); n3_=net.ge(nb,3,e)
+s1_=Shift((cur-b1_*128)*2,512); s2_=Shift((cur-b1_*128-b2_*64)*4,1024); s3_=Shift((cur-b1_*128-b2_*64-b3_*32)*8,2048)
 on('X_D3',(net.lt(code,W[0],e),'D4',{r2:hb+W[1]-HBASE+code}),(net.ge(hlen,15,e),'OPEND',None),
- (net.eq(nb,0,e),'X_Dl',{code:code*2,hlen:hlen+1}),
- (None,'X_D3',{code:code*2+hbit,cur:Shift((cur-hbit*128)*2,512),nb:Dec(nb,1),hlen:hlen+1,rl:hb+HLIM+2+hlen*2}))
+ (net.and_(n1_,net.lt(c1_,W[2],e)),'D4',{r2:hb+W[3]-HBASE+c1_,cur:s1_,nb:Dec(nb,1)}),
+ (net.and_(n2_,net.lt(c2_,W[4],e)),'D4',{r2:hb+W[5]-HBASE+c2_,cur:s2_,nb:Dec(nb,2)}),
+ (n3_,'X_D3',{code:c3_,cur:s3_,nb:Dec(nb,3),hlen:hlen+3,rl:hb+HLIM+6+hlen*2}),
+ (n2_,'X_D3',{code:c2_,cur:s2_,nb:Dec(nb,2),hlen:hlen+2,rl:hb+HLIM+4+hlen*2}),
+ (n1_,'X_D3',{code:c1_,cur:s1_,nb:Dec(nb,1),hlen:hlen+1,rl:hb+HLIM+2+hlen*2}),
+ (None,'CMP2_XR',{r1:ibase+ip,ip:ip+1}))
+on('CMP2_XR',(net.gt(ip,ilim,S('CMP2_XR')),'A12_IE',None),(None,'X_D3',{cur:reversed_(S('CMP2_XR')),nb:8,rl:hb+HLIM+hlen*2}))
 on('D4',(None,'HR',{sym:R2}))
 # build table from lengths LN[lb..lb+ln)
 bi=R();bo=R()
@@ -86,7 +93,7 @@ on('BLD',(None,'BC',{bi:0}))
 e=S('BC')
 on('BC',(net.ge(bi,16,e),'BD',{bi:0}),(None,'BC',{w1:(hb+bi,0),bi:bi+1}))
 e=S('BD')
-on('BD',(net.ge(bi,ln,e),'BE',{bi:1,bo:0,fq:0}),(None,'BD1',{r1:as_x(LN)+lb+bi}))
+on('BD',(net.ge(bi,ln,e),'BE',{bi:1,bo:0,fq:0,w1:(hb+HLIM,0),w2:(hb+HLIM+32,0),w3:(hb+HLIM+34,0)}),(None,'BD1',{r1:as_x(LN)+lb+bi}))
 on('BD1',(None,'BD2',{r2:hb+R1,cval:R1}))
 on('BD2',(None,'BD',{w1:(hb+cval,R2+1),bi:bi+1}))
 e=S('BE')
