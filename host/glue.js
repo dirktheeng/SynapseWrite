@@ -48,5 +48,18 @@ cv.addEventListener('mousedown',ev=>{const [x,y]=pos(ev);dispatch(3,x,y,Math.flo
 window.addEventListener('mouseup',ev=>{const [x,y]=pos(ev);dispatch(4,x,y);});
 let moving=false;cv.addEventListener('mouseleave',()=>dispatch(11));window.addEventListener('mousemove',ev=>{if(!ev.buttons){const [x,y]=pos(ev);dispatch(11,x,y);return;}if(moving)return;moving=true;requestAnimationFrame(()=>{moving=false;const [x,y]=pos(ev);dispatch(5,x,y);});});
 cv.addEventListener('wheel',ev=>{ev.preventDefault();dispatch(6,0,0,Math.round(ev.deltaY)+1000);},{passive:false});
+// Touch devices: a hidden field summons the on-screen keyboard. Text changes are encoded as key events.
+const ti=document.getElementById('kb'),SENT='~~~~~~~~';let last=SENT,composing=false,ptr='mouse';ti.value=SENT;
+const sync=()=>{const v=ti.value;let i=0;while(i<v.length&&i<last.length&&v[i]===last[i])i++;
+ for(let k=last.length-i;k>0;k--)dispatch(2,8,0);
+ for(const ch of v.slice(i))dispatch(2,ch==='\n'?13:ch.charCodeAt(0),0);
+ last=v;if(!composing){ti.value=SENT;last=SENT;}};
+ti.addEventListener('input',sync);ti.addEventListener('compositionstart',()=>{composing=true;});ti.addEventListener('compositionend',()=>{composing=false;sync();});
+window.addEventListener('pointerdown',ev=>{ptr=ev.pointerType;});
+cv.addEventListener('click',()=>{if(ptr==='touch')ti.focus({preventScroll:true});});
+let ty0=null,tq=0,tpend=false;
+cv.addEventListener('touchstart',ev=>{ty0=ev.touches.length===1?ev.touches[0].clientY:null;},{passive:true});
+cv.addEventListener('touchmove',ev=>{if(ty0===null||ev.touches.length!==1)return;const y=ev.touches[0].clientY;tq+=(ty0-y)*1280/cv.getBoundingClientRect().width;ty0=y;ev.preventDefault();
+ if(!tpend){tpend=true;requestAnimationFrame(()=>{tpend=false;const d=Math.max(-900,Math.min(900,Math.round(tq)));tq=0;if(d)dispatch(6,0,0,d+1000);});}},{passive:false});
 window.annDispatch=dispatch;window.annVal=i=>e.val(i);dispatch(1);window.annReady=true;
 })();
