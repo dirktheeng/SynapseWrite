@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| **Neurons** | 238,555, in 89 named sub-networks (one is currently empty) |
-| **Connections** | 1,070,135: 465,782 that push values and 604,353 that are read lazily |
+| **Neurons** | 237,522, in 93 named sub-networks (one is currently empty) |
+| **Connections** | 1,067,154: 461,199 that push values and 605,955 that are read lazily |
 | **Depth** | 187 layers: 152 in the main clock domain and 35 in the second |
-| **Control states** | 4,547 one-hot state neurons |
+| **Control states** | 4,653 one-hot state neurons |
 | **Non-network code at run time** | 81 lines of glue, 140 lines of inference engine |
-| **Deployment** | one static HTML file, about 3.0 MB |
+| **Deployment** | one static HTML file, about 2.9 MB |
 | **Training code** | none: no data, loss, gradient, search or fitting |
 
 SynapseWrite was built in the spirit of [Weight-Space Programming](https://rikiyat.github.io/blog/weight-space-programming/): reason about what each layer must compute, then write the weights that compute it. Here, a language model wrote a deterministic Python generator, and the generator writes the weights. See [How do we classify what this is?](#how-do-we-classify-what-this-is) for how far that label fits. After that, Python is gone. The browser runs inference, plus the small glue described below.
@@ -102,7 +102,7 @@ Every feature is tracked in [`PARITY.md`](PARITY.md). "Passed" means an automate
 | 1 | Ribbon, rulers, typing, selection, undo, clipboard, find | 8 | 7 |
 | 2 | Formatting, styles, fonts, lists, line breaking, pagination | 7 | 7 |
 | 3 | Tables, images, headers, sections, columns, footnotes, comments | 7 | 1 |
-| 4 | Track changes, merge, equations, fields, spell check, PDF, `.docx` | 6 | 4 |
+| 4 | Track changes, merge, equations, fields, spell check, PDF, `.docx` | 8 | 2 |
 
 **Known gaps, stated plainly:**
 
@@ -151,15 +151,15 @@ v(t) = σ( b + F·v(t) + R·v(t-1) + u(t) )
 
 #### The pieces
 
-**A neuron is one number, plus a simple rule for updating it.** The app has 238,555 of them. One holds the caret's position, for example, and another is 1 only while a particular step of the program is running.
+**A neuron is one number, plus a simple rule for updating it.** The app has 237,522 of them. One holds the caret's position, for example, and another is 1 only while a particular step of the program is running.
 
 | Symbol | In plain words | Size |
 |---|---|---|
-| `v(t)` | The state vector: a list of every neuron's value at tick `t`. Almost all of them are 0 at any moment. | 238,555 numbers |
+| `v(t)` | The state vector: a list of every neuron's value at tick `t`. Almost all of them are 0 at any moment. | 237,522 numbers |
 | `t` | The tick count. One tick is one update of the whole list. A key press takes roughly 65 to 150 ticks. | |
-| `F` | The same-tick table. The entry at row `i`, column `j` says how strongly neuron `j` feeds neuron `i` within this tick. | 238,555 by 238,555, with 1,006,428 entries that are not 0 |
-| `R` | The last-tick table. It works the same way, but reads neuron values from the previous tick. | The same size, with 63,707 entries that are not 0 |
-| `b` | A fixed offset for each neuron, called its bias. | 238,555 numbers |
+| `F` | The same-tick table. The entry at row `i`, column `j` says how strongly neuron `j` feeds neuron `i` within this tick. | 237,522 by 237,522, with 1,006,782 entries that are not 0 |
+| `R` | The last-tick table. It works the same way, but reads neuron values from the previous tick. | The same size, with 60,372 entries that are not 0 |
+| `b` | A fixed offset for each neuron, called its bias. | 237,522 numbers |
 | `u(t)` | What arrives from outside this tick: an event from the glue, or data read from memory. | Mostly 0 |
 | `σ` | Each neuron's activation: a simple rule applied to its total. | One rule per neuron |
 
@@ -175,10 +175,10 @@ To update one neuron, do three things:
 
 | Rule | Output | Neurons | Used for |
 |---|---|---:|---|
-| Step | 1 if the total is above 0, otherwise 0 | 122,176 | Yes or no decisions |
-| ReLU | The total if it is above 0, otherwise 0 | 87,396 | Passing a number through a gate |
-| Identity | The total, unchanged | 27,092 | Adding numbers |
-| Hold | Keeps its value, and adds any total to it | 1,891 | Registers that only remember |
+| Step | 1 if the total is above 0, otherwise 0 | 120,694 | Yes or no decisions |
+| ReLU | The total if it is above 0, otherwise 0 | 87,658 | Passing a number through a gate |
+| Identity | The total, unchanged | 27,231 | Adding numbers |
+| Hold | Keeps its value, and adds any total to it | 1,939 | Registers that only remember |
 
 The fourth rule is an engine detail. The generator writes three kinds of neuron, and the optimizer converts registers that do nothing but hold their value into this cheaper form.
 
@@ -246,11 +246,11 @@ A layer here is a group of neurons at the same depth, so layers are not designed
 
 | Layer | Neurons `n_k` | Size of `F_k` | Nonzero weights | Mostly |
 |---:|---:|---|---:|---|
-| 0 | 8,182 | none | 0 | Identity |
-| 1 | 9,713 | 9,713 × 8,182 | 22,497 | Step and ReLU |
-| 12 | 670 | 670 × 41,814 | 35,381 | Step |
-| 75 | 5 | 5 × 69,992 | 273 | Step |
-| 151 | 5 | 5 × 70,492 | 103 | ReLU |
+| 0 | 8,369 | none | 0 | Identity |
+| 1 | 9,922 | 9,922 × 8,369 | 22,954 | Step and ReLU |
+| 12 | 570 | 570 × 41,623 | 35,231 | Step |
+| 75 | 5 | 5 × 69,047 | 274 | Step |
+| 151 | 4 | 4 × 69,460 | 101 | ReLU |
 | 156 (second clock) | 56,828 | 56,828 × 59,132 | 394,175 | ReLU |
 
 Layer 0 has no `F` inputs at all: it reads only the last tick and outside input. The long run of very small layers in the middle is mostly step neurons making chains of decisions. Layer 156 is the largest layer, and it is nearly all ReLU. Its size is close to the number of outline edges the build reports, so it appears to hold the font edge neurons.
@@ -269,7 +269,7 @@ Trained networks usually have weights that look like continuous noise. These do 
 
 <p align="center"><img src="docs/figures/weight_hist.png" width="900" alt="Histograms of weights and biases per family on a signed power of two scale"></p>
 
-The 1,070,135 weights use only 21,874 distinct values. They fall into a few groups:
+The 1,067,154 weights use only 21,895 distinct values. They fall into a few groups:
 
 | Kind of weight | Share | What it does |
 |---|---:|---|
@@ -279,7 +279,7 @@ The 1,070,135 weights use only 21,874 distinct values. They fall into a few grou
 | Other integers | 3% | Includes values such as `-100000`, which fit the digit thresholds used to write decimal numbers |
 | Fractions | 21% | Almost all in text drawing, where they hold font geometry |
 
-**The ±2^40 values are a practical stand-in for infinity.** Real values in the app stay far smaller, so an enable of 2^40 cancelling a bias near -2^40 is effectively a switch. It is not true infinity, and it has to be a finite number so that the arithmetic stays exact. Of the 244,276 weights near that size, all but 74 are exactly ±2^40.
+**The ±2^40 values are a practical stand-in for infinity.** Real values in the app stay far smaller, so an enable of 2^40 cancelling a bias near -2^40 is effectively a switch. It is not true infinity, and it has to be a finite number so that the arithmetic stays exact. Of the 245,003 weights near that size, all but 74 are exactly ±2^40.
 
 **Biases are nearly always negative.** About 95% of nonzero biases are near -2^40, because they belong to gates. Only about 2% of those are exactly -2^40. Most carry a small offset, as in `-(2^40 + 256)`, which combines the gate with a small constant or threshold. The common fractional biases such as `-0.5` are thresholds for step neurons.
 
@@ -320,15 +320,15 @@ Neurons rest at zero, and the engine only visits a neuron when something nonzero
 
 | Event | Ticks | Edges pushed | Neurons fired |
 |---|---:|---:|---:|
-| Type a letter | 65 | 2,473 | 1,391 |
-| Type a new letter | 148 | 112,756 | 2,015 |
-| Move the mouse | 10 | 35,577 | 1,446 |
-| Click in text | 369 | 159,553 | 3,485 |
-| Scroll one notch | 2,873 | 158,953 | 7.3 M |
-| Press Ctrl+B | 356 | 156,988 | 3,354 |
-| Paste two lines | 480 | 271,027 | 3,831 |
+| Type a letter | 65 | 2,464 | 1,391 |
+| Type a new letter | 148 | 112,745 | 2,015 |
+| Move the mouse | 10 | 35,574 | 1,446 |
+| Click in text | 369 | 159,525 | 3,485 |
+| Scroll one notch | 2,873 | 158,932 | 7.3 M |
+| Press Ctrl+B | 356 | 156,966 | 3,354 |
+| Paste two lines | 480 | 271,004 | 3,831 |
 
-Figures are from a short document at commit `76ede1a`. A long document costs more on events that repaint the whole view.
+Figures are from a short document at commit `46eef8b`. A long document costs more on events that repaint the whole view.
 
 ### Memory: the network holds the pointers
 
@@ -364,7 +364,7 @@ Vertical snapping is a piecewise linear layer written from font metrics. Horizon
 
 <p align="center"><img src="docs/figures/subnetwork_sizes.svg" alt="Bar chart of neurons by family of sub-networks; font outlines are about 80 percent"></p>
 
-The other 108,000 or so neurons hold the rest of text drawing and the entire word processor. The provenance record, [`PROVENANCE.md`](PROVENANCE.md), lists all 89 sub-networks with their purposes and generator files, and is regenerated by every build.
+The other 107,000 or so neurons hold the rest of text drawing and the entire word processor. The provenance record, [`PROVENANCE.md`](PROVENANCE.md), lists all 93 sub-networks with their purposes and generator files, and is regenerated by every build.
 
 ### File formats are networks too
 
@@ -388,16 +388,16 @@ The whole app is one neural network: one graph of neurons, evaluated by one engi
 
 | Between | Connections |
 |---|---:|
-| Hub (control and wiring) and Writing files | 25,702 |
-| Hub (control and wiring) and Reading files | 19,089 |
-| Hub (control and wiring) and Laying out and painting the page | 14,410 |
-| Changing the document and Hub (control and wiring) | 14,007 |
-| Getting events in and Hub (control and wiring) | 6,801 |
+| Hub (control and wiring) and Writing files | 24,849 |
+| Hub (control and wiring) and Reading files | 14,618 |
+| Changing the document and Hub (control and wiring) | 14,097 |
+| Hub (control and wiring) and Laying out and painting the page | 13,966 |
+| Getting events in and Hub (control and wiring) | 6,353 |
 | Drawing text and Laying out and painting the page | 3,815 |
-| Changing the document and Drawing text | 2,521 |
-| Changing the document and Writing files | 1,993 |
+| Changing the document and Drawing text | 2,565 |
+| Changing the document and Writing files | 2,211 |
 | Laying out and painting the page and Writing files | 1,652 |
-| Changing the document and Getting events in | 1,237 |
+| Changing the document and Getting events in | 1,239 |
 
 Each row is the connection count between two families. These are the ten largest of 21 pairs.
 
@@ -430,21 +430,21 @@ Two things to keep in mind when reading it. The build merges duplicate neurons, 
 <!-- networks:start -->
 ### Every sub-network, and why it exists
 
-The build traces each neuron to one of 89 named sub-networks. This is the whole list, with neuron counts from the current build. Names are the exact labels in [`PROVENANCE.md`](PROVENANCE.md), and some keep working labels from when they were written (`a4`, `rv a3`, `tier 2`).
+The build traces each neuron to one of 93 named sub-networks. This is the whole list, with neuron counts from the current build. Names are the exact labels in [`PROVENANCE.md`](PROVENANCE.md), and some keep working labels from when they were written (`a4`, `rv a3`, `tier 2`).
 
 <p align="center"><img src="docs/figures/network_path.svg" alt="Animated path of a key press through the sub-networks"></p>
 
-#### Getting events in (17,741 neurons)
+#### Getting events in (15,943 neurons)
 
 The browser reports raw facts, such as a key name or a button mask. Deciding what those facts mean is application logic, so it has to happen in neurons.
 
 | Sub-network | Neurons | What it does | Why it exists |
 |---|---:|---|---|
-| `compiled control` | 11,281 | Holds every state rule, compiled together: the gated sums that give each register its next value, plus the return dispatchers. | This is where features actually meet. A register written by many features has one sum here, with one gated term per rule that writes it. |
+| `compiled control` | 9,468 | Holds every state rule, compiled together: the gated sums that give each register its next value, plus the return dispatchers. | This is where features actually meet. A register written by many features has one sum here, with one gated term per rule that writes it. |
 | `rv a3 interaction` | 2,901 | Handles word and page motion, right click, autoscroll while dragging and the context menu. It also holds the later tier 1 features from `gen/t1_features.py`. | These editing motions need more than a single key rule, because they scan text and follow the pointer over many ticks. |
 | `bank and port wiring` | 1,302 | Holds the shared wires that drive the memory, image and event ports, including the input neurons the glue writes into. | Ports are the only way out of the network. Several sub-networks use each port, so one place sums their addresses and enables. That avoids a duplicate port per feature. |
 | `key handling` | 607 | Maps each key and modifier combination to an editing command. | Shortcuts are behavior, so they live in weights instead of a key table in the glue. |
-| `shared control registers` | 558 | Holds editor state such as caret, selection and typing format, plus the comparators that order a selection. | Many features read the same state. Shared registers mean each feature does not keep its own copy that could fall out of step. |
+| `shared control registers` | 573 | Holds editor state such as caret, selection and typing format, plus the comparators that order a selection. | Many features read the same state. Shared registers mean each feature does not keep its own copy that could fall out of step. |
 | `screenshot hit test` | 382 | Reads the object id under the pointer from the last screen. For text, it then uses the line table in memory to find the document position. | The screen already knows which object was drawn where, so buttons and menus need no separate table of rectangles. |
 | `raw event interpretation` | 329 | Turns key name code units, button masks, pointer types, field text and touch positions into cooked events. It also tells the browser whether its default action stands. | The glue is forbidden from knowing what Enter or a right click is. This network is what makes that rule possible. |
 | `ribbon actions` | 155 | Maps a clicked button id to its command. | The ribbon has many targets. One map lets the pointer path stay the same for all of them. |
@@ -452,13 +452,13 @@ The browser reports raw facts, such as a key name or a button mask. Deciding wha
 | `character maps` | 94 | Converts between Unicode and the internal character codes, using the Windows-1252 block. | Keeping internal codes small keeps glyph, metric and spelling tables small. Files and the clipboard still need Unicode. |
 | `event dispatch` | 1 | One neuron left from the first dispatcher. It did not fire on the key presses we traced. | Routing now lives in `raw event interpretation` and the state rules. It is listed so that the record stays complete. |
 
-#### Changing the document (8,482 neurons)
+#### Changing the document (9,197 neurons)
 
 These networks are the only ones that write document text. They all go through the same edit and undo paths, so everything stays undoable.
 
 | Sub-network | Neurons | What it does | Why it exists |
 |---|---:|---|---|
-| `feat2 built up math` | 1,788 | Builds, measures, paints, saves and prints the newer equation forms: a root with an index, sums, products and integrals with limits, five accents, delimiters as tall as their line, and a two row matrix. Reads them back from OMML as their linear form. | Each form is one character standing for a record, as fractions and roots already were, so editing, undo and layout carry them with no new path. A delimiter is its own record, so what stands between two of them can itself be built up. |
+| `feat2 built up math` | 1,792 | Builds, measures, paints, saves and prints the newer equation forms: a root with an index, sums, products and integrals with limits, five accents, delimiters as tall as their line, and a two row matrix. Reads them back from OMML as their linear form. | Each form is one character standing for a record, as fractions and roots already were, so editing, undo and layout carry them with no new path. A delimiter is its own record, so what stands between two of them can itself be built up. |
 | `tier 4 features` | 705 | Implements tracked changes, fields, equations and mail merge. | These change what a run of text means, rather than how it looks. |
 | `bulk edits` | 662 | Processes windows of many cells per tick for large formatting, copy, save, paste and find operations. | Going one cell per tick is too slow on a 100 page document. These walkers keep large operations usable. |
 | `view: side scroll and vertical ruler` | 557 | Slides a page wider than the window, draws the bar along the foot, moves the slide to follow the caret, and draws the vertical ruler. | Above 150 percent a page no longer fits the window. The zoom map stays linear, with one more shift, so hit tests and paint still agree. |
@@ -466,22 +466,26 @@ These networks are the only ones that write document text. They all go through t
 | `range walker` | 479 | Walks a selection for copy, cut, delete and formatting. | Selections cross paragraphs and slots. One walker holds that hard logic, and each command just supplies the action. |
 | `tier 2` | 391 | Implements style commands, paragraph commands, lists and typed font sizes. | These commands share paragraph records and a style table, so they are grouped around that data. |
 | `a4 commands` | 344 | Implements repeat, format painter and keep rules, among others. | These are small commands that reuse existing registers, and each needs only a few rules. |
-| `feat2 pdf run effects` | 290 | Prints character spacing as text spacing, run shading under the text, double strike as two lines, and external links as link annotations of the page. | These properties already live in the style entry and on screen; a printed page should show what the screen shows, and a link should still work. |
+| `feat2 pdf run effects` | 307 | Prints character spacing as text spacing, run shading under the text, double strike as two lines, and external links as link annotations of the page. | These properties already live in the style entry and on screen; a printed page should show what the screen shows, and a link should still work. |
 | `find and replace` | 279 | Runs a search automaton over the document, counts matches and replaces them. | Search needs its own scanning state, which is separate from the caret. |
+| `feat1 docx reader` | 279 | Reads caps, small caps, double strike, hidden text, character spacing, run shading, links and their targets, bookmarks, contextual spacing and widow control. | Each lands in a field of the interned style entry or a paragraph cell, so edits, undo and the clipboard carry it with no new path. |
 | `recent colors` | 276 | Keeps the last eight exact text colors, newest first and without repeats, draws them in a row of the text color menu, and sends a clicked one back through the More Colors path. | A color picked from the grid or typed as hex is hard to find again. The list reuses the exact color path, so undo, save and the nearest palette entry come with it. |
-| `feat1 docx reader` | 249 | Reads caps, small caps, double strike, hidden text, character spacing, run shading, links and their targets, bookmarks, contextual spacing and widow control. | Each lands in a field of the interned style entry or a paragraph cell, so edits, undo and the clipboard carry it with no new path. |
+| `p3 matrix` | 270 | Builds, measures, draws, prints and saves matrices of any number of rows, each column as wide as its widest cell and each cell centred in it. | A matrix reads by its columns; cells of different widths should still line up, and a matrix is not limited to two rows. |
+| `feat1 docx writer` | 243 | Writes those properties back, opens and closes links and bookmarks around runs, and lists external link targets as relationships. | A file that is opened and saved should keep what it had, even where the editor has no command for it yet. |
 | `find across paragraphs` | 233 | One matcher for queries that hold paragraph marks, shared by the replace walker, the match counter and the highlight. | A match that crosses a paragraph cannot be found inside one slot, so it needs state that follows the text across slots. |
-| `feat1 docx writer` | 228 | Writes those properties back, opens and closes links and bookmarks around runs, and lists external link targets as relationships. | A file that is opened and saved should keep what it had, even where the editor has no command for it yet. |
 | `paste` | 208 | Inserts clipboard text and splits it into paragraphs. | Pasted text arrives as a flat vector of code units, and the document stores paragraphs. |
 | `edit primitives` | 196 | Inserts and deletes characters and paragraphs, and logs each change for undo. | It is the single choke point for edits, so undo cannot be bypassed by accident. |
 | `style create and rename` | 177 | Writes a new style table entry from the format at the caret, renames a style with undo records, and applies a character style over a run. | Files and users both name styles. Keeping these in the style table means save, open and apply work for them with no new paths. |
 | `a4 tabs` | 160 | Handles tab stops. | A tab has no fixed width. Its advance depends on the current position, so layout needs a dedicated rule. |
+| `p3 docx properties` | 154 | Reads emboss, imprint, outline, shadow, character scale and language of a run, and the outline level of a paragraph, into the fields a style entry already has room for. | Word files carry these on many runs; a file opened and saved here should come back with them. |
 | `list formats` | 151 | Gives the list format menu, and reads numFmt and lvlText per level from a file. | A list format is a small number kept in the paragraph record. Splits, undo and clipboard then carry it with no extra work. |
 | `style interner` | 151 | Finds or adds a style record in the interned table, in its own clock domain. | Each character stores a short index instead of a full record. That makes the text compact and makes comparing two styles a single check. |
+| `p3 pdf destinations` | 143 | Gives each printed bookmark a named destination in the PDF and, unless its name is hidden, an outline item; links to a place in the document become link annotations that go to that destination. | A bookmark and an internal link should still take the reader to the same place in the PDF as in the document. |
 | `undo` | 111 | Walks the log backward and forward to undo and redo. | The log format is shared, so any feature that logs correctly gets undo with no extra network. |
 | `clipboard formatting` | 103 | Keeps the style cells and paragraph records of the copy, and restores them when the pasted text equals that copy. | The system clipboard carries only text here. So the network keeps formatting in its own memory, and uses it when the pasted text matches. |
+| `p3 docx writer` | 72 | Writes those run and paragraph properties back in schema order, the language as the attribute text it was read with. | What was read must be written again for a round trip to keep the file. |
 | `spell dictionary` | 67 | Walks a word automaton held as a read only table, with one read per painted letter, and marks misspelled words. | An automaton checks a word at one step per letter. The table is built from the word list by merging identical subtrees, with no fitting. |
-| `feat1 run effects` | 39 | Decodes the extended field of a style entry for the glyph network: caps and small caps draw the capital, small capitals take a smaller size, hidden text takes no width or ink, and character spacing joins the advance. | These properties change what is drawn and how wide it is, so the glyph network must see them. One neuron answers for the usual character that has none of them. |
+| `feat1 run effects` | 49 | Decodes the extended field of a style entry for the glyph network: caps and small caps draw the capital, small capitals take a smaller size, hidden text takes no width or ink, and character spacing joins the advance. | These properties change what is drawn and how wide it is, so the glyph network must see them. One neuron answers for the usual character that has none of them. |
 | `view: wheel and thumb drag` | 22 | Turns Shift+wheel and a sideways wheel delta into a slide of a wide page, and lets the thumb of the bar at the foot be dragged, at the scale that draws it. | The glue only reports raw deltas and modifier bits. Deciding that Shift means sideways, and mapping pointer travel to page travel, is application logic, so it lives in neurons that feed the existing slide path. |
 | `column breaks` | 22 | Ctrl+Shift+Enter splits the paragraph and marks the new one with a column break, with undo; reads and writes the break as w:br of type column. | A column break is the page break flag with a second value, so layout, undo and save reuse the page break paths. Layout only needs one more rule: in the first of two columns the paragraph moves to the second. |
 | `tier3` | 22 | Holds the remaining tier 3 commands, plus undo for their operations. | It connects tier 3 features to the shared undo log. |
@@ -535,14 +539,14 @@ This is the largest family. It is what replaces a font engine. The method is des
 | `glyph patch` | 12 | Assembles coverage and color into a patch for the patch port. | Text color is applied here, so a cached glyph works in any color. |
 | `stem units` | 0 | Would hold stem positions for horizontal snapping. It has no neurons in the current build, because no font turns that on. | It is listed so that the provenance record stays complete. |
 
-#### Reading files (8,541 neurons)
+#### Reading files (8,571 neurons)
 
 Each of these exists because no parser library is allowed. XML, zip and PNG bytes are consumed one state at a time.
 
 | Sub-network | Neurons | What it does | Why it exists |
 |---|---:|---|---|
-| `docx reader` | 2,911 | Unzips the file, inflates it and parses the document XML. | It is the core of opening a file. The goal requires that networks do parsing and decompression. |
-| `docx reader tier 4` | 1,722 | Reads tracked marks and fields. | These wrap ordinary runs in extra elements, so they add state to the parser. |
+| `docx reader` | 2,939 | Unzips the file, inflates it and parses the document XML. | It is the core of opening a file. The goal requires that networks do parsing and decompression. |
+| `docx reader tier 4` | 1,724 | Reads tracked marks and fields. | These wrap ordinary runs in extra elements, so they add state to the parser. |
 | `docx reader rv_a5` | 1,503 | Improves fidelity on files from other programs: nested tables, row spans, spacing and truncated content. It also holds spell suggestions and the saved list of added words. | Real files use forms that a simple reader misses. The spelling parts sit here only because of where they were added in the generator. |
 | `docx reader notes` | 819 | Reads footnote, comment and header parts. | Each of these has its own XML part that must be connected back to the main text. |
 | `docx reader tier 2` | 816 | Reads styles, numbering, and run and paragraph properties. | Formatting in `.docx` is scattered across several parts and elements. |
@@ -550,14 +554,14 @@ Each of these exists because no parser library is allowed. XML, zip and PNG byte
 | `a4 docx` | 271 | Reads and writes the paragraph properties added by the commands above. | Anything the app can do must survive a save and open, so features carry their own file code. |
 | `docx reader tier 3` | 127 | Adds walking between the parts of a file. | Tier 3 content lives in separate parts of the zip file. |
 
-#### Writing files (6,059 neurons)
+#### Writing files (6,079 neurons)
 
 Saving runs the same idea in reverse. The network produces every byte, and the glue only offers the download.
 
 | Sub-network | Neurons | What it does | Why it exists |
 |---|---:|---|---|
 | `docx crc` | 2,711 | Computes CRC32 of the bytes written to the zip file. | Zip readers reject a file with a wrong checksum. It holds four 256 entry tables as weights, so it can process four bytes at once. |
-| `pdf writer` | 1,435 | Writes PDF objects, text and pictures. | Print to PDF is in the goal, and PDF has its own structure of objects and offsets. |
+| `pdf writer` | 1,455 | Writes PDF objects, text and pictures. | Print to PDF is in the goal, and PDF has its own structure of objects and offsets. |
 | `docx writer` | 1,095 | Writes the document XML parts. | A saved file needs XML text with the values of this document filled in. |
 | `docx writer tier 3` | 306 | Writes section properties, tabs, markers, comments, notes, headers and footers. | These features add elements and whole parts to the saved file. |
 | `docx deflate` | 242 | Compresses with LZ77 and fixed Huffman codes. | `.docx` files are compressed zip files, and compression has to happen in the network too. |
@@ -610,12 +614,12 @@ I classified every neuron from its activation, bias and incoming weights:
 
 | Behavior | Neurons | Where it matters most |
 |---|---:|---|
-| **Digital logic:** plain gates with weights of ±1 | 23,987 (10.1%) | Reading files, events, control |
-| **Digital decisions from numbers:** comparators, and thresholds with an enable | 98,189 (41.2%) | Mostly `Drawing text`, plus layout and files |
-| **Numbers switched on and off** | 84,021 (35.2%) | Mostly `Drawing text`, and also registers |
-| **Number arithmetic:** adders, wires, ramps and clamps | 24,832 (10.4%) | Layout, and text coverage |
-| **Holding values:** registers with no other work | 1,891 (0.8%) | Everywhere |
-| **Constants and inputs** | 5,635 (2.4%) | Control, and text |
+| **Digital logic:** plain gates with weights of ±1 | 22,165 (9.3%) | Reading files, events, control |
+| **Digital decisions from numbers:** comparators, and thresholds with an enable | 98,529 (41.5%) | Mostly `Drawing text`, plus layout and files |
+| **Numbers switched on and off** | 84,268 (35.5%) | Mostly `Drawing text`, and also registers |
+| **Number arithmetic:** adders, wires, ramps and clamps | 24,984 (10.5%) | Layout, and text coverage |
+| **Holding values:** registers with no other work | 1,939 (0.8%) | Everywhere |
+| **Constants and inputs** | 5,637 (2.4%) | Control, and text |
 
 Only a small share is pure Boolean logic. Most of the network is mixed-signal in style: 0 or 1 signals control wires that carry whole numbers. The classification comes from the form of each neuron, so a few may do something else, such as a weighted step that is not really a comparison.
 
@@ -745,7 +749,7 @@ This repository's generator and documentation were largely written with a langua
 
 Tests drive the app only through events, and they judge only output images and saved files.
 
-| Check | What it shows | Last run at `76ede1a` |
+| Check | What it shows | Last run at `46eef8b` |
 |---|---|---|
 | `test/e2e.js` | Editing, formatting and interaction, by comparing screens | 210 of 210 |
 | `test/audit.py` | Glue and engine hold no application logic, no training code, provenance complete | 67 of 67 |
@@ -763,27 +767,27 @@ More suites cover tables, pictures, fonts, PDF, tracked changes, equations and b
 
 #### Latency
 
-Measured in headless Chromium on a CPU through WASM, on a long test document at `76ede1a`:
+Measured in headless Chromium on a CPU through WASM, on a long test document at `46eef8b`:
 
 | Action | Time |
 |---|---:|
 | Type at the end of a long document | under 1 ms |
-| Select all | 55 ms |
-| Jump to top | 23 ms |
-| Press Enter at the top of a long document | 24 ms |
-| Undo | 28 ms |
-| First paint of a page in a new font, 11 pt | 57 to 80 ms |
+| Select all | 51 ms |
+| Jump to top | 40 ms |
+| Press Enter at the top of a long document | 40 ms |
+| Undo | 31 ms |
+| First paint of a page in a new font, 11 pt | 76 to 154 ms |
 
 Wall time is noisy on a shared machine, so the project also counts work deterministically with `test/flops.js`. It runs the real weights on a counting build of the engine and counts every multiply-add, including inputs that are read lazily, plus every activation: FLOPs = 2 × multiply-adds + activations. The same events always give the same count. Engine port work, such as filling pixels, is not included. The baseline is in [`docs/flops_baseline.json`](docs/flops_baseline.json), and the current counts in [`docs/flops_now.json`](docs/flops_now.json):
 
 | Event, long document | Ticks | FLOPs at the baseline | FLOPs now |
 |---|---:|---:|---:|
-| Type a letter, after the first | 65 | 80,866 | 54,012 |
-| Mouse move | 10 | 30,735 | 27,533 |
-| Select all | 55 ms |
-| Jump to top | 23 ms |
+| Type a letter, after the first | 65 | 80,866 | 53,860 |
+| Mouse move | 10 | 30,735 | 27,504 |
+| Select all | 51 ms |
+| Jump to top | 40 ms |
 | Enter at the top | 2,580 | 10.4 M | 6.2 M |
-| Undo | 28 ms |
+| Undo | 31 ms |
 | Scroll one notch | 2,873 | 12.2 M | 7.3 M |
 
 Earlier figures in this README count only pushed edges. Those miss the lazy reads, which here are about four times as many multiply-adds.
