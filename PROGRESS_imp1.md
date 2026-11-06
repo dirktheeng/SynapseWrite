@@ -25,3 +25,12 @@ Lines stay on whole pixels: EM rounds with a fraction carried to the next line o
 Line spacing: index 0 is the default 1.08 and saves w:line=259; index 6 is true single (menu 1.0, Ctrl+1, reader w:line<=250, saves 240); the rest absolute, lxtra linear, no decode of 128 heights.
 Heading 2: record now 13 pt through a pt argument (was PTS index 2, 14 pt).
 Not done: a file with no w:line anywhere opens at 1.08 where Word would use single unless docDefaults or Normal say otherwise.
+
+## Typing below the view
+AFTER_ED halted when the edit was past the background frontier (cp>=bpi, a7_far). Now it draws a provisional page after bptop, from cp-6, at once (IMP_F0, IMP_F1, impf); caret shows. Next keys in the paragraph use the fast path. BGD redraws in the true place. test/imp_far.js: all pass, first key 571,742 edges, next 106,968 and 114,315; same final image as typing after the background ends. a7_type stays under 1 M.
+e2e run 1 at the pitch commit: 197/210, all same-image failures from the squiggle's last row falling below the 19 px line; squiggle moved up one row. e2e run 2: 210/210.
+
+## Item 4
+Done: empty paragraph takes inserted table or picture; reader first table takes first paragraph; find field replaced on reopen; refusal message (pfile); selection highlight across space after and before; balloons stack (cbb, full walks only); cut of 589900+ refused with a message and no deletion.
+Not done: a valid zip with broken deflate still replaces the document (would need a snapshot of the page table and registers or a dry inflate).
+Test edits: t3_table yb 335 to 305 and t3_pic by 472 to 435, because table and picture now sit one paragraph higher.
