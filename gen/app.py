@@ -180,19 +180,23 @@ adv=net.wire();asc=net.wire();asc_e=net.wire();lh=net.wire();rise=net.wire();str
 # superscript and subscript draw a smaller compiled size; the line keeps the nominal metrics
 def script_size(i):
     return rom.sz_near(round(rom.SZ[i]*0.72))
+def smc_size(i):
+    "p2: the size a small capital draws at, 0.8 of the run's, the factor LibreOffice documents; Word's own is unpublished and close to it."
+    return rom.sz_near(round(rom.SZ[i]*0.8))
 vflag=net.step(SD['sup']+SD['sub'])
 size_hot=[X() for _ in range(NS)]
 for i_ in range(NS):
-    n_,s_=F1_SPLIT(raw_hot[i_],vflag); size_hot[i_]=size_hot[i_]+n_; size_hot[script_size(i_)]=size_hot[script_size(i_)]+s_
+    n_,s_,c_=F1_SPLIT(raw_hot[i_],vflag); size_hot[i_]=size_hot[i_]+n_; size_hot[script_size(i_)]=size_hot[script_size(i_)]+s_; size_hot[smc_size(i_)]=size_hot[smc_size(i_)]+c_
 def sel_sum(val):
     """A value of the drawn size, val(i) at least zero for size i, read through the size tree's groups of 8:
     a closed group gate ends its reads at once. A raised or lowered run takes its script size, behind vflag."""
     o=X(); _scf=net.step(vflag+F1_SMCL+F1_HID)    # the same split as F1_SPLIT: script or small capital size, hidden text none
-    for sc,en_ in ((False,ONE-_scf),(True,net.and_(_scf,ONE-F1_HID))):
+    _smo=net.and_(_scf,ONE-F1_HID,F1_SMCL,ONE-vflag)
+    for sc,en_ in ((False,ONE-_scf),(True,net.and_(_scf,ONE-F1_HID)-_smo),(2,_smo)):
         part=X()
         for g_,gn_ in enumerate(SZG):
             vw_=net.wire()
-            for i_ in range(8*g_,min(8*g_+8,NS)): net.connect(vw_,net.gate(val(script_size(i_) if sc else i_),raw_hot[i_]))
+            for i_ in range(8*g_,min(8*g_+8,NS)): net.connect(vw_,net.gate(val(smc_size(i_) if sc==2 else script_size(i_) if sc else i_),raw_hot[i_]))
             part=part+net.gate(vw_,gn_)
         o=o+net.gate(part,en_)
     return o
