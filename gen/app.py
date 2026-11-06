@@ -304,7 +304,7 @@ class Ret:
         return s.t.index(st)+1
     def gen(s):
         en=fsm.S(s.name); n=len(s.t)+1
-        if n<16: h=net.decode(s.r,n,en)
+        if n<6: h=net.decode(s.r,n,en)
         else:   # two digit one-hot: only the lines of the active digit are visited, and the lines exclude each other
             nb=len(bin(n-1))-2; lo_=nb//2; b_=net.bits(s.r,nb,en)
             dl=net.decode(sum((b_[i]*(1<<i) for i in range(lo_)),X()),1<<lo_,en); dh=net.decode(sum((b_[i]*(1<<(i-lo_)) for i in range(lo_,nb)),X()),1<<(nb-lo_),en)

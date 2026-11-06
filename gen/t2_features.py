@@ -204,7 +204,9 @@ on('T2_ST2',(t2skip,'PX',None),(None,'T2_FS',{t2oi:oi,oi:t2ido,t2i:0,t2jj:0,a5d:
 # id search: compares the string at oi against each table id
 e=S('T2_FS'); on('T2_FS',(net.ge(t2i,G_(nsty,ONE-a5d)+a5d*6,e),'T2RR',{t2fnd:0}),(None,'T2_FS1',{r1:as_x(STY)+t2i*STYN+8+t2jj,r2:OA+oi+t2jj}))
 e=S('T2_FS1'); q_=net.eq(R2,34,e)
-on('T2_FS1',(net.and_(q_,net.eq(R1,0,e)),'T2RR',{t2fnd:1}),(net.and_(ONE-q_,net.eq(R1,R2,e)),'T2_FS',{t2jj:t2jj+1}),(None,'T2_FS',{t2i:t2i+1,t2jj:0}))
+_lim=G_(nsty,ONE-a5d)+a5d*6   # the next read goes out with the verdict, so each compare takes one tick
+on('T2_FS1',(net.and_(q_,net.eq(R1,0,e)),'T2RR',{t2fnd:1}),(net.and_(ONE-q_,net.eq(R1,R2,e)),'T2_FS1',{t2jj:t2jj+1,r1:as_x(STY)+t2i*STYN+8+t2jj+1,r2:OA+oi+t2jj+1}),
+ (net.ge(t2i+1,_lim,e),'T2RR',{t2i:t2i+1,t2jj:0,t2fnd:0}),(None,'T2_FS1',{t2i:t2i+1,t2jj:0,r1:as_x(STY)+(t2i+1)*STYN+8,r2:OA+oi}))
 e=S('T2_ST4')
 on('T2_ST4',(t2fnd,'T2_ST9',{t2si:t2i,a5d:0}),(net.lt(nsty,STYMAX,e),'T2_ST5',{t2si:nsty,nsty:nsty+1,t2jj:0,a5d:0}),(None,'T2_ST9',{t2si:DEFREC+1,a5d:0}))
 on('T2_ST5',(None,'T2_ST6',{r1:OA+oi+t2jj}))
