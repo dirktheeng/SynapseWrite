@@ -132,6 +132,7 @@ def yq(fm,Y):
     if Y<=A[0] or Y>=A[-1]: return Y
     for a,b in zip(A,A[1:]):
         if a<=Y<=b: return a+(b-a)*round((Y-a)/(b-a)*256)/256
+DRIFT=0.3   # joined pieces' summed travel over band height: under 0.15 px of drift
 def qchains(cs,fm):
     if fm is None: return chains(cs)
     o=[]
@@ -144,7 +145,7 @@ def qchains(cs,fm):
         if len(q)>=3: o.append(q)
     # a chain is split where it crosses a knot of the height map: the snapped map stretches each band by its own
     # factor, so a chain carried across a band would drift sideways by that factor times its travel
-    out=[]; A=[0.0,fm['xh'],fm['cap']]    # the bases of the overshoot bands, whose stretch can be large
+    out=[]; A=set(ylevels(fm))    # every knot: each band of the snapped map stretches by its own factor
     for ch in chains(o):
         pts=list(ch[5]); cur=[pts[0]]; sg_=ch[4]
         for a,b in zip(pts,pts[1:]):
@@ -152,8 +153,18 @@ def qchains(cs,fm):
                 if a[0]<L_<b[0]:
                     m_=(L_,a[1]+(b[1]-a[1])*(L_-a[0])/(b[0]-a[0])); cur.append(m_); out.append((cur,sg_)); cur=[m_]
             cur.append(b)
+            if b[0] in A and b is not pts[-1]: out.append((cur,sg_)); cur=[b]     # a vertex on a knot ends the chain there too
         out.append((cur,sg_))
-    return [(c[0][0],c[0][1],c[-1][0],c[-1][1],sg_,c) for c,sg_ in out]
+    # Pieces join again where little drift can come of it: a band's stretch moves the rest of the chain by at most about
+    # half a pixel times the piece's net sideways travel over the band's height, whatever the size.
+    Ls=sorted(A); band=lambda y0,y1:next((b_-a_ for a_,b_ in zip(Ls,Ls[1:]) if a_<=y0 and y1<=b_),None)
+    j_=[]; acc=0.0
+    for c,sg_ in out:
+        if j_ and j_[-1][1]==sg_ and j_[-1][0][-1]==c[0]:
+            pc=j_[-1][2]; h_=band(pc[0][0],pc[-1][0]); r_=0.0 if h_ is None else abs(pc[-1][1]-pc[0][1])/h_
+            if acc+r_<=DRIFT: acc+=r_; j_[-1]=(j_[-1][0]+c[1:],sg_,c); continue
+        j_.append((list(c),sg_,c)); acc=0.0
+    return [(c[0][0],c[0][1],c[-1][0],c[-1][1],sg_,c) for c,sg_,_ in j_]
 EXTTAG=(1<<30,0); PFM={}; XO=4096    # glyph x arrives lifted by XO: a page wider than the window draws to the left of it
 def _ymax(fi,bo,it,ch):
     cs=contours(fi,bo,it,ord(ch)); ys=[p[1] for c in cs for p in c]; return (max(ys),min(ys)) if ys else (0.0,0.0)
@@ -229,7 +240,7 @@ def q_slope(m):
     "Keeps a fixed number of significant bits so that slopes share the engine's weight dictionary."
     if m==0: return 0.0
     e=math.floor(math.log2(abs(m))); return round(m/2**(e-SLOPE_BITS))*2**(e-SLOPE_BITS)
-GRID_X=GRID_EM
+GRID_X=GRID_EM//2   # chain starts on a 1/512 em grid: at 72 pt that is under 0.2 px
 def structure(fi,bo,it,codes):
     """How each code of one face is made, from the font's own composite data: {code:[(program key,dx,dy)]}.
     Two components without a transform, the first in place, make base + accent. Anything else is drawn whole.
