@@ -148,7 +148,7 @@ tvc=R()
 vb_=net.bits(t2v,5,hk[7]); csn=csn+G_(cs-CSD['colraw']+vb_[0]*256+vb_[1]*512+vb_[2]*1024+vb_[3]*131072+vb_[4]*262144,hk[7])
 fsm.set(rnop,hk[9],t2v)
 for b_,k_ in enumerate((0,1,2,3,7,4,5,6,8)): fsm.set(v4m[b_],hk[k_],1)
-on('T2_C',(None,'PX',{ics:(csn,net.relu(ics.k-hk[7]*M)+G_(t2kx,hk[7]),net.relu(ics.n-hk[3]*M)+G_(t2nx,hk[3]),ics.y),t2kx:0,t2nx:0}))
+on('T2_C',(None,'PX',{ics:(csn,net.relu(ics.k-hk[7]*M)+G_(t2kx,hk[7]),net.relu(ics.n-hk[3]*M)+G_(t2nx,hk[3]),ics.y,*ics.e),t2kx:0,t2nx:0}))
 # on or off: a bare tag is on; a value starting 0, f or n is off
 on('T2_TV',(None,'T2_TV1',{rl:OA+oi}))
 e=S('T2_TV1')

@@ -81,7 +81,7 @@ Wl=rl.out
 gx7=G_(qcx+6,net.step(qcols))
 tb7=net.step(qcols)
 qnx_=qfh+Wl[7]+net.step(qfh+Wl[7])*14
-ovf=net.or_(net.and_(net.gt(qyy+Wl[3]+qnx_,qtop+qmt+qth,e),net.gt(qyy,qtop+qmt,e)),net.and_(ONE-tb7,keep_lines(e,qyy,qtop,Wl[3],R2,qlj,qnl,qmt,qth,qnx_)))
+ovf=net.or_(net.and_(net.gt(qyy+Wl[3]+qnx_,qtop+qmt+qth,e),net.gt(qyy,qtop+qmt,e)),net.and_(ONE-tb7,ONE-f1qnwc,keep_lines(e,qyy,qtop,Wl[3],R2,qlj,qnl,qmt,qth,qnx_)))
 lmv={qs:Wl[0],qe:Wl[1],rv_qm:gx7+qml,qx:Wl[2]-48+gx7+qml,qh:Wl[3],qa:Wl[4],qo:Wl[0],qex:Wl[5]}
 col2=net.and_(ovf,net.eq(qnc,2,e),ONE-net.step(qxc))
 on('PD_7',(col2,'PD_8',{**lmv,qyy:qtop+qmt,qxc:(qtw-24)*0.5+24}),(ovf,'PD_C2',{**lmv,qyy:qtop+qps+qmt,qtop:qtop+qps,qxc:0}),(None,'PD_8',lmv))
@@ -100,8 +100,8 @@ _qxe=net.ge(R1,UO,e); _qxb=net.bits(R1-UO,16,_qxe); _xpv=X()
 def _qxl(G,ix,pv={p_>>7:i_+1 for i_,p_ in enumerate(rom.EXT_PAGES)}): net.connect(_qxw,G*pv[ix])
 _qxw=net.wire(); chartree(_qxe,_qxb[7:],8,[p_>>7 for p_ in rom.EXT_PAGES],_qxl)
 pdiff=net.step(pdiff+net.step(_qxw-qxp-0.5+e*M-M)+net.step(qxp-_qxw-0.5+e*M-M))
-ladv={qxp:_qxw,v4qk:RSK,ins_ch:R1,ins_st:RSC,ins_rec:RSR,qadv:adv+kern+G_(qex,psp)+rv_tabw(qxx-rv_qm-qxc,net.eq(R1,9,e)),qpc:R1}
-on('PD_A',(net.and_(net.eq(R1,173,e),net.lt(qo+1,qe,e)),'PD_9',{qo:qo+1}),(net.and_(net.eq(R1,9,e),qop),'T4P_CL',{pfcr.r:pfcr.id('A4_QX0')}),(net.eq(R1,9,e),'A4_QX0',None),(net.and_(net.ge(R1,300,e),net.lt(R1,1000,e)),'A6Q_P0',{qo:qo+1,a6qk:R1-300}),(net.and_(net.ge(R1,1000,e),net.lt(R1,UO,e)),'T4P_MK',{qo:qo+1,qfid:R1-1000}),(net.and_(pdiff,qop),'T4P_CL',{**ladv,pfcr.r:pfcr.id('PD_F')}),(pdiff,'PD_F',ladv),(qop,'PD_Tc',ladv),(None,'T4P_O',ladv))
+ladv={qxp:_qxw,v4qk:RSK,ins_ch:F1_CH,ins_st:RSC,ins_rec:RSR,qadv:adv+kern+G_(qex,psp)+rv_tabw(qxx-rv_qm-qxc,net.eq(R1,9,e)),qpc:R1}
+on('PD_A',(F1_HID,'PD_9',{qo:qo+1}),(net.and_(net.eq(R1,173,e),net.lt(qo+1,qe,e)),'PD_9',{qo:qo+1}),(net.and_(net.eq(R1,9,e),qop),'T4P_CL',{pfcr.r:pfcr.id('A4_QX0')}),(net.eq(R1,9,e),'A4_QX0',None),(net.and_(net.ge(R1,300,e),net.lt(R1,1000,e)),'A6Q_P0',{qo:qo+1,a6qk:R1-300}),(net.and_(net.ge(R1,1000,e),net.lt(R1,UO,e)),'T4P_MK',{qo:qo+1,qfid:R1-1000}),(net.and_(pdiff,qop),'T4P_CL',{**ladv,pfcr.r:pfcr.id('PD_F')}),(pdiff,'PD_F',ladv),(qop,'PD_Tc',ladv),(None,'T4P_O',ladv))
 sv_en.lin(S('PD_F')); sv_in.add(S('PD_F'),ins_rec); sv_fl.add(S('PD_F'),ins_st)
 e=S('PD_F'); zh=net.decode(SV['si'],rom.NSZ,e); pts=X(); ptv=X()
 for i_,h_ in enumerate(zh): pts=pts+h_*round(rom.SZ[i_]*96/72); ptv=ptv+h_*round(rom.SZ[script_size(i_)]*96/72)

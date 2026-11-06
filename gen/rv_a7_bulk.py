@@ -84,7 +84,7 @@ _rem=wlen-wo; _sp=net.eq(wp,hi_p,e); _rem2=_rem-net.relu(_rem-(hi_o-wo)+_sp*M-M)
 _dif=net.and_(net.step(a7_rn),net.step(net.step(WIN[0]-a7_rold)+net.step(a7_rold-WIN[0])))
 e_ok=net.and_(e,ONE-_dif)
 # the run's new record is interned in this tick; A7_FX writes its index with the flags kept
-ic_en.lin(e_ok); ic_val.add(e_ok,net.relu(newst)); ic_fb.add(e_ok,RSC-FD['flags']); ic_k.add(e_ok,_xn[0]); ic_n.add(e_ok,_xn[1]); ic_y.add(e_ok,_xn[2]); fsm.set(a7_wf,e_ok,FD['flags']+net.and_(e_ok,fmh[11],ONE-FD['dele'])*ST_DEL)
+ic_en.lin(e_ok); ic_val.add(e_ok,net.relu(newst)); ic_fb.add(e_ok,RSC-FD['flags']); ic_k.add(e_ok,_xn[0]); ic_n.add(e_ok,_xn[1]); ic_y.add(e_ok,_xn[2]); [b_.add(e_ok,v_) for b_,v_ in zip(ic_e,(RSX,RSH,RSZ))]; fsm.set(a7_wf,e_ok,FD['flags']+net.and_(e_ok,fmh[11],ONE-FD['dele'])*ST_DEL)
 _fmsafe=net.step(fmh[3]+fmh[7]+fmh[11]+fmh[12]+fmh[15]); _e_d=net.and_(e_ok,ONE-_fmsafe)
 w3.drive(_e_d,(wbase+DIRTY,1)); mark_d(_e_d,wp)
 fsm.set(ftgt,e_ok,tgt_now); fsm.set(wfirst,e_ok,0)

@@ -38,6 +38,9 @@ F=[
 ('tier3','Holds the remaining tier 3 commands, plus undo for their operations.','It connects tier 3 features to the shared undo log.'),
 ('tier 4 features','Implements tracked changes, fields, equations and mail merge.','These change what a run of text means, rather than how it looks.'),
 ('spell dictionary','Walks a word automaton held as a read only table, with one read per painted letter, and marks misspelled words.','An automaton checks a word at one step per letter. The table is built from the word list by merging identical subtrees, with no fitting.'),
+('feat1 run effects','Decodes the extended field of a style entry for the glyph network: caps and small caps draw the capital, small capitals take a smaller size, hidden text takes no width or ink, and character spacing joins the advance.','These properties change what is drawn and how wide it is, so the glyph network must see them. One neuron answers for the usual character that has none of them.'),
+('feat1 docx reader','Reads caps, small caps, double strike, hidden text, character spacing, run shading, links and their targets, bookmarks, contextual spacing and widow control.','Each lands in a field of the interned style entry or a paragraph cell, so edits, undo and the clipboard carry it with no new path.'),
+('feat1 docx writer','Writes those properties back, opens and closes links and bookmarks around runs, and lists external link targets as relationships.','A file that is opened and saved should keep what it had, even where the editor has no command for it yet.'),
 ('style interner','Finds or adds a style record in the interned table, in its own clock domain.','Each character stores a short index instead of a full record. That makes the text compact and makes comparing two styles a single check.'),
 ]),
 ('Laying out and painting the page','These networks decide where everything goes, then draw it.',[

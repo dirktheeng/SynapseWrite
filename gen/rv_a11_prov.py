@@ -1,5 +1,8 @@
 # ---- provenance record, written at build: every sub-network, its purpose, and the generator files that wrote it ----
 PURPOSE={
+ 'feat1 run effects':'Decodes the extended field of a style entry for the glyph network: caps and small caps draw and measure the capital, small capitals take a smaller size, hidden text takes no width or ink, character spacing joins the advance.',
+ 'feat1 docx reader':'Reads caps, small caps, double strike, hidden text, character spacing, run shading, links with their targets, bookmarks, contextual spacing and widow control from a .docx.',
+ 'feat1 docx writer':'Writes those run and paragraph properties back, opens and closes links and bookmarks around runs, and lists external link targets as relationships.',
  'glyph unit':'Draws a character from its edge network into the glyph store, in its own clock domain.',
  'snapping layer':'Fits outline heights to the pixel grid for a given size.',
  'glyph geometry':'Scales outline coordinates by the drawn size.',
