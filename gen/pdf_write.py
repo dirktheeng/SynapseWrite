@@ -11,7 +11,7 @@ def pd_patch(st,nx):
     number(st+'p',qi,st+'q')
     on(st+'q',(None,nx,{fp:qsvf}))
 import pdf_fonts
-PXV=[(p_,v_) for p_ in rom.EXT_PAGES for v_ in rom.EXT_VARS]; NFB_=len(FACES); NFC=len(FACES)+len(PXV); OROOT=3+3*NFC; FIRST=OROOT+1; PUS=999000; PFT=999100   # faces used by this PDF, and where each face's bytes are in the read only part of the bank
+PXV=[(p_,v_) for p_ in rom.EXT_PAGES for v_ in rom.EXT_VARS]; NFB_=len(FACES); NFC=len(FACES)+len(PXV); OROOT=3+3*NFC; DROOT=OROOT+1; FIRST=OROOT+2; PUS=999000; PFT=999100   # faces used by this PDF, and where each face's bytes are in the read only part of the bank
 PF_ROM=bytearray(); PF_INIT=[]
 for i_,f_ in enumerate(FACES):
     bl_,o1_,o2_=pdf_fonts.face_blob(i_,*f_,3+3*i_)
@@ -21,7 +21,7 @@ for i0_,(p_,v_) in enumerate(PXV):
     i_=NFB_+i0_; bl_,o1_,o2_=pdf_fonts.ext_blob(i_,v_,p_,3+3*i_)
     for j_,v2_ in enumerate((len(PF_ROM)+1,len(bl_),o1_,o2_)): PF_INIT.append([PFT+i_*4+j_,v2_])
     PF_ROM+=bl_
-head=b'%PDF-1.4\n'; cat_=b'1 0 obj\n<</Type/Catalog/Pages 2 0 R/Outlines %d 0 R>>\nendobj\n'%OROOT
+head=b'%PDF-1.4\n'; cat_=b'1 0 obj\n<</Type/Catalog/Pages 2 0 R/Outlines %d 0 R/Dests %d 0 R>>\nendobj\n'%(OROOT,DROOT)
 pfr=Ret('T4_PFR')
 on('PDF',(None,'PD_h',{fp:0,embase:OUTB}))
 lit('PD_h',head+cat_,'PD_x')
@@ -126,7 +126,7 @@ number('PD_Fd',qsz,'PD_Fe')
 lit('PD_Fe',b' Tf ','PD_Ff')
 PCS=[('%.2f %.2f %.2f rg\n'%(c_[0]/255,c_[1]/255,c_[2]/255)).encode() for c_ in PAL_F]; _pcb=rom_str(b''.join(PCS)); _pcl=len(PCS[0])
 on('PD_Ff',(net.and_(net.step(v4qk),ONE-net.step(ptk_q)),'V4_PK0',None),(None,'A10_B0',{la_:as_x(_pcb)+qbase*_pcl,ln_lit:_pcl,lbret.r:lbret.id('T4P_O')}))
-e=S('T4P_O'); _f2xb=net.bits(f2cx,14,e); _f2raw=sum((_f2xb[k_]*(1<<(k_-4)) for k_ in range(4,14)),X()); _f2on=net.step(_f2raw); _f2tw=G_(_f2raw,_f2on)+(e-_f2on)*512-512   # feat2: character spacing as Tc, written when it changes
+e=S('T4P_O'); _f2xb=net.bits(f2cx,24,e); _f2raw=sum((_f2xb[k_]*(1<<(k_-4)) for k_ in range(4,14)),X()); _f2on=net.step(_f2raw); _f2tw=G_(_f2raw,_f2on)+(e-_f2on)*512-512   # feat2: character spacing as Tc, written when it changes
 on('T4P_O',(net.step(net.step(_f2tw*(1/15)+100-f2tc-0.01)+net.step(f2tc-100-_f2tw*(1/15)-0.01)),'F2P_T0',{qcx0:qxx,qop:1,f2tw:_f2tw+512}),(None,'T4P_Oa',{qcx0:qxx,qop:1}))
 lit('T4P_Oa',b'BT 1 0 0 1 ','T4P_Ob'); number('T4P_Ob',qxx,'T4P_Oc'); lit('T4P_Oc',b' ','T4P_Od')
 number('T4P_Od',qyb+qrise-3,'T4P_Oe'); lit('T4P_Oe',b' Tm (','PD_Tc')
@@ -245,3 +245,4 @@ pdfl=R(); on('PD_END',(None,'HALT',{pdfl:fp}))
 pdfout=Bus(net); pdfout.add(S('HF'),pdfl); fsm.set(pdfl,S('HF'),0)
 exec(open('rv_a6_pdf.py').read())
 exec(open('feat2_pdf.py').read())
+exec(open('p3_pdf.py').read())

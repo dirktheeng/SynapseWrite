@@ -5,7 +5,7 @@ F2SYM=as_x(rom.sz_raw(rom.SZ.index(18))+MATHRAW); F2A18=rom.metrics(4)[0]   # th
 # symbol width, at the end of measuring: a sum or product sign is measured, the integral is drawn from rects
 e=S('F2Q_SM'); _k4=net.eq(a6qkd,4,e); _ss1=net.and_(_k4,net.eq(a6qsb,1,e)); _ss2=net.and_(_k4,net.eq(a6qsb,2,e))
 measure(e,32+G_(as_x(UO+931-32),_ss1)+G_(as_x(UO+928-32),_ss2),F2SYM)
-on('F2Q_SM',(None,'A6Q_B8',{a6qsw:G_(adv,net.or_(_ss1,_ss2))+G_(as_x(9),net.and_(e,ONE-_ss1,ONE-_ss2))}))
+on('F2Q_SM',(net.eq(a6qkd,7,e),'P3_SM',None),(None,'A6Q_B8',{a6qsw:G_(adv,net.or_(_ss1,_ss2))+G_(as_x(9),net.and_(e,ONE-_ss1,ONE-_ss2))}))
 # ---- paint, from the baseline down the screen ----
 _fb=sy+lasc; _fox=net.relu(a6qnw-2); _fcx=x+a6qwd*0.5; _fym=_fb-A0Q+1
 def _frect(*r): return tuple(r)+(F2BK,col)
