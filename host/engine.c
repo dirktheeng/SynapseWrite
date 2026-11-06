@@ -112,4 +112,5 @@ __attribute__((noinline)) static void tick(void){ tickno++;
  run_ports();}
 // Run ticks until the halt neuron fires. Returns the tick count.
 __attribute__((export_name("run"))) i32 run(i32 halt,i32 maxticks){i32 n=0;while(n<maxticks){tick();n++;if(v[halt]!=0)break;}return n;}
+__attribute__((export_name("ostart"))) i32 ostart_(i32 i){return nr[i].os;}
 __attribute__((export_name("val"))) f64 val(i32 i){return v[i];}

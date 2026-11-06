@@ -1044,7 +1044,38 @@ for p in net.ports:
         elif isinstance(q,int): pass
     if isinstance(p,PatchPort): net.keep+=[nid(q) for q in p.a[:3]]
     if isinstance(p,(RPort,PixPort)): net.keep+=[nid(q) for q in p.out]
-_precs=[p.rec(None) for p in net.ports]; S_={k_:v_[0] for k_,v_ in fsm.states.items()}; N0_={k_:nid(v_) for k_,v_ in list(globals().items()) if isinstance(v_,X) and len(v_.t)==1}
-PK_=dict(BANK=BANK,FILE=FILE,CB=CB,CB2=CB2,T2_ROM=T2_ROM,SECB=SECB,PH=PH,PX=PX,TX=TX,TW=TW,LEN=LEN,SLOT0=SLOT0,DIRTY=DIRTY,PT=PT,SAVE=SAVE,PSPA=PSPA,DEFSPA=DEFSPA,HS=dict(outbase=nid(outbase.w),pdfout=nid(pdfout.w),wpic=nid(picout.w),wopen=nid(openout.w),saveout=nid(saveout.w),halt=nid(halt.w),timer=nid(timer.w),clipout=nid(clipout.w),wantp=nid(wantp.w)),EV=[nid(q) for q in (ev_kind,ev_a,ev_b,ev_c,ev_t)])
-import rv_a8_pack
-rv_a8_pack.pack(net,_precs,S_,N0_,PK_)
+import rv_a8_opt; rv_a8_opt.prune(net,[p.rec(None) for p in net.ports],[next(iter(v_.t)) for v_ in list(globals().values()) if isinstance(v_,X) and len(v_.t)==1])
+c=net.compile(); new=c['new']
+gn_=[''] *c['n']
+for g_,ids_ in net.groups.items():
+    for i_ in ids_:
+        if new[i_]>=0: gn_[new[i_]]=g_
+json.dump(gn_,open('../build/ngroups.json','w'))
+print('neurons',c['n'],'layers',c['L'],file=sys.stderr)
+names={new[next(iter(v_.t))]:k_ for k_,v_ in list(globals().items()) if isinstance(v_,X) and len(v_.t)==1 and new[next(iter(v_.t))]>=0}
+print('named regs in AND inputs',sorted(names[new[j]] for j in net.bool_regs_seen if new[j] in names),file=sys.stderr)
+json.dump(names,open('../build/names.json','w'))
+json.dump({str(new[next(iter(r_.t))]):k_ for k_,(r_,_) in fsm.states.items() if new[next(iter(r_.t))]>=0},open('../build/states.json','w'))
+pr=[]
+for p in net.ports:
+    r=p.rec(None)
+    if r[0] in (1,2):
+        d=r[3]
+        pr+=[r[0],new[nid(r[1])],new[nid(r[2])],new[nid(d)],r[4],new[nid(r[5])] if r[5] is not None else -1]
+    elif r[0]==3: pr+=[3]+[new[nid(q)] for q in r[1:]]
+    elif r[0]==4: pr+=[4,new[nid(r[1])],new[nid(r[2])],new[nid(r[3])],new[nid(r[4][0])],r[5],r[6],new[nid(r[7])],new[nid(r[8])]]
+    elif r[0]==6: pr+=[6]+[new[nid(q)] for q in r[1:]]
+    elif r[0]==7: pr+=[7,new[nid(r[1])],new[nid(r[2])],new[nid(r[3])]]+list(r[4:])
+    elif r[0]==5: pr+=[5,new[nid(r[1])],new[nid(r[2])],new[nid(r[3])]]
+import numpy as np
+n=c['n']; import rv_a8_fmt; raw,fmt_=rv_a8_fmt.encode(c,pr)
+hdr=dict(fmax=BANK-FILE,outbase=new[nid(outbase.w)],pdfout=new[nid(pdfout.w)],wpic=new[nid(picout.w)],wopen=new[nid(openout.w)],file=FILE,saveout=new[nid(saveout.w)],n=n,L=c['L'],nports=len(pr),bank=BANK,halt=new[nid(halt.w)],timer=new[nid(timer.w)],clipout=new[nid(clipout.w)],wantp=new[nid(wantp.w)],
+ ev=[new[nid(q)] for q in (ev_kind,ev_a,ev_b,ev_c,ev_t)],cb=CB,cb2=CB2,init=[[new[i],v] for i,v in net.init.items()],
+ bank_init=[*[[SECB+i_,v_] for i_,v_ in enumerate((1,816,PH,PX,TX,TW,96,864))],[LEN+SLOT0,0],[DIRTY+SLOT0,1],[PT,SLOT0],[SLOT0+SAVE,112],[SLOT0+SAVE+1,16],[SLOT0+SAVE+2,1],[SLOT0+PSPA,DEFSPA]]+T2_ROM); hdr.update(fmt_)
+h=json.dumps(hdr,separators=(',',':')).encode()
+blob=struct.pack('<I',len(h))+h+b'\0'*((4-(len(h)+4)%4)%4)+raw
+gz=gzip.compress(blob,9)
+open('../build/net.bin.gz','wb').write(gz)
+prov={k:len(v) for k,v in net.groups.items()}
+json.dump(dict(neurons=n,edges=fmt_['e'],layers=c['L'],groups=prov,states=len(fsm.states)),open('../build/provenance.json','w'),indent=1)
+print('lazy',fmt_['ni'],'edges',fmt_['e'],'raw',len(blob),'gz',len(gz),file=sys.stderr)

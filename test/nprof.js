@@ -3,7 +3,7 @@ const fs=require('fs');const load=require('./load');
 load().then(({e,h,bank})=>{
  const st=JSON.parse(fs.readFileSync('build/states.json'));const nm=JSON.parse(fs.readFileSync('build/names.json'));const ids=Object.keys(st).map(Number);
  const want=process.argv[2];const wid=+ids.find(i=>st[i]===want);
- const os=new Int32Array(e.memory.buffer,e.p_ostart(),h.n+1);const v=new Float64Array(e.memory.buffer,e.p_v(),h.n);
+ const os=Int32Array.from({length:h.n+1},(_,i)=>e.ostart(i));const v=new Float64Array(e.memory.buffer,e.p_v(),h.n);
  const D=(k,a=0,b=0,c=0)=>{e.inject(h.ev[0],k);if(a)e.inject(h.ev[1],a);if(b)e.inject(h.ev[2],b);if(c)e.inject(h.ev[3],c);return e.run(h.halt,80000000);};
  D(1);let s='';for(let i=0;i<40;i++)s+='This paragraph number '+i+' exists to make a long document that spans well over one hundred pages so we can measure how.\n';{const b=bank();for(let i=0;i<s.length;i++)b[h.cb2+i]=s.charCodeAt(i);}
  e.inject(h.ev[0],8);e.inject(h.ev[3],s.length);

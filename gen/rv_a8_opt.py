@@ -14,6 +14,7 @@ def prune(s,precs,named=()):
     for r in precs:          # read port cells are written by the port
         if r[0]==2: b=next(iter(r[3].t)); roots.update(range(b,b+r[4]))
         if r[0]==5: b=next(iter(r[3].t)); roots.update(range(b,b+4))
+    s.port_en={next(iter(r[1].t)) for r in precs if isinstance(r[1],X) and len(r[1].t)==1}
     agg=[None]*n
     for i in range(n):
         a={}

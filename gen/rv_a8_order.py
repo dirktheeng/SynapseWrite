@@ -20,13 +20,15 @@ def order(s):
     members={}
     for ids in s.aligned:
         members[ids[0]]=ids
-    h=[r for r,d in indeg.items() if d==0]; heapq.heapify(h); comb=[]
+    # Port enables are read every tick. Those no neuron reads go last, side by side, so the check touches few cache lines.
+    late=getattr(s,'port_en',set()); pri=lambda r:(1 if r in late and r not in cons else 0,r)
+    h=[pri(r) for r,d in indeg.items() if d==0]; heapq.heapify(h); comb=[]
     while h:
-        r=heapq.heappop(h)
+        r=heapq.heappop(h)[1]
         comb+=members.get(r,[r])
         for c in cons.get(r,()):
             indeg[c]-=1
-            if indeg[c]==0: heapq.heappush(h,c)
+            if indeg[c]==0: heapq.heappush(h,pri(c))
     assert len(comb)==sum(1 for i in range(n) if alive[i] and s.kind[i]!='reg'),'cycle through an aligned group'
     regs=[i for i in range(n) if alive[i] and s.kind[i]=='reg']
     idxs=[];lstart=[0]
