@@ -38,7 +38,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | paste | Inserts clipboard text with paragraph splitting. | gen/app.py (208) | 208 | 2643 |
 | bulk edits | Window walkers for bulk formatting, copy, save, paste and find. | gen/rv_a7_bulk.py (662) | 662 | 6768 |
 | find across paragraphs | One matcher for queries holding paragraph marks, used by the walker, the counter and the highlight. | gen/imp3_find.py (294), gen/imp3_find_paint.py (36) | 330 | 894 |
-| find codes | NO PURPOSE RECORDED | gen/imp3_find.py (58) | 58 | 143 |
+| find codes | Reads the Word find codes ^t ^l ^^ ^s ^- ^? ^# ^$ for the shared matcher, and the character codes in a replacement. | gen/imp3_find.py (58) | 58 | 143 |
 | clipboard formatting | Keeps style cells and paragraph records of the own copy and puts them back when the pasted text equals it. | gen/imp3_clip.py (103) | 103 | 242 |
 | layout and paint | Walks paragraphs, places lines and words, draws text, selection, pictures. | gen/app.py (1022), gen/rv_a3_paint.py (96), gen/imp4_list.py (31), gen/rv_a3_pre.py (31), gen/t4_spell.py (26), gen/rv_a4_regs.py (20), gen/feat1_regs.py (1) | 1227 | 5200 |
 | spell dictionary | Walks a word automaton held as a read only table, one read per painted letter, and marks words. | gen/t4_spell.py (67) | 67 | 165 |
@@ -80,7 +80,7 @@ Written by gen/rv_a11_prov.py at every build, from net.groups. Every weight come
 | vertical ruler drag | Top and bottom margin drags on the vertical ruler, released through the section edit with undo. | gen/imp5_vruler.py (9) | 9 | 60 |
 | repeat last command | F4 repeats the last character format, alignment, paragraph style or list command. | gen/imp6_feat.py (21) | 21 | 47 |
 | recent colors | Recent colors: the last eight exact text colors, drawn under Color Picker and applied again with a click. | gen/imp6_feat.py (276) | 276 | 2793 |
-| tier 1 ribbon commands | NO PURPOSE RECORDED | gen/p1_ribbon.py (49) | 49 | 140 |
+| tier 1 ribbon commands | Sets the arguments for the Column Break, Text Wrapping, Comment ribbon commands and dispatches the Ctrl+Alt shortcuts. | gen/p1_ribbon.py (49) | 49 | 140 |
 | canvas look | Page shadow and the canvas around the page. | gen/rv_a2_canvas.py (82) | 82 | 197 |
 | a4 commands | Word commands: repeat, format painter, keep rules and others. | gen/rv_a4_features.py (344) | 344 | 1272 |
 | a4 keep | Keep with next and keep lines in pagination. | gen/rv_a4_features.py (55) | 55 | 143 |
